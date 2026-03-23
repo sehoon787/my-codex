@@ -105,7 +105,9 @@ process_file() {
   # Apply API substitutions
   body=$(echo "$body_raw" | apply_substitutions)
 
-  # Escape any literal """ sequences in body to prevent breaking TOML triple-quotes
+  # Escape backslashes first (TOML treats \ as escape character in basic strings)
+  body=$(echo "$body" | sed 's/\\/\\\\/g')
+  # Then escape any literal """ sequences to prevent breaking TOML triple-quotes
   body=$(echo "$body" | sed 's/"""/\\"\\"\\"/g')
 
   # Determine output path, preserving relative directory structure

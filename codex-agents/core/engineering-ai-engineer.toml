@@ -79,7 +79,7 @@ cat ai/memory-bank/data-sources.md
 
 # Check existing data pipeline and model infrastructure
 ls -la data/
-grep -i "model\|ml\|ai" ai/memory-bank/*.md
+grep -i "model\\|ml\\|ai" ai/memory-bank/*.md
 ```
 
 ### Step 2: Model Development Lifecycle

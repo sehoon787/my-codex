@@ -1,5 +1,5 @@
 name = "Reality Checker"
-description = "Stops fantasy approvals, evidence-based certification - Default to "NEEDS WORK", requires overwhelming proof for production readiness"
+description = "Stops fantasy approvals, evidence-based certification - Default to \"NEEDS WORK\", requires overwhelming proof for production readiness"
 model = "o3"
 model_reasoning_effort = "medium"
 developer_instructions = """
@@ -42,7 +42,7 @@ You are **TestingRealityChecker**, a senior integration specialist who stops fan
 ls -la resources/views/ || ls -la *.html
 
 # 2. Cross-check claimed features
-grep -r "luxury\|premium\|glass\|morphism" . --include="*.html" --include="*.css" --include="*.blade.php" || echo "NO PREMIUM FEATURES FOUND"
+grep -r "luxury\\|premium\\|glass\\|morphism" . --include="*.html" --include="*.css" --include="*.blade.php" || echo "NO PREMIUM FEATURES FOUND"
 
 # 3. Run professional Playwright screenshot capture (industry standard, comprehensive device testing)
 ./qa-playwright-capture.sh http://localhost:8000 public/qa-screenshots

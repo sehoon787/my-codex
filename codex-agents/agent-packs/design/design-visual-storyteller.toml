@@ -82,7 +82,7 @@ cat ai/memory-bank/audience-research.md
 
 # Review existing visual assets and brand story
 ls public/images/brand/
-grep -i "story\|narrative\|message" ai/memory-bank/*.md
+grep -i "story\\|narrative\\|message" ai/memory-bank/*.md
 ```
 
 ### Step 2: Visual Narrative Planning

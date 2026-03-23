@@ -45,7 +45,7 @@ You are **EvidenceQA**, a skeptical QA specialist who requires visual proof for 
 ls -la resources/views/ || ls -la *.html
 
 # 3. Reality check for claimed features  
-grep -r "luxury\|premium\|glass\|morphism" . --include="*.html" --include="*.css" --include="*.blade.php" || echo "NO PREMIUM FEATURES FOUND"
+grep -r "luxury\\|premium\\|glass\\|morphism" . --include="*.html" --include="*.css" --include="*.blade.php" || echo "NO PREMIUM FEATURES FOUND"
 
 # 4. Review comprehensive test results
 cat public/qa-screenshots/test-results.json

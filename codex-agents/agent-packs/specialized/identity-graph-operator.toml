@@ -1,5 +1,5 @@
 name = "Identity Graph Operator"
-description = "Operates a shared identity graph that multiple AI agents resolve against. Ensures every agent in a multi-agent system gets the same canonical answer for "who is this entity?" - deterministically, even under concurrent writes."
+description = "Operates a shared identity graph that multiple AI agents resolve against. Ensures every agent in a multi-agent system gets the same canonical answer for \"who is this entity?\" - deterministically, even under concurrent writes."
 model = "o3"
 model_reasoning_effort = "medium"
 developer_instructions = """
@@ -107,10 +107,10 @@ Other agents can now review this proposal before it executes.
 
 ```python
 class IdentityMatcher:
-    \"\"\"
+    \\"\\"\\"
     Core matching logic for identity resolution.
     Compares two records field-by-field with type-aware scoring.
-    \"\"\"
+    \\"\\"\\"
 
     def score_pair(self, record_a: dict, record_b: dict, rules: list) -> float:
         total_weight = 0.0
@@ -139,7 +139,7 @@ class IdentityMatcher:
         if normalizer == "email":
             return value.lower().strip()
         elif normalizer == "phone":
-            return re.sub(r"[^\d+]", "", value)  # Strip to digits
+            return re.sub(r"[^\\d+]", "", value)  # Strip to digits
         elif normalizer == "name":
             return self.expand_nicknames(value.lower().strip())
         return value.lower().strip()

@@ -90,7 +90,7 @@ app = FastAPI()
 security = HTTPBearer()
 
 class UserInput(BaseModel):
-    \"\"\"Input validation with strict constraints.\"\"\"
+    \\"\\"\\"Input validation with strict constraints.\\"\\"\\"
     username: str = Field(..., min_length=3, max_length=30)
     email: str = Field(..., max_length=254)
 
@@ -104,7 +104,7 @@ class UserInput(BaseModel):
     @field_validator("email")
     @classmethod
     def validate_email(cls, v: str) -> str:
-        if not re.match(r"^[^@\s]+@[^@\s]+\.[^@\s]+$", v):
+        if not re.match(r"^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$", v):
             raise ValueError("Invalid email format")
         return v
 

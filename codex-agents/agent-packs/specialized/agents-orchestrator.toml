@@ -77,7 +77,7 @@ ls -la css/ project-docs/*-architecture.md
 ### Phase 3: Development-QA Continuous Loop
 ```bash
 # Read task list to understand scope
-TASK_COUNT=$(grep -c "^### \[ \]" project-tasks/*-tasklist.md)
+TASK_COUNT=$(grep -c "^### \\[ \\]" project-tasks/*-tasklist.md)
 echo "Pipeline: $TASK_COUNT tasks to implement and validate"
 
 # For each task, run Dev-QA loop until PASS
@@ -97,7 +97,7 @@ echo "Pipeline: $TASK_COUNT tasks to implement and validate"
 ```bash
 # Only when ALL tasks pass individual QA
 # Verify all tasks completed
-grep "^### \[x\]" project-tasks/*-tasklist.md
+grep "^### \\[x\\]" project-tasks/*-tasklist.md
 
 # Spawn final integration testing
 "Please spawn a testing-reality-checker agent to perform final integration testing on the completed system. Cross-validate all QA findings with comprehensive automated screenshots. Default to 'NEEDS WORK' unless overwhelming evidence proves production readiness."

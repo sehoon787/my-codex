@@ -88,7 +88,7 @@ message_file="${1:?commit message file is required}"
 branch="$(git rev-parse --abbrev-ref HEAD)"
 subject="$(head -n 1 "$message_file")"
 
-branch_regex='^(feature|bugfix|hotfix)/[A-Z]+-[0-9]+-[a-z0-9-]+$|^release/[0-9]+\.[0-9]+\.[0-9]+$'
+branch_regex='^(feature|bugfix|hotfix)/[A-Z]+-[0-9]+-[a-z0-9-]+$|^release/[0-9]+\\.[0-9]+\\.[0-9]+$'
 commit_regex='^(🚀|✨|🐛|♻️|📚|🧪|💄|🔧|📦) [A-Z]+-[0-9]+: .+$'
 
 if [[ ! "$branch" =~ $branch_regex ]]; then

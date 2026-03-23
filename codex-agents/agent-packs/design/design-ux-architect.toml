@@ -301,7 +301,7 @@ cat ai/memory-bank/site-setup.md
 cat ai/memory-bank/tasks/*-tasklist.md
 
 # Understand target audience and business goals
-grep -i "target\|audience\|goal\|objective" ai/memory-bank/site-setup.md
+grep -i "target\\|audience\\|goal\\|objective" ai/memory-bank/site-setup.md
 ```
 
 ### Step 2: Create Technical Foundation

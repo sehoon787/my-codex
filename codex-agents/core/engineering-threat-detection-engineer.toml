@@ -92,15 +92,15 @@ logsource:
 detection:
   selection_parent:
     ParentImage|endswith:
-      - '\cmd.exe'
-      - '\wscript.exe'
-      - '\cscript.exe'
-      - '\mshta.exe'
-      - '\wmiprvse.exe'
+      - '\\cmd.exe'
+      - '\\wscript.exe'
+      - '\\cscript.exe'
+      - '\\mshta.exe'
+      - '\\wmiprvse.exe'
   selection_powershell:
     Image|endswith:
-      - '\powershell.exe'
-      - '\pwsh.exe'
+      - '\\powershell.exe'
+      - '\\pwsh.exe'
     CommandLine|contains:
       - '-enc '
       - '-EncodedCommand'
@@ -123,10 +123,10 @@ fields:
 ```spl
 | Suspicious PowerShell Encoded Command — compiled from Sigma rule
 index=windows sourcetype=WinEventLog:Sysmon EventCode=1
-  (ParentImage="*\\cmd.exe" OR ParentImage="*\\wscript.exe"
-   OR ParentImage="*\\cscript.exe" OR ParentImage="*\\mshta.exe"
-   OR ParentImage="*\\wmiprvse.exe")
-  (Image="*\\powershell.exe" OR Image="*\\pwsh.exe")
+  (ParentImage="*\\\\cmd.exe" OR ParentImage="*\\\\wscript.exe"
+   OR ParentImage="*\\\\cscript.exe" OR ParentImage="*\\\\mshta.exe"
+   OR ParentImage="*\\\\wmiprvse.exe")
+  (Image="*\\\\powershell.exe" OR Image="*\\\\pwsh.exe")
   (CommandLine="*-enc *" OR CommandLine="*-EncodedCommand*"
    OR CommandLine="*-ec *" OR CommandLine="*FromBase64String*")
 | eval risk_score=case(
@@ -234,7 +234,7 @@ jobs:
 
       - name: Validate Sigma syntax
         run: |
-          find detections/ -name "*.yml" -exec sigma check {} \;
+          find detections/ -name "*.yml" -exec sigma check {} \\;
 
       - name: Check required fields
         run: |
@@ -252,7 +252,7 @@ jobs:
         run: |
           # Every rule must map to at least one ATT&CK technique
           for rule in detections/**/*.yml; do
-            if ! grep -q "attack\.t[0-9]" "$rule"; then
+            if ! grep -q "attack\\.t[0-9]" "$rule"; then
               echo "ERROR: $rule has no ATT&CK technique mapping"
               exit 1
             fi
@@ -267,24 +267,24 @@ jobs:
 
       - name: Install sigma-cli with backends
         run: |
-          pip install sigma-cli \
-            pySigma-backend-splunk \
-            pySigma-backend-microsoft365defender \
+          pip install sigma-cli \\
+            pySigma-backend-splunk \\
+            pySigma-backend-microsoft365defender \\
             pySigma-backend-elasticsearch
 
       - name: Compile to Splunk
         run: |
-          sigma convert -t splunk -p sysmon \
+          sigma convert -t splunk -p sysmon \\
             detections/**/*.yml > compiled/splunk/rules.conf
 
       - name: Compile to Sentinel KQL
         run: |
-          sigma convert -t microsoft365defender \
+          sigma convert -t microsoft365defender \\
             detections/**/*.yml > compiled/sentinel/rules.kql
 
       - name: Compile to Elastic EQL
         run: |
-          sigma convert -t elasticsearch \
+          sigma convert -t elasticsearch \\
             detections/**/*.yml > compiled/elastic/rules.ndjson
 
       - uses: actions/upload-artifact@v4
@@ -309,7 +309,7 @@ jobs:
               echo "WARN: No test case for rule $rule_id ($rule)"
             else
               echo "Testing rule $rule_id against sample data..."
-              python scripts/test_detection.py \
+              python scripts/test_detection.py \\
                 --rule "$rule" --test-data "$test_file"
             fi
           done
@@ -327,16 +327,16 @@ jobs:
       - name: Deploy to Splunk
         run: |
           # Push compiled rules via Splunk REST API
-          curl -k -u "${{ secrets.SPLUNK_USER }}:${{ secrets.SPLUNK_PASS }}" \
-            https://${{ secrets.SPLUNK_HOST }}:8089/servicesNS/admin/search/saved/searches \
+          curl -k -u "${{ secrets.SPLUNK_USER }}:${{ secrets.SPLUNK_PASS }}" \\
+            https://${{ secrets.SPLUNK_HOST }}:8089/servicesNS/admin/search/saved/searches \\
             -d @compiled/splunk/rules.conf
 
       - name: Deploy to Sentinel
         run: |
           # Deploy via Azure CLI
-          az sentinel alert-rule create \
-            --resource-group ${{ secrets.AZURE_RG }} \
-            --workspace-name ${{ secrets.SENTINEL_WORKSPACE }} \
+          az sentinel alert-rule create \\
+            --resource-group ${{ secrets.AZURE_RG }} \\
+            --workspace-name ${{ secrets.SENTINEL_WORKSPACE }} \\
             --alert-rule @compiled/sentinel/rules.kql
 ```
 
@@ -363,11 +363,11 @@ and our current detections are not catching all variants.
 ### Query 1: Direct LSASS Access (Sysmon Event 10)
 ```
 index=windows sourcetype=WinEventLog:Sysmon EventCode=10
-  TargetImage="*\\lsass.exe"
+  TargetImage="*\\\\lsass.exe"
   GrantedAccess IN ("0x1010", "0x1038", "0x1fffff", "0x1410")
   NOT SourceImage IN (
-    "*\\csrss.exe", "*\\lsm.exe", "*\\wmiprvse.exe",
-    "*\\svchost.exe", "*\\MsMpEng.exe"
+    "*\\\\csrss.exe", "*\\\\lsm.exe", "*\\\\wmiprvse.exe",
+    "*\\\\svchost.exe", "*\\\\MsMpEng.exe"
   )
 | stats count by SourceImage GrantedAccess Computer User
 | sort - count
@@ -376,8 +376,8 @@ index=windows sourcetype=WinEventLog:Sysmon EventCode=10
 ### Query 2: Suspicious Modules Loaded into LSASS
 ```
 index=windows sourcetype=WinEventLog:Sysmon EventCode=7
-  Image="*\\lsass.exe"
-  NOT ImageLoaded IN ("*\\Windows\\System32\\*", "*\\Windows\\SysWOW64\\*")
+  Image="*\\\\lsass.exe"
+  NOT ImageLoaded IN ("*\\\\Windows\\\\System32\\\\*", "*\\\\Windows\\\\SysWOW64\\\\*")
 | stats count values(ImageLoaded) as SuspiciousModules by Computer
 ```
 
@@ -427,7 +427,7 @@ performance:
   validation_method: "atomic_red_team"
 
 allowlist:
-  - pattern: "SCCM\\\\.*powershell.exe.*-enc"
+  - pattern: "SCCM\\\\\\\\.*powershell.exe.*-enc"
     reason: "SCCM software deployment uses encoded commands"
     added: "2025-03-20"
     reviewed: "2025-06-01"

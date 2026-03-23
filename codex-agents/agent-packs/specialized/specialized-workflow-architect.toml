@@ -441,24 +441,24 @@ Before designing anything, discover what already exists:
 
 ```bash
 # Find all workflow entry points (adapt patterns to your framework)
-grep -rn "router\.\(post\|put\|delete\|get\|patch\)" src/routes/ --include="*.ts" --include="*.js"
-grep -rn "@app\.\(route\|get\|post\|put\|delete\)" src/ --include="*.py"
-grep -rn "HandleFunc\|Handle(" cmd/ pkg/ --include="*.go"
+grep -rn "router\\.\\(post\\|put\\|delete\\|get\\|patch\\)" src/routes/ --include="*.ts" --include="*.js"
+grep -rn "@app\\.\\(route\\|get\\|post\\|put\\|delete\\)" src/ --include="*.py"
+grep -rn "HandleFunc\\|Handle(" cmd/ pkg/ --include="*.go"
 
 # Find all background workers / job processors
 find src/ -type f -name "*worker*" -o -name "*job*" -o -name "*consumer*" -o -name "*processor*"
 
 # Find all state transitions in the codebase
-grep -rn "status.*=\|\.status\s*=\|state.*=\|\.state\s*=" src/ --include="*.ts" --include="*.py" --include="*.go" | grep -v "test\|spec\|mock"
+grep -rn "status.*=\\|\\.status\\s*=\\|state.*=\\|\\.state\\s*=" src/ --include="*.ts" --include="*.py" --include="*.go" | grep -v "test\\|spec\\|mock"
 
 # Find all database migrations
 find . -path "*/migrations/*" -type f | head -30
 
 # Find all infrastructure resources
-find . -name "*.tf" -o -name "docker-compose*.yml" -o -name "*.yaml" | xargs grep -l "resource\|service:" 2>/dev/null
+find . -name "*.tf" -o -name "docker-compose*.yml" -o -name "*.yaml" | xargs grep -l "resource\\|service:" 2>/dev/null
 
 # Find all scheduled / cron jobs
-grep -rn "cron\|schedule\|setInterval\|@Scheduled" src/ --include="*.ts" --include="*.py" --include="*.go" --include="*.java"
+grep -rn "cron\\|schedule\\|setInterval\\|@Scheduled" src/ --include="*.ts" --include="*.py" --include="*.go" --include="*.java"
 ```
 
 Build the registry entry BEFORE writing any spec. Know what you're working with.

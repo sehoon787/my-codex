@@ -1,5 +1,7 @@
 [English](./README.md) | [한국어](./README.ko.md)
 
+> 🟣 **Claude Code 사용자** → [**my-claude**](https://github.com/sehoon787/my-claude) — 동일한 에이전트를 Claude Code 플러그인 + Boss 메타 오케스트레이터로
+
 > **LLM 에이전트인 경우**, 설치 가이드를 가져와 따르세요:
 > ```bash
 > curl -s https://raw.githubusercontent.com/sehoon787/my-codex/main/AI-INSTALL.md
@@ -146,10 +148,6 @@ rm ~/.codex/agents/<agent-name>.toml
 | [awesome-codex-subagents](https://github.com/VoltAgent/awesome-codex-subagents) | 136개 네이티브 TOML 에이전트 | 매주 CI |
 
 ---
-
-## Claude Code 사용자
-
-[my-claude](https://github.com/sehoon787/my-claude) — 플러그인 마켓플레이스 지원, Boss 동적 메타 오케스트레이터, Agent Teams를 제공하는 Claude Code 자매 프로젝트를 참조하세요.
 
 ## 라이선스
 

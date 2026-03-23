@@ -171,6 +171,11 @@ footer{padding:40px 0;border-top:1px solid rgba(255,255,255,.06);text-align:cent
 .fade-in{opacity:0;transform:translateY(20px);transition:opacity .6s,transform .6s}.fade-in.visible{opacity:1;transform:translateY(0)}
 @keyframes pulseGlow{0%,100%{box-shadow:0 0 20px rgba(16,185,129,.08),0 0 40px rgba(16,185,129,.04)}50%{box-shadow:0 0 35px rgba(16,185,129,.16),0 0 70px rgba(16,185,129,.08)}}
 .src-glow{animation:pulseGlow 3s ease-in-out infinite}
+.project-switch{display:flex;gap:4px;justify-content:center;margin-bottom:20px;background:var(--card);border:1px solid var(--border);border-radius:24px;padding:4px;width:fit-content;margin-left:auto;margin-right:auto}
+.ps-item{padding:8px 20px;border-radius:20px;font-size:.85rem;font-weight:600;color:var(--text2);transition:all .2s;text-decoration:none}
+.ps-item:hover{color:var(--text);opacity:1}
+.ps-item.active{background:var(--primary);color:#fff}
+.ps-item.active:hover{opacity:1}
 </style>
 </head>
 <body>
@@ -199,6 +204,10 @@ footer{padding:40px 0;border-top:1px solid rgba(255,255,255,.06);text-align:cent
 <section class="hero" id="hero">
 <div class="hero-dots"></div>
 <div class="container" style="position:relative;z-index:1">
+<div class="project-switch">
+  <a href="https://sehoon787.github.io/my-claude/" class="ps-item">Claude Code</a>
+  <span class="ps-item active">Codex CLI</span>
+</div>
   <h1><span class="lang" data-en="Every agent. One install." data-ko="모든 에이전트. 한 번의 설치."></span></h1>
   <p class="tagline">
     <span class="lang" data-en="319 native TOML agents for OpenAI Codex CLI — curated from 5 upstream sources, auto-synced weekly. No conversion headaches." data-ko="OpenAI Codex CLI를 위한 319개 네이티브 TOML 에이전트 — 5개 업스트림 소스에서 큐레이션, 매주 자동 동기화. 변환 걱정 없음."></span>

@@ -1,5 +1,7 @@
 [English](./README.md) | [한국어](./README.ko.md)
 
+> 🟣 **Claude Code users** → [**my-claude**](https://github.com/sehoon787/my-claude) — same agents as Claude Code plugin with Boss meta-orchestrator
+
 > **If you are an LLM agent**, fetch and follow the installation guide:
 > ```bash
 > curl -s https://raw.githubusercontent.com/sehoon787/my-codex/main/AI-INSTALL.md
@@ -174,10 +176,6 @@ max_threads = 8
 | [awesome-codex-subagents](https://github.com/VoltAgent/awesome-codex-subagents) | 136 native TOML agents | Weekly CI |
 
 ---
-
-## Claude Code Users
-
-See [my-claude](https://github.com/sehoon787/my-claude) — the sister project for Claude Code with plugin marketplace support, Boss dynamic meta-orchestrator, and Agent Teams.
 
 ## License
 

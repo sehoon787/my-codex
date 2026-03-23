@@ -1,6 +1,6 @@
 [English](./README.md) | [한국어](./README.ko.md)
 
-> [![Claude Code](https://img.shields.io/badge/Claude_Code-my--claude-818cf8?style=flat-square&logo=anthropic&logoColor=white)](https://github.com/sehoon787/my-claude) Claude Code를 찾으시나요? → **my-claude** — 동일한 에이전트를 Claude Code 플러그인 + Boss 메타 오케스트레이터로
+> [![Claude Code](https://img.shields.io/badge/Claude_Code-my--claude-d97757?style=flat-square&logo=anthropic&logoColor=white)](https://github.com/sehoon787/my-claude) Claude Code를 찾으시나요? → **my-claude** — 동일한 에이전트를 Claude Code 플러그인 + Boss 메타 오케스트레이터로
 
 > **LLM 에이전트인 경우**, 설치 가이드를 가져와 따르세요:
 > ```bash
@@ -395,11 +395,11 @@ Codex → spawn_agent("planner")
 
 ### 2. [Everything Claude Code (ECC)](https://github.com/affaan-m/everything-claude-code)
 
-108개 스킬과 50개 규칙을 제공하는 종합 개발 프레임워크. `/tdd`, `/plan`, `/code-review`, `/build-fix` 등의 슬래시 커맨드로 반복적인 패턴을 자동화합니다. 8개 프로그래밍 언어에 대한 규칙을 포함합니다.
+원래 Claude Code용으로 제작된 개발 프레임워크로, 108개 스킬과 50개 규칙을 제공합니다. 약 절반의 스킬은 범용 코딩 가이드라인으로 모든 LLM 에이전트에서 활용 가능하며, 나머지는 Claude Code 전용 도구를 참조합니다. 규칙은 8개 프로그래밍 언어에 대한 언어 불문 코딩 표준을 제공합니다.
 
 ### 3. [Oh My Claude Code (OMC)](https://github.com/Yeachan-Heo/oh-my-claudecode)
 
-19개 전문 에이전트를 갖춘 멀티에이전트 오케스트레이션 플러그인 — architect, debugger, code reviewer, security reviewer 등. Claude Code Markdown 형식에서 Codex 네이티브 TOML로 변환되었습니다.
+원래 Claude Code용으로 제작된 19개 전문 에이전트를 갖춘 멀티에이전트 오케스트레이션 플러그인. `md-to-toml.sh`를 통해 Markdown에서 TOML 형식으로 변환됩니다. 참고: 에이전트 지시사항이 Claude Code 전용 도구를 참조할 수 있습니다 — 네이티브 Codex 오케스트레이션은 oh-my-codex(#5)를 참조하세요.
 
 ### 4. [Awesome Codex Subagents](https://github.com/VoltAgent/awesome-codex-subagents)
 

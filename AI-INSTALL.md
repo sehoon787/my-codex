@@ -89,4 +89,4 @@ Setup complete. Multi-agent orchestration is ready.
 
 ## Also Available
 
-[![Claude Code](https://img.shields.io/badge/Claude_Code-my--claude-818cf8?style=flat-square&logo=anthropic&logoColor=white)](https://github.com/sehoon787/my-claude) Looking for Claude Code? → **my-claude** — same agents as Claude Code plugin with Boss meta-orchestrator
+[![Claude Code](https://img.shields.io/badge/Claude_Code-my--claude-d97757?style=flat-square&logo=anthropic&logoColor=white)](https://github.com/sehoon787/my-claude) Looking for Claude Code? → **my-claude** — same agents as Claude Code plugin with Boss meta-orchestrator

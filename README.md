@@ -1,6 +1,6 @@
 [English](./README.md) | [한국어](./README.ko.md)
 
-> [![Claude Code](https://img.shields.io/badge/Claude_Code-my--claude-818cf8?style=flat-square&logo=anthropic&logoColor=white)](https://github.com/sehoon787/my-claude) Looking for Claude Code? → **my-claude** — same agents as Claude Code plugin with Boss meta-orchestrator
+> [![Claude Code](https://img.shields.io/badge/Claude_Code-my--claude-d97757?style=flat-square&logo=anthropic&logoColor=white)](https://github.com/sehoon787/my-claude) Looking for Claude Code? → **my-claude** — same agents as Claude Code plugin with Boss meta-orchestrator
 
 > **If you are an LLM agent**, fetch and follow the installation guide:
 > ```bash
@@ -395,11 +395,11 @@ A library of 156 business specialist agent personas. Provides specialist perspec
 
 ### 2. [Everything Claude Code (ECC)](https://github.com/affaan-m/everything-claude-code)
 
-A comprehensive development framework providing 108 skills and 50 rules. Slash commands like `/tdd`, `/plan`, `/code-review`, `/build-fix` automate repetitive patterns. Rules cover 8 programming languages.
+A development framework originally built for Claude Code, providing 108 skills and 50 rules. Approximately half the skills contain generic coding guidance usable across any LLM agent; the rest reference Claude Code-specific tools. Rules provide language-agnostic coding standards across 8 programming languages.
 
 ### 3. [Oh My Claude Code (OMC)](https://github.com/Yeachan-Heo/oh-my-claudecode)
 
-A multi-agent orchestration plugin with 19 specialist agents — architect, debugger, code reviewer, security reviewer, etc. Agents are converted from Claude Code Markdown format to Codex-native TOML.
+A multi-agent orchestration plugin originally built for Claude Code with 19 specialist agents. Agents are converted from Markdown to TOML format via `md-to-toml.sh`. Note: agent instructions may reference Claude Code-specific tools — for native Codex orchestration, see oh-my-codex (#5).
 
 ### 4. [Awesome Codex Subagents](https://github.com/VoltAgent/awesome-codex-subagents)
 

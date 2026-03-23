@@ -172,7 +172,7 @@ jobs:
             fs.writeFileSync('upstream/SOURCES.json', JSON.stringify(sources, null, 2));
           "
 
-      # 7. Update documentation counts
+      # 8. Update documentation counts
       - name: Update documentation counts
         run: |
           TOTAL_SKILLS=$((ECC_SKILLS + OMC_SKILLS + OMX_CDX_SKILLS))
@@ -180,7 +180,7 @@ jobs:
           sed -i "s/[0-9]\+ skills/${TOTAL_SKILLS} skills/g" README.md AI-INSTALL.md
           sed -i "s/[0-9]\+ rules/${ECC_RULES} rules/g" README.md AI-INSTALL.md
 
-      # 8. Create PR
+      # 9. Create PR
       - name: Create sync PR
         run: |
           if [ -n "$(git status --porcelain)" ]; then
@@ -193,7 +193,7 @@ jobs:
             git push -u origin "$BRANCH"
             gh pr create \
               --title "chore: sync upstream ($(date +%Y-%m-%d))" \
-              --body "Upstream sync from 4 sources. Review diffs before merging." \
+              --body "Upstream sync from 5 sources. Review diffs before merging." \
               --label "auto-sync"
           fi
         env:

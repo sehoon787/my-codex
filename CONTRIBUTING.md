@@ -18,13 +18,14 @@ rules/                    # Coding and workflow rules
 
 ### Upstream Sources
 
-This repository aggregates agents from four upstream sources:
+This repository aggregates agents from five upstream sources:
 
 | Source | Origin | Format |
 |--------|--------|--------|
 | `agency` | agency-agents (domain agents, MD converted to TOML) | TOML |
 | `ecc` | everything-claude-code (skills and rules) | MD |
 | `omc` | oh-my-claudecode (agents converted to TOML) | TOML |
+| `omx` | oh-my-codex (Codex-native agents, hooks, HUD) | TOML |
 | `awesome` | awesome-codex-subagents (native TOML agents) | TOML |
 
 New contributions that originate from this repository go into `codex-agents/core/` (infrastructure) or `codex-agents/agent-packs/{category}/` (domain).

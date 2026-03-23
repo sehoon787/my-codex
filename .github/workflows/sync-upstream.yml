@@ -33,7 +33,7 @@ jobs:
           # Add model field to agents missing it
           find staging/agency -name '*.md' | while read f; do
             if ! grep -q '^model:' "$f"; then
-              sed -i '/^description:/a model: claude-sonnet-4-6' "$f"
+              sed -i '/^description:/a model: gpt-5.4' "$f"
             fi
           done
           AGENCY_COUNT=$(find staging/agency -name '*.md' | wc -l)
@@ -75,15 +75,20 @@ jobs:
           echo "OMC_AGENTS=$OMC_AGENTS" >> $GITHUB_ENV
           echo "OMC_SKILLS=$OMC_SKILLS" >> $GITHUB_ENV
 
-      # 4. oh-my-codex (commented out — repo existence uncertain)
-      # - name: Sync oh-my-codex
-      #   run: |
-      #     git clone --depth 1 https://github.com/Yeachan-Heo/oh-my-codex.git /tmp/omx || true
-      #     ...
-      - name: Set omx defaults
+      # 4. oh-my-codex
+      - name: Sync oh-my-codex
         run: |
-          echo "OMX_SHA=n/a" >> $GITHUB_ENV
-          echo "OMX_PROMPTS=0" >> $GITHUB_ENV
+          git clone --depth 1 https://github.com/Yeachan-Heo/oh-my-codex.git /tmp/omx || { echo "OMX_SHA=n/a" >> $GITHUB_ENV; echo "OMX_AGENTS=0" >> $GITHUB_ENV; echo "OMX_CDX_SKILLS=0" >> $GITHUB_ENV; exit 0; }
+          OMX_SHA=$(cd /tmp/omx && git rev-parse HEAD)
+          echo "OMX_SHA=$OMX_SHA" >> $GITHUB_ENV
+
+          if [ -d /tmp/omx/agents ]; then
+            mkdir -p staging/omx
+            cp /tmp/omx/agents/*.md staging/omx/ 2>/dev/null || true
+            cp /tmp/omx/agents/*.toml staging/omx/ 2>/dev/null || true
+          fi
+          OMX_AGENTS=$(find staging/omx -type f \( -name '*.md' -o -name '*.toml' \) 2>/dev/null | wc -l)
+          echo "OMX_AGENTS=$OMX_AGENTS" >> $GITHUB_ENV
           echo "OMX_CDX_SKILLS=0" >> $GITHUB_ENV
 
       # 5. Awesome Codex Subagents
@@ -147,6 +152,12 @@ jobs:
                 syncedSha: '$AWESOME_SHA',
                 syncedAt: '$NOW',
                 files: { agents: parseInt('$AWESOME_COUNT') }
+              },
+              'oh-my-codex': {
+                repo: 'https://github.com/Yeachan-Heo/oh-my-codex',
+                syncedSha: '$OMX_SHA',
+                syncedAt: '$NOW',
+                files: { agents: parseInt('$OMX_AGENTS') }
               }
             };
             fs.mkdirSync('upstream', { recursive: true });
@@ -156,10 +167,18 @@ jobs:
       # 8. Update documentation counts
       - name: Update documentation counts
         run: |
-          TOTAL_SKILLS=$((ECC_SKILLS + OMC_SKILLS))
-          sed -i "s/[0-9]\+ agents/${TOTAL_AGENTS} agents/g" README.md AI-INSTALL.md
-          sed -i "s/[0-9]\+ skills/${TOTAL_SKILLS} skills/g" README.md AI-INSTALL.md
-          sed -i "s/[0-9]\+ rules/${ECC_RULES} rules/g" README.md AI-INSTALL.md
+          TOTAL_SKILLS=$((ECC_SKILLS + OMC_SKILLS + OMX_CDX_SKILLS))
+          for f in README.md README.ko.md AI-INSTALL.md; do
+            [ -f "$f" ] || continue
+            # shields.io badges use underscore: "319_agents"
+            sed -i -E "s/[0-9]+_agents/${TOTAL_AGENTS}_agents/g" "$f"
+            sed -i -E "s/[0-9]+_skills/${TOTAL_SKILLS}_skills/g" "$f"
+            sed -i -E "s/[0-9]+_rules/${ECC_RULES}_rules/g" "$f"
+            # Prose text: "319 agents"
+            sed -i -E "s/[0-9]+ agents/${TOTAL_AGENTS} agents/g" "$f"
+            sed -i -E "s/[0-9]+ skills/${TOTAL_SKILLS} skills/g" "$f"
+            sed -i -E "s/[0-9]+ rules/${ECC_RULES} rules/g" "$f"
+          done
 
       # 9. Create PR
       - name: Create sync PR
@@ -174,7 +193,7 @@ jobs:
             git push -u origin "$BRANCH"
             gh pr create \
               --title "chore: sync upstream ($(date +%Y-%m-%d))" \
-              --body "Upstream sync from 5 sources. Review diffs before merging." \
+              --body "Upstream sync from 5 upstream sources. Review diffs before merging." \
               --label "auto-sync"
           fi
         env:

@@ -4,6 +4,9 @@ on:
     branches: [main]
     paths-ignore: ['**.md', 'docs/**']
 
+permissions:
+  contents: write
+
 jobs:
   tag:
     runs-on: ubuntu-latest

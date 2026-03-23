@@ -70,34 +70,21 @@ jobs:
             mkdir -p staging/omc
             cp /tmp/omc/agents/*.md staging/omc/
           fi
-          if [ -d /tmp/omc/skills ]; then
-            rm -rf skills/omc && mkdir -p skills/omc
-            cp -r /tmp/omc/skills/* skills/omc/
-          fi
           OMC_AGENTS=$(find staging/omc -name '*.md' 2>/dev/null | wc -l)
-          OMC_SKILLS=$(find skills/omc -name 'SKILL.md' | wc -l)
+          OMC_SKILLS=0
           echo "OMC_AGENTS=$OMC_AGENTS" >> $GITHUB_ENV
           echo "OMC_SKILLS=$OMC_SKILLS" >> $GITHUB_ENV
 
-      # 4. OMX Prompts + Skills (Codex-native)
-      - name: Sync oh-my-codex
+      # 4. oh-my-codex (commented out — repo existence uncertain)
+      # - name: Sync oh-my-codex
+      #   run: |
+      #     git clone --depth 1 https://github.com/Yeachan-Heo/oh-my-codex.git /tmp/omx || true
+      #     ...
+      - name: Set omx defaults
         run: |
-          git clone --depth 1 https://github.com/Yeachan-Heo/oh-my-codex.git /tmp/omx
-          OMX_SHA=$(cd /tmp/omx && git rev-parse HEAD)
-          echo "OMX_SHA=$OMX_SHA" >> $GITHUB_ENV
-
-          if [ -d /tmp/omx/prompts ]; then
-            rm -rf codex-agents/omx-prompts && mkdir -p codex-agents/omx-prompts
-            cp /tmp/omx/prompts/*.md codex-agents/omx-prompts/
-          fi
-          if [ -d /tmp/omx/skills ]; then
-            rm -rf skills/omx-codex && mkdir -p skills/omx-codex
-            cp -r /tmp/omx/skills/* skills/omx-codex/
-          fi
-          OMX_PROMPTS=$(find codex-agents/omx-prompts -name '*.md' 2>/dev/null | wc -l)
-          OMX_CDX_SKILLS=$(find skills/omx-codex -name 'SKILL.md' 2>/dev/null | wc -l)
-          echo "OMX_PROMPTS=$OMX_PROMPTS" >> $GITHUB_ENV
-          echo "OMX_CDX_SKILLS=$OMX_CDX_SKILLS" >> $GITHUB_ENV
+          echo "OMX_SHA=n/a" >> $GITHUB_ENV
+          echo "OMX_PROMPTS=0" >> $GITHUB_ENV
+          echo "OMX_CDX_SKILLS=0" >> $GITHUB_ENV
 
       # 5. Awesome Codex Subagents
       - name: Sync awesome-codex-subagents
@@ -153,13 +140,7 @@ jobs:
                 repo: 'https://github.com/Yeachan-Heo/oh-my-claudecode',
                 syncedSha: '$OMC_SHA',
                 syncedAt: '$NOW',
-                files: { agents: parseInt('$OMC_AGENTS'), skills: parseInt('$OMC_SKILLS') }
-              },
-              'oh-my-codex': {
-                repo: 'https://github.com/Yeachan-Heo/oh-my-codex',
-                syncedSha: '$OMX_SHA',
-                syncedAt: '$NOW',
-                files: { prompts: parseInt('$OMX_PROMPTS'), skills: parseInt('$OMX_CDX_SKILLS') }
+                files: { agents: parseInt('$OMC_AGENTS') }
               },
               'awesome-codex-subagents': {
                 repo: 'https://github.com/VoltAgent/awesome-codex-subagents',
@@ -175,7 +156,7 @@ jobs:
       # 8. Update documentation counts
       - name: Update documentation counts
         run: |
-          TOTAL_SKILLS=$((ECC_SKILLS + OMC_SKILLS + OMX_CDX_SKILLS))
+          TOTAL_SKILLS=$((ECC_SKILLS + OMC_SKILLS))
           sed -i "s/[0-9]\+ agents/${TOTAL_AGENTS} agents/g" README.md AI-INSTALL.md
           sed -i "s/[0-9]\+ skills/${TOTAL_SKILLS} skills/g" README.md AI-INSTALL.md
           sed -i "s/[0-9]\+ rules/${ECC_RULES} rules/g" README.md AI-INSTALL.md

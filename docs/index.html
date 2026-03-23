@@ -26,6 +26,7 @@ a{color:var(--accent);text-decoration:none;transition:opacity .2s}a:hover{opacit
 code,pre,.mono{font-family:'JetBrains Mono',monospace}
 .container{max-width:1100px;margin:0 auto;padding:0 24px}
 section{padding:80px 0}
+
 @media(max-width:768px){section{padding:56px 0}.container{padding:0 16px}}
 
 /* Sticky Nav */
@@ -74,15 +75,27 @@ section{padding:80px 0}
 .card h3{font-size:1.15rem;margin-bottom:8px;color:#fff}
 .card p{color:var(--text2);font-size:.9rem}
 
-/* Terminal */
+/* Terminal with tabs */
 .term-wrap{max-width:740px;margin:0 auto}
-.term{background:#0c0e14;border:1px solid rgba(255,255,255,.08);border-radius:14px;overflow:hidden}
+.term-tabs{display:flex;gap:4px;margin-bottom:-1px;padding-left:12px}
+.term-tab{padding:8px 18px;font-size:.8rem;font-weight:600;border:1px solid transparent;border-bottom:0;border-radius:10px 10px 0 0;cursor:pointer;color:var(--text2);background:transparent;transition:all .2s;font-family:'Inter',sans-serif}
+.term-tab.active{background:rgba(12,14,20,.95);color:var(--accent);border-color:rgba(255,255,255,.08)}
+.term{background:#0c0e14;border:1px solid rgba(255,255,255,.08);border-radius:0 14px 14px 14px;overflow:hidden}
 .term-bar{background:rgba(255,255,255,.04);padding:8px 14px;display:flex;gap:6px;align-items:center}
 .term-dot{width:10px;height:10px;border-radius:50%}
 .term-body{padding:18px 22px;font-family:'JetBrains Mono',monospace;font-size:.76rem;line-height:1.85;min-height:260px;overflow:hidden}
 .term-line{opacity:0;transform:translateX(-4px);white-space:pre-wrap;word-break:break-all}
 .term-line.show{opacity:1;transform:translateX(0);transition:opacity .3s,transform .3s}
-.t-cmd{color:var(--green)}.t-out{color:var(--accent)}.t-dim{color:#64748b}.t-ok{color:var(--green)}
+.term-scene{display:none}.term-scene.active{display:block}
+.t-src{color:#a78bfa}.t-conv{color:var(--primary)}.t-exec{color:var(--green)}.t-rev{color:var(--pink)}.t-dim{color:#64748b}.t-acc{color:var(--accent)}.t-phase{color:var(--accent);font-size:.7rem}.t-ok{color:var(--green)}
+
+/* Pipeline diagram */
+.pipe-flow{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:32px}
+.pipe-card{border-radius:12px;padding:18px 14px;text-align:center;border:1px solid;font-size:.82rem}
+.pipe-card h4{font-size:.88rem;margin-bottom:4px}
+.pipe-card p{font-size:.78rem;opacity:.85}
+.pipe-card .ex{margin-top:8px;font-size:.75rem;font-style:italic;opacity:.7}
+@media(max-width:700px){.pipe-flow{grid-template-columns:1fr 1fr}}
 
 /* Architecture */
 .arch{display:flex;flex-direction:column;align-items:center;gap:0;max-width:800px;margin:0 auto}
@@ -103,9 +116,13 @@ section{padding:80px 0}
 .catalog details[open] summary::before{transform:rotate(90deg)}
 .catalog summary::-webkit-details-marker{display:none}
 .cat-count{margin-left:auto;font-size:.78rem;color:var(--text2);font-weight:400}
+.cat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;padding:16px 12px}
+.cat-item{background:rgba(15,23,42,.5);border:1px solid rgba(255,255,255,.04);border-radius:8px;padding:10px 14px;font-size:.82rem}
+.cat-item strong{color:#fff;font-size:.84rem}
+.cat-item .role{font-size:.72rem;color:var(--text2);margin-top:2px;display:block}
 .cat-body{padding:16px 20px;font-size:.88rem;color:var(--text2);line-height:1.7}
 
-/* Feature cards */
+/* Why my-codex — feature cards */
 .feat-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-bottom:48px}
 .feat-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:28px 24px;transition:border-color .25s}
 .feat-card:hover{border-color:var(--primary)}
@@ -123,7 +140,7 @@ section{padding:80px 0}
 .cmp-tbl td:first-child{text-align:left;font-weight:500;color:var(--text)}
 .cmp-tbl .y{color:var(--green)}.cmp-tbl .n{color:#ef4444;opacity:.6}
 
-/* FAQ */
+/* FAQ Accordion */
 .faq{max-width:720px;margin:0 auto}
 .faq-item{border-bottom:1px solid rgba(255,255,255,.06)}
 .faq-q{width:100%;background:none;border:none;color:var(--text);font-family:'Inter',sans-serif;font-size:.95rem;font-weight:600;padding:20px 0;cursor:pointer;display:flex;justify-content:space-between;align-items:center;text-align:left}
@@ -166,7 +183,7 @@ footer{padding:40px 0;border-top:1px solid rgba(255,255,255,.06);text-align:cent
 <div class="nav-inner">
   <span class="nav-logo">my-codex</span>
   <div class="nav-links">
-    <a href="#sources"><span class="lang" data-en="Sources" data-ko="소스"></span></a>
+    <a href="#principles"><span class="lang" data-en="Principles" data-ko="원칙"></span></a>
     <a href="#how"><span class="lang" data-en="How It Works" data-ko="작동 방식"></span></a>
     <a href="#architecture"><span class="lang" data-en="Architecture" data-ko="아키텍처"></span></a>
     <a href="#catalog"><span class="lang" data-en="Agents" data-ko="에이전트"></span></a>
@@ -201,123 +218,248 @@ footer{padding:40px 0;border-top:1px solid rgba(255,255,255,.06);text-align:cent
 </div>
 </section>
 
-<!-- Upstream Sources -->
-<section id="sources">
+<!-- Core Principles -->
+<section id="principles">
 <div class="container">
-  <h2 class="st"><span class="lang" data-en="5 Curated Upstream Sources" data-ko="5개 큐레이션된 업스트림 소스"></span></h2>
-  <p class="ss"><span class="lang" data-en="Best-in-class agents from the open source community, converted and ready to use." data-ko="오픈소스 커뮤니티의 최고 에이전트들, 변환 완료 후 바로 사용 가능."></span></p>
+  <h2 class="st"><span class="lang" data-en="Core Principles" data-ko="핵심 원칙"></span></h2>
+  <p class="ss"><span class="lang" data-en="Three ideas that make Codex CLI multi-agent work reliable at scale." data-ko="Codex CLI 멀티에이전트를 대규모에서 안정적으로 만드는 세 가지 원칙."></span></p>
   <div class="cards">
     <div class="card fade-in">
-      <span class="card-icon">&#x1f916;</span>
-      <h3>oh-my-claudecode</h3>
-      <p><span class="lang" data-en="19 orchestration agents — analyst, architect, executor, planner, and more. MD→TOML converted." data-ko="19개 오케스트레이션 에이전트 — analyst, architect, executor, planner 등. MD→TOML 변환."></span></p>
+      <span class="card-icon">&#x1f4e6;</span>
+      <h3><span class="lang" data-en="Native TOML" data-ko="네이티브 TOML"></span></h3>
+      <p><span class="lang" data-en="All 319 agents in Codex CLI's native .toml format. No runtime conversion, no compatibility shims, no surprises. What you install is what runs." data-ko="319개 에이전트 모두 Codex CLI 네이티브 .toml 형식. 런타임 변환 없음, 호환성 심 없음, 예상치 못한 문제 없음. 설치한 것이 그대로 실행됩니다."></span></p>
     </div>
     <div class="card fade-in">
-      <span class="card-icon">&#x1f3ed;</span>
-      <h3>agency-agents</h3>
-      <p><span class="lang" data-en="172 business specialist personas across 14 categories. MD→TOML converted." data-ko="14개 카테고리의 172개 비즈니스 전문가 페르소나. MD→TOML 변환."></span></p>
+      <span class="card-icon">&#x1f504;</span>
+      <h3><span class="lang" data-en="Multi-Source Curation" data-ko="멀티소스 큐레이션"></span></h3>
+      <p><span class="lang" data-en="5 upstream repos, one collection. GitHub Actions converts and merges every Monday — you get the best agents from the whole ecosystem, automatically." data-ko="5개 업스트림 레포, 하나의 컬렉션. GitHub Actions가 매주 월요일 변환 및 병합 — 생태계 전체의 최고 에이전트를 자동으로 받습니다."></span></p>
     </div>
     <div class="card fade-in">
-      <span class="card-icon">&#x2b50;</span>
-      <h3>awesome-codex-subagents</h3>
-      <p><span class="lang" data-en="136 production-grade native TOML agents across 10 categories. No conversion needed." data-ko="10개 카테고리의 136개 프로덕션급 네이티브 TOML 에이전트. 변환 불필요."></span></p>
-    </div>
-    <div class="card fade-in">
-      <span class="card-icon">&#x1f4da;</span>
-      <h3>everything-claude-code</h3>
-      <p><span class="lang" data-en="Skills, rules, and configurations shared with my-claude." data-ko="my-claude와 공유되는 스킬, 규칙, 설정."></span></p>
-    </div>
-    <div class="card fade-in">
-      <span class="card-icon">&#x1f310;</span>
-      <h3>oh-my-openagent</h3>
-      <p><span class="lang" data-en="Multi-platform agent harness. MD→TOML converted." data-ko="멀티플랫폼 에이전트 하네스. MD→TOML 변환."></span></p>
+      <span class="card-icon">&#x26a1;</span>
+      <h3><span class="lang" data-en="Zero Config" data-ko="무설정"></span></h3>
+      <p><span class="lang" data-en="Run the install script. Codex CLI auto-discovers everything in ~/.codex/agents/. No YAML, no DAGs, no registration steps — agents appear instantly." data-ko="설치 스크립트를 실행하세요. Codex CLI가 ~/.codex/agents/의 모든 것을 자동 탐색합니다. YAML도, DAG도, 등록 단계도 없음 — 에이전트가 즉시 나타납니다."></span></p>
     </div>
   </div>
 </div>
 </section>
 
-<!-- How It Works -->
+<!-- How It Works — Terminal with Tabs -->
 <section id="how" style="background:var(--bg2)">
 <div class="container">
   <h2 class="st"><span class="lang" data-en="How It Works" data-ko="작동 방식"></span></h2>
-  <p class="ss"><span class="lang" data-en="Install once, get native TOML agents that Codex CLI discovers automatically." data-ko="한 번 설치하면, Codex CLI가 자동으로 탐색하는 네이티브 TOML 에이전트를 얻습니다."></span></p>
+  <p class="ss"><span class="lang" data-en="From install to multi-agent workflow — watch it in action." data-ko="설치부터 멀티에이전트 워크플로까지 — 실제 동작을 확인하세요."></span></p>
   <div class="term-wrap fade-in">
+    <div class="term-tabs">
+      <button class="term-tab active" onclick="switchTab(0)"><span class="lang" data-en="Install Flow" data-ko="설치 흐름"></span></button>
+      <button class="term-tab" onclick="switchTab(1)"><span class="lang" data-en="spawn_agent Usage" data-ko="spawn_agent 사용"></span></button>
+      <button class="term-tab" onclick="switchTab(2)"><span class="lang" data-en="Agent Packs" data-ko="에이전트 팩"></span></button>
+    </div>
     <div class="term" id="terminal">
       <div class="term-bar"><div class="term-dot" style="background:#ef4444"></div><div class="term-dot" style="background:#eab308"></div><div class="term-dot" style="background:var(--green)"></div></div>
       <div class="term-body">
-        <div class="term-line t-dim">$ bash install.sh</div>
-        <div class="term-line"></div>
-        <div class="term-line t-ok">✓ <span class="lang" data-en="104 core agents → ~/.codex/agents/" data-ko="104개 코어 에이전트 → ~/.codex/agents/"></span></div>
-        <div class="term-line t-ok">✓ <span class="lang" data-en="215 agent-packs → ~/.codex/agent-packs/" data-ko="215개 에이전트팩 → ~/.codex/agent-packs/"></span></div>
-        <div class="term-line t-ok">✓ <span class="lang" data-en="136 skills installed" data-ko="136개 스킬 설치 완료"></span></div>
-        <div class="term-line t-ok">✓ <span class="lang" data-en="50 rules installed" data-ko="50개 규칙 설치 완료"></span></div>
-        <div class="term-line t-ok">✓ <span class="lang" data-en="AGENTS.md + config.toml configured" data-ko="AGENTS.md + config.toml 설정 완료"></span></div>
-        <div class="term-line"></div>
-        <div class="term-line t-dim">$ codex "<span class="lang" data-en="refactor this module" data-ko="이 모듈 리팩토링해줘"></span>"</div>
-        <div class="term-line t-out">[codex] <span class="lang" data-en="spawn_agent(agent_type='executor') → refactoring..." data-ko="spawn_agent(agent_type='executor') → 리팩토링 중..."></span></div>
-        <div class="term-line t-out">[codex] <span class="lang" data-en="spawn_agent(agent_type='code-reviewer') → reviewing..." data-ko="spawn_agent(agent_type='code-reviewer') → 리뷰 중..."></span></div>
-        <div class="term-line t-ok">[codex] <span class="lang" data-en="Done. 3 files changed, 0 issues found." data-ko="완료. 3개 파일 변경, 이슈 0건."></span></div>
+        <div class="term-scene active" data-scene="0">
+          <div class="term-line t-dim">$ git clone --depth 1 https://github.com/sehoon787/my-codex.git /tmp/my-codex && bash /tmp/my-codex/install.sh</div>
+          <div class="term-line"></div>
+          <div class="term-line t-phase">── <span class="lang" data-en="Syncing upstream sources" data-ko="업스트림 소스 동기화 중"></span> ──</div>
+          <div class="term-line t-src">[sync] <span class="lang" data-en="oh-my-claudecode → 19 agents (MD→TOML)" data-ko="oh-my-claudecode → 19개 에이전트 (MD→TOML)"></span></div>
+          <div class="term-line t-src">[sync] <span class="lang" data-en="agency-agents → 172 agents (MD→TOML)" data-ko="agency-agents → 172개 에이전트 (MD→TOML)"></span></div>
+          <div class="term-line t-src">[sync] <span class="lang" data-en="awesome-codex-subagents → 136 agents (native TOML)" data-ko="awesome-codex-subagents → 136개 에이전트 (네이티브 TOML)"></span></div>
+          <div class="term-line t-phase">── <span class="lang" data-en="Installing" data-ko="설치 중"></span> ──</div>
+          <div class="term-line t-ok">&#x2713; <span class="lang" data-en="104 core agents → ~/.codex/agents/" data-ko="104개 코어 에이전트 → ~/.codex/agents/"></span></div>
+          <div class="term-line t-ok">&#x2713; <span class="lang" data-en="215 agent-packs → ~/.codex/agent-packs/" data-ko="215개 에이전트팩 → ~/.codex/agent-packs/"></span></div>
+          <div class="term-line t-ok">&#x2713; <span class="lang" data-en="136 skills + 50 rules installed" data-ko="136개 스킬 + 50개 규칙 설치 완료"></span></div>
+          <div class="term-line t-ok">&#x2713; <span class="lang" data-en="AGENTS.md + config.toml configured" data-ko="AGENTS.md + config.toml 설정 완료"></span></div>
+          <div class="term-line t-acc"><span class="lang" data-en="Done. 319 agents ready." data-ko="완료. 319개 에이전트 준비됨."></span></div>
+        </div>
+        <div class="term-scene" data-scene="1">
+          <div class="term-line t-dim">$ codex "<span class="lang" data-en="refactor auth module and review it" data-ko="auth 모듈 리팩토링하고 리뷰해줘"></span>"</div>
+          <div class="term-line"></div>
+          <div class="term-line t-phase">── <span class="lang" data-en="Planning" data-ko="계획 수립"></span> ──</div>
+          <div class="term-line t-acc">[codex] <span class="lang" data-en="Intent: Refactor + Review — spawning agents in sequence" data-ko="의도: 리팩토링 + 리뷰 — 순차적으로 에이전트 생성"></span></div>
+          <div class="term-line t-phase">── <span class="lang" data-en="Execution" data-ko="실행"></span> ──</div>
+          <div class="term-line t-exec">[codex] spawn_agent(agent_type='executor', model='o3', reasoning_effort='medium')</div>
+          <div class="term-line t-exec">[executor] <span class="lang" data-en="Refactoring auth module... 3 files changed." data-ko="auth 모듈 리팩토링 중... 3개 파일 변경."></span></div>
+          <div class="term-line t-phase">── <span class="lang" data-en="Review" data-ko="리뷰"></span> ──</div>
+          <div class="term-line t-rev">[codex] spawn_agent(agent_type='code-reviewer', model='o3', reasoning_effort='high')</div>
+          <div class="term-line t-rev">[code-reviewer] <span class="lang" data-en="LGTM. 0 critical, 1 medium issue found." data-ko="LGTM. 0 critical, 1 medium 이슈 발견."></span></div>
+          <div class="term-line t-acc">[codex] <span class="lang" data-en="All tasks completed and verified." data-ko="모든 작업 완료 및 검증됨."></span></div>
+        </div>
+        <div class="term-scene" data-scene="2">
+          <div class="term-line t-dim">$ codex "<span class="lang" data-en="create Unity game prototype with monetization plan" data-ko="Unity 게임 프로토타입 제작 및 수익화 계획"></span>"</div>
+          <div class="term-line"></div>
+          <div class="term-line t-phase">── <span class="lang" data-en="Loading agent-packs" data-ko="에이전트팩 로드 중"></span> ──</div>
+          <div class="term-line t-src">[codex] <span class="lang" data-en="agent-packs/game-dev/ → 12 agents available" data-ko="agent-packs/game-dev/ → 12개 에이전트 사용 가능"></span></div>
+          <div class="term-line t-src">[codex] <span class="lang" data-en="agent-packs/business/ → 18 agents available" data-ko="agent-packs/business/ → 18개 에이전트 사용 가능"></span></div>
+          <div class="term-line t-phase">── <span class="lang" data-en="Multi-agent workflow" data-ko="멀티에이전트 워크플로"></span> ──</div>
+          <div class="term-line t-exec">[codex] spawn_agent(agent_type='unity-developer')</div>
+          <div class="term-line t-exec">[unity-developer] <span class="lang" data-en="Creating prototype... PlayerController, GameManager done." data-ko="프로토타입 제작 중... PlayerController, GameManager 완료."></span></div>
+          <div class="term-line t-rev">[codex] spawn_agent(agent_type='monetization-strategist')</div>
+          <div class="term-line t-rev">[monetization-strategist] <span class="lang" data-en="IAP + ads strategy ready. Revenue projection attached." data-ko="IAP + 광고 전략 준비. 수익 전망 첨부."></span></div>
+          <div class="term-line t-acc">[codex] <span class="lang" data-en="Done. Prototype + business plan delivered." data-ko="완료. 프로토타입 + 사업 계획 전달됨."></span></div>
+        </div>
       </div>
     </div>
   </div>
 </div>
 </section>
 
+<!-- Curation Pipeline -->
+<section id="pipeline">
+<div class="container">
+  <h2 class="st"><span class="lang" data-en="Curation Pipeline" data-ko="큐레이션 파이프라인"></span></h2>
+  <p class="ss"><span class="lang" data-en="5 upstream sources flow through conversion and into your Codex CLI, refreshed every Monday." data-ko="5개 업스트림 소스가 변환 과정을 거쳐 매주 월요일 Codex CLI에 전달됩니다."></span></p>
+  <div class="pipe-flow fade-in">
+    <div class="pipe-card" style="border-color:var(--primary);background:rgba(16,185,129,.06)">
+      <h4 style="color:var(--primary)"><span class="lang" data-en="Fetch" data-ko="수집"></span></h4>
+      <p><span class="lang" data-en="5 upstream repos pulled by GitHub Actions" data-ko="GitHub Actions가 5개 업스트림 레포 풀"></span></p>
+      <div class="ex">OMC · Agency · Awesome · ECC · OMO</div>
+    </div>
+    <div class="pipe-card" style="border-color:var(--accent);background:rgba(34,211,238,.06)">
+      <h4 style="color:var(--accent)">MD→TOML</h4>
+      <p><span class="lang" data-en="Model mapping + API ref substitution" data-ko="모델 매핑 + API 참조 치환"></span></p>
+      <div class="ex">opus→o3/high · sonnet→o3/med · haiku→o4-mini/low</div>
+    </div>
+    <div class="pipe-card" style="border-color:#a855f7;background:rgba(168,85,247,.06)">
+      <h4 style="color:#a855f7"><span class="lang" data-en="Package" data-ko="패키징"></span></h4>
+      <p><span class="lang" data-en="Core agents + agent-packs + skills + rules" data-ko="코어 에이전트 + 에이전트팩 + 스킬 + 규칙"></span></p>
+      <div class="ex">104 + 215 + 136 + 50</div>
+    </div>
+    <div class="pipe-card" style="border-color:var(--green);background:rgba(52,211,153,.06)">
+      <h4 style="color:var(--green)"><span class="lang" data-en="Deliver" data-ko="배포"></span></h4>
+      <p><span class="lang" data-en="PR with changelog → merge → ready" data-ko="변경사항 PR → 병합 → 준비 완료"></span></p>
+      <div class="ex"><span class="lang" data-en="Every Monday 09:00 UTC" data-ko="매주 월요일 09:00 UTC"></span></div>
+    </div>
+  </div>
+</div>
+</section>
+
 <!-- Architecture -->
-<section id="architecture">
+<section id="architecture" style="background:var(--bg2)">
 <div class="container">
   <h2 class="st"><span class="lang" data-en="Architecture" data-ko="아키텍처"></span></h2>
   <p class="ss"><span class="lang" data-en="From upstream sources to your Codex CLI — every layer has a clear role." data-ko="업스트림 소스에서 Codex CLI까지 — 모든 레이어에 명확한 역할이 있습니다."></span></p>
   <div class="arch fade-in">
-    <div class="arch-layer src-glow" style="border-color:var(--primary)"><h4 style="color:var(--primary)"><span class="lang" data-en="5 Upstream Sources" data-ko="5개 업스트림 소스"></span></h4><p>OMC · Agency · Awesome · ECC · OMO</p></div>
-    <div class="arch-conn"></div>
-    <div class="arch-layer" style="border-color:var(--accent)"><h4 style="color:var(--accent)">MD→TOML <span class="lang" data-en="Converter" data-ko="변환기"></span></h4><p><span class="lang" data-en="scripts/md-to-toml.sh — model mapping, API ref substitution" data-ko="scripts/md-to-toml.sh — 모델 매핑, API 참조 치환"></span></p></div>
-    <div class="arch-conn"></div>
-    <div class="arch-row">
-      <div class="arch-layer"><h4 style="color:var(--green)"><span class="lang" data-en="Core Agents" data-ko="코어 에이전트"></span><span class="cnt">104</span></h4><p>~/.codex/agents/</p></div>
-      <div class="arch-layer"><h4 style="color:var(--pink)"><span class="lang" data-en="Agent Packs" data-ko="에이전트 팩"></span><span class="cnt">215</span></h4><p>~/.codex/agent-packs/</p></div>
-      <div class="arch-layer"><h4 style="color:var(--accent)"><span class="lang" data-en="Skills + Rules" data-ko="스킬 + 규칙"></span><span class="cnt">186</span></h4><p>SKILL.md + rules/*.md</p></div>
+    <div class="arch-layer src-glow" style="border-color:var(--primary)">
+      <h4 style="color:var(--primary)"><span class="lang" data-en="5 Upstream Sources" data-ko="5개 업스트림 소스"></span></h4>
+      <p>oh-my-claudecode · agency-agents · awesome-codex-subagents · everything-claude-code · oh-my-openagent</p>
     </div>
     <div class="arch-conn"></div>
-    <div class="arch-layer"><h4><span class="lang" data-en="Codex CLI" data-ko="Codex CLI"></span></h4><p><span class="lang" data-en="spawn_agent · send_input · multi_agent · AGENTS.md · config.toml" data-ko="spawn_agent · send_input · multi_agent · AGENTS.md · config.toml"></span></p></div>
+    <div class="arch-layer" style="border-color:var(--accent)">
+      <h4 style="color:var(--accent)">MD→TOML <span class="lang" data-en="Converter" data-ko="변환기"></span></h4>
+      <p><span class="lang" data-en="scripts/md-to-toml.sh — model mapping, API ref substitution, field normalization" data-ko="scripts/md-to-toml.sh — 모델 매핑, API 참조 치환, 필드 정규화"></span></p>
+    </div>
     <div class="arch-conn"></div>
-    <div class="arch-layer" style="border-color:var(--accent)"><h4 style="color:var(--accent)"><span class="lang" data-en="Weekly Auto-sync" data-ko="매주 자동 동기화"></span></h4><p><span class="lang" data-en="GitHub Actions syncs all 5 upstream sources → PR" data-ko="GitHub Actions가 5개 업스트림 소스 동기화 → PR 생성"></span></p></div>
+    <div class="arch-row">
+      <div class="arch-layer">
+        <h4 style="color:var(--green)"><span class="lang" data-en="Core Agents" data-ko="코어 에이전트"></span><span class="cnt">104</span></h4>
+        <p>~/.codex/agents/</p>
+      </div>
+      <div class="arch-layer">
+        <h4 style="color:var(--pink)"><span class="lang" data-en="Agent Packs" data-ko="에이전트 팩"></span><span class="cnt">215</span></h4>
+        <p>~/.codex/agent-packs/</p>
+      </div>
+      <div class="arch-layer">
+        <h4 style="color:var(--accent)"><span class="lang" data-en="Skills + Rules" data-ko="스킬 + 규칙"></span><span class="cnt">186</span></h4>
+        <p>SKILL.md + rules/*.md</p>
+      </div>
+    </div>
+    <div class="arch-conn"></div>
+    <div class="arch-layer">
+      <h4><span class="lang" data-en="Codex CLI Runtime" data-ko="Codex CLI 런타임"></span></h4>
+      <p><span class="lang" data-en="spawn_agent · send_input · multi_agent · AGENTS.md · config.toml" data-ko="spawn_agent · send_input · multi_agent · AGENTS.md · config.toml"></span></p>
+    </div>
+    <div class="arch-conn"></div>
+    <div class="arch-layer" style="border-color:var(--accent)">
+      <h4 style="color:var(--accent)"><span class="lang" data-en="Weekly Auto-sync" data-ko="매주 자동 동기화"></span></h4>
+      <p><span class="lang" data-en="GitHub Actions syncs all 5 upstream sources → PR with changelog every Monday" data-ko="GitHub Actions가 5개 업스트림 소스 동기화 → 매주 월요일 변경사항 PR 생성"></span></p>
+    </div>
   </div>
 </div>
 </section>
 
 <!-- Agent Catalog -->
-<section id="catalog" style="background:var(--bg2)">
+<section id="catalog">
 <div class="container">
   <h2 class="st"><span class="lang" data-en="Agent Catalog" data-ko="에이전트 목록"></span></h2>
-  <p class="ss"><span class="lang" data-en="319 agents organized into core (daily use) and agent-packs (domain specialists)." data-ko="319개 에이전트를 코어(일상 사용)와 에이전트 팩(도메인 전문가)으로 구성."></span></p>
+  <p class="ss"><span class="lang" data-en="319 agents organized into core (daily use) and agent-packs (domain specialists), all in native TOML." data-ko="319개 에이전트를 코어(일상 사용)와 에이전트팩(도메인 전문가)으로 구성, 모두 네이티브 TOML."></span></p>
   <div class="catalog fade-in">
     <details>
       <summary><span class="lang" data-en="Core — Development" data-ko="코어 — 개발"></span> <span class="cat-count">~30 agents</span></summary>
-      <div class="cat-body"><span class="lang" data-en="executor, debugger, code-reviewer, architect, planner, test-engineer, frontend-developer, backend-architect, security-reviewer, and more. From OMC + Awesome sources." data-ko="executor, debugger, code-reviewer, architect, planner, test-engineer, frontend-developer, backend-architect, security-reviewer 등. OMC + Awesome 소스."></span></div>
+      <div class="cat-grid">
+        <div class="cat-item"><strong>executor</strong> <span class="role">o3 · medium · Task executor</span></div>
+        <div class="cat-item"><strong>debugger</strong> <span class="role">o3 · medium · Bug investigation</span></div>
+        <div class="cat-item"><strong>code-reviewer</strong> <span class="role">o3 · high · Code review</span></div>
+        <div class="cat-item"><strong>architect</strong> <span class="role">o3 · high · System design</span></div>
+        <div class="cat-item"><strong>planner</strong> <span class="role">o3 · high · Implementation planning</span></div>
+        <div class="cat-item"><strong>test-engineer</strong> <span class="role">o3 · medium · TDD specialist</span></div>
+        <div class="cat-item"><strong>frontend-developer</strong> <span class="role">o3 · medium · UI/UX development</span></div>
+        <div class="cat-item"><strong>backend-architect</strong> <span class="role">o3 · high · API &amp; services</span></div>
+        <div class="cat-item"><strong>mobile-developer</strong> <span class="role">o3 · medium · iOS/Android</span></div>
+        <div class="cat-item"><strong>full-stack-developer</strong> <span class="role">o3 · medium · End-to-end</span></div>
+      </div>
     </details>
     <details>
       <summary><span class="lang" data-en="Core — Infrastructure" data-ko="코어 — 인프라"></span> <span class="cat-count">~25 agents</span></summary>
-      <div class="cat-body"><span class="lang" data-en="devops-automator, sre, database-optimizer, performance-benchmarker, infrastructure-maintainer, incident-response-commander, and more." data-ko="devops-automator, sre, database-optimizer, performance-benchmarker, infrastructure-maintainer, incident-response-commander 등."></span></div>
+      <div class="cat-grid">
+        <div class="cat-item"><strong>devops-automator</strong> <span class="role">o3 · medium · CI/CD pipelines</span></div>
+        <div class="cat-item"><strong>sre</strong> <span class="role">o3 · medium · Site reliability</span></div>
+        <div class="cat-item"><strong>database-optimizer</strong> <span class="role">o3 · medium · DB performance</span></div>
+        <div class="cat-item"><strong>performance-benchmarker</strong> <span class="role">o3 · medium · Profiling</span></div>
+        <div class="cat-item"><strong>infrastructure-maintainer</strong> <span class="role">o3 · medium · IaC</span></div>
+        <div class="cat-item"><strong>incident-response-commander</strong> <span class="role">o3 · high · On-call</span></div>
+        <div class="cat-item"><strong>cloud-architect</strong> <span class="role">o3 · high · AWS/GCP/Azure</span></div>
+        <div class="cat-item"><strong>kubernetes-operator</strong> <span class="role">o3 · medium · K8s orchestration</span></div>
+      </div>
     </details>
     <details>
-      <summary><span class="lang" data-en="Core — Quality & Security" data-ko="코어 — 품질 & 보안"></span> <span class="cat-count">~20 agents</span></summary>
-      <div class="cat-body"><span class="lang" data-en="security-engineer, qa-tester, accessibility-auditor, compliance-auditor, blockchain-security-auditor, threat-detection-engineer, and more." data-ko="security-engineer, qa-tester, accessibility-auditor, compliance-auditor, blockchain-security-auditor, threat-detection-engineer 등."></span></div>
+      <summary><span class="lang" data-en="Core — Quality &amp; Security" data-ko="코어 — 품질 &amp; 보안"></span> <span class="cat-count">~20 agents</span></summary>
+      <div class="cat-grid">
+        <div class="cat-item"><strong>security-engineer</strong> <span class="role">o3 · high · Vulnerability analysis</span></div>
+        <div class="cat-item"><strong>qa-tester</strong> <span class="role">o3 · medium · Quality assurance</span></div>
+        <div class="cat-item"><strong>accessibility-auditor</strong> <span class="role">o3 · medium · WCAG compliance</span></div>
+        <div class="cat-item"><strong>compliance-auditor</strong> <span class="role">o3 · high · Regulatory review</span></div>
+        <div class="cat-item"><strong>blockchain-security-auditor</strong> <span class="role">o3 · high · Smart contracts</span></div>
+        <div class="cat-item"><strong>threat-detection-engineer</strong> <span class="role">o3 · high · Threat modeling</span></div>
+        <div class="cat-item"><strong>penetration-tester</strong> <span class="role">o3 · high · Ethical hacking</span></div>
+      </div>
     </details>
     <details>
-      <summary><span class="lang" data-en="Core — Meta & Orchestration" data-ko="코어 — 메타 & 오케스트레이션"></span> <span class="cat-count">~29 agents</span></summary>
-      <div class="cat-body"><span class="lang" data-en="analyst, scientist, explorer, writer, tracer, git-master, document-specialist, senior-project-manager, and more." data-ko="analyst, scientist, explorer, writer, tracer, git-master, document-specialist, senior-project-manager 등."></span></div>
+      <summary><span class="lang" data-en="Core — Meta &amp; Orchestration" data-ko="코어 — 메타 &amp; 오케스트레이션"></span> <span class="cat-count">~29 agents</span></summary>
+      <div class="cat-grid">
+        <div class="cat-item"><strong>analyst</strong> <span class="role">o3 · high · Deep analysis</span></div>
+        <div class="cat-item"><strong>scientist</strong> <span class="role">o3 · medium · Research</span></div>
+        <div class="cat-item"><strong>explorer</strong> <span class="role">o4-mini · low · Codebase scan</span></div>
+        <div class="cat-item"><strong>writer</strong> <span class="role">o4-mini · low · Documentation</span></div>
+        <div class="cat-item"><strong>tracer</strong> <span class="role">o3 · medium · Evidence tracing</span></div>
+        <div class="cat-item"><strong>git-master</strong> <span class="role">o3 · medium · Git workflows</span></div>
+        <div class="cat-item"><strong>document-specialist</strong> <span class="role">o3 · medium · Doc research</span></div>
+        <div class="cat-item"><strong>senior-project-manager</strong> <span class="role">o3 · high · Project planning</span></div>
+        <div class="cat-item"><strong>code-simplifier</strong> <span class="role">o3 · high · Complexity reduction</span></div>
+        <div class="cat-item"><strong>critic</strong> <span class="role">o3 · high · Critical review</span></div>
+      </div>
     </details>
     <details>
-      <summary><span class="lang" data-en="Agent Packs — 18 Categories" data-ko="에이전트 팩 — 18개 카테고리"></span> <span class="cat-count">215 agents</span></summary>
-      <div class="cat-body"><span class="lang" data-en="Marketing (China, Global), E-commerce, Game Dev (Unity, Unreal, Godot, Roblox), XR/Spatial, Data/AI, Business/Legal, Design, Content, Supply Chain, Education, Finance, and more. From Agency + Awesome sources." data-ko="마케팅(중국, 글로벌), 이커머스, 게임 개발(Unity, Unreal, Godot, Roblox), XR/Spatial, 데이터/AI, 비즈니스/법무, 디자인, 콘텐츠, 공급망, 교육, 재무 등. Agency + Awesome 소스."></span></div>
+      <summary><span class="lang" data-en="Agent Packs — Game Dev" data-ko="에이전트 팩 — 게임 개발"></span> <span class="cat-count">~40 agents</span></summary>
+      <div class="cat-body"><span class="lang" data-en="Unity developer, Unreal Engine specialist, Godot expert, Roblox developer, XR/Spatial computing specialist, game monetization strategist, level designer, narrative designer, and more. From awesome-codex-subagents." data-ko="Unity 개발자, Unreal Engine 전문가, Godot 전문가, Roblox 개발자, XR/공간 컴퓨팅 전문가, 게임 수익화 전략가, 레벨 디자이너, 내러티브 디자이너 등. awesome-codex-subagents 소스."></span></div>
+    </details>
+    <details>
+      <summary><span class="lang" data-en="Agent Packs — Business &amp; Marketing" data-ko="에이전트 팩 — 비즈니스 &amp; 마케팅"></span> <span class="cat-count">~55 agents</span></summary>
+      <div class="cat-body"><span class="lang" data-en="China marketing specialist, global brand strategist, e-commerce manager, supply chain analyst, financial modeler, legal advisor, HR specialist, business analyst, and more. From agency-agents (14 categories, 172 total)." data-ko="중국 마케팅 전문가, 글로벌 브랜드 전략가, 이커머스 매니저, 공급망 분석가, 재무 모델러, 법무 자문, HR 전문가, 비즈니스 분석가 등. agency-agents 소스 (14개 카테고리, 172개 총)."></span></div>
+    </details>
+    <details>
+      <summary><span class="lang" data-en="Agent Packs — Data, AI &amp; Design" data-ko="에이전트 팩 — 데이터, AI &amp; 디자인"></span> <span class="cat-count">~50 agents</span></summary>
+      <div class="cat-body"><span class="lang" data-en="Data engineer, ML engineer, AI researcher, prompt engineer, UX designer, UI specialist, content strategist, SEO specialist, video producer, technical writer, and more. From agency-agents + awesome-codex-subagents." data-ko="데이터 엔지니어, ML 엔지니어, AI 연구원, 프롬프트 엔지니어, UX 디자이너, UI 전문가, 콘텐츠 전략가, SEO 전문가, 영상 제작자, 기술 작가 등. agency-agents + awesome-codex-subagents 소스."></span></div>
+    </details>
+    <details>
+      <summary><span class="lang" data-en="Agent Packs — Education, Healthcare &amp; More" data-ko="에이전트 팩 — 교육, 의료 및 기타"></span> <span class="cat-count">~70 agents</span></summary>
+      <div class="cat-body"><span class="lang" data-en="Curriculum designer, e-learning developer, medical advisor, clinical trial analyst, research assistant, academic writer, grant writer, plus multi-platform agent harness from oh-my-openagent. All 215 packs in ~/.codex/agent-packs/." data-ko="커리큘럼 디자이너, e-러닝 개발자, 의료 자문, 임상 시험 분석가, 연구 보조원, 학술 작가, 연구비 지원서 작가, oh-my-openagent의 멀티플랫폼 에이전트 하네스 포함. 전체 215개 팩이 ~/.codex/agent-packs/에."></span></div>
     </details>
   </div>
 </div>
 </section>
 
 <!-- Why my-codex -->
-<section id="why">
+<section id="why" style="background:var(--bg2)">
 <div class="container">
   <h2 class="st"><span class="lang" data-en="Why my-codex?" data-ko="왜 my-codex인가?"></span></h2>
   <p class="ss"><span class="lang" data-en="Three things that make this the definitive Codex CLI agent collection." data-ko="이것이 최고의 Codex CLI 에이전트 컬렉션인 세 가지 이유."></span></p>
@@ -346,23 +488,24 @@ footer{padding:40px 0;border-top:1px solid rgba(255,255,255,.06);text-align:cent
       <p><span class="lang" data-en="Same agents, skills, and rules as my-claude — converted for Codex CLI. Switch between tools seamlessly." data-ko="my-claude와 동일한 에이전트, 스킬, 규칙 — Codex CLI용으로 변환. 도구 간 원활한 전환."></span></p>
       <pre><em>my-claude</em>: Claude Code (.md)
 <em>my-codex</em>: Codex CLI (.toml)
-<em>shared</em>: skills, rules, MCP
+<em>shared</em>: skills, rules, sources
 <em>sync</em>: weekly upstream</pre>
     </div>
   </div>
   <table class="cmp-tbl fade-in">
-    <tr><th><span class="lang" data-en="Feature" data-ko="기능"></span></th><th>my-codex</th><th><span class="lang" data-en="Manual Setup" data-ko="수동 설정"></span></th></tr>
-    <tr><td><span class="lang" data-en="Native TOML Agents" data-ko="네이티브 TOML 에이전트"></span></td><td class="y">&#x2705; 319</td><td class="n">&#x2717;</td></tr>
-    <tr><td><span class="lang" data-en="Multi-source Curation" data-ko="멀티소스 큐레이션"></span></td><td class="y">&#x2705; 5</td><td class="n">&#x2717;</td></tr>
-    <tr><td><span class="lang" data-en="Weekly Auto-sync" data-ko="매주 자동 동기화"></span></td><td class="y">&#x2705;</td><td class="n">&#x2717;</td></tr>
-    <tr><td><span class="lang" data-en="Skills + Rules included" data-ko="스킬 + 규칙 포함"></span></td><td class="y">&#x2705; 186</td><td>Custom</td></tr>
-    <tr><td><span class="lang" data-en="One-command Install" data-ko="원커맨드 설치"></span></td><td class="y">&#x2705;</td><td class="n">&#x2717;</td></tr>
+    <tr><th><span class="lang" data-en="Feature" data-ko="기능"></span></th><th>my-codex</th><th><span class="lang" data-en="Manual Setup" data-ko="수동 설정"></span></th><th><span class="lang" data-en="Other Collections" data-ko="다른 컬렉션"></span></th></tr>
+    <tr><td><span class="lang" data-en="Native TOML Agents" data-ko="네이티브 TOML 에이전트"></span></td><td class="y">&#x2705; 319</td><td class="n">&#x2717;</td><td>Custom</td></tr>
+    <tr><td><span class="lang" data-en="Multi-source Curation" data-ko="멀티소스 큐레이션"></span></td><td class="y">&#x2705; 5 sources</td><td class="n">&#x2717;</td><td class="n">&#x2717;</td></tr>
+    <tr><td><span class="lang" data-en="Weekly Auto-sync" data-ko="매주 자동 동기화"></span></td><td class="y">&#x2705;</td><td class="n">&#x2717;</td><td class="n">&#x2717;</td></tr>
+    <tr><td><span class="lang" data-en="Skills + Rules included" data-ko="스킬 + 규칙 포함"></span></td><td class="y">&#x2705; 186</td><td>Custom</td><td class="n">&#x2717;</td></tr>
+    <tr><td><span class="lang" data-en="One-command Install" data-ko="원커맨드 설치"></span></td><td class="y">&#x2705;</td><td class="n">&#x2717;</td><td class="n">&#x2717;</td></tr>
+    <tr><td><span class="lang" data-en="Model Mapping (opus/sonnet/haiku)" data-ko="모델 매핑 (opus/sonnet/haiku)"></span></td><td class="y">&#x2705; o3-high/med · o4-mini</td><td class="n">&#x2717;</td><td class="n">&#x2717;</td></tr>
   </table>
 </div>
 </section>
 
 <!-- FAQ -->
-<section id="faq" style="background:var(--bg2)">
+<section id="faq">
 <div class="container">
   <h2 class="st"><span class="lang" data-en="FAQ" data-ko="자주 묻는 질문"></span></h2>
   <div class="faq fade-in">
@@ -380,11 +523,11 @@ footer{padding:40px 0;border-top:1px solid rgba(255,255,255,.06);text-align:cent
     </div>
     <div class="faq-item">
       <button class="faq-q" onclick="toggleFaq(this)"><span class="lang" data-en="Can I add my own agents?" data-ko="나만의 에이전트를 추가할 수 있나요?"></span><span></span></button>
-      <div class="faq-a"><div class="faq-a-inner"><span class="lang" data-en="Yes. Create a .toml file in ~/.codex/agents/ with name, description, and developer_instructions fields. Codex CLI auto-discovers agents in that directory." data-ko="네. ~/.codex/agents/에 name, description, developer_instructions 필드가 포함된 .toml 파일을 만들면 됩니다. Codex CLI가 해당 디렉토리의 에이전트를 자동 탐색합니다."></span></div></div>
+      <div class="faq-a"><div class="faq-a-inner"><span class="lang" data-en="Yes. Create a .toml file in ~/.codex/agents/ with name, description, and developer_instructions fields. Codex CLI auto-discovers agents in that directory on every session start." data-ko="네. ~/.codex/agents/에 name, description, developer_instructions 필드가 포함된 .toml 파일을 만들면 됩니다. Codex CLI가 매 세션 시작 시 해당 디렉토리의 에이전트를 자동 탐색합니다."></span></div></div>
     </div>
     <div class="faq-item">
       <button class="faq-q" onclick="toggleFaq(this)"><span class="lang" data-en="What models are used?" data-ko="어떤 모델이 사용되나요?"></span><span></span></button>
-      <div class="faq-a"><div class="faq-a-inner"><span class="lang" data-en="Agents use OpenAI models: o3 (high reasoning) for complex tasks, o3 (medium) for standard work, and o4-mini (low) for lightweight tasks. Model mapping from Claude equivalents: opus→o3/high, sonnet→o3/medium, haiku→o4-mini/low." data-ko="에이전트는 OpenAI 모델을 사용합니다: 복잡한 작업에 o3(high), 표준 작업에 o3(medium), 경량 작업에 o4-mini(low). Claude 모델 매핑: opus→o3/high, sonnet→o3/medium, haiku→o4-mini/low."></span></div></div>
+      <div class="faq-a"><div class="faq-a-inner"><span class="lang" data-en="Agents use OpenAI models with reasoning effort levels: o3 + high (deep reasoning, complex tasks), o3 + medium (standard work), and o4-mini + low (lightweight, fast tasks). Model mapping from Claude equivalents: opus→o3/high, sonnet→o3/medium, haiku→o4-mini/low." data-ko="에이전트는 OpenAI 모델과 추론 노력 수준을 사용합니다: o3 + high (깊은 추론, 복잡한 작업), o3 + medium (표준 작업), o4-mini + low (경량, 빠른 작업). Claude 모델 매핑: opus→o3/high, sonnet→o3/medium, haiku→o4-mini/low."></span></div></div>
     </div>
     <div class="faq-item">
       <button class="faq-q" onclick="toggleFaq(this)"><span class="lang" data-en="Is it free?" data-ko="무료인가요?"></span><span></span></button>
@@ -395,10 +538,10 @@ footer{padding:40px 0;border-top:1px solid rgba(255,255,255,.06);text-align:cent
 </section>
 
 <!-- Quick Install -->
-<section id="install">
+<section id="install" style="background:var(--bg2)">
 <div class="container">
   <h2 class="st"><span class="lang" data-en="Quick Install" data-ko="빠른 설치"></span></h2>
-  <p class="ss"><span class="lang" data-en="One command to install everything." data-ko="명령어 하나로 모든 것을 설치하세요."></span></p>
+  <p class="ss"><span class="lang" data-en="One command to install everything — 319 agents, 136 skills, 50 rules." data-ko="명령어 하나로 모든 것을 설치하세요 — 319개 에이전트, 136개 스킬, 50개 규칙."></span></p>
   <div class="inst-row fade-in">
     <div class="inst">
       <h4><span class="lang" data-en="Script Install" data-ko="스크립트 설치"></span></h4>
@@ -410,7 +553,7 @@ footer{padding:40px 0;border-top:1px solid rgba(255,255,255,.06);text-align:cent
 </section>
 
 <!-- Credits -->
-<section id="credits" style="background:var(--bg2)">
+<section id="credits">
 <div class="container">
   <h2 class="st"><span class="lang" data-en="Open Source Credits" data-ko="오픈소스 크레딧"></span></h2>
   <p class="ss"><span class="lang" data-en="Built on the shoulders of these projects." data-ko="이 프로젝트들의 기반 위에 구축되었습니다."></span></p>
@@ -470,10 +613,26 @@ window.addEventListener('scroll',()=>{
   navLinks.forEach(a=>{a.classList.toggle('active',a.getAttribute('href')==='#'+current)});
 },{passive:true});
 
-// Terminal animation
+// Terminal tab switching + animation
+let activeTab=0;
+function switchTab(i){
+  if(i===activeTab)return;
+  activeTab=i;
+  document.querySelectorAll('.term-tab').forEach((t,j)=>t.classList.toggle('active',j===i));
+  document.querySelectorAll('.term-scene').forEach(s=>{
+    s.classList.remove('active');
+    s.querySelectorAll('.term-line').forEach(l=>l.classList.remove('show'));
+  });
+  const scene=document.querySelector('[data-scene="'+i+'"]');
+  scene.classList.add('active');
+  animateScene(scene);
+}
+function animateScene(scene){
+  const lines=scene.querySelectorAll('.term-line');
+  lines.forEach((l,j)=>setTimeout(()=>l.classList.add('show'),j*500));
+}
 const termObs=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){
-  const lines=e.target.querySelectorAll('.term-line');
-  lines.forEach((l,j)=>setTimeout(()=>l.classList.add('show'),j*400));
+  animateScene(document.querySelector('.term-scene.active'));
   termObs.unobserve(e.target);
 }})},{threshold:.3});
 termObs.observe(document.getElementById('terminal'));

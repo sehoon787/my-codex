@@ -19,15 +19,11 @@ This installs:
 - Skills in ~/.codex/skills/
 - Rules in project scope
 - Global AGENTS.md instructions
-- OMX CLI (oh-my-codex) for team orchestration
 - 3 MCP servers (Context7, Exa, grep.app)
 
 ## Step 2: Install companion tools (optional)
 
 ```bash
-# OMX CLI for team features
-npm i -g oh-my-codex && omx setup
-
 # AST tools
 npm i -g @ast-grep/cli@0.42.0
 ```
@@ -46,7 +42,6 @@ echo "Core agents:   $(find ~/.codex/agents -name '*.toml' 2>/dev/null | wc -l)"
 echo "Agent packs:   $(find ~/.codex/agent-packs -name '*.toml' 2>/dev/null | wc -l)"
 echo "Skills:        $(find ~/.codex/skills -name 'SKILL.md' 2>/dev/null | wc -l)"
 echo "AGENTS.md:     $(test -f ~/.codex/AGENTS.md && echo 'OK' || echo 'MISSING')"
-echo "omx:           $(command -v omx >/dev/null 2>&1 && echo 'OK' || echo 'MISSING')"
 ```
 
 Expected:

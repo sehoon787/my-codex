@@ -19,20 +19,6 @@ if ! command -v codex >/dev/null 2>&1; then
 fi
 echo "  Prerequisites OK"
 
-# ── 0b. tmux (optional) ──
-echo "[0b] Checking tmux..."
-if command -v tmux >/dev/null 2>&1; then
-  echo "  tmux found: $(tmux -V)"
-else
-  echo "  tmux not found — team features will use in-process mode"
-  # Try install on macOS/Linux
-  if [[ "$OSTYPE" == "darwin"* ]]; then
-    command -v brew >/dev/null 2>&1 && brew install tmux 2>/dev/null || true
-  elif command -v apt-get >/dev/null 2>&1; then
-    sudo apt-get install -y tmux 2>/dev/null || true
-  fi
-fi
-
 # ── 1. Codex agents (TOML format) ──
 echo "[1/7] Installing Codex agents..."
 mkdir -p "$HOME/.codex/agents" "$HOME/.codex/agent-packs"
@@ -77,7 +63,6 @@ mkdir -p "$HOME/.codex/skills"
 # Note: Codex scans ~/.codex/skills/ for SKILL.md files
 if [ -d "$SCRIPT_DIR/skills" ]; then
   cp -r "$SCRIPT_DIR/skills/ecc/"* "$HOME/.codex/skills/" 2>/dev/null || true
-  cp -r "$SCRIPT_DIR/skills/omc/"* "$HOME/.codex/skills/" 2>/dev/null || true
 fi
 echo "  Skills: $(find "$HOME/.codex/skills" -name 'SKILL.md' 2>/dev/null | wc -l | tr -d ' ') installed"
 
@@ -125,19 +110,8 @@ fi
 # ── 6. Companion tools ──
 echo "[6/7] Installing companion tools..."
 
-# 6a. OMX CLI (oh-my-codex)
-echo "  [6a] OMX CLI..."
-if command -v omx >/dev/null 2>&1; then
-  echo "    OMX already installed ($(omx --version 2>/dev/null || echo 'unknown'))"
-else
-  npm i -g oh-my-codex 2>/dev/null && {
-    omx setup 2>/dev/null || true
-    echo "    OMX installed"
-  } || echo "    WARNING: OMX install failed — install manually: npm i -g oh-my-codex"
-fi
-
-# 6b. ast-grep
-echo "  [6b] ast-grep..."
+# 6a. ast-grep
+echo "  [6a] ast-grep..."
 if command -v ast-grep >/dev/null 2>&1; then
   echo "    ast-grep already installed"
 else
@@ -153,12 +127,8 @@ echo "  Skills:        $(find "$HOME/.codex/skills" -name 'SKILL.md' 2>/dev/null
 echo "  AGENTS.md:     $(test -f "$HOME/.codex/AGENTS.md" && echo 'OK' || echo 'MISSING')"
 echo "  config.toml:   $(grep -q 'multi_agent' "$HOME/.codex/config.toml" 2>/dev/null && echo 'OK' || echo 'NEEDS CONFIG')"
 echo "  codex:         $(command -v codex >/dev/null 2>&1 && echo "OK ($(codex --version 2>/dev/null))" || echo 'NOT INSTALLED')"
-echo "  omx:           $(command -v omx >/dev/null 2>&1 && echo 'OK' || echo 'NOT INSTALLED')"
-echo "  tmux:          $(command -v tmux >/dev/null 2>&1 && echo "OK ($(tmux -V))" || echo 'NOT INSTALLED')"
 echo ""
 echo "=== Install complete ==="
 echo ""
 echo "Activate domain agent packs with symlinks:"
 echo "  ln -s ~/.codex/agent-packs/marketing/*.toml ~/.codex/agents/"
-echo ""
-echo "Also available: my-claude for Claude Code — https://github.com/sehoon787/my-claude"

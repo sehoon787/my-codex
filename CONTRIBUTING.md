@@ -9,9 +9,6 @@ Thank you for contributing. This guide covers how to author agents for Codex CLI
 ```
 codex-agents/
   core/                   # Core agents — always loaded
-  omc/                    # OMC-sourced agents
-  omo/                    # OMO-sourced agents
-  agency/                 # Agency-sourced agents
   awesome/                # awesome-codex-subagents-sourced agents
   agent-packs/
     {category}/           # Domain agent packs — on-demand
@@ -21,14 +18,13 @@ rules/                    # Coding and workflow rules
 
 ### Upstream Sources
 
-This repository aggregates agents from five upstream sources:
+This repository aggregates agents from four upstream sources:
 
 | Source | Origin | Format |
 |--------|--------|--------|
 | `agency` | agency-agents (domain agents, MD converted to TOML) | TOML |
 | `ecc` | everything-claude-code (skills and rules) | MD |
-| `omc` | oh-my-claudecode (agents and skills) | TOML |
-| `omo` | oh-my-codex (native prompts and skills) | TOML |
+| `omc` | oh-my-claudecode (agents converted to TOML) | TOML |
 | `awesome` | awesome-codex-subagents (native TOML agents) | TOML |
 
 New contributions that originate from this repository go into `codex-agents/core/` (infrastructure) or `codex-agents/agent-packs/{category}/` (domain).

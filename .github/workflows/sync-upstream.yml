@@ -1,0 +1,200 @@
+name: Sync Upstream Dependencies
+on:
+  schedule:
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # 1. Agency Agents (MD format → staging)
+      - name: Sync agency-agents
+        run: |
+          git clone --depth 1 https://github.com/msitarzewski/agency-agents.git /tmp/agency
+          AGENCY_SHA=$(cd /tmp/agency && git rev-parse HEAD)
+          echo "AGENCY_SHA=$AGENCY_SHA" >> $GITHUB_ENV
+
+          mkdir -p staging/agency
+          for cat in engineering design testing product game-development marketing \
+                     sales academic project-management specialized spatial-computing \
+                     support strategy; do
+            if [ -d "/tmp/agency/$cat" ]; then
+              mkdir -p "staging/agency/$cat"
+              cp /tmp/agency/$cat/*.md "staging/agency/$cat/" 2>/dev/null || true
+            fi
+          done
+          # Add model field to agents missing it
+          find staging/agency -name '*.md' | while read f; do
+            if ! grep -q '^model:' "$f"; then
+              sed -i '/^description:/a model: claude-sonnet-4-6' "$f"
+            fi
+          done
+          AGENCY_COUNT=$(find staging/agency -name '*.md' | wc -l)
+          echo "AGENCY_COUNT=$AGENCY_COUNT" >> $GITHUB_ENV
+
+      # 2. ECC Skills + Rules
+      - name: Sync everything-claude-code
+        run: |
+          git clone --depth 1 https://github.com/affaan-m/everything-claude-code.git /tmp/ecc
+          ECC_SHA=$(cd /tmp/ecc && git rev-parse HEAD)
+          echo "ECC_SHA=$ECC_SHA" >> $GITHUB_ENV
+
+          if [ -d /tmp/ecc/skills ]; then
+            rm -rf skills/ecc && mkdir -p skills/ecc
+            cp -r /tmp/ecc/skills/* skills/ecc/
+          fi
+          if [ -d /tmp/ecc/rules ]; then
+            rm -rf rules && mkdir -p rules
+            cp -r /tmp/ecc/rules/* rules/
+          fi
+          ECC_SKILLS=$(find skills/ecc -name 'SKILL.md' | wc -l)
+          ECC_RULES=$(find rules -name '*.md' | wc -l)
+          echo "ECC_SKILLS=$ECC_SKILLS" >> $GITHUB_ENV
+          echo "ECC_RULES=$ECC_RULES" >> $GITHUB_ENV
+
+      # 3. OMC Agents + Skills
+      - name: Sync oh-my-claudecode
+        run: |
+          git clone --depth 1 https://github.com/Yeachan-Heo/oh-my-claudecode.git /tmp/omc
+          OMC_SHA=$(cd /tmp/omc && git rev-parse HEAD)
+          echo "OMC_SHA=$OMC_SHA" >> $GITHUB_ENV
+
+          if [ -d /tmp/omc/agents ]; then
+            mkdir -p staging/omc
+            cp /tmp/omc/agents/*.md staging/omc/
+          fi
+          if [ -d /tmp/omc/skills ]; then
+            rm -rf skills/omc && mkdir -p skills/omc
+            cp -r /tmp/omc/skills/* skills/omc/
+          fi
+          OMC_AGENTS=$(find staging/omc -name '*.md' 2>/dev/null | wc -l)
+          OMC_SKILLS=$(find skills/omc -name 'SKILL.md' | wc -l)
+          echo "OMC_AGENTS=$OMC_AGENTS" >> $GITHUB_ENV
+          echo "OMC_SKILLS=$OMC_SKILLS" >> $GITHUB_ENV
+
+      # 4. OMX Prompts + Skills (Codex-native)
+      - name: Sync oh-my-codex
+        run: |
+          git clone --depth 1 https://github.com/Yeachan-Heo/oh-my-codex.git /tmp/omx
+          OMX_SHA=$(cd /tmp/omx && git rev-parse HEAD)
+          echo "OMX_SHA=$OMX_SHA" >> $GITHUB_ENV
+
+          if [ -d /tmp/omx/prompts ]; then
+            rm -rf codex-agents/omx-prompts && mkdir -p codex-agents/omx-prompts
+            cp /tmp/omx/prompts/*.md codex-agents/omx-prompts/
+          fi
+          if [ -d /tmp/omx/skills ]; then
+            rm -rf skills/omx-codex && mkdir -p skills/omx-codex
+            cp -r /tmp/omx/skills/* skills/omx-codex/
+          fi
+          OMX_PROMPTS=$(find codex-agents/omx-prompts -name '*.md' 2>/dev/null | wc -l)
+          OMX_CDX_SKILLS=$(find skills/omx-codex -name 'SKILL.md' 2>/dev/null | wc -l)
+          echo "OMX_PROMPTS=$OMX_PROMPTS" >> $GITHUB_ENV
+          echo "OMX_CDX_SKILLS=$OMX_CDX_SKILLS" >> $GITHUB_ENV
+
+      # 5. Awesome Codex Subagents
+      - name: Sync awesome-codex-subagents
+        run: |
+          git clone --depth 1 https://github.com/VoltAgent/awesome-codex-subagents.git /tmp/awesome
+          AWESOME_SHA=$(cd /tmp/awesome && git rev-parse HEAD)
+          echo "AWESOME_SHA=$AWESOME_SHA" >> $GITHUB_ENV
+
+          rm -rf codex-agents/awesome && mkdir -p codex-agents/awesome
+          if [ -d /tmp/awesome/categories ]; then
+            cp -r /tmp/awesome/categories/* codex-agents/awesome/
+          fi
+          AWESOME_COUNT=$(find codex-agents/awesome -name '*.toml' 2>/dev/null | wc -l)
+          echo "AWESOME_COUNT=$AWESOME_COUNT" >> $GITHUB_ENV
+
+      # 6. Convert MD agents → TOML
+      - name: Convert agents to TOML
+        run: |
+          # Also copy core boss.md and omo agents to staging
+          mkdir -p staging/core staging/omo
+          # (These would come from this repo's own agents/ if we maintain them)
+
+          # Run conversion: staging/ → codex-agents/
+          bash scripts/md-to-toml.sh staging codex-agents
+
+          CORE_COUNT=$(find codex-agents/core -name '*.toml' 2>/dev/null | wc -l)
+          PACK_COUNT=$(find codex-agents/agent-packs -name '*.toml' 2>/dev/null | wc -l)
+          TOTAL_AGENTS=$((CORE_COUNT + PACK_COUNT))
+          echo "CORE_COUNT=$CORE_COUNT" >> $GITHUB_ENV
+          echo "PACK_COUNT=$PACK_COUNT" >> $GITHUB_ENV
+          echo "TOTAL_AGENTS=$TOTAL_AGENTS" >> $GITHUB_ENV
+
+      # 7. Update SOURCES.json
+      - name: Update SOURCES.json
+        run: |
+          NOW=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          node -e "
+            const fs = require('fs');
+            const sources = {
+              'agency-agents': {
+                repo: 'https://github.com/msitarzewski/agency-agents',
+                syncedSha: '$AGENCY_SHA',
+                syncedAt: '$NOW',
+                files: { agents: parseInt('$AGENCY_COUNT') }
+              },
+              'everything-claude-code': {
+                repo: 'https://github.com/affaan-m/everything-claude-code',
+                syncedSha: '$ECC_SHA',
+                syncedAt: '$NOW',
+                files: { skills: parseInt('$ECC_SKILLS'), rules: parseInt('$ECC_RULES') }
+              },
+              'oh-my-claudecode': {
+                repo: 'https://github.com/Yeachan-Heo/oh-my-claudecode',
+                syncedSha: '$OMC_SHA',
+                syncedAt: '$NOW',
+                files: { agents: parseInt('$OMC_AGENTS'), skills: parseInt('$OMC_SKILLS') }
+              },
+              'oh-my-codex': {
+                repo: 'https://github.com/Yeachan-Heo/oh-my-codex',
+                syncedSha: '$OMX_SHA',
+                syncedAt: '$NOW',
+                files: { prompts: parseInt('$OMX_PROMPTS'), skills: parseInt('$OMX_CDX_SKILLS') }
+              },
+              'awesome-codex-subagents': {
+                repo: 'https://github.com/VoltAgent/awesome-codex-subagents',
+                syncedSha: '$AWESOME_SHA',
+                syncedAt: '$NOW',
+                files: { agents: parseInt('$AWESOME_COUNT') }
+              }
+            };
+            fs.mkdirSync('upstream', { recursive: true });
+            fs.writeFileSync('upstream/SOURCES.json', JSON.stringify(sources, null, 2));
+          "
+
+      # 7. Update documentation counts
+      - name: Update documentation counts
+        run: |
+          TOTAL_SKILLS=$((ECC_SKILLS + OMC_SKILLS + OMX_CDX_SKILLS))
+          sed -i "s/[0-9]\+ agents/${TOTAL_AGENTS} agents/g" README.md AI-INSTALL.md
+          sed -i "s/[0-9]\+ skills/${TOTAL_SKILLS} skills/g" README.md AI-INSTALL.md
+          sed -i "s/[0-9]\+ rules/${ECC_RULES} rules/g" README.md AI-INSTALL.md
+
+      # 8. Create PR
+      - name: Create sync PR
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            BRANCH="auto/sync-$(date +%Y%m%d-%H%M)"
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git checkout -b "$BRANCH"
+            git add -A
+            git commit -m "chore: sync upstream dependencies ($(date +%Y-%m-%d))"
+            git push -u origin "$BRANCH"
+            gh pr create \
+              --title "chore: sync upstream ($(date +%Y-%m-%d))" \
+              --body "Upstream sync from 4 sources. Review diffs before merging." \
+              --label "auto-sync"
+          fi
+        env:
+          GH_TOKEN: ${{ github.token }}

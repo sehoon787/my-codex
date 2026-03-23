@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "context7": {
+      "type": "url",
+      "url": "https://mcp.context7.com/mcp"
+    },
+    "exa": {
+      "type": "url",
+      "url": "https://mcp.exa.ai/mcp?tools=web_search_exa"
+    },
+    "grep_app": {
+      "type": "url",
+      "url": "https://mcp.grep.app"
+    }
+  }
+}

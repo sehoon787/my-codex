@@ -1,0 +1,194 @@
+<!-- Parent: ../AGENTS.md -->
+<!-- Generated: 2026-01-28 | Updated: 2026-03-02 -->
+
+# skills
+
+33 skill directories for workflow automation and specialized behaviors.
+
+## Purpose
+
+Skills are reusable workflow templates that can be invoked via `/oh-my-claudecode:skill-name`. Each skill provides:
+- Structured prompts for specific workflows
+- Activation triggers (manual or automatic)
+- Integration with execution modes
+
+## Key Files
+
+### Execution Mode Skills
+
+| File | Skill | Purpose |
+|-----------|-------|---------|
+| `autopilot/SKILL.md` | autopilot | Full autonomous execution from idea to working code |
+| `ultrawork/SKILL.md` | ultrawork | Maximum parallel agent execution |
+| `ralph/SKILL.md` | ralph | Persistence until verified complete |
+| `team/SKILL.md` | team | N coordinated agents with task claiming |
+| `ultraqa/SKILL.md` | ultraqa | QA cycling until goal met |
+
+### Planning Skills
+
+| File | Skill | Purpose |
+|-----------|-------|---------|
+| `plan/SKILL.md` | omc-plan | Strategic planning with interview workflow |
+| `ralplan/SKILL.md` | ralplan | Iterative planning (Planner+Architect+Critic) with RALPLAN-DR structured deliberation (`--deliberate` for high-risk) |
+| `deep-interview/SKILL.md` | deep-interview | Socratic deep interview with mathematical ambiguity gating (Ouroboros-inspired) |
+| `ralph-init/SKILL.md` | ralph-init | Initialize PRD for structured ralph |
+
+### Exploration Skills
+
+| File | Skill | Purpose |
+|-----------|-------|---------|
+| `deepinit/SKILL.md` | deepinit | Generate hierarchical AGENTS.md |
+| `sciomc/SKILL.md` | sciomc | Parallel scientist orchestration |
+
+### Utility Skills
+
+| File | Skill | Purpose |
+|-----------|-------|---------|
+| `ai-slop-cleaner/SKILL.md` | ai-slop-cleaner | Regression-safe cleanup workflow for AI-generated code slop |
+| `learner/SKILL.md` | learner | Extract reusable skill from session |
+| `ask/SKILL.md` | ask | Ask Claude, Codex, or Gemini via `omc ask` and capture an artifact |
+| `note/SKILL.md` | note | Save notes for compaction resilience |
+| `cancel/SKILL.md` | cancel | Cancel any active OMC mode |
+| `hud/SKILL.md` | hud | Configure HUD display |
+| `omc-doctor/SKILL.md` | omc-doctor | Diagnose installation issues |
+| `setup/SKILL.md` | setup | Unified setup entrypoint for install, diagnostics, and MCP configuration |
+| `omc-setup/SKILL.md` | omc-setup | One-time setup wizard |
+| `omc-help/SKILL.md` | omc-help | Usage guide |
+| `mcp-setup/SKILL.md` | mcp-setup | Configure MCP servers |
+| `skill/SKILL.md` | skill | Manage local skills |
+
+### Domain Skills
+
+| File | Skill | Purpose |
+|-----------|-------|---------|
+| `project-session-manager/SKILL.md` | project-session-manager (+ `psm` alias) | Isolated dev environments |
+| `writer-memory/SKILL.md` | writer-memory | Agentic memory for writers |
+| `release/SKILL.md` | release | Automated release workflow |
+
+## For AI Agents
+
+### Working In This Directory
+
+#### Skill Template Format
+
+```markdown
+---
+name: skill-name
+description: Brief description
+triggers:
+  - "keyword1"
+  - "keyword2"
+agent: executor  # Optional: which agent to use
+model: sonnet    # Optional: model override
+pipeline: [skill-name, follow-up-skill]  # Optional: standardized multi-skill flow
+next-skill: follow-up-skill              # Optional: explicit handoff target
+next-skill-args: --direct                # Optional: arguments for the next skill
+handoff: .omc/plans/example.md           # Optional: artifact/context handed to next skill
+---
+
+# Skill Name
+
+## Purpose
+What this skill accomplishes.
+
+## Workflow
+1. Step one
+2. Step two
+3. Step three
+
+## Usage
+How to invoke this skill.
+
+## Configuration
+Any configurable options.
+```
+
+#### Skill Invocation
+
+```bash
+# Manual invocation
+/oh-my-claudecode:skill-name
+
+# With arguments
+/oh-my-claudecode:skill-name arg1 arg2
+
+# Auto-detected from keywords
+"autopilot build me a REST API"  # Triggers autopilot skill
+```
+
+#### Creating a New Skill
+
+1. Create `new-skill/SKILL.md` directory and file with YAML frontmatter
+2. Define purpose, workflow, and usage
+3. Add to skill registry (auto-detected from frontmatter)
+4. Optionally add activation triggers
+5. Create corresponding `commands/new-skill.md` file (mirror)
+6. Update `docs/REFERENCE.md` (Skills section, count)
+7. If execution mode skill, also create `src/hooks/new-skill/` hook
+
+### Common Patterns
+
+**Skill chaining:**
+```markdown
+## Workflow
+1. Invoke `explore` agent for context
+2. Invoke `architect` for analysis
+3. Invoke `executor` for implementation
+4. Invoke `qa-tester` for verification
+```
+
+If `pipeline` / `next-skill` metadata is present, OMC appends a standardized **Skill Pipeline** handoff block to the rendered skill prompt so downstream steps are explicit.
+
+**Conditional behavior:**
+```markdown
+## Workflow
+1. Check if tests exist
+   - If yes: Run tests first
+   - If no: Create test plan
+2. Proceed with implementation
+```
+
+### Testing Requirements
+
+- Skills are verified via integration tests
+- Test skill invocation with `/oh-my-claudecode:skill-name`
+- Verify trigger keywords activate correct skill
+- For git-related skills, follow `templates/rules/git-workflow.md`
+
+## Dependencies
+
+### Internal
+- Loaded by skill bridge (`scripts/build-skill-bridge.mjs`)
+- References agents from `agents/`
+- Uses hooks from `src/hooks/`
+
+### External
+None - pure markdown files.
+
+## Skill Categories
+
+| Category | Skills | Trigger Keywords |
+|----------|--------|------------------|
+| Execution | autopilot, ultrawork, ralph, team, ultraqa | "autopilot", "ulw", "ralph", "team" |
+| Cleanup | ai-slop-cleaner | "deslop", "anti-slop", cleanup/refactor + slop smells |
+| Planning | omc-plan, ralplan, deep-interview, ralph-init | "plan this", "interview me", "ouroboros" |
+| Exploration | deepinit, sciomc, external-context | "deepinit", "research" |
+| Utility | learner, note, cancel, hud, setup, omc-doctor, omc-setup, omc-help, mcp-setup | "stop", "cancel" |
+| Domain | psm, writer-memory, release | psm context |
+
+## Auto-Activation
+
+Some skills activate automatically based on context:
+
+| Skill | Auto-Trigger Condition |
+|-------|----------------------|
+| autopilot | "autopilot", "build me", "I want a" |
+| ultrawork | "ulw", "ultrawork" |
+| ralph | "ralph", "don't stop until" |
+| deep-interview | "deep interview", "interview me", "ouroboros", "don't assume" |
+| cancel | "stop", "cancel", "abort" |
+
+<!-- MANUAL:
+- Team runtime wait semantics: `omc_run_team_wait.timeout_ms` only limits the wait call and does not stop workers.
+- `timeoutSeconds` is removed from `omc_run_team_start`; use explicit `omc_run_team_cleanup` for intentional worker pane termination.
+-->

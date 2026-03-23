@@ -1,0 +1,43 @@
+name: Auto Version Tag
+on:
+  push:
+    branches: [main]
+    paths-ignore: ['**.md', 'docs/**']
+
+jobs:
+  tag:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Determine version bump
+        id: bump
+        run: |
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+          LAST_MSG=$(git log -1 --pretty=%B)
+
+          MAJOR=$(echo "$LAST_TAG" | sed 's/v//' | cut -d. -f1)
+          MINOR=$(echo "$LAST_TAG" | sed 's/v//' | cut -d. -f2)
+          PATCH=$(echo "$LAST_TAG" | sed 's/v//' | cut -d. -f3)
+
+          if echo "$LAST_MSG" | grep -qi "BREAKING"; then
+            MAJOR=$((MAJOR + 1)); MINOR=0; PATCH=0
+          elif echo "$LAST_MSG" | grep -qi "^feat"; then
+            MINOR=$((MINOR + 1)); PATCH=0
+          else
+            PATCH=$((PATCH + 1))
+          fi
+
+          NEW_TAG="v${MAJOR}.${MINOR}.${PATCH}"
+          echo "tag=$NEW_TAG" >> $GITHUB_OUTPUT
+          echo "New tag: $NEW_TAG"
+      - name: Create tag and release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git tag "${{ steps.bump.outputs.tag }}"
+          git push origin "${{ steps.bump.outputs.tag }}"
+          gh release create "${{ steps.bump.outputs.tag }}" \
+            --title "${{ steps.bump.outputs.tag }}" \
+            --generate-notes

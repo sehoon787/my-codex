@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# my-codex full installer — installs agents, skills, rules for OpenAI Codex CLI
+# my-codex full installer — installs agents and skills for OpenAI Codex CLI
 # Usage: bash install.sh
 set -euo pipefail
 

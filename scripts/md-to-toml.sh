@@ -105,6 +105,9 @@ process_file() {
   # Apply API substitutions
   body=$(echo "$body_raw" | apply_substitutions)
 
+  # Strip non-printable control characters (except newline/tab) that break TOML
+  body=$(echo "$body" | tr -d '\001-\010\013\014\016-\037\004')
+
   # Escape backslashes first (TOML treats \ as escape character in basic strings)
   body=$(echo "$body" | sed 's/\\/\\\\/g')
   # Then escape any literal """ sequences to prevent breaking TOML triple-quotes
@@ -120,6 +123,10 @@ process_file() {
   # Build model lines
   local model_lines
   model_lines=$(map_model "$model")
+
+  # Escape double quotes in name/description for TOML basic strings
+  name=$(echo "$name" | sed 's/"/\\"/g')
+  description=$(echo "$description" | sed 's/"/\\"/g')
 
   # Write TOML
   {

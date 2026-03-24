@@ -174,6 +174,16 @@ jobs:
             sed -i -E "s/[0-9]+ skills/${TOTAL_SKILLS} skills/g" "$f"
           done
 
+          # docs/index.html — update counts in landing page
+          if [ -f docs/index.html ]; then
+            sed -i -E "s/[0-9]+ agents/${TOTAL_AGENTS} agents/g" docs/index.html
+            sed -i -E "s/[0-9]+ skills/${TOTAL_SKILLS} skills/g" docs/index.html
+            sed -i -E "s/data-count=\"[0-9]+\"(>0<\/em> <span class=\"lang\" data-en=\"agents\")/data-count=\"${TOTAL_AGENTS}\"\1/" docs/index.html
+            sed -i -E "s/data-count=\"[0-9]+\"(>0<\/em> <span class=\"lang\" data-en=\"skills\")/data-count=\"${TOTAL_SKILLS}\"\1/" docs/index.html
+            sed -i -E "s/[0-9]+_agents/${TOTAL_AGENTS}_agents/g" docs/index.html
+            sed -i -E "s/[0-9]+_skills/${TOTAL_SKILLS}_skills/g" docs/index.html
+          fi
+
       # 8. Create PR
       - name: Create sync PR
         run: |

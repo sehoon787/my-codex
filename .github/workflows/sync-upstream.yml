@@ -155,7 +155,7 @@ jobs:
       - name: Update documentation counts
         run: |
           TOTAL_SKILLS=$((ECC_SKILLS + OMX_CDX_SKILLS))
-          for f in README.md docs/i18n/README.ko.md docs/i18n/README.ja.md docs/i18n/README.zh.md docs/i18n/README.de.md AI-INSTALL.md; do
+          for f in README.md docs/i18n/README.ko.md docs/i18n/README.ja.md docs/i18n/README.zh.md docs/i18n/README.de.md docs/i18n/README.fr.md AI-INSTALL.md; do
             [ -f "$f" ] || continue
             # shields.io badges use underscore: "444_agents"
             sed -i -E "s/[0-9]+_agents/${TOTAL_AGENTS}_agents/g" "$f"

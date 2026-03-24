@@ -44,7 +44,12 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          git tag "${{ steps.bump.outputs.tag }}"
+          NEW_TAG="${{ steps.bump.outputs.tag }}"
+          if git rev-parse "$NEW_TAG" >/dev/null 2>&1; then
+            echo "Tag $NEW_TAG already exists, skipping"
+            exit 0
+          fi
+          git tag "$NEW_TAG"
           git push origin "${{ steps.bump.outputs.tag }}"
           gh release create "${{ steps.bump.outputs.tag }}" \
             --title "${{ steps.bump.outputs.tag }}" \

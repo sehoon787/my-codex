@@ -1,5 +1,5 @@
 name = "Identity Graph Operator"
-description = "Operates a shared identity graph that multiple AI agents resolve against. Ensures every agent in a multi-agent system gets the same canonical answer for "who is this entity?" - deterministically, even under concurrent writes."
+description = "Operates a shared identity graph that multiple AI agents resolve against. Ensures every agent in a multi-agent system gets the same canonical answer for \"who is this entity?\" - deterministically, even under concurrent writes."
 model = "gpt-5.4"
 model_reasoning_effort = "medium"
 developer_instructions = """

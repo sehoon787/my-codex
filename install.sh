@@ -127,6 +127,44 @@ else
   echo "  config.toml already configured"
 fi
 
+# ── 4.5. Codex attribution defaults ──
+echo "[4.5/7] Installing Codex attribution defaults..."
+mkdir -p "$HOME/.codex/bin" "$HOME/.codex/lib" "$HOME/.codex/git-hooks"
+cp "$SCRIPT_DIR/scripts/codex-attribution-lib.sh" "$HOME/.codex/lib/codex-attribution.sh"
+cp "$SCRIPT_DIR/scripts/codex-wrapper.sh" "$HOME/.codex/bin/codex"
+cp "$SCRIPT_DIR/scripts/codex-mark-used.sh" "$HOME/.codex/bin/codex-mark-used"
+cp "$SCRIPT_DIR/templates/git-hooks/commit-msg" "$HOME/.codex/git-hooks/commit-msg"
+cp "$SCRIPT_DIR/templates/git-hooks/post-commit" "$HOME/.codex/git-hooks/post-commit"
+chmod +x "$HOME/.codex/lib/codex-attribution.sh" \
+  "$HOME/.codex/bin/codex" \
+  "$HOME/.codex/bin/codex-mark-used" \
+  "$HOME/.codex/git-hooks/commit-msg" \
+  "$HOME/.codex/git-hooks/post-commit"
+
+git config --global my-codex.codexAttribution true
+git config --global my-codex.codexContributorName "OpenAI Codex"
+
+CURRENT_HOOKS_PATH="$(git config --global core.hooksPath 2>/dev/null || true)"
+if [ -n "$CURRENT_HOOKS_PATH" ] && [ "$CURRENT_HOOKS_PATH" != "$HOME/.codex/git-hooks" ]; then
+  git config --global my-codex.previousHooksPath "$CURRENT_HOOKS_PATH"
+fi
+git config --global core.hooksPath "$HOME/.codex/git-hooks"
+
+for shell_rc in "$HOME/.zshrc" "$HOME/.bashrc"; do
+  touch "$shell_rc"
+  if ! grep -q 'my-codex managed PATH' "$shell_rc" 2>/dev/null; then
+    cat >> "$shell_rc" <<'EOF'
+
+# my-codex managed PATH
+case ":$PATH:" in
+  *":$HOME/.codex/bin:"*) ;;
+  *) export PATH="$HOME/.codex/bin:$PATH" ;;
+esac
+EOF
+  fi
+done
+echo "  Codex wrapper, hooks, and PATH defaults installed"
+
 # ── 5. MCP servers ──
 echo "[5/7] Registering MCP servers..."
 if command -v codex >/dev/null 2>&1; then
@@ -168,6 +206,8 @@ echo "  Agent packs:   $(find "$HOME/.codex/agent-packs" -name '*.toml' 2>/dev/n
 echo "  Skills:        $(find "$HOME/.codex/skills" -name 'SKILL.md' 2>/dev/null | wc -l | tr -d ' ') installed (expected ${SKILL_COUNT})"
 echo "  AGENTS.md:     $(test -f "$HOME/.codex/AGENTS.md" && echo 'OK' || echo 'MISSING')"
 echo "  config.toml:   $(grep -q 'multi_agent' "$HOME/.codex/config.toml" 2>/dev/null && echo 'OK' || echo 'NEEDS CONFIG')"
+echo "  hooksPath:     $(git config --global --get core.hooksPath 2>/dev/null || echo 'UNSET')"
+echo "  Codex attr:    $(git config --global --get my-codex.codexAttribution 2>/dev/null || echo 'UNSET')"
 echo "  codex:         $(command -v codex >/dev/null 2>&1 && echo "OK ($(codex --version 2>/dev/null))" || echo 'NOT INSTALLED')"
 echo ""
 echo "=== Install complete ==="

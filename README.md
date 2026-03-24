@@ -17,6 +17,7 @@
 ![Skills](https://img.shields.io/badge/skills-125-purple)
 ![MCP](https://img.shields.io/badge/MCP-3-green)
 ![Auto Sync](https://img.shields.io/badge/upstream_sync-weekly-brightgreen)
+![Codex Attribution](https://img.shields.io/badge/Codex_attribution-enabled-black)
 
 All-in-one multi-agent orchestration for OpenAI Codex CLI — install once, get everything.
 
@@ -83,6 +84,14 @@ Read the full output and execute each step in order. Use `curl`, not `WebFetch`.
 - Bundles 4 upstream sources (agency-agents, everything-claude-code, oh-my-codex, awesome-codex-subagents)
 - Weekly CI auto-sync keeps bundled content up-to-date with upstream
 - MD-to-TOML conversion handled automatically for non-native sources
+- Installs a default git attribution flow so commits touched by real Codex sessions automatically receive `AI-Contributed-By: Codex`
+
+### Codex Attribution
+- `install.sh` installs a `codex` wrapper plus global `commit-msg` and `post-commit` hooks in `~/.codex/git-hooks/`
+- The wrapper records only files that changed during a real Codex session in the current git repository
+- The commit hook adds `AI-Contributed-By: Codex` only when staged files intersect that recorded change set
+- To add a GitHub-style co-author line as well, set `git config --global my-codex.codexContributorEmail '<verified-email>'`
+- To disable attribution entirely, set `git config --global my-codex.codexAttribution false`
 
 ---
 

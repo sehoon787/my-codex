@@ -148,6 +148,8 @@ docs: update README table for engineering agents
 
 Types: `feat` for new agents/skills, `fix` for corrections, `docs` for documentation updates, `refactor` for restructuring without behavior change.
 
+If you work through an installed my-codex environment, `AI-Contributed-By: Codex` may be added automatically when the staged files came from a recorded Codex session. This is expected.
+
 ---
 
 ## Pre-submission Checklist

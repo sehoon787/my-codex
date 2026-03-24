@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+LIB_PATH="${HOME}/.codex/lib/codex-attribution.sh"
+[ -f "$LIB_PATH" ] || exit 0
+. "$LIB_PATH"
+
+my_codex_run_previous_hook "post-commit" "$0" "$@"
+my_codex_reset_state

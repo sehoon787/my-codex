@@ -21,6 +21,7 @@ This installs:
 - 125 skills in `~/.codex/skills/` (from Everything Claude Code)
 - Global `AGENTS.md` instructions
 - `config.toml` with `multi_agent = true`
+- `~/.codex/bin/codex` wrapper plus git hooks for Codex-only commit attribution
 - 3 MCP servers (Context7 — real-time library docs, Exa — web search, grep_app — GitHub code search)
 
 Why the numbers are lower than raw source totals:
@@ -120,6 +121,25 @@ Expected:
 - config.toml: OK
 
 Setup complete. Multi-agent orchestration is ready.
+
+## Codex Attribution Defaults
+
+Full install also configures a default Codex attribution flow:
+- `~/.codex/bin/codex` wraps the real Codex CLI and records which files changed during a Codex session
+- `git config --global core.hooksPath ~/.codex/git-hooks` installs `commit-msg` and `post-commit` hooks
+- commits only receive `AI-Contributed-By: Codex` when staged files overlap that recorded Codex change set
+
+Optional GitHub-style co-author line:
+
+```bash
+git config --global my-codex.codexContributorEmail "your-verified-email@example.com"
+```
+
+Disable attribution entirely:
+
+```bash
+git config --global my-codex.codexAttribution false
+```
 
 ## Skills-Only Alternative
 

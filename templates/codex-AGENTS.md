@@ -50,6 +50,7 @@ For complex tasks:
 - No hardcoded secrets in source code
 - Immutable data patterns preferred
 - Small files (200-400 lines), small functions (<50 lines)
+- When editing files in a git repository, run `codex-mark-used <path>` before the first write for each file you materially modify so commit attribution only applies to real Codex-authored changes
 
 ## Skills
 

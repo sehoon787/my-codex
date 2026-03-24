@@ -9,11 +9,12 @@ Give this document to an AI coding agent to reproduce the exact same environment
 1. [Prerequisites](#1-prerequisites)
 2. [Install my-codex](#2-install-my-codex)
 3. [Verify Installation](#3-verify-installation)
-4. [Agent Packs Activation](#4-agent-packs-activation)
-5. [MCP Server Configuration](#5-mcp-server-configuration)
-6. [Model Understanding](#6-model-understanding)
-7. [Multi-Agent Workflow Examples](#7-multi-agent-workflow-examples)
-8. [Troubleshooting](#8-troubleshooting)
+4. [Codex Attribution](#4-codex-attribution)
+5. [Agent Packs Activation](#5-agent-packs-activation)
+6. [MCP Server Configuration](#6-mcp-server-configuration)
+7. [Model Understanding](#7-model-understanding)
+8. [Multi-Agent Workflow Examples](#8-multi-agent-workflow-examples)
+9. [Troubleshooting](#9-troubleshooting)
 
 ---
 
@@ -52,6 +53,8 @@ What gets installed:
 | `~/.codex/skills/` | 125 skills |
 | `~/.codex/AGENTS.md` | Agent catalog and routing instructions |
 | `~/.codex/config.toml` | `multi_agent = true` + model defaults |
+| `~/.codex/git-hooks/` | `commit-msg` + `post-commit` hooks for Codex attribution |
+| `~/.codex/bin/codex` | Wrapper that records Codex-touched files for commit attribution |
 | `~/.codex/.mcp.json` | 3 MCP servers: context7, exa, grep_app |
 
 ---
@@ -79,7 +82,30 @@ Note: the repository contains more raw TOML files than the final installed count
 
 ---
 
-## 4. Agent Packs Activation
+## 4. Codex Attribution
+
+Full install enables Codex-aware commit attribution by default:
+
+- `~/.codex/bin/codex` wraps the real Codex CLI
+- the wrapper records files changed during each Codex session inside the current git repo
+- `commit-msg` adds `AI-Contributed-By: Codex` only when the commit stages one of those files
+- `post-commit` clears the marker so unrelated commits are not tagged
+
+Optional co-author trailer:
+
+```bash
+git config --global my-codex.codexContributorEmail "your-verified-email@example.com"
+```
+
+Disable attribution:
+
+```bash
+git config --global my-codex.codexAttribution false
+```
+
+---
+
+## 5. Agent Packs Activation
 
 Agent packs are stored in `~/.codex/agent-packs/` and activated via symlink.
 
@@ -122,7 +148,7 @@ Available packs and agent counts:
 
 ---
 
-## 5. MCP Server Configuration
+## 6. MCP Server Configuration
 
 Three MCP servers are registered in `~/.codex/.mcp.json`:
 
@@ -146,7 +172,7 @@ codex mcp add grep_app -- npx -y @modelcontextprotocol/server-grep-app
 
 ---
 
-## 6. Model Understanding
+## 7. Model Understanding
 
 Codex CLI uses OpenAI reasoning models. Route tasks by complexity:
 
@@ -170,7 +196,7 @@ codex --model o3 --reasoning-effort high "Design the auth system"
 
 ---
 
-## 7. Multi-Agent Workflow Examples
+## 8. Multi-Agent Workflow Examples
 
 ### Single Agent
 
@@ -210,7 +236,7 @@ You are boss. The goal is to add OAuth2 support.
 
 ---
 
-## 8. Troubleshooting
+## 9. Troubleshooting
 
 **"No agents found" or agent not recognized**
 ```bash

@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+LIB_PATH="${HOME}/.codex/lib/codex-attribution.sh"
+[ -f "$LIB_PATH" ] || exit 0
+. "$LIB_PATH"
+
+my_codex_run_previous_hook "commit-msg" "$0" "$@"
+my_codex_is_enabled || exit 0
+
+state_file="$(my_codex_state_file)"
+files_file="$(my_codex_changed_files_file)"
+[ -f "$state_file" ] || exit 0
+[ -f "$files_file" ] || exit 0
+
+. "$state_file"
+
+repo_root="$(my_codex_git_root)"
+[ -n "$repo_root" ] || exit 0
+[ "${MY_CODEX_TOOL:-}" = "codex" ] || exit 0
+[ "${MY_CODEX_REPO_ROOT:-}" = "$repo_root" ] || exit 0
+
+now_epoch="$(date +%s)"
+timestamp="${MY_CODEX_TIMESTAMP:-0}"
+age=$((now_epoch - timestamp))
+[ "$age" -le 21600 ] || exit 0
+
+staged_file="$(mktemp)"
+cleanup() {
+  rm -f "$staged_file"
+}
+trap cleanup EXIT
+
+git diff --cached --name-only --relative > "$staged_file"
+[ -s "$staged_file" ] || exit 0
+
+if ! grep -F -x -f "$files_file" "$staged_file" >/dev/null 2>&1; then
+  exit 0
+fi
+
+message_file="$1"
+if ! grep -qi '^AI-Contributed-By:[[:space:]]*Codex$' "$message_file"; then
+  git interpret-trailers --in-place --if-exists doNothing --trailer "AI-Contributed-By: Codex" "$message_file"
+fi
+
+contributor_name="$(git config --global --get my-codex.codexContributorName 2>/dev/null || true)"
+contributor_email="$(git config --global --get my-codex.codexContributorEmail 2>/dev/null || true)"
+if [ -n "$contributor_name" ] && [ -n "$contributor_email" ]; then
+  git interpret-trailers --in-place --if-exists doNothing --trailer "Co-authored-by: ${contributor_name} <${contributor_email}>" "$message_file"
+fi

@@ -167,6 +167,13 @@ jobs:
       - name: Update documentation counts
         run: |
           TOTAL_SKILLS=$((ECC_SKILLS + OMX_CDX_SKILLS))
+          # Compute AUTO_LOADED / PACK_LOADED (used by both index.html and AI-INSTALL.md)
+          AWESOME_CORE_CATS=0
+          for d in codex-agents/awesome/01-core-development codex-agents/awesome/03-infrastructure codex-agents/awesome/04-quality-security codex-agents/awesome/09-meta-orchestration; do
+            AWESOME_CORE_CATS=$((AWESOME_CORE_CATS + $(find "$d" -name '*.toml' 2>/dev/null | wc -l)))
+          done
+          AUTO_LOADED=$((CORE_COUNT + OMO_COUNT + OMC_COUNT + AWESOME_CORE_COUNT + AWESOME_CORE_CATS - OVERLAP))
+          PACK_LOADED=$((TOTAL_AGENTS - AUTO_LOADED))
           for f in README.md docs/i18n/README.ko.md docs/i18n/README.ja.md docs/i18n/README.zh.md docs/i18n/README.de.md docs/i18n/README.fr.md AI-INSTALL.md; do
             [ -f "$f" ] || continue
             # shields.io badges use underscore: "444_agents"
@@ -177,24 +184,46 @@ jobs:
             sed -i -E "s/[0-9]+ skills/${TOTAL_SKILLS} skills/g" "$f"
           done
 
-          # docs/index.html — update counts in landing page
+          # docs/index.html — targeted updates (avoid greedy global replace)
           if [ -f docs/index.html ]; then
-            sed -i -E "s/[0-9]+ agents/${TOTAL_AGENTS} agents/g" docs/index.html
-            sed -i -E "s/[0-9]+ skills/${TOTAL_SKILLS} skills/g" docs/index.html
-            sed -i -E "s/data-count=\"[0-9]+\"(>0<\/em> <span class=\"lang\" data-en=\"agents\")/data-count=\"${TOTAL_AGENTS}\"\1/" docs/index.html
-            sed -i -E "s/data-count=\"[0-9]+\"(>0<\/em> <span class=\"lang\" data-en=\"skills\")/data-count=\"${TOTAL_SKILLS}\"\1/" docs/index.html
+            # Meta tags: "N agents (N auto-loaded + N agent-packs)"
+            sed -i -E 's/[0-9]+ agents \([0-9]+ auto-loaded \+ [0-9]+ agent-packs\)/'"${TOTAL_AGENTS} agents (${AUTO_LOADED} auto-loaded + ${PACK_LOADED} agent-packs)"'/g' docs/index.html
+            # Hero data-count attributes
+            sed -i -E 's/data-count="[0-9]+"(>0<\/em> <span class="lang" data-en="agents")/data-count="'"${TOTAL_AGENTS}"'"\1/' docs/index.html
+            sed -i -E 's/data-count="[0-9]+"(>0<\/em> <span class="lang" data-en="skills")/data-count="'"${TOTAL_SKILLS}"'"\1/' docs/index.html
+            # Comparison table
+            sed -i -E 's/(&#x2705; )[0-9]+(.*Native TOML)/\1'"${TOTAL_AGENTS}"'\2/' docs/index.html
+            sed -i -E 's/(&#x2705; )[0-9]+(.*Skills included)/\1'"${TOTAL_SKILLS}"'\2/' docs/index.html
+            # Badges (shields.io underscore format)
             sed -i -E "s/[0-9]+_agents/${TOTAL_AGENTS}_agents/g" docs/index.html
             sed -i -E "s/[0-9]+_skills/${TOTAL_SKILLS}_skills/g" docs/index.html
+            # "All N agents" in principles/catalog (EN + KO)
+            sed -i -E "s/All [0-9]+ agents/All ${TOTAL_AGENTS} agents/g" docs/index.html
+            sed -i -E "s/[0-9]+개 에이전트 모두/${TOTAL_AGENTS}개 에이전트 모두/g" docs/index.html
+            # "N agents organized" in catalog header (EN + KO)
+            sed -i -E "s/[0-9]+ agents organized/${TOTAL_AGENTS} agents organized/g" docs/index.html
+            sed -i -E "s/[0-9]+개 에이전트를 자동/${TOTAL_AGENTS}개 에이전트를 자동/g" docs/index.html
+            # "N native TOML agents" in hero tagline (EN + KO)
+            sed -i -E "s/[0-9]+ native TOML agents/${TOTAL_AGENTS} native TOML agents/g" docs/index.html
+            sed -i -E "s/위한 [0-9]+개 네이티브/위한 ${TOTAL_AGENTS}개 네이티브/g" docs/index.html
+            # "Done. N agents ready." in terminal demo (EN + KO)
+            sed -i -E "s/Done\. [0-9]+ agents ready/Done. ${TOTAL_AGENTS} agents ready/g" docs/index.html
+            sed -i -E "s/완료\. [0-9]+개 에이전트 준비됨/완료. ${TOTAL_AGENTS}개 에이전트 준비됨/g" docs/index.html
+            # "N agents, N skills" in install section (EN + KO)
+            sed -i -E "s/— [0-9]+ agents, [0-9]+ skills/— ${TOTAL_AGENTS} agents, ${TOTAL_SKILLS} skills/g" docs/index.html
+            sed -i -E "s/— [0-9]+개 에이전트, [0-9]+개 스킬/— ${TOTAL_AGENTS}개 에이전트, ${TOTAL_SKILLS}개 스킬/g" docs/index.html
+            # FAQ "aggregates N agents"
+            sed -i -E "s/aggregates [0-9]+ agents/aggregates ${TOTAL_AGENTS} agents/g" docs/index.html
+            sed -i -E "s/소스에서 [0-9]+개 에이전트를/소스에서 ${TOTAL_AGENTS}개 에이전트를/g" docs/index.html
+            # Pipeline diagram "N + N + N"
+            sed -i -E "s/[0-9]+ \+ [0-9]+ \+ [0-9]+/${AUTO_LOADED} + ${PACK_LOADED} + ${TOTAL_SKILLS}/" docs/index.html
+            # "All N packs" in catalog (EN + KO)
+            sed -i -E "s/All [0-9]+ packs/All ${PACK_LOADED} packs/g" docs/index.html
+            sed -i -E "s/전체 [0-9]+개 팩이/전체 ${PACK_LOADED}개 팩이/g" docs/index.html
           fi
 
           # AI-INSTALL.md — update detail counts
           if [ -f AI-INSTALL.md ]; then
-            AWESOME_CORE_CATS=0
-            for d in codex-agents/awesome/01-core-development codex-agents/awesome/03-infrastructure codex-agents/awesome/04-quality-security codex-agents/awesome/09-meta-orchestration; do
-              AWESOME_CORE_CATS=$((AWESOME_CORE_CATS + $(find "$d" -name '*.toml' 2>/dev/null | wc -l)))
-            done
-            AUTO_LOADED=$((CORE_COUNT + OMO_COUNT + OMC_COUNT + AWESOME_CORE_COUNT + AWESOME_CORE_CATS - OVERLAP))
-            PACK_LOADED=$((TOTAL_AGENTS - AUTO_LOADED))
             sed -i -E "s/~[0-9]+ core agents/~${AUTO_LOADED} core agents/" AI-INSTALL.md
             sed -i -E "s/~[0-9]+ domain agent-packs/~${PACK_LOADED} domain agent-packs/" AI-INSTALL.md
             sed -i -E "s/Core agents: [0-9]+\+/Core agents: ${AUTO_LOADED}+/" AI-INSTALL.md

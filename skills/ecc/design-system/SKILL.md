@@ -1,8 +1,3 @@
----
-name: design-system
-description: Design System — Generate & Audit Visual Systems
----
-
 # Design System — Generate & Audit Visual Systems
 
 ## When to Use

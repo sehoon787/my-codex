@@ -20,7 +20,7 @@
 
 Orchestration multi-agents tout-en-un pour OpenAI Codex CLI — une seule installation, tout inclus.
 
-Regroupe **444 agents** (80 chargés automatiquement + 364 packs d'agents) et **95 skills** issus de 4 sources amont au format TOML natif. Codex CLI découvre les agents automatiquement via `spawn_agent` et route les tâches vers le spécialiste optimal. La CI GitHub Actions synchronise les modifications amont chaque semaine.
+Regroupe **444 agents** (80 chargés automatiquement + 364 packs d'agents) et **125 skills** issus de 4 sources amont au format TOML natif. Codex CLI découvre les agents automatiquement via `spawn_agent` et route les tâches vers le spécialiste optimal. La CI GitHub Actions synchronise les modifications amont chaque semaine.
 
 Basé sur la spécification officielle [Codex Subagents](https://developers.openai.com/codex/subagents).
 
@@ -71,7 +71,7 @@ Lisez la sortie complète et exécutez chaque étape dans l'ordre. Utilisez `cur
 - **o4-mini (faible)** : Recherches rapides, exploration — mappé depuis les équivalents Claude Haiku
 
 ### Bundle tout-en-un
-- L'installation fournit **444 agents et 95 skills** immédiatement
+- L'installation fournit **444 agents et 125 skills** immédiatement
 - Regroupe 4 sources amont (agency-agents, everything-claude-code, oh-my-codex, awesome-codex-subagents)
 - La synchronisation automatique CI hebdomadaire maintient le contenu groupé à jour avec les sources amont
 - La conversion MD-vers-TOML est effectuée automatiquement pour les sources non natives
@@ -80,7 +80,7 @@ Lisez la sortie complète et exécutez chaque étape dans l'ordre. Utilisez `cur
 
 ## Agents principaux
 
-37 agents principaux pour l'infrastructure d'orchestration sont installés dans `~/.codex/agents/`. Ce sont les agents fondamentaux qui orchestrent, planifient, analysent et vérifient le travail. Les spécialistes de domaine se trouvent dans les packs d'agents. Les agents Awesome (136) sont également installés dans `~/.codex/agents/` pour une couverture supplémentaire (11 agents partagés entre Core et Awesome, ce qui donne 80 agents chargés automatiquement uniques).
+444 agents principaux pour l'infrastructure d'orchestration sont installés dans `~/.codex/agents/`. Ce sont les agents fondamentaux qui orchestrent, planifient, analysent et vérifient le travail. Les spécialistes de domaine se trouvent dans les packs d'agents. Les agents Awesome (136) sont également installés dans `~/.codex/agents/` pour une couverture supplémentaire (444 agents partagés entre Core et Awesome, ce qui donne 444 agents chargés automatiquement uniques).
 
 ### Orchestrateurs (5)
 boss, sisyphus, atlas, hephaestus, prometheus
@@ -107,7 +107,7 @@ test-engineer, qa-tester, multimodal-looker
 
 ## Packs d'agents (spécialistes de domaine)
 
-282 agents de domaine répartis en 21 catégories, installés dans `~/.codex/agent-packs/` — **non** chargés par défaut. Activez un pack via un lien symbolique :
+444 agents de domaine répartis en 21 catégories, installés dans `~/.codex/agent-packs/` — **non** chargés par défaut. Activez un pack via un lien symbolique :
 
 ```bash
 # Activer un pack individuel
@@ -301,7 +301,7 @@ Codex → spawn_agent("security-reviewer")
 ### Lancement en parallèle
 
 ```
-> Spawn 3 agents: refactor auth, add tests, review security
+> Spawn 444 agents: refactor auth, add tests, review security
 
 Codex → spawn_agent("executor") × refactoring
       → spawn_agent("test-engineer") × test writing
@@ -347,19 +347,19 @@ Une bibliothèque de 156 personas d'agents spécialistes métier. Offre des pers
 
 ### 2. [Everything Claude Code (ECC)](https://github.com/affaan-m/everything-claude-code)
 
-Un framework de développement conçu à l'origine pour Claude Code, fournissant 95 skills. 13 skills spécifiques à Claude Code ont été supprimés ; les skills restants contiennent des directives de codage génériques utilisables avec n'importe quel agent LLM. Le répertoire rules/ est inclus dans le dépôt comme matériel de référence, mais n'est pas lu par Codex CLI.
+Un framework de développement conçu à l'origine pour Claude Code, fournissant 125 skills. 125 skills spécifiques à Claude Code ont été supprimés ; les skills restants contiennent des directives de codage génériques utilisables avec n'importe quel agent LLM. Le répertoire rules/ est inclus dans le dépôt comme matériel de référence, mais n'est pas lu par Codex CLI.
 
 ### 3. [Awesome Codex Subagents](https://github.com/VoltAgent/awesome-codex-subagents)
 
-136 agents prêts pour la production au format TOML natif. Déjà compatibles Codex — aucune conversion requise. Organisés en 10 catégories, du développement principal à la méta-orchestration.
+444 agents prêts pour la production au format TOML natif. Déjà compatibles Codex — aucune conversion requise. Organisés en 10 catégories, du développement principal à la méta-orchestration.
 
 ### 4. [Oh My Codex (OMX)](https://github.com/Yeachan-Heo/oh-my-codex)
 
-Framework d'orchestration multi-agents Codex CLI de Yeachan Heo. Un runtime Rust/TypeScript avec 36 skills, hooks, HUD et pipelines d'équipes pour Codex CLI. Référencé comme inspiration architecturale pour les patterns d'orchestration de my-codex. Ne fournit pas de fichiers TOML d'agents directement.
+Framework d'orchestration multi-agents Codex CLI de Yeachan Heo. Un runtime Rust/TypeScript avec 125 skills, hooks, HUD et pipelines d'équipes pour Codex CLI. Référencé comme inspiration architecturale pour les patterns d'orchestration de my-codex. Ne fournit pas de fichiers TOML d'agents directement.
 
 ### 5. [Oh My OpenAgent (omo)](https://github.com/code-yeongyu/oh-my-openagent)
 
-Un harnais d'agents multi-plateforme de code-yeongyu. Les 9 agents d'orchestration de ce dépôt (atlas, hephaestus, metis, momus, oracle, prometheus, sisyphus, librarian, multimodal-looker) sont adaptés des agents omo, convertis au format TOML natif Codex.
+Un harnais d'agents multi-plateforme de code-yeongyu. Les 444 agents d'orchestration de ce dépôt (atlas, hephaestus, metis, momus, oracle, prometheus, sisyphus, librarian, multimodal-looker) sont adaptés des agents omo, convertis au format TOML natif Codex.
 
 ### 6. [OpenAI Official Skills](https://github.com/openai/skills)
 

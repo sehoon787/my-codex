@@ -1,8 +1,3 @@
----
-name: browser-qa
-description: Browser QA — Automated Visual Testing & Interaction
----
-
 # Browser QA — Automated Visual Testing & Interaction
 
 ## When to Use

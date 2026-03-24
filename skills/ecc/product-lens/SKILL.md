@@ -1,8 +1,3 @@
----
-name: product-lens
-description: Product Lens — Think Before You Build
----
-
 # Product Lens — Think Before You Build
 
 ## When to Use

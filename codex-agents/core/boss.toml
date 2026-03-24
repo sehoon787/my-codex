@@ -45,7 +45,7 @@ After classifying intent, consider whether an ECC skill would genuinely add valu
 
 Signal categories (loose heuristics, not rigid rules):
 - High completion risk (large scope, many parts) → persistence/planning skills: blueprint, verification-loop
-- Ambiguity (vague requirements, unclear criteria) → discovery skills: product-lens, deep-interview
+- Ambiguity (vague requirements, unclear criteria) → discovery skills: product-lens
 - Safety-sensitive (auth, secrets, config) → security workflows: security-review
 - Unknown root cause ("it doesn't work") → investigation: click-path-audit
 - Quality concern (AI code, no tests, post-impl doubt) → QA skills: tdd-workflow, ai-regression-testing

@@ -1,7 +1,7 @@
 # my-codex AI Installation Guide
 
 You are an AI agent setting up a Codex CLI multi-agent orchestration environment.
-The bundle includes 444 agents, 125 skills, and 3 MCP servers.
+The bundle includes 578 agents, 125 skills, and 3 MCP servers.
 Only 2-3 steps are needed.
 
 ---
@@ -15,8 +15,8 @@ rm -rf /tmp/my-codex
 ```
 
 This installs:
-- ~80 core agents in `~/.codex/agents/` (always loaded by Codex CLI via `spawn_agent`)
-- ~498 domain agent-packs in `~/.codex/agent-packs/` (on-demand via symlink)
+- ~91 core agents in `~/.codex/agents/` (always loaded by Codex CLI via `spawn_agent`)
+- ~487 domain agent-packs in `~/.codex/agent-packs/` (on-demand via symlink)
 - 125 skills in `~/.codex/skills/` (from Everything Claude Code)
 - Global `AGENTS.md` instructions
 - `config.toml` with `multi_agent = true`
@@ -107,9 +107,9 @@ echo "config.toml:   $(grep -q 'multi_agent' ~/.codex/config.toml 2>/dev/null &&
 ```
 
 Expected:
-- Core agents: 80+
-- Agent packs: 498+
-- Skills: 95+
+- Core agents: 91+
+- Agent packs: 487+
+- Skills: 125+
 - AGENTS.md: OK
 - config.toml: OK
 

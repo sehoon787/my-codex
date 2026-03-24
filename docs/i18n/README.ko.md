@@ -80,7 +80,7 @@ curl -s https://raw.githubusercontent.com/sehoon787/my-codex/main/AI-INSTALL.md
 
 ## 코어 에이전트
 
-오케스트레이션 인프라를 제공하는 37개 코어 에이전트가 `~/.codex/agents/`에 설치됩니다. 이 에이전트들은 오케스트레이션, 계획 수립, 코드 리뷰, 검증을 담당하는 기반 에이전트입니다. 도메인 전문가는 에이전트 팩에 있습니다. 어썸 에이전트(136개)도 추가 커버리지를 위해 `~/.codex/agents/`에 설치됩니다 (코어와 어썸 간 11개 에이전트 공유, 자동 로드 에이전트 순 80개).
+오케스트레이션 인프라를 제공하는 37개 코어 에이전트가 `~/.codex/agents/`에 설치됩니다. 이 에이전트들은 오케스트레이션, 계획 수립, 코드 리뷰, 검증을 담당하는 기반 에이전트입니다. 도메인 전문가는 에이전트 팩에 있습니다. awesome 카테고리 에이전트가 추가 커버리지를 더하지만, 파일명 중복 때문에 최종 자동 로드 세트는 80개 설치 파일로 정리됩니다.
 
 ### 오케스트레이터 (5개)
 boss, sisyphus, atlas, hephaestus, prometheus
@@ -107,7 +107,7 @@ test-engineer, qa-tester, multimodal-looker
 
 ## 에이전트 팩 (도메인 전문가)
 
-21개 카테고리에 걸쳐 282개 도메인 에이전트가 `~/.codex/agent-packs/`에 설치 — 기본적으로 로드되지 **않습니다**. 심링크로 활성화하세요:
+21개 카테고리에 걸쳐 364개 설치 팩 파일이 `~/.codex/agent-packs/`에 기록되며 기본적으로 로드되지 **않습니다**. 이 파일들은 `agent-packs/`, `agency/`, awesome 비코어 카테고리에서 설치 시 중복 제거를 거친 최종 결과입니다. 심링크로 활성화하세요:
 
 ```bash
 # 특정 팩 활성화
@@ -351,7 +351,7 @@ Codex → spawn_agent("planner")
 
 ### 3. [Awesome Codex Subagents](https://github.com/VoltAgent/awesome-codex-subagents)
 
-136개 프로덕션급 네이티브 TOML 에이전트. 이미 Codex 호환 — 변환 불필요. core development부터 meta-orchestration까지 10개 카테고리로 구성되어 있습니다.
+네이티브 TOML 형식의 업스트림 카테고리 기반 에이전트 컬렉션입니다. 이 저장소에서는 core development부터 meta-orchestration까지 여러 awesome 카테고리를 가져오며, 설치 시 다른 소스와의 파일명 중복을 정리해 최종 설치 footprint에 반영합니다.
 
 ### 4. [Oh My Codex (OMX)](https://github.com/Yeachan-Heo/oh-my-codex)
 

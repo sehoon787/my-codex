@@ -15,7 +15,7 @@ rm -rf /tmp/my-codex
 ```
 
 This installs:
-- ~91 core agents in `~/.codex/agents/` (always loaded by Codex CLI via `spawn_agent`)
+- ~80 core agents in `~/.codex/agents/` (always loaded by Codex CLI via `spawn_agent`)
 - ~498 domain agent-packs in `~/.codex/agent-packs/` (on-demand via symlink)
 - 125 skills in `~/.codex/skills/` (from Everything Claude Code)
 - Global `AGENTS.md` instructions
@@ -107,8 +107,8 @@ echo "config.toml:   $(grep -q 'multi_agent' ~/.codex/config.toml 2>/dev/null &&
 ```
 
 Expected:
-- Core agents: 90+
-- Agent packs: 490+
+- Core agents: 80+
+- Agent packs: 498+
 - Skills: 95+
 - AGENTS.md: OK
 - config.toml: OK

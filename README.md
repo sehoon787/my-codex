@@ -20,7 +20,7 @@
 
 All-in-one multi-agent orchestration for OpenAI Codex CLI — install once, get everything.
 
-Bundles **444 agents** (80 auto-loaded + 364 agent-packs) and **125 skills** from 4 upstream sources into native TOML format. Codex CLI auto-discovers agents via `spawn_agent` and routes tasks to the optimal specialist. GitHub Actions CI syncs upstream changes weekly.
+Bundles **444 agents** (80 auto-loaded + 498 agent-packs) and **125 skills** from 4 upstream sources into native TOML format. Codex CLI auto-discovers agents via `spawn_agent` and routes tasks to the optimal specialist. GitHub Actions CI syncs upstream changes weekly.
 
 Based on the official [Codex Subagents](https://developers.openai.com/codex/subagents) specification.
 
@@ -148,7 +148,7 @@ rm ~/.codex/agents/<agent-name>.toml
 | Category | Count | Source | Location |
 |------|------|------|------|
 | Auto-loaded Agents | 80 (37 core + 54 awesome − 11 shared) | Orchestration infrastructure + awesome core | `~/.codex/agents/` |
-| Agent Packs | 364 (282 packs + 82 awesome) | 21 domain categories + awesome domain | `~/.codex/agent-packs/` |
+| Agent Packs | 498 (282 packs + 134 agency + 82 awesome) | 21 domain categories + agency specialists + awesome domain | `~/.codex/agent-packs/` |
 | Skills | 95 | ECC | `~/.codex/skills/` |
 | config.toml | 1 | my-codex | `~/.codex/config.toml` |
 | AGENTS.md | 1 | my-codex | `~/.codex/AGENTS.md` |
@@ -224,7 +224,7 @@ Key skills include:
 ┌─────────────────────────────────────────────────────────┐
 │  Agent Layer (444 unique agents in native TOML)          │
 │    ├── Auto-loaded (80): 37 core + 54 awesome − 11 shared│
-│    └── Agent Packs (364): 282 packs + 82 awesome         │
+│    └── Agent Packs (498): 282 packs + 134 agency + 82 awesome│
 ├─────────────────────────────────────────────────────────┤
 │  Skills Layer (95 from ECC)                             │
 │    ├── tdd-workflow, security-review, autopilot         │

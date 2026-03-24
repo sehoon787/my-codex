@@ -111,18 +111,20 @@ jobs:
           OMC_COUNT=$(find codex-agents/omc -name '*.toml' 2>/dev/null | wc -l)
           AWESOME_CORE_COUNT=$(find codex-agents/awesome-core -name '*.toml' 2>/dev/null | wc -l)
           PACK_COUNT=$(find codex-agents/agent-packs -name '*.toml' 2>/dev/null | wc -l)
+          AGENCY_TOML_COUNT=$(find codex-agents/agency -name '*.toml' 2>/dev/null | wc -l)
           # Subtract core-vs-awesome filename overlap (both install to ~/.codex/agents/)
           # Overlap: agents in omo/omc/awesome-core that also exist in awesome/
           OVERLAP=$(comm -12 \
             <({ find codex-agents/core codex-agents/omo codex-agents/omc codex-agents/awesome-core -name '*.toml' -exec basename {} \; 2>/dev/null; } | sort -u) \
             <(find codex-agents/awesome -name '*.toml' -exec basename {} \; 2>/dev/null | sort -u) \
             | wc -l)
-          TOTAL_AGENTS=$((CORE_COUNT + OMO_COUNT + OMC_COUNT + AWESOME_CORE_COUNT + PACK_COUNT + AWESOME_COUNT - OVERLAP))
+          TOTAL_AGENTS=$((CORE_COUNT + OMO_COUNT + OMC_COUNT + AWESOME_CORE_COUNT + PACK_COUNT + AGENCY_TOML_COUNT + AWESOME_COUNT - OVERLAP))
           echo "CORE_COUNT=$CORE_COUNT" >> $GITHUB_ENV
           echo "OMO_COUNT=$OMO_COUNT" >> $GITHUB_ENV
           echo "OMC_COUNT=$OMC_COUNT" >> $GITHUB_ENV
           echo "AWESOME_CORE_COUNT=$AWESOME_CORE_COUNT" >> $GITHUB_ENV
           echo "PACK_COUNT=$PACK_COUNT" >> $GITHUB_ENV
+          echo "AGENCY_TOML_COUNT=$AGENCY_TOML_COUNT" >> $GITHUB_ENV
           echo "TOTAL_AGENTS=$TOTAL_AGENTS" >> $GITHUB_ENV
 
       # 6. Update SOURCES.json
@@ -183,6 +185,21 @@ jobs:
             sed -i -E "s/data-count=\"[0-9]+\"(>0<\/em> <span class=\"lang\" data-en=\"skills\")/data-count=\"${TOTAL_SKILLS}\"\1/" docs/index.html
             sed -i -E "s/[0-9]+_agents/${TOTAL_AGENTS}_agents/g" docs/index.html
             sed -i -E "s/[0-9]+_skills/${TOTAL_SKILLS}_skills/g" docs/index.html
+          fi
+
+          # AI-INSTALL.md — update detail counts
+          if [ -f AI-INSTALL.md ]; then
+            AWESOME_CORE_CATS=0
+            for d in codex-agents/awesome/01-core-development codex-agents/awesome/03-infrastructure codex-agents/awesome/04-quality-security codex-agents/awesome/09-meta-orchestration; do
+              AWESOME_CORE_CATS=$((AWESOME_CORE_CATS + $(find "$d" -name '*.toml' 2>/dev/null | wc -l)))
+            done
+            AUTO_LOADED=$((CORE_COUNT + OMO_COUNT + OMC_COUNT + AWESOME_CORE_COUNT + AWESOME_CORE_CATS - OVERLAP))
+            PACK_LOADED=$((TOTAL_AGENTS - AUTO_LOADED))
+            sed -i -E "s/~[0-9]+ core agents/~${AUTO_LOADED} core agents/" AI-INSTALL.md
+            sed -i -E "s/~[0-9]+ domain agent-packs/~${PACK_LOADED} domain agent-packs/" AI-INSTALL.md
+            sed -i -E "s/Core agents: [0-9]+\+/Core agents: ${AUTO_LOADED}+/" AI-INSTALL.md
+            sed -i -E "s/Agent packs: [0-9]+\+/Agent packs: ${PACK_LOADED}+/" AI-INSTALL.md
+            sed -i -E "s/Skills: [0-9]+\+/Skills: ${TOTAL_SKILLS}+/" AI-INSTALL.md
           fi
 
       # 8. Create PR

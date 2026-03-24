@@ -80,7 +80,7 @@ Lese die vollständige Ausgabe und führe jeden Schritt in der Reihenfolge aus. 
 
 ## Core Agenten
 
-37 Core-Agenten für Orchestrierungs-Infrastruktur werden in `~/.codex/agents/` installiert. Dies sind die Grundlagen-Agenten, die Arbeit orchestrieren, planen, überprüfen und verifizieren. Domänen-Spezialisten befinden sich in Agent-Paketen. Awesome-Agenten (136) werden auch in `~/.codex/agents/` installiert für zusätzliche Abdeckung (11 Agenten gemeinsam zwischen Core und Awesome, ergeben 80 eindeutige automatisch geladene Agenten).
+37 Core-Agenten für Orchestrierungs-Infrastruktur werden in `~/.codex/agents/` installiert. Dies sind die Grundlagen-Agenten, die Arbeit orchestrieren, planen, überprüfen und verifizieren. Domänen-Spezialisten befinden sich in Agent-Paketen. Awesome-Kategorien liefern zusätzliche Abdeckung, aber durch überschneidende Zieldateinamen verdichtet sich die final automatisch geladene Menge auf 80 installierte Dateien.
 
 ### Orchestratoren (5)
 boss, sisyphus, atlas, hephaestus, prometheus
@@ -351,7 +351,7 @@ Ein Entwicklungs-Framework, ursprünglich für Claude Code entwickelt, das 125 S
 
 ### 3. [Awesome Codex Subagents](https://github.com/VoltAgent/awesome-codex-subagents)
 
-136 produktionsreife Agenten im nativen TOML-Format. Bereits Codex-kompatibel — keine Konvertierung erforderlich. Organisiert über 10 Kategorien von Kern-Entwicklung bis Meta-Orchestrierung.
+Eine upstream-basierte Sammlung nativer TOML-Agenten nach Kategorien. Dieses Repo übernimmt mehrere awesome-Kategorien von Kern-Entwicklung bis Meta-Orchestrierung und bereinigt beim Installieren überschneidende Dateinamen mit anderen Quellen, sodass die finale Installationsmenge korrekt abgebildet wird.
 
 ### 4. [Oh My Codex (OMX)](https://github.com/Yeachan-Heo/oh-my-codex)
 

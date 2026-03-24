@@ -80,7 +80,7 @@ curl -s https://raw.githubusercontent.com/sehoon787/my-codex/main/AI-INSTALL.md
 
 ## コアエージェント
 
-37 個のコアエージェントはオーケストレーション インフラストラクチャを提供し、`~/.codex/agents/` にインストールされます。これらはオーケストレーション、計画、レビュー、検証を実行する基盤エージェントです。ドメイン スペシャリストはエージェントパック内にあります。素晴らしいエージェント (136) も `~/.codex/agents/` にインストールされ、追加カバレッジを提供します (コアと素晴らしい間で共有される 11 エージェントにより、80 個のユニークな自動読み込みエージェントが得られます)。
+37 個のコアエージェントはオーケストレーション インフラストラクチャを提供し、`~/.codex/agents/` にインストールされます。これらはオーケストレーション、計画、レビュー、検証を実行する基盤エージェントです。ドメイン スペシャリストはエージェントパック内にあります。awesome カテゴリのエージェントが追加カバレッジを提供しますが、ファイル名の重複により最終的な自動読み込みセットは 80 個のインストール済みファイルに集約されます。
 
 ### オーケストレータ (5)
 boss, sisyphus, atlas, hephaestus, prometheus
@@ -351,7 +351,7 @@ Codex → spawn_agent("planner")
 
 ### 3. [Awesome Codex Subagents](https://github.com/VoltAgent/awesome-codex-subagents)
 
-ネイティブ TOML 形式の 136 個のプロダクション グレード エージェント。すでに Codex 互換 — 変換は不要。コア開発からメタオーケストレーションまで、10 カテゴリに整理。
+ネイティブ TOML 形式の上流カテゴリベース エージェント コレクションです。このリポジトリでは core development から meta-orchestration まで複数の awesome カテゴリを取り込み、インストール時に他ソースとの重複ファイル名を整理して最終インストール フットプリントへ反映します。
 
 ### 4. [Oh My Codex (OMX)](https://github.com/Yeachan-Heo/oh-my-codex)
 

@@ -172,6 +172,25 @@ jobs:
             sed -i -E "s/\\*\\*[0-9]+ installed agent files\\*\\*/**${INSTALLED_AGENT_TOTAL} installed agent files**/g" "$f" || true
           done
 
+          # README prose uses installed footprint, not raw upstream totals.
+          if [ -f README.md ]; then
+            sed -i -E "s/Awesome agents add additional coverage, but overlapping filenames collapse the final auto-loaded set to [0-9]+ installed files/Awesome agents add additional coverage, but overlapping filenames collapse the final auto-loaded set to ${AUTO_LOADED_COUNT} installed files/" README.md
+            sed -i -E "s/[0-9]+ installed pack files across [0-9]+ categories/${AGENT_PACK_COUNT} installed pack files across 21 categories/" README.md
+          fi
+          if [ -f docs/i18n/README.ko.md ]; then
+            sed -i -E "s/최종 자동 로드 세트는 [0-9]+개 설치 파일로 정리됩니다/최종 자동 로드 세트는 ${AUTO_LOADED_COUNT}개 설치 파일로 정리됩니다/" docs/i18n/README.ko.md
+            sed -i -E "s/[0-9]+개 설치 팩 파일이 `~\\/\\.codex\\/agent-packs\\/`에 기록되며/${AGENT_PACK_COUNT}개 설치 팩 파일이 `~\\/\\.codex\\/agent-packs\\/`에 기록되며/" docs/i18n/README.ko.md
+          fi
+          if [ -f docs/i18n/README.ja.md ]; then
+            sed -i -E "s/最終的な自動読み込みセットは [0-9]+ 個のインストール済みファイルに集約されます/最終的な自動読み込みセットは ${AUTO_LOADED_COUNT} 個のインストール済みファイルに集約されます/" docs/i18n/README.ja.md
+          fi
+          if [ -f docs/i18n/README.zh.md ]; then
+            sed -i -E "s/最终自动加载集合会收敛为 [0-9]+ 个已安装文件/最终自动加载集合会收敛为 ${AUTO_LOADED_COUNT} 个已安装文件/" docs/i18n/README.zh.md
+          fi
+          if [ -f docs/i18n/README.de.md ]; then
+            sed -i -E "s/final automatisch geladene Menge auf [0-9]+ installierte Dateien/final automatisch geladene Menge auf ${AUTO_LOADED_COUNT} installierte Dateien/" docs/i18n/README.de.md
+          fi
+
           # docs/index.html — targeted updates (avoid greedy global replace)
           if [ -f docs/index.html ]; then
             sed -i -E 's/[0-9]+ installed agent files \([0-9]+ auto-loaded \+ [0-9]+ agent-packs\)/'"${INSTALLED_AGENT_TOTAL} installed agent files (${AUTO_LOADED_COUNT} auto-loaded + ${AGENT_PACK_COUNT} agent-packs)"'/g' docs/index.html
@@ -196,6 +215,8 @@ jobs:
             sed -i -E "s/Done\. [0-9]+ installed agent files ready/Done. ${INSTALLED_AGENT_TOTAL} installed agent files ready/g" docs/index.html
             sed -i -E "s/완료\. [0-9]+개 설치 에이전트 파일 준비됨/완료. ${INSTALLED_AGENT_TOTAL}개 설치 에이전트 파일 준비됨/g" docs/index.html
             sed -i -E "s/aggregates 4 curated upstream sources into [0-9]+ installed agent files and [0-9]+ skills/aggregates 4 curated upstream sources into ${INSTALLED_AGENT_TOTAL} installed agent files and ${SKILL_COUNT} skills/g" docs/index.html
+            sed -i -E 's/VoltAgent — [0-9]+ production-grade native TOML agents/VoltAgent — native TOML categories for Codex specialists/g' docs/index.html
+            sed -i -E 's/VoltAgent — [0-9]+개 프로덕션급 네이티브 TOML 에이전트/VoltAgent — Codex 전문가용 네이티브 TOML 카테고리/g' docs/index.html
             # Pipeline diagram "N + N + N"
             sed -i -E "s/[0-9]+ \+ [0-9]+ \+ [0-9]+/${AUTO_LOADED_COUNT} + ${AGENT_PACK_COUNT} + ${SKILL_COUNT}/" docs/index.html
             sed -i -E "s/All [0-9]+ installed pack files/All ${AGENT_PACK_COUNT} installed pack files/g" docs/index.html

@@ -80,7 +80,7 @@ curl -s https://raw.githubusercontent.com/sehoon787/my-codex/main/AI-INSTALL.md
 
 ## 核心智能体
 
-37 个核心智能体提供编排基础设施，安装到 `~/.codex/agents/`。这些是编排、规划、审查和验证工作的基础智能体。领域专家在智能体包中。Awesome 智能体（136 个）也安装到 `~/.codex/agents/` 以提供额外覆盖（核心和 awesome 之间共享 11 个智能体，产生 80 个唯一的自动加载智能体）。
+37 个核心智能体提供编排基础设施，安装到 `~/.codex/agents/`。这些是编排、规划、审查和验证工作的基础智能体。领域专家位于智能体包中。awesome 类别智能体提供额外覆盖，但由于目标文件名会重叠，最终自动加载集合会收敛为 80 个已安装文件。
 
 ### 编排器 (5)
 boss, sisyphus, atlas, hephaestus, prometheus
@@ -351,7 +351,7 @@ Codex → spawn_agent("planner")
 
 ### 3. [Awesome Codex Subagents](https://github.com/VoltAgent/awesome-codex-subagents)
 
-136 个生产级智能体，采用原生 TOML 格式。已 Codex 兼容 — 无需转换。跨 10 个类别从核心开发到元编排组织。
+这是一个基于上游分类的原生 TOML 智能体集合。本仓库会引入从 core development 到 meta-orchestration 的多个 awesome 类别，并在安装时处理与其他来源重名的目标文件，最终反映到安装后的 footprint 中。
 
 ### 4. [Oh My Codex (OMX)](https://github.com/Yeachan-Heo/oh-my-codex)
 

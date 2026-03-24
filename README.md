@@ -20,7 +20,7 @@
 
 All-in-one multi-agent orchestration for OpenAI Codex CLI — install once, get everything.
 
-Bundles **319 agents** (104 core + 215 domain agent-packs), **136 skills**, and **50 rules** from 5 upstream sources into native TOML format. Codex CLI auto-discovers agents via `spawn_agent` and routes tasks to the optimal specialist. GitHub Actions CI syncs upstream changes weekly.
+Bundles **319 agents** (104 core + 215 domain agent-packs), **136 skills**, and **50 rules** from 4 upstream sources into native TOML format. Codex CLI auto-discovers agents via `spawn_agent` and routes tasks to the optimal specialist. GitHub Actions CI syncs upstream changes weekly.
 
 Based on the official [Codex Subagents](https://developers.openai.com/codex/subagents) specification.
 
@@ -31,7 +31,7 @@ Based on the official [Codex Subagents](https://developers.openai.com/codex/suba
 | Principle | Description |
 |-----------|-------------|
 | **Native TOML** | All agents in Codex CLI's native `.toml` format — no runtime conversion, no compatibility issues |
-| **Multi-Source Curation** | 5 upstream sources aggregated, deduplicated, and quality-checked into a single collection |
+| **Multi-Source Curation** | 4 upstream sources aggregated, deduplicated, and quality-checked into a single collection |
 | **Zero Configuration** | Install once, get 319 agents. `config.toml` auto-configured with `multi_agent = true` |
 
 ## Quick Start
@@ -72,7 +72,7 @@ Read the full output and execute each step in order. Use `curl`, not `WebFetch`.
 
 ### All-in-One Bundle
 - Install provides **319 agents, 136 skills, and 50 rules** instantly
-- Bundles 5 upstream sources (agency-agents, everything-claude-code, oh-my-claudecode, oh-my-codex, awesome-codex-subagents)
+- Bundles 4 upstream sources (agency-agents, everything-claude-code, oh-my-codex, awesome-codex-subagents)
 - Weekly CI auto-sync keeps bundled content up-to-date with upstream
 - MD-to-TOML conversion handled automatically for non-native sources
 
@@ -80,7 +80,7 @@ Read the full output and execute each step in order. Use `curl`, not `WebFetch`.
 
 ## Core Agents
 
-104 core agents from 3 sources (OMC 19 + Engineering 24 + Awesome Core 52 + 9 system agents) are installed to `~/.codex/agents/`. Codex CLI auto-discovers all `.toml` files in this directory via `spawn_agent`. The 136 awesome-codex-subagents are split: core categories go to agents, others to agent-packs.
+104 core agents from 3 sources (OMX + Engineering 24 + Awesome Core 52 + 9 system agents) are installed to `~/.codex/agents/`. Codex CLI auto-discovers all `.toml` files in this directory via `spawn_agent`. The 136 awesome-codex-subagents are split: core categories go to agents, others to agent-packs.
 
 ### Development (19 agents)
 executor, architect, planner, debugger, code-reviewer, code-simplifier, critic, designer, document-specialist, explore, git-master, qa-tester, scientist, security-reviewer, test-engineer, tracer, verifier, writer, analyst
@@ -129,39 +129,12 @@ rm ~/.codex/agents/<agent-name>.toml
 
 | Category | Count | Source | Location |
 |------|------|------|------|
-| Core Agents | 104 | OMC 19 + Engineering 24 + System 9 + Awesome Core 52 | `~/.codex/agents/` |
+| Core Agents | 104 | OMX + Engineering 24 + System 9 + Awesome Core 52 | `~/.codex/agents/` |
 | Agent Packs | 215+ | 18 domain categories | `~/.codex/agent-packs/` |
 | Skills | 108 | ECC | `~/.codex/skills/` |
 | Rules | 50 | ECC | project scope |
 | config.toml | 1 | my-codex | `~/.codex/config.toml` |
 | AGENTS.md | 1 | my-codex | `~/.codex/AGENTS.md` |
-
-<details>
-<summary>OMC Agents (19) — Converted from oh-my-claudecode (MD-to-TOML)</summary>
-
-| Agent | Role |
-|---------|------|
-| analyst | Pre-analysis — understand the situation before planning |
-| architect | System design and architecture decisions |
-| code-reviewer | Focused code review |
-| code-simplifier | Code simplification and cleanup |
-| critic | Critical analysis, alternative proposals |
-| debugger | Focused debugging |
-| designer | UI/UX design guidance |
-| document-specialist | Documentation writing and management |
-| executor | Task execution |
-| explore | Codebase exploration |
-| git-master | Git workflow management |
-| planner | Rapid planning |
-| qa-tester | Quality assurance testing |
-| scientist | Research and experimentation |
-| security-reviewer | Security review |
-| test-engineer | Test writing and maintenance |
-| tracer | Execution tracing and analysis |
-| verifier | Final verification |
-| writer | Content and documentation writing |
-
-</details>
 
 <details>
 <summary>Awesome Core Agents (52) — From awesome-codex-subagents</summary>
@@ -266,7 +239,7 @@ Each language directory contains: coding-style.md, hooks.md, patterns.md, securi
 └──────┘ └────────┘ └────────┘ └────────┘
 ┌─────────────────────────────────────────────────────────┐
 │  Agent Layer (319 agents in native TOML)                │
-│    ├── Core (104): OMC + Engineering + System agents    │
+│    ├── Core (104): OMX + Engineering + System agents    │
 │    ├── Awesome (136): 10 specialist categories          │
 │    └── Agent Packs (215): 18 domain categories          │
 ├─────────────────────────────────────────────────────────┤
@@ -397,23 +370,19 @@ A library of 156 business specialist agent personas. Provides specialist perspec
 
 A development framework originally built for Claude Code, providing 108 skills and 50 rules. Approximately half the skills contain generic coding guidance usable across any LLM agent; the rest reference Claude Code-specific tools. Rules provide language-agnostic coding standards across 8 programming languages.
 
-### 3. [Oh My Claude Code (OMC)](https://github.com/Yeachan-Heo/oh-my-claudecode)
-
-A multi-agent orchestration plugin originally built for Claude Code with 19 specialist agents. Agents are converted from Markdown to TOML format via `md-to-toml.sh`. Note: agent instructions may reference Claude Code-specific tools — for native Codex orchestration, see oh-my-codex (#5).
-
-### 4. [Awesome Codex Subagents](https://github.com/VoltAgent/awesome-codex-subagents)
+### 3. [Awesome Codex Subagents](https://github.com/VoltAgent/awesome-codex-subagents)
 
 136 production-grade agents in native TOML format. Already Codex-compatible — no conversion needed. Organized across 10 categories from core development to meta-orchestration.
 
-### 5. [Oh My Codex (OMX)](https://github.com/Yeachan-Heo/oh-my-codex)
+### 4. [Oh My Codex (OMX)](https://github.com/Yeachan-Heo/oh-my-codex)
 
-The Codex CLI equivalent of oh-my-claudecode by Yeachan Heo. Provides 6 Codex-native agents (architect, planner, executor, debugger, verifier, security-reviewer), hooks, HUD, and team pipelines. Already in native TOML format — no conversion needed.
+Codex CLI multi-agent orchestration by Yeachan Heo. Provides 6 Codex-native agents (architect, planner, executor, debugger, verifier, security-reviewer), hooks, HUD, and team pipelines. Already in native TOML format — no conversion needed.
 
-### 6. [Oh My OpenAgent (omo)](https://github.com/code-yeongyu/oh-my-openagent)
+### 5. [Oh My OpenAgent (omo)](https://github.com/code-yeongyu/oh-my-openagent)
 
 A multi-platform agent harness by code-yeongyu. The 9 orchestration agents in this repository (atlas, hephaestus, metis, momus, oracle, prometheus, sisyphus, librarian, multimodal-looker) are adapted from omo agents, converted to Codex-native TOML format.
 
-### 7. [OpenAI Official Skills](https://github.com/openai/skills)
+### 6. [OpenAI Official Skills](https://github.com/openai/skills)
 
 The official Skills Catalog for Codex provided by OpenAI. Includes specialist skills for document processing, code generation, and development workflows. Can be installed via `$skill-installer` in Codex CLI.
 
@@ -433,7 +402,6 @@ Updated weekly by CI auto-sync. No SOURCES.json yet — versions tracked via syn
 |--------|------|
 | [agency-agents](https://github.com/msitarzewski/agency-agents) | Weekly CI |
 | [everything-claude-code](https://github.com/affaan-m/everything-claude-code) | Weekly CI |
-| [oh-my-claudecode](https://github.com/Yeachan-Heo/oh-my-claudecode) | Weekly CI |
 | [oh-my-codex](https://github.com/Yeachan-Heo/oh-my-codex) | Weekly CI |
 | [awesome-codex-subagents](https://github.com/VoltAgent/awesome-codex-subagents) | Weekly CI |
 
@@ -445,7 +413,6 @@ This repository builds on the work of the following open-source projects:
 
 - [agency-agents](https://github.com/msitarzewski/agency-agents) — msitarzewski
 - [everything-claude-code](https://github.com/affaan-m/everything-claude-code) — affaan-m
-- [oh-my-claudecode](https://github.com/Yeachan-Heo/oh-my-claudecode) — Yeachan Heo
 - [oh-my-codex](https://github.com/Yeachan-Heo/oh-my-codex) — Yeachan Heo
 - [oh-my-openagent](https://github.com/code-yeongyu/oh-my-openagent) — code-yeongyu
 - [awesome-codex-subagents](https://github.com/VoltAgent/awesome-codex-subagents) — VoltAgent

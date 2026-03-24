@@ -14,13 +14,13 @@
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 ![Agents](https://img.shields.io/badge/agents-444-blue)
-![Skills](https://img.shields.io/badge/skills-95-purple)
+![Skills](https://img.shields.io/badge/skills-125-purple)
 ![MCP](https://img.shields.io/badge/MCP-3-green)
 ![Auto Sync](https://img.shields.io/badge/upstream_sync-weekly-brightgreen)
 
 OpenAI Codex CLI 的一体化多智能体编排 — 一次安装，获得一切。
 
-将 **444 个智能体**（80 个自动加载 + 364 个智能体包）和 **95 个技能**从 4 个上游源整合为原生 TOML 格式。Codex CLI 通过 `spawn_agent` 自动发现智能体并将任务路由给最优专家。GitHub Actions CI 每周同步上游更改。
+将 **444 个已安装智能体文件**（80 个自动加载 + 364 个智能体包）和 **125 个技能**从 4 个上游源整合为原生 TOML 格式。Codex CLI 通过 `spawn_agent` 自动发现智能体并将任务路由给最优专家。GitHub Actions CI 每周同步上游更改。
 
 基于官方 [Codex Subagents](https://developers.openai.com/codex/subagents) 规范。
 
@@ -71,7 +71,7 @@ curl -s https://raw.githubusercontent.com/sehoon787/my-codex/main/AI-INSTALL.md
 - **o4-mini（低）**：快速查询、探索 — 从 Claude Haiku 等价体映射
 
 ### 一体化包
-- 安装即刻提供 **444 个智能体和 95 个技能**
+- 安装即刻提供 **444 个已安装智能体文件和 125 个技能**
 - 汇集 4 个上游源（agency-agents、everything-claude-code、oh-my-codex、awesome-codex-subagents）
 - 周期性 CI 自动同步保持捆绑内容与上游同步
 - MD-to-TOML 转换自动处理非原生源
@@ -107,7 +107,7 @@ test-engineer, qa-tester, multimodal-looker
 
 ## 智能体包（领域专家）
 
-282 个领域智能体跨 21 个类别安装到 `~/.codex/agent-packs/` — **默认不加载**。通过符号链接激活包：
+364 个已安装包文件跨 21 个类别写入 `~/.codex/agent-packs/` — **默认不加载**。通过符号链接激活包：
 
 ```bash
 # 激活单个包
@@ -148,8 +148,8 @@ rm ~/.codex/agents/<agent-name>.toml
 | 类别 | 数量 | 源 | 位置 |
 |------|------|------|------|
 | 自动加载的智能体 | 80（37 个核心 + 54 个 awesome − 11 个共享） | 编排基础设施 + awesome 核心 | `~/.codex/agents/` |
-| 智能体包 | 364（282 个包 + 82 个 awesome） | 21 个领域类别 + awesome 领域 | `~/.codex/agent-packs/` |
-| 技能 | 95 | ECC | `~/.codex/skills/` |
+| 智能体包 | 364 个已安装文件 | `agent-packs/`、`agency/`、awesome 非核心类别 | `~/.codex/agent-packs/` |
+| 技能 | 125 | ECC | `~/.codex/skills/` |
 | config.toml | 1 | my-codex | `~/.codex/config.toml` |
 | AGENTS.md | 1 | my-codex | `~/.codex/AGENTS.md` |
 
@@ -173,7 +173,7 @@ agent-organizer, capability-assessor, conflict-resolver, context-manager, execut
 </details>
 
 <details>
-<summary>技能 (95) — 来自 Everything Claude Code</summary>
+<summary>技能 (125) — 来自 Everything Claude Code</summary>
 
 关键技能包括：
 
@@ -223,10 +223,10 @@ agent-organizer, capability-assessor, conflict-resolver, context-manager, execut
 └──────┘ └────────┘ └────────┘ └────────┘
 ┌─────────────────────────────────────────────────────────┐
 │  Agent Layer (444 unique agents in native TOML)          │
-│    ├── Auto-loaded (80): 37 core + 54 awesome − 11 shared│
-│    └── Agent Packs (364): 282 packs + 82 awesome         │
+│    ├── Auto-loaded (80): final installed footprint       │
+│    └── Agent Packs (364): final installed footprint      │
 ├─────────────────────────────────────────────────────────┤
-│  Skills Layer (95 from ECC)                             │
+│  Skills Layer (125 from ECC)                            │
 │    ├── tdd-workflow, security-review, autopilot         │
 │    └── pdf, docx, pptx, xlsx, team                     │
 └─────────────────────────────────────────────────────────┘
@@ -301,7 +301,7 @@ Codex → spawn_agent("security-reviewer")
 ### 并行生成
 
 ```
-> Spawn 578 agents: refactor auth, add tests, review security
+> Run a multi-agent pass: refactor auth, add tests, review security
 
 Codex → spawn_agent("executor") × refactoring
       → spawn_agent("test-engineer") × test writing
@@ -347,7 +347,7 @@ Codex → spawn_agent("planner")
 
 ### 2. [Everything Claude Code (ECC)](https://github.com/affaan-m/everything-claude-code)
 
-最初为 Claude Code 构建的开发框架，提供 95 个技能。13 个 Claude Code 特定技能被移除；其余技能包含跨任何 LLM 智能体使用的通用编码指导。rules/ 目录包含在 repo 中作为参考材料，但不被 Codex CLI 读取。
+最初为 Claude Code 构建的开发框架，提供 125 个技能。13 个 Claude Code 特定技能被移除；其余技能包含可被任何 LLM 智能体复用的通用编码指导。rules/ 目录包含在 repo 中作为参考材料，但不被 Codex CLI 读取。
 
 ### 3. [Awesome Codex Subagents](https://github.com/VoltAgent/awesome-codex-subagents)
 

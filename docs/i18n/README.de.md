@@ -14,13 +14,13 @@
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 ![Agents](https://img.shields.io/badge/agents-444-blue)
-![Skills](https://img.shields.io/badge/skills-95-purple)
+![Skills](https://img.shields.io/badge/skills-125-purple)
 ![MCP](https://img.shields.io/badge/MCP-3-green)
 ![Auto Sync](https://img.shields.io/badge/upstream_sync-weekly-brightgreen)
 
 All-in-One Multi-Agent-Orchestrierung für OpenAI Codex CLI — einmalige Installation, alles inklusive.
 
-Bündelt **444 Agenten** (80 automatisch geladen + 364 Agent-Pakete) und **95 Skills** aus 4 vorgelagerten Quellen im nativen TOML-Format. Codex CLI entdeckt Agenten automatisch über `spawn_agent` und leitet Aufgaben zum optimalen Spezialisten weiter. GitHub Actions CI synchronisiert vorgelagerte Änderungen wöchentlich.
+Bündelt **444 installierte Agent-Dateien** (80 automatisch geladen + 364 Agent-Pakete) und **125 Skills** aus 4 vorgelagerten Quellen im nativen TOML-Format. Codex CLI entdeckt Agenten automatisch über `spawn_agent` und leitet Aufgaben zum optimalen Spezialisten weiter. GitHub Actions CI synchronisiert vorgelagerte Änderungen wöchentlich.
 
 Basierend auf der offiziellen [Codex Subagents](https://developers.openai.com/codex/subagents) Spezifikation.
 
@@ -71,7 +71,7 @@ Lese die vollständige Ausgabe und führe jeden Schritt in der Reihenfolge aus. 
 - **o4-mini (niedrig)**: Schnelle Lookups, Exploration — aus Claude Haiku Äquivalenten zugeordnet
 
 ### All-in-One Bundle
-- Installation bietet **444 Agenten und 95 Skills** sofort
+- Installation bietet **444 installierte Agent-Dateien und 125 Skills** sofort
 - Bündelt 4 vorgelagerte Quellen (agency-agents, everything-claude-code, oh-my-codex, awesome-codex-subagents)
 - Wöchentliche CI Auto-Sync hält gebündelte Inhalte mit vorgelagerten Quellen aktuell
 - MD-zu-TOML-Konvertierung wird automatisch für Nicht-Native-Quellen durchgeführt
@@ -107,7 +107,7 @@ test-engineer, qa-tester, multimodal-looker
 
 ## Agent-Pakete (Domänen-Spezialisten)
 
-282 Domänen-Agenten über 21 Kategorien installiert in `~/.codex/agent-packs/` — werden **nicht** standardmäßig geladen. Aktiviere ein Paket durch Symlink:
+364 installierte Paketdateien über 21 Kategorien werden in `~/.codex/agent-packs/` geschrieben — sie werden **nicht** standardmäßig geladen. Aktiviere ein Paket per Symlink:
 
 ```bash
 # Aktiviere ein einzelnes Paket
@@ -148,8 +148,8 @@ rm ~/.codex/agents/<agent-name>.toml
 | Kategorie | Anzahl | Quelle | Ort |
 |------|--------|--------|-----|
 | Automatisch geladene Agenten | 80 (37 Core + 54 Awesome − 11 gemeinsam) | Orchestrierungs-Infrastruktur + Awesome Core | `~/.codex/agents/` |
-| Agent-Pakete | 364 (282 Pakete + 82 Awesome) | 21 Domänen-Kategorien + Awesome Domain | `~/.codex/agent-packs/` |
-| Skills | 95 | ECC | `~/.codex/skills/` |
+| Agent-Pakete | 364 installierte Dateien | `agent-packs/`, `agency/`, Awesome-Nicht-Core-Kategorien | `~/.codex/agent-packs/` |
+| Skills | 125 | ECC | `~/.codex/skills/` |
 | config.toml | 1 | my-codex | `~/.codex/config.toml` |
 | AGENTS.md | 1 | my-codex | `~/.codex/AGENTS.md` |
 
@@ -173,7 +173,7 @@ agent-organizer, capability-assessor, conflict-resolver, context-manager, execut
 </details>
 
 <details>
-<summary>Skills (95) — Aus Everything Claude Code</summary>
+<summary>Skills (125) — Aus Everything Claude Code</summary>
 
 Wichtige Skills beinhalten:
 
@@ -223,10 +223,10 @@ Wichtige Skills beinhalten:
 └──────┘ └────────┘ └────────┘ └────────┘
 ┌─────────────────────────────────────────────────────────┐
 │  Agent Layer (444 unique agents in native TOML)          │
-│    ├── Auto-loaded (80): 37 core + 54 awesome − 11 shared│
-│    └── Agent Packs (364): 282 packs + 82 awesome         │
+│    ├── Auto-loaded (80): final installed footprint       │
+│    └── Agent Packs (364): final installed footprint      │
 ├─────────────────────────────────────────────────────────┤
-│  Skills Layer (95 from ECC)                             │
+│  Skills Layer (125 from ECC)                            │
 │    ├── tdd-workflow, security-review, autopilot         │
 │    └── pdf, docx, pptx, xlsx, team                     │
 └─────────────────────────────────────────────────────────┘
@@ -301,7 +301,7 @@ Codex → spawn_agent("security-reviewer")
 ### Paralleles Spawning
 
 ```
-> Spawn 578 agents: refactor auth, add tests, review security
+> Run a multi-agent pass: refactor auth, add tests, review security
 
 Codex → spawn_agent("executor") × refactoring
       → spawn_agent("test-engineer") × test writing
@@ -347,7 +347,7 @@ Eine Bibliothek mit 156 Business-Spezialisten-Agent-Personas. Bietet Spezialiste
 
 ### 2. [Everything Claude Code (ECC)](https://github.com/affaan-m/everything-claude-code)
 
-Ein Entwicklungs-Framework, ursprünglich für Claude Code entwickelt, das 95 Skills bereitstellt. 13 Claude Code-spezifische Skills wurden entfernt; die verbleibenden Skills enthalten generische Kodierungs-Anleitungen, die über jeden LLM-Agenten verwendbar sind. Das rules/ Verzeichnis ist im Repo als Referenzmaterial enthalten, wird aber von Codex CLI nicht gelesen.
+Ein Entwicklungs-Framework, ursprünglich für Claude Code entwickelt, das 125 Skills bereitstellt. 13 Claude Code-spezifische Skills wurden entfernt; die verbleibenden Skills enthalten generische Kodierungs-Anleitungen, die über jeden LLM-Agenten verwendbar sind. Das rules/ Verzeichnis ist im Repo als Referenzmaterial enthalten, wird aber von Codex CLI nicht gelesen.
 
 ### 3. [Awesome Codex Subagents](https://github.com/VoltAgent/awesome-codex-subagents)
 

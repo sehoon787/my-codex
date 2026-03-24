@@ -14,13 +14,13 @@
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 ![Agents](https://img.shields.io/badge/agents-444-blue)
-![Skills](https://img.shields.io/badge/skills-95-purple)
+![Skills](https://img.shields.io/badge/skills-125-purple)
 ![MCP](https://img.shields.io/badge/MCP-3-green)
 ![Auto Sync](https://img.shields.io/badge/upstream_sync-weekly-brightgreen)
 
 All-in-one multi-agent orchestration for OpenAI Codex CLI — install once, get everything.
 
-Bundles **578 agents** (80 auto-loaded + 498 agent-packs) and **125 skills** from 4 upstream sources into native TOML format. Codex CLI auto-discovers agents via `spawn_agent` and routes tasks to the optimal specialist. GitHub Actions CI syncs upstream changes weekly.
+Bundles **444 installed agent files** (80 auto-loaded + 364 agent-packs) and **125 skills** from 4 upstream sources into native TOML format. The repo currently contains 589 TOML source definitions; install-time deduplication resolves overlapping destination filenames into the final installed footprint. Codex CLI auto-discovers agents via `spawn_agent` and routes tasks to the optimal specialist. GitHub Actions CI syncs upstream changes weekly.
 
 Based on the official [Codex Subagents](https://developers.openai.com/codex/subagents) specification.
 
@@ -32,7 +32,7 @@ Based on the official [Codex Subagents](https://developers.openai.com/codex/suba
 |-----------|-------------|
 | **Native TOML** | All agents in Codex CLI's native `.toml` format — no runtime conversion, no compatibility issues |
 | **Multi-Source Curation** | 4 upstream sources aggregated, deduplicated, and quality-checked into a single collection |
-| **Zero Configuration** | Install once, get 578 agents. `config.toml` auto-configured with `multi_agent = true` |
+| **Zero Configuration** | Install once, get 444 ready-to-use agent files. `config.toml` auto-configured with `multi_agent = true` |
 
 ## Quick Start
 
@@ -71,7 +71,7 @@ Read the full output and execute each step in order. Use `curl`, not `WebFetch`.
 - **o4-mini (low)**: Quick lookups, exploration — mapped from Claude Haiku equivalents
 
 ### All-in-One Bundle
-- Install provides **578 agents and 125 skills** instantly
+- Install provides **444 installed agent files and 125 skills** instantly
 - Bundles 4 upstream sources (agency-agents, everything-claude-code, oh-my-codex, awesome-codex-subagents)
 - Weekly CI auto-sync keeps bundled content up-to-date with upstream
 - MD-to-TOML conversion handled automatically for non-native sources
@@ -80,7 +80,7 @@ Read the full output and execute each step in order. Use `curl`, not `WebFetch`.
 
 ## Core Agents
 
-37 core agents providing orchestration infrastructure are installed to `~/.codex/agents/`. These are the foundation agents that orchestrate, plan, review, and verify work. Domain specialists are in agent-packs. Awesome agents (136) are also installed to `~/.codex/agents/` for additional coverage (578 agents shared between core and awesome, yielding 80 unique auto-loaded agents).
+37 core agents providing orchestration infrastructure are installed to `~/.codex/agents/`. These are the foundation agents that orchestrate, plan, review, and verify work. Domain specialists are in agent-packs. Awesome agents add additional coverage, but overlapping filenames collapse the final auto-loaded set to 80 installed files.
 
 ### Orchestrators (5)
 boss, sisyphus, atlas, hephaestus, prometheus
@@ -107,7 +107,7 @@ test-engineer, qa-tester, multimodal-looker
 
 ## Agent Packs (Domain Specialists)
 
-282 domain agents across 21 categories installed to `~/.codex/agent-packs/` — **not** loaded by default. Activate a pack by symlinking:
+364 installed pack files across 21 categories are written to `~/.codex/agent-packs/` — **not** loaded by default. Those files come from `agent-packs/`, `agency/`, and non-core awesome categories after install-time deduplication. Activate a pack by symlinking:
 
 ```bash
 # Activate a single pack
@@ -147,11 +147,13 @@ rm ~/.codex/agents/<agent-name>.toml
 
 | Category | Count | Source | Location |
 |------|------|------|------|
-| Auto-loaded Agents | 80 (37 core + 54 awesome − 11 shared) | Orchestration infrastructure + awesome core | `~/.codex/agents/` |
-| Agent Packs | 498 (282 packs + 134 agency + 82 awesome) | 21 domain categories + agency specialists + awesome domain | `~/.codex/agent-packs/` |
-| Skills | 95 | ECC | `~/.codex/skills/` |
+| Auto-loaded Agents | 80 installed files | `core/`, `omo/`, `omc/`, `awesome-core/`, awesome core categories | `~/.codex/agents/` |
+| Agent Packs | 364 installed files | `agent-packs/`, `agency/`, awesome non-core categories | `~/.codex/agent-packs/` |
+| Skills | 125 | ECC | `~/.codex/skills/` |
 | config.toml | 1 | my-codex | `~/.codex/config.toml` |
 | AGENTS.md | 1 | my-codex | `~/.codex/AGENTS.md` |
+
+The repository source inventory is larger than the install footprint because multiple upstreams ship the same destination filename. `install.sh` verifies the installed counts above, not the raw source totals.
 
 <details>
 <summary>Awesome Core Agents (52) — From awesome-codex-subagents</summary>
@@ -173,7 +175,7 @@ agent-organizer, capability-assessor, conflict-resolver, context-manager, execut
 </details>
 
 <details>
-<summary>Skills (95) — From Everything Claude Code</summary>
+<summary>Skills (125) — From Everything Claude Code</summary>
 
 Key skills include:
 
@@ -222,11 +224,11 @@ Key skills include:
 │_agent│ │N       │ │input   │ │toml    │
 └──────┘ └────────┘ └────────┘ └────────┘
 ┌─────────────────────────────────────────────────────────┐
-│  Agent Layer (444 unique agents in native TOML)          │
-│    ├── Auto-loaded (80): 37 core + 54 awesome − 11 shared│
-│    └── Agent Packs (498): 282 packs + 134 agency + 82 awesome│
+│  Agent Layer (444 installed TOML files)                  │
+│    ├── Auto-loaded (80): final installed footprint       │
+│    └── Agent Packs (364): final installed footprint      │
 ├─────────────────────────────────────────────────────────┤
-│  Skills Layer (95 from ECC)                             │
+│  Skills Layer (125 from ECC)                            │
 │    ├── tdd-workflow, security-review, autopilot         │
 │    └── pdf, docx, pptx, xlsx, team                     │
 └─────────────────────────────────────────────────────────┘
@@ -301,7 +303,7 @@ Codex → spawn_agent("security-reviewer")
 ### Parallel Spawn
 
 ```
-> Spawn 578 agents: refactor auth, add tests, review security
+> Run a multi-agent pass: refactor auth, add tests, review security
 
 Codex → spawn_agent("executor") × refactoring
       → spawn_agent("test-engineer") × test writing

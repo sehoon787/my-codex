@@ -48,8 +48,8 @@ What gets installed:
 | Destination | Contents |
 |---|---|
 | `~/.codex/agents/` | 80 unique agents (37 core + 136 awesome, deduplicated) |
-| `~/.codex/agent-packs/` | 282 on-demand pack agents |
-| `~/.codex/skills/` | 95 skills |
+| `~/.codex/agent-packs/` | 364 on-demand pack files after upstream overlap is deduplicated during install |
+| `~/.codex/skills/` | 125 skills |
 | `~/.codex/AGENTS.md` | Agent catalog and routing instructions |
 | `~/.codex/config.toml` | `multi_agent = true` + model defaults |
 | `~/.codex/.mcp.json` | 3 MCP servers: context7, exa, grep_app |
@@ -69,11 +69,13 @@ echo "config.toml:  $(grep -q multi_agent ~/.codex/config.toml && echo OK || ech
 Expected output:
 ```
 Core agents:  80
-Agent packs:  282
-Skills:       95
+Agent packs:  364
+Skills:       125
 AGENTS.md:    OK
 config.toml:  OK
 ```
+
+Note: the repository contains more raw TOML files than the final installed counts. `install.sh` verifies the installed footprint above, not the pre-deduped source totals.
 
 ---
 

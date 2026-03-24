@@ -14,13 +14,13 @@
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 ![Agents](https://img.shields.io/badge/agents-444-blue)
-![Skills](https://img.shields.io/badge/skills-95-purple)
+![Skills](https://img.shields.io/badge/skills-125-purple)
 ![MCP](https://img.shields.io/badge/MCP-3-green)
 ![Auto Sync](https://img.shields.io/badge/upstream_sync-weekly-brightgreen)
 
 OpenAI Codex CLI를 위한 올인원 멀티에이전트 오케스트레이션 — 한 번 설치하면 모든 것을 얻습니다.
 
-4개 업스트림 소스에서 **444개 에이전트** (80개 자동 로드 + 364개 에이전트팩)와 **95개 스킬**을 네이티브 TOML 형식으로 번들합니다. Codex CLI가 `spawn_agent`를 통해 에이전트를 자동 탐색하고 최적의 전문가에게 작업을 라우팅합니다. GitHub Actions CI가 매주 업스트림 변경사항을 동기화합니다.
+4개 업스트림 소스에서 **444개 설치 에이전트 파일** (80개 자동 로드 + 364개 에이전트팩)과 **125개 스킬**을 네이티브 TOML 형식으로 번들합니다. Codex CLI가 `spawn_agent`를 통해 에이전트를 자동 탐색하고 최적의 전문가에게 작업을 라우팅합니다. GitHub Actions CI가 매주 업스트림 변경사항을 동기화합니다.
 
 공식 [Codex Subagents](https://developers.openai.com/codex/subagents) 스펙 기반.
 
@@ -71,7 +71,7 @@ curl -s https://raw.githubusercontent.com/sehoon787/my-codex/main/AI-INSTALL.md
 - **o4-mini (low)**: 빠른 조회, 탐색 — Claude Haiku 동급에서 매핑
 
 ### 올인원 번들
-- 설치 시 **444개 에이전트와 95개 스킬** 즉시 제공
+- 설치 시 **444개 설치 에이전트 파일과 125개 스킬** 즉시 제공
 - 4개 업스트림 소스 번들 (agency-agents, everything-claude-code, oh-my-codex, awesome-codex-subagents)
 - 매주 CI 자동 동기화로 번들 콘텐츠를 업스트림 최신 상태로 유지
 - 비네이티브 소스의 MD→TOML 변환 자동 처리
@@ -148,8 +148,8 @@ rm ~/.codex/agents/<agent-name>.toml
 | 구성요소 | 수량 | 소스 | 위치 |
 |---------|------|------|------|
 | 자동 로드 에이전트 | 80 (37 코어 + 54 어썸 − 11 공유) | 오케스트레이션 인프라 + 어썸 코어 | `~/.codex/agents/` |
-| 에이전트 팩 | 364 (282 팩 + 82 어썸) | 21개 도메인 카테고리 + 어썸 도메인 | `~/.codex/agent-packs/` |
-| 스킬 | 95 | ECC | `~/.codex/skills/` |
+| 에이전트 팩 | 364 설치 파일 | `agent-packs/`, `agency/`, 어썸 비코어 카테고리 | `~/.codex/agent-packs/` |
+| 스킬 | 125 | ECC | `~/.codex/skills/` |
 | config.toml | 1 | my-codex | `~/.codex/config.toml` |
 | AGENTS.md | 1 | my-codex | `~/.codex/AGENTS.md` |
 
@@ -173,7 +173,7 @@ agent-organizer, capability-assessor, conflict-resolver, context-manager, execut
 </details>
 
 <details>
-<summary>스킬 (95개) — Everything Claude Code에서 제공</summary>
+<summary>스킬 (125개) — Everything Claude Code에서 제공</summary>
 
 주요 스킬:
 
@@ -223,10 +223,10 @@ agent-organizer, capability-assessor, conflict-resolver, context-manager, execut
 └──────┘ └────────┘ └────────┘ └────────┘
 ┌─────────────────────────────────────────────────────────┐
 │  에이전트 계층 (444개 고유 네이티브 TOML 에이전트)           │
-│    ├── 자동 로드 (80): 37 코어 + 54 어썸 − 11 공유         │
-│    └── 에이전트 팩 (364): 282 팩 + 82 어썸                 │
+│    ├── 자동 로드 (80): 최종 설치 기준                       │
+│    └── 에이전트 팩 (364): 최종 설치 기준                   │
 ├─────────────────────────────────────────────────────────┤
-│  스킬 계층 (ECC에서 95개)                                │
+│  스킬 계층 (ECC에서 125개)                               │
 │    ├── tdd-workflow, security-review, autopilot         │
 │    └── pdf, docx, pptx, xlsx, team                     │
 └─────────────────────────────────────────────────────────┘
@@ -347,7 +347,7 @@ Codex → spawn_agent("planner")
 
 ### 2. [Everything Claude Code (ECC)](https://github.com/affaan-m/everything-claude-code)
 
-원래 Claude Code용으로 제작된 개발 프레임워크로, 95개 스킬을 제공합니다. Claude Code 전용 스킬 13개를 제거했으며, 나머지 스킬은 모든 LLM 에이전트에서 활용 가능한 범용 코딩 가이드라인입니다. rules/ 디렉토리는 참고 자료로 저장소에 포함되어 있으나 Codex CLI가 읽지 않습니다.
+원래 Claude Code용으로 제작된 개발 프레임워크로, 125개 스킬을 제공합니다. Claude Code 전용 스킬 13개를 제거했으며, 나머지 스킬은 모든 LLM 에이전트에서 활용 가능한 범용 코딩 가이드라인입니다. rules/ 디렉토리는 참고 자료로 저장소에 포함되어 있으나 Codex CLI가 읽지 않습니다.
 
 ### 3. [Awesome Codex Subagents](https://github.com/VoltAgent/awesome-codex-subagents)
 

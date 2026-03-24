@@ -1,7 +1,8 @@
 # my-codex AI Installation Guide
 
 You are an AI agent setting up a Codex CLI multi-agent orchestration environment.
-The bundle includes 578 agents, 125 skills, and 3 MCP servers.
+The bundle installs 444 agent files (80 auto-loaded + 364 agent-packs), 125 skills, and 3 MCP servers.
+The repository currently contains 589 TOML definitions from overlapping upstream sources; install-time deduplication reduces that to the final installed footprint.
 Only 2-3 steps are needed.
 
 ---
@@ -15,12 +16,17 @@ rm -rf /tmp/my-codex
 ```
 
 This installs:
-- ~91 core agents in `~/.codex/agents/` (always loaded by Codex CLI via `spawn_agent`)
-- ~487 domain agent-packs in `~/.codex/agent-packs/` (on-demand via symlink)
+- 80 auto-loaded agents in `~/.codex/agents/` (always loaded by Codex CLI via `spawn_agent`)
+- 364 domain agent-packs in `~/.codex/agent-packs/` (on-demand via symlink)
 - 125 skills in `~/.codex/skills/` (from Everything Claude Code)
 - Global `AGENTS.md` instructions
 - `config.toml` with `multi_agent = true`
 - 3 MCP servers (Context7 — real-time library docs, Exa — web search, grep_app — GitHub code search)
+
+Why the numbers are lower than raw source totals:
+- Several upstream sources ship the same destination filename.
+- `install.sh` merges those sources into `~/.codex/agents/` and category folders under `~/.codex/agent-packs/`.
+- When filenames overlap, later copies replace earlier ones. The final installed counts above are the correct verification target.
 
 ## Step 1b: Manual install (if install.sh unavailable)
 
@@ -58,7 +64,7 @@ for d in /tmp/my-codex/codex-agents/awesome/*/; do
 done
 
 # Skills
-cp -r /tmp/my-codex/skills/ecc/* ~/.codex/skills/
+cp -R /tmp/my-codex/skills/ecc/. ~/.codex/skills/
 cp /tmp/my-codex/templates/codex-AGENTS.md ~/.codex/AGENTS.md
 
 # Create config.toml
@@ -71,10 +77,10 @@ child_agents_md = true
 max_threads = 8
 TOML
 
-# MCP servers
-codex mcp add context7  --url https://mcp.context7.com/mcp 2>/dev/null || true
-codex mcp add exa       --url "https://mcp.exa.ai/mcp?tools=web_search_exa" 2>/dev/null || true
-codex mcp add grep_app  --url https://mcp.grep.app 2>/dev/null || true
+# MCP servers (skip names that already exist to avoid re-triggering auth flows)
+codex mcp list 2>/dev/null | grep -qE '^context7[[:space:]]' || codex mcp add context7 --url https://mcp.context7.com/mcp 2>/dev/null || true
+codex mcp list 2>/dev/null | grep -qE '^exa[[:space:]]' || codex mcp add exa --url "https://mcp.exa.ai/mcp?tools=web_search_exa" 2>/dev/null || true
+codex mcp list 2>/dev/null | grep -qE '^grep_app[[:space:]]' || codex mcp add grep_app --url https://mcp.grep.app 2>/dev/null || true
 
 rm -rf /tmp/my-codex
 ```
@@ -107,9 +113,9 @@ echo "config.toml:   $(grep -q 'multi_agent' ~/.codex/config.toml 2>/dev/null &&
 ```
 
 Expected:
-- Core agents: 91+
-- Agent packs: 487+
-- Skills: 125+
+- Core agents: 80
+- Agent packs: 364
+- Skills: 125
 - AGENTS.md: OK
 - config.toml: OK
 

@@ -4,8 +4,12 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+eval "$("$SCRIPT_DIR/scripts/compute-install-counts.sh")"
 
 echo "=== my-codex installer ==="
+echo ""
+echo "Expected install footprint: ${INSTALLED_AGENT_TOTAL} agents (${AUTO_LOADED_COUNT} auto-loaded + ${AGENT_PACK_COUNT} agent-packs), ${SKILL_COUNT} skills"
+echo "Source inventory: ${SOURCE_TOML_COUNT} TOML definitions before install-time deduplication"
 echo ""
 
 # ── 0. Prerequisites ──
@@ -42,7 +46,7 @@ fi
 if [ -d "$SCRIPT_DIR/codex-agents/awesome-core" ]; then
   cp "$SCRIPT_DIR/codex-agents/awesome-core/"*.toml "$HOME/.codex/agents/" 2>/dev/null || true
 fi
-echo "  Core agents: $(find "$HOME/.codex/agents" -maxdepth 1 -name '*.toml' | wc -l | tr -d ' ') installed"
+echo "  Core agents: $(find "$HOME/.codex/agents" -maxdepth 1 -name '*.toml' | wc -l | tr -d ' ') installed (expected ${AUTO_LOADED_COUNT})"
 
 # Agency agents (upstream MD→TOML converted, domain specialists)
 if [ -d "$SCRIPT_DIR/codex-agents/agency" ]; then
@@ -62,7 +66,7 @@ for cat_dir in "$SCRIPT_DIR/codex-agents/agent-packs/"*/; do
   mkdir -p "$HOME/.codex/agent-packs/$cat_name"
   cp "$cat_dir"*.toml "$HOME/.codex/agent-packs/$cat_name/" 2>/dev/null || true
 done
-echo "  Agent packs: $(find "$HOME/.codex/agent-packs" -name '*.toml' | wc -l | tr -d ' ') installed"
+echo "  Agent packs: $(find "$HOME/.codex/agent-packs" -name '*.toml' | wc -l | tr -d ' ') installed (expected ${AGENT_PACK_COUNT})"
 
 # Awesome Codex Subagents (native TOML — add to core)
 if [ -d "$SCRIPT_DIR/codex-agents/awesome" ]; then
@@ -88,9 +92,9 @@ echo "[2/7] Installing skills..."
 mkdir -p "$HOME/.codex/skills"
 # Note: Codex scans ~/.codex/skills/ for SKILL.md files
 if [ -d "$SCRIPT_DIR/skills" ]; then
-  cp -r "$SCRIPT_DIR/skills/ecc/"* "$HOME/.codex/skills/" 2>/dev/null || true
+  cp -R "$SCRIPT_DIR/skills/ecc/." "$HOME/.codex/skills/" 2>/dev/null || true
 fi
-echo "  Skills: $(find "$HOME/.codex/skills" -name 'SKILL.md' 2>/dev/null | wc -l | tr -d ' ') installed"
+echo "  Skills: $(find "$HOME/.codex/skills" -name 'SKILL.md' 2>/dev/null | wc -l | tr -d ' ') installed (expected ${SKILL_COUNT})"
 
 # ── 3. Global AGENTS.md ──
 echo "[3/7] Setting up AGENTS.md..."
@@ -126,10 +130,20 @@ fi
 # ── 5. MCP servers ──
 echo "[5/7] Registering MCP servers..."
 if command -v codex >/dev/null 2>&1; then
-  codex mcp add context7  --url https://mcp.context7.com/mcp 2>/dev/null || true
-  codex mcp add exa       --url "https://mcp.exa.ai/mcp?tools=web_search_exa" 2>/dev/null || true
-  codex mcp add grep_app  --url https://mcp.grep.app 2>/dev/null || true
-  echo "  3 MCP servers registered (context7, exa, grep_app)"
+  MCP_LIST="$(codex mcp list 2>/dev/null || true)"
+  ensure_mcp_server() {
+    local name=$1
+    shift
+    if printf '%s\n' "$MCP_LIST" | grep -qE "^${name}[[:space:]]"; then
+      echo "  ${name} already registered"
+      return
+    fi
+    codex mcp add "$name" "$@" 2>/dev/null || echo "  WARNING: failed to register ${name}"
+  }
+  ensure_mcp_server context7 --url https://mcp.context7.com/mcp
+  ensure_mcp_server exa --url "https://mcp.exa.ai/mcp?tools=web_search_exa"
+  ensure_mcp_server grep_app --url https://mcp.grep.app
+  echo "  MCP registration checked (context7, exa, grep_app)"
 else
   echo "  codex not found — MCP servers will be registered when codex is installed"
 fi
@@ -148,9 +162,10 @@ fi
 # ── 7. Verification ──
 echo ""
 echo "[7/7] Verification"
-echo "  Core agents:   $(find "$HOME/.codex/agents" -name '*.toml' 2>/dev/null | wc -l | tr -d ' ') files"
-echo "  Agent packs:   $(find "$HOME/.codex/agent-packs" -name '*.toml' 2>/dev/null | wc -l | tr -d ' ') files"
-echo "  Skills:        $(find "$HOME/.codex/skills" -name 'SKILL.md' 2>/dev/null | wc -l | tr -d ' ') installed"
+echo "  Source TOML:   ${SOURCE_TOML_COUNT} definitions"
+echo "  Core agents:   $(find "$HOME/.codex/agents" -name '*.toml' 2>/dev/null | wc -l | tr -d ' ') files (expected ${AUTO_LOADED_COUNT})"
+echo "  Agent packs:   $(find "$HOME/.codex/agent-packs" -name '*.toml' 2>/dev/null | wc -l | tr -d ' ') files (expected ${AGENT_PACK_COUNT})"
+echo "  Skills:        $(find "$HOME/.codex/skills" -name 'SKILL.md' 2>/dev/null | wc -l | tr -d ' ') installed (expected ${SKILL_COUNT})"
 echo "  AGENTS.md:     $(test -f "$HOME/.codex/AGENTS.md" && echo 'OK' || echo 'MISSING')"
 echo "  config.toml:   $(grep -q 'multi_agent' "$HOME/.codex/config.toml" 2>/dev/null && echo 'OK' || echo 'NEEDS CONFIG')"
 echo "  codex:         $(command -v codex >/dev/null 2>&1 && echo "OK ($(codex --version 2>/dev/null))" || echo 'NOT INSTALLED')"

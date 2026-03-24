@@ -190,6 +190,12 @@ jobs:
           if [ -f docs/i18n/README.de.md ]; then
             sed -i -E "s/final automatisch geladene Menge auf [0-9]+ installierte Dateien/final automatisch geladene Menge auf ${AUTO_LOADED_COUNT} installierte Dateien/" docs/i18n/README.de.md
           fi
+          # SETUP.md — update auto-loaded and pack-loaded counts
+          if [ -f SETUP.md ]; then
+            sed -i -E "s/[0-9]+ unique agents \([0-9]+ core \+ [0-9]+ awesome core, deduplicated\)/${AUTO_LOADED_COUNT} unique agents (37 core + 54 awesome core, deduplicated)/" SETUP.md
+            sed -i -E "s/[0-9]+ on-demand pack files/${AGENT_PACK_COUNT} on-demand pack files/" SETUP.md
+            sed -i -E "s/[0-9]+ skills/${SKILL_COUNT} skills/" SETUP.md
+          fi
 
           # docs/index.html — targeted updates (avoid greedy global replace)
           if [ -f docs/index.html ]; then

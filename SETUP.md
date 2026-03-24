@@ -48,7 +48,7 @@ What gets installed:
 
 | Destination | Contents |
 |---|---|
-| `~/.codex/agents/` | 80 unique agents (37 core + 136 awesome, deduplicated) |
+| `~/.codex/agents/` | 80 unique agents (37 core + 54 awesome core, deduplicated) |
 | `~/.codex/agent-packs/` | 364 on-demand pack files after upstream overlap is deduplicated during install |
 | `~/.codex/skills/` | 125 skills |
 | `~/.codex/AGENTS.md` | Agent catalog and routing instructions |

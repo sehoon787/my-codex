@@ -374,7 +374,7 @@ A development framework originally built for Claude Code, providing 125 skills. 
 
 ### 4. [Oh My Codex (OMX)](https://github.com/Yeachan-Heo/oh-my-codex)
 
-Codex CLI multi-agent orchestration framework by Yeachan Heo. A Rust/TypeScript runtime providing 125 skills, hooks, HUD, and team pipelines for Codex CLI. Referenced as architectural inspiration for my-codex's orchestration patterns. Does not provide agent TOML files directly.
+Codex CLI multi-agent orchestration framework by Yeachan Heo. A Rust/TypeScript runtime providing 36 skills, hooks, HUD, and team pipelines for Codex CLI. Referenced as architectural inspiration for my-codex's orchestration patterns. Does not provide agent TOML files directly.
 
 ### 5. [Oh My OpenAgent (omo)](https://github.com/code-yeongyu/oh-my-openagent)
 

@@ -355,7 +355,7 @@ Un framework de développement conçu à l'origine pour Claude Code, fournissant
 
 ### 4. [Oh My Codex (OMX)](https://github.com/Yeachan-Heo/oh-my-codex)
 
-Framework d'orchestration multi-agents Codex CLI de Yeachan Heo. Un runtime Rust/TypeScript avec 125 skills, hooks, HUD et pipelines d'équipes pour Codex CLI. Référencé comme inspiration architecturale pour les patterns d'orchestration de my-codex. Ne fournit pas de fichiers TOML d'agents directement.
+Framework d'orchestration multi-agents Codex CLI de Yeachan Heo. Un runtime Rust/TypeScript avec 36 skills, hooks, HUD et pipelines d'équipes pour Codex CLI. Référencé comme inspiration architecturale pour les patterns d'orchestration de my-codex. Ne fournit pas de fichiers TOML d'agents directement.
 
 ### 5. [Oh My OpenAgent (omo)](https://github.com/code-yeongyu/oh-my-openagent)
 

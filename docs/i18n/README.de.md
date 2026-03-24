@@ -80,7 +80,7 @@ Lese die vollständige Ausgabe und führe jeden Schritt in der Reihenfolge aus. 
 
 ## Core Agenten
 
-37 Core-Agenten für Orchestrierungs-Infrastruktur werden in `~/.codex/agents/` installiert. Dies sind die Grundlagen-Agenten, die Arbeit orchestrieren, planen, überprüfen und verifizieren. Domänen-Spezialisten befinden sich in Agent-Paketen. Awesome-Kategorien liefern zusätzliche Abdeckung, aber durch überschneidende Zieldateinamen verdichtet sich die final automatisch geladene Menge auf 80 installierte Dateien.
+37 Core-Agenten für Orchestrierungs-Infrastruktur werden in `~/.codex/agents/` installiert. Dies sind die Grundlagen-Agenten, die Arbeit orchestrieren, planen, überprüfen und verifizieren. Domänen-Spezialisten befinden sich in Agent-Paketen. 54 Awesome-Agenten aus den Core-Kategorien (01, 03, 04, 09) werden ebenfalls in `~/.codex/agents/` installiert. Die verbleibenden 82 Awesome-Agenten sind in Agent-Paketen enthalten (11 Dateinamenkollisionen zwischen Core und Awesome ergeben 80 eindeutige automatisch geladene Agenten).
 
 ### Orchestratoren (5)
 boss, sisyphus, atlas, hephaestus, prometheus

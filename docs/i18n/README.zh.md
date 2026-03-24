@@ -80,7 +80,7 @@ curl -s https://raw.githubusercontent.com/sehoon787/my-codex/main/AI-INSTALL.md
 
 ## 核心智能体
 
-37 个核心智能体提供编排基础设施，安装到 `~/.codex/agents/`。这些是编排、规划、审查和验证工作的基础智能体。领域专家位于智能体包中。awesome 类别智能体提供额外覆盖，但由于目标文件名会重叠，最终自动加载集合会收敛为 80 个已安装文件。
+37 个核心智能体提供编排基础设施，安装到 `~/.codex/agents/`。这些是编排、规划、审查和验证工作的基础智能体。领域专家在智能体包中。Awesome 智能体中属于核心类别（01、03、04、09）的 54 个也安装到 `~/.codex/agents/`。其余 82 个 Awesome 智能体包含在智能体包中（核心与 Awesome 之间有 11 个文件名冲突，最终产生 80 个唯一的自动加载智能体）。
 
 ### 编排器 (5)
 boss, sisyphus, atlas, hephaestus, prometheus

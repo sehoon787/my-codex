@@ -178,23 +178,130 @@ jobs:
             sed -i -E "s/[0-9]+ installed pack files across [0-9]+ categories/${AGENT_PACK_COUNT} installed pack files across 21 categories/" README.md
           fi
           if [ -f docs/i18n/README.ko.md ]; then
-            sed -i -E "s/최종 자동 로드 세트는 [0-9]+개 설치 파일로 정리됩니다/최종 자동 로드 세트는 ${AUTO_LOADED_COUNT}개 설치 파일로 정리됩니다/" docs/i18n/README.ko.md
-            sed -i -E "s/[0-9]+개 설치 팩 파일이 `~\\/\\.codex\\/agent-packs\\/`에 기록되며/${AGENT_PACK_COUNT}개 설치 팩 파일이 `~\\/\\.codex\\/agent-packs\\/`에 기록되며/" docs/i18n/README.ko.md
+            # Hero line: **NNN개 설치 에이전트 파일** (NNN개 자동 로드 + NNN개 에이전트팩)과 **NNN개 스킬**
+            sed -i -E "s/\*\*[0-9]+개 설치 에이전트 파일\*\* \([0-9]+개 자동 로드 \+ [0-9]+개 에이전트팩\)과 \*\*[0-9]+개 스킬\*\*/**${INSTALLED_AGENT_TOTAL}개 설치 에이전트 파일** (${AUTO_LOADED_COUNT}개 자동 로드 + ${AGENT_PACK_COUNT}개 에이전트팩)과 **${SKILL_COUNT}개 스킬**/" docs/i18n/README.ko.md
+            # Zero-config principle: NNN개 에이전트
+            sed -i -E "s/한 번 설치하면 [0-9]+개 에이전트/한 번 설치하면 ${INSTALLED_AGENT_TOTAL}개 에이전트/" docs/i18n/README.ko.md
+            # All-in-one bundle: **NNN개 설치 에이전트 파일과 NNN개 스킬**
+            sed -i -E "s/\*\*[0-9]+개 설치 에이전트 파일과 [0-9]+개 스킬\*\*/**${INSTALLED_AGENT_TOTAL}개 설치 에이전트 파일과 ${SKILL_COUNT}개 스킬**/" docs/i18n/README.ko.md
+            # Core agents prose: auto-loaded count
+            sed -i -E "s/자동 로드 에이전트 순 [0-9]+개/자동 로드 에이전트 순 ${AUTO_LOADED_COUNT}개/" docs/i18n/README.ko.md
+            # Agent pack section: NNN개 설치 팩 파일이
+            sed -i -E "s/[0-9]+개 설치 팩 파일이 \`~\\/\\.codex\\/agent-packs\\/\`에 기록되며/${AGENT_PACK_COUNT}개 설치 팩 파일이 \`~\/.codex\/agent-packs\/\`에 기록되며/" docs/i18n/README.ko.md
+            # Table row: auto-loaded agents  "80 (37 코어 + 54 어썸 − 11 공유)"
+            sed -i -E "s/[0-9]+ \(37 코어 \+ 54 어썸 − 11 공유\)/${AUTO_LOADED_COUNT} (37 코어 + 54 어썸 − 11 공유)/" docs/i18n/README.ko.md
+            # Table row: pack files "364 설치 파일"
+            sed -i -E "s/에이전트 팩 \| [0-9]+ 설치 파일/에이전트 팩 | ${AGENT_PACK_COUNT} 설치 파일/" docs/i18n/README.ko.md
+            # Table row: skills count
+            sed -i -E "s/\| 스킬 \| [0-9]+ \|/| 스킬 | ${SKILL_COUNT} |/" docs/i18n/README.ko.md
+            # Architecture diagram: NNN개 고유 네이티브 TOML 에이전트
+            sed -i -E "s/[0-9]+개 고유 네이티브 TOML 에이전트/${INSTALLED_AGENT_TOTAL}개 고유 네이티브 TOML 에이전트/" docs/i18n/README.ko.md
+            # Architecture diagram: 자동 로드 (NNN)
+            sed -i -E "s/자동 로드 \([0-9]+\)/자동 로드 (${AUTO_LOADED_COUNT})/" docs/i18n/README.ko.md
+            # Architecture diagram: 에이전트 팩 (NNN)
+            sed -i -E "s/에이전트 팩 \([0-9]+\)/에이전트 팩 (${AGENT_PACK_COUNT})/" docs/i18n/README.ko.md
+            # Architecture diagram: ECC에서 NNN개
+            sed -i -E "s/ECC에서 [0-9]+개/ECC에서 ${SKILL_COUNT}개/" docs/i18n/README.ko.md
           fi
           if [ -f docs/i18n/README.ja.md ]; then
-            sed -i -E "s/最終的な自動読み込みセットは [0-9]+ 個のインストール済みファイルに集約されます/最終的な自動読み込みセットは ${AUTO_LOADED_COUNT} 個のインストール済みファイルに集約されます/" docs/i18n/README.ja.md
+            # Hero line: **NNN インストール済みエージェントファイル** (NNN 自動読み込み + NNN エージェントパック)
+            sed -i -E "s/\*\*[0-9]+ インストール済みエージェントファイル\*\* \([0-9]+ 自動読み込み \+ [0-9]+ エージェントパック\)/**${INSTALLED_AGENT_TOTAL} インストール済みエージェントファイル** (${AUTO_LOADED_COUNT} 自動読み込み + ${AGENT_PACK_COUNT} エージェントパック)/" docs/i18n/README.ja.md
+            # Hero: NNN スキル (appears as "125 スキル" after the parenthetical)
+            sed -i -E "s/ \*\*[0-9]+ スキル\*\*/ **${SKILL_COUNT} スキル**/" docs/i18n/README.ja.md
+            # Zero-config: NNN エージェントが手に入ります
+            sed -i -E "s/[0-9]+ エージェントが手に入ります/${INSTALLED_AGENT_TOTAL} エージェントが手に入ります/" docs/i18n/README.ja.md
+            # All-in-one bundle: **NNN インストール済みエージェントファイルと NNN スキル**
+            sed -i -E "s/\*\*[0-9]+ インストール済みエージェントファイルと [0-9]+ スキル\*\*/**${INSTALLED_AGENT_TOTAL} インストール済みエージェントファイルと ${SKILL_COUNT} スキル**/" docs/i18n/README.ja.md
+            # Agent pack section: NNN 個のインストール済みパックファイル
+            sed -i -E "s/[0-9]+ 個のインストール済みパックファイル/${AGENT_PACK_COUNT} 個のインストール済みパックファイル/" docs/i18n/README.ja.md
+            # Table row: auto-loaded "80 (37 コア + 54 素晴らしい − 11 共有)"
+            sed -i -E "s/[0-9]+ \(37 コア \+ 54 素晴らしい − 11 共有\)/${AUTO_LOADED_COUNT} (37 コア + 54 素晴らしい − 11 共有)/" docs/i18n/README.ja.md
+            # Table row: pack "364 インストール済みファイル"
+            sed -i -E "s/エージェントパック \| [0-9]+ インストール済みファイル/エージェントパック | ${AGENT_PACK_COUNT} インストール済みファイル/" docs/i18n/README.ja.md
+            # Table row: skills
+            sed -i -E "s/\| スキル \| [0-9]+ \|/| スキル | ${SKILL_COUNT} |/" docs/i18n/README.ja.md
+            # Architecture diagram (English text in code block)
+            sed -i -E "s/Agent Layer \([0-9]+ unique agents/Agent Layer (${INSTALLED_AGENT_TOTAL} unique agents/" docs/i18n/README.ja.md
+            sed -i -E "s/Auto-loaded \([0-9]+\)/Auto-loaded (${AUTO_LOADED_COUNT})/" docs/i18n/README.ja.md
+            sed -i -E "s/Agent Packs \([0-9]+\)/Agent Packs (${AGENT_PACK_COUNT})/" docs/i18n/README.ja.md
+            sed -i -E "s/Skills Layer \([0-9]+ from ECC\)/Skills Layer (${SKILL_COUNT} from ECC)/" docs/i18n/README.ja.md
           fi
           if [ -f docs/i18n/README.zh.md ]; then
-            sed -i -E "s/最终自动加载集合会收敛为 [0-9]+ 个已安装文件/最终自动加载集合会收敛为 ${AUTO_LOADED_COUNT} 个已安装文件/" docs/i18n/README.zh.md
+            # Hero line: **NNN 个已安装智能体文件**（NNN 个自动加载 + NNN 个智能体包）和 **NNN 个技能**
+            sed -i -E "s/\*\*[0-9]+ 个已安装智能体文件\*\*（[0-9]+ 个自动加载 \+ [0-9]+ 个智能体包）和 \*\*[0-9]+ 个技能\*\*/**${INSTALLED_AGENT_TOTAL} 个已安装智能体文件**（${AUTO_LOADED_COUNT} 个自动加载 + ${AGENT_PACK_COUNT} 个智能体包）和 **${SKILL_COUNT} 个技能**/" docs/i18n/README.zh.md
+            # Zero-config: NNN 个智能体
+            sed -i -E "s/一次安装，获得 [0-9]+ 个智能体/一次安装，获得 ${INSTALLED_AGENT_TOTAL} 个智能体/" docs/i18n/README.zh.md
+            # All-in-one bundle: **NNN 个已安装智能体文件和 NNN 个技能**
+            sed -i -E "s/\*\*[0-9]+ 个已安装智能体文件和 [0-9]+ 个技能\*\*/**${INSTALLED_AGENT_TOTAL} 个已安装智能体文件和 ${SKILL_COUNT} 个技能**/" docs/i18n/README.zh.md
+            # Agent pack section: NNN 个已安装包文件
+            sed -i -E "s/[0-9]+ 个已安装包文件跨 [0-9]+ 个类别/${AGENT_PACK_COUNT} 个已安装包文件跨 21 个类别/" docs/i18n/README.zh.md
+            # Table row: auto-loaded "80（37 个核心 + 54 个 awesome − 11 个共享）"
+            sed -i -E "s/[0-9]+（37 个核心 \+ 54 个 awesome − 11 个共享）/${AUTO_LOADED_COUNT}（37 个核心 + 54 个 awesome − 11 个共享）/" docs/i18n/README.zh.md
+            # Table row: pack "364 个已安装文件"
+            sed -i -E "s/智能体包 \| [0-9]+ 个已安装文件/智能体包 | ${AGENT_PACK_COUNT} 个已安装文件/" docs/i18n/README.zh.md
+            # Table row: skills
+            sed -i -E "s/\| 技能 \| [0-9]+ \|/| 技能 | ${SKILL_COUNT} |/" docs/i18n/README.zh.md
+            # Architecture diagram (English in code block)
+            sed -i -E "s/Agent Layer \([0-9]+ unique agents/Agent Layer (${INSTALLED_AGENT_TOTAL} unique agents/" docs/i18n/README.zh.md
+            sed -i -E "s/Auto-loaded \([0-9]+\)/Auto-loaded (${AUTO_LOADED_COUNT})/" docs/i18n/README.zh.md
+            sed -i -E "s/Agent Packs \([0-9]+\)/Agent Packs (${AGENT_PACK_COUNT})/" docs/i18n/README.zh.md
+            sed -i -E "s/Skills Layer \([0-9]+ from ECC\)/Skills Layer (${SKILL_COUNT} from ECC)/" docs/i18n/README.zh.md
           fi
           if [ -f docs/i18n/README.de.md ]; then
-            sed -i -E "s/final automatisch geladene Menge auf [0-9]+ installierte Dateien/final automatisch geladene Menge auf ${AUTO_LOADED_COUNT} installierte Dateien/" docs/i18n/README.de.md
+            # Hero line: **NNN installierte Agent-Dateien** (NNN automatisch geladen + NNN Agent-Pakete) und **NNN Skills**
+            sed -i -E "s/\*\*[0-9]+ installierte Agent-Dateien\*\* \([0-9]+ automatisch geladen \+ [0-9]+ Agent-Pakete\) und \*\*[0-9]+ Skills\*\*/**${INSTALLED_AGENT_TOTAL} installierte Agent-Dateien** (${AUTO_LOADED_COUNT} automatisch geladen + ${AGENT_PACK_COUNT} Agent-Pakete) und **${SKILL_COUNT} Skills**/" docs/i18n/README.de.md
+            # Zero-config: NNN Agenten
+            sed -i -E "s/Einmalige Installation, [0-9]+ Agenten/Einmalige Installation, ${INSTALLED_AGENT_TOTAL} Agenten/" docs/i18n/README.de.md
+            # All-in-one bundle: **NNN installierte Agent-Dateien und NNN Skills**
+            sed -i -E "s/\*\*[0-9]+ installierte Agent-Dateien und [0-9]+ Skills\*\*/**${INSTALLED_AGENT_TOTAL} installierte Agent-Dateien und ${SKILL_COUNT} Skills**/" docs/i18n/README.de.md
+            # Core agents prose: 11 Dateinamenkollisionen → NNN eindeutige automatisch geladene Agenten
+            sed -i -E "s/ergeben [0-9]+ eindeutige automatisch geladene Agenten/ergeben ${AUTO_LOADED_COUNT} eindeutige automatisch geladene Agenten/" docs/i18n/README.de.md
+            # Agent pack section: NNN installierte Paketdateien über 21 Kategorien
+            sed -i -E "s/[0-9]+ installierte Paketdateien über 21 Kategorien/${AGENT_PACK_COUNT} installierte Paketdateien über 21 Kategorien/" docs/i18n/README.de.md
+            # Table row: auto-loaded "80 (37 Core + 54 Awesome − 11 gemeinsam)"
+            sed -i -E "s/[0-9]+ \(37 Core \+ 54 Awesome − 11 gemeinsam\)/${AUTO_LOADED_COUNT} (37 Core + 54 Awesome − 11 gemeinsam)/" docs/i18n/README.de.md
+            # Table row: pack "364 installierte Dateien"
+            sed -i -E "s/Agent-Pakete \| [0-9]+ installierte Dateien/Agent-Pakete | ${AGENT_PACK_COUNT} installierte Dateien/" docs/i18n/README.de.md
+            # Table row: skills
+            sed -i -E "s/\| Skills \| [0-9]+ \|/| Skills | ${SKILL_COUNT} |/" docs/i18n/README.de.md
+            # Architecture diagram (English in code block)
+            sed -i -E "s/Agent Layer \([0-9]+ unique agents/Agent Layer (${INSTALLED_AGENT_TOTAL} unique agents/" docs/i18n/README.de.md
+            sed -i -E "s/Auto-loaded \([0-9]+\)/Auto-loaded (${AUTO_LOADED_COUNT})/" docs/i18n/README.de.md
+            sed -i -E "s/Agent Packs \([0-9]+\)/Agent Packs (${AGENT_PACK_COUNT})/" docs/i18n/README.de.md
+            sed -i -E "s/Skills Layer \([0-9]+ from ECC\)/Skills Layer (${SKILL_COUNT} from ECC)/" docs/i18n/README.de.md
+          fi
+          if [ -f docs/i18n/README.fr.md ]; then
+            # Hero line: **NNN fichiers d'agents installés** (NNN chargés automatiquement + NNN packs d'agents) et **NNN skills**
+            sed -i -E "s/\*\*[0-9]+ fichiers d'agents installés\*\* \([0-9]+ chargés automatiquement \+ [0-9]+ packs d'agents\) et \*\*[0-9]+ skills\*\*/**${INSTALLED_AGENT_TOTAL} fichiers d'agents installés** (${AUTO_LOADED_COUNT} chargés automatiquement + ${AGENT_PACK_COUNT} packs d'agents) et **${SKILL_COUNT} skills**/" docs/i18n/README.fr.md
+            # Zero-config: NNN fichiers d'agents prêts à l'emploi
+            sed -i -E "s/[0-9]+ fichiers d'agents prêts à l'emploi/${INSTALLED_AGENT_TOTAL} fichiers d'agents prêts à l'emploi/" docs/i18n/README.fr.md
+            # All-in-one bundle: **NNN fichiers d'agents installés et NNN skills**
+            sed -i -E "s/\*\*[0-9]+ fichiers d'agents installés et [0-9]+ skills\*\*/**${INSTALLED_AGENT_TOTAL} fichiers d'agents installés et ${SKILL_COUNT} skills**/" docs/i18n/README.fr.md
+            # Core agents prose: ramènent l'ensemble auto-chargé final à NNN fichiers installés
+            sed -i -E "s/ramènent l'ensemble auto-chargé final à [0-9]+ fichiers installés/ramènent l'ensemble auto-chargé final à ${AUTO_LOADED_COUNT} fichiers installés/" docs/i18n/README.fr.md
+            # Agent pack section: NNN fichiers de packs d'agents répartis en 21 catégories
+            sed -i -E "s/[0-9]+ fichiers de packs d'agents répartis en 21 catégories/${AGENT_PACK_COUNT} fichiers de packs d'agents répartis en 21 catégories/" docs/i18n/README.fr.md
+            # Table row: auto-loaded "80 (37 Core + 54 Awesome − 11 partagés)"
+            sed -i -E "s/[0-9]+ \(37 Core \+ 54 Awesome − 11 partagés\)/${AUTO_LOADED_COUNT} (37 Core + 54 Awesome − 11 partagés)/" docs/i18n/README.fr.md
+            # Table row: pack "364 fichiers installés"
+            sed -i -E "s/Packs d'agents \| [0-9]+ fichiers installés/Packs d'agents | ${AGENT_PACK_COUNT} fichiers installés/" docs/i18n/README.fr.md
+            # Table row: skills
+            sed -i -E "s/\| Skills \| [0-9]+ \|/| Skills | ${SKILL_COUNT} |/" docs/i18n/README.fr.md
+            # Architecture diagram (English in code block, but fr has French for footprint lines)
+            sed -i -E "s/Agent Layer \([0-9]+ unique agents/Agent Layer (${INSTALLED_AGENT_TOTAL} unique agents/" docs/i18n/README.fr.md
+            sed -i -E "s/Auto-loaded \([0-9]+\): empreinte/Auto-loaded (${AUTO_LOADED_COUNT}): empreinte/" docs/i18n/README.fr.md
+            sed -i -E "s/Agent Packs \([0-9]+\): empreinte/Agent Packs (${AGENT_PACK_COUNT}): empreinte/" docs/i18n/README.fr.md
+            sed -i -E "s/Skills Layer \([0-9]+ from ECC\)/Skills Layer (${SKILL_COUNT} from ECC)/" docs/i18n/README.fr.md
           fi
           # SETUP.md — update auto-loaded and pack-loaded counts
           if [ -f SETUP.md ]; then
             sed -i -E "s/[0-9]+ unique agents \([0-9]+ core \+ [0-9]+ awesome core, deduplicated\)/${AUTO_LOADED_COUNT} unique agents (37 core + 54 awesome core, deduplicated)/" SETUP.md
             sed -i -E "s/[0-9]+ on-demand pack files/${AGENT_PACK_COUNT} on-demand pack files/" SETUP.md
             sed -i -E "s/[0-9]+ skills/${SKILL_COUNT} skills/" SETUP.md
+            # Verification expected output
+            sed -i -E "s/Core agents:  [0-9]+/Core agents:  ${AUTO_LOADED_COUNT}/" SETUP.md
+            sed -i -E "s/Agent packs:  [0-9]+/Agent packs:  ${AGENT_PACK_COUNT}/" SETUP.md
+            sed -i -E "s/Skills:       [0-9]+/Skills:       ${SKILL_COUNT}/" SETUP.md
           fi
 
           # docs/index.html — targeted updates (avoid greedy global replace)
@@ -227,6 +334,13 @@ jobs:
             sed -i -E "s/[0-9]+ \+ [0-9]+ \+ [0-9]+/${AUTO_LOADED_COUNT} + ${AGENT_PACK_COUNT} + ${SKILL_COUNT}/" docs/index.html
             sed -i -E "s/All [0-9]+ installed pack files/All ${AGENT_PACK_COUNT} installed pack files/g" docs/index.html
             sed -i -E "s/전체 [0-9]+개 팩 파일이/전체 ${AGENT_PACK_COUNT}개 팩 파일이/g" docs/index.html
+            # Meta description tags
+            sed -i -E "s/[0-9]+ installed agent files \([0-9]+ auto-loaded \+ [0-9]+ agent-packs\), [0-9]+ skills/${INSTALLED_AGENT_TOTAL} installed agent files (${AUTO_LOADED_COUNT} auto-loaded + ${AGENT_PACK_COUNT} agent-packs), ${SKILL_COUNT} skills/g" docs/index.html
+            # Skills cnt span
+            sed -i -E 's/(Skills".*<span class="cnt">)[0-9]+(<\/span>)/\1'"${SKILL_COUNT}"'\2/' docs/index.html
+            # Terminal demo "N skills installed"
+            sed -i -E "s/[0-9]+ skills installed/${SKILL_COUNT} skills installed/g" docs/index.html
+            sed -i -E "s/[0-9]+개 스킬 설치 완료/${SKILL_COUNT}개 스킬 설치 완료/g" docs/index.html
           fi
 
           # AI-INSTALL.md — update detail counts

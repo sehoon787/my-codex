@@ -2,7 +2,7 @@
   "agency-agents": {
     "repo": "https://github.com/msitarzewski/agency-agents",
     "syncedSha": "6254154899f510eb4a4de10561fecfc1f32ff17f",
-    "syncedAt": "2026-03-24T05:06:53Z",
+    "syncedAt": "2026-03-24T05:38:59Z",
     "files": {
       "agents": 137
     }
@@ -10,7 +10,7 @@
   "everything-claude-code": {
     "repo": "https://github.com/affaan-m/everything-claude-code",
     "syncedSha": "df4f2df297847687bd8835c440803de36966b2c9",
-    "syncedAt": "2026-03-24T05:06:53Z",
+    "syncedAt": "2026-03-24T05:38:59Z",
     "files": {
       "skills": 125,
       "rules": 65
@@ -19,7 +19,7 @@
   "awesome-codex-subagents": {
     "repo": "https://github.com/VoltAgent/awesome-codex-subagents",
     "syncedSha": "5f855c11f9117541da31e7274b738cc396d4d3c7",
-    "syncedAt": "2026-03-24T05:06:53Z",
+    "syncedAt": "2026-03-24T05:38:59Z",
     "files": {
       "agents": 136
     }
@@ -27,7 +27,7 @@
   "oh-my-codex": {
     "repo": "https://github.com/Yeachan-Heo/oh-my-codex",
     "syncedSha": "07b6bd926ee270ee9fe24fd0a5f1ea0ffa7c2427",
-    "syncedAt": "2026-03-24T05:06:53Z",
+    "syncedAt": "2026-03-24T05:38:59Z",
     "files": {
       "agents": 0
     }

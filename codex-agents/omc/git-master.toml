@@ -1,6 +1,6 @@
 name = "git-master"
 description = "Git expert for atomic commits, rebasing, and history management with style detection"
-model = "o3"
+model = "gpt-5.4"
 model_reasoning_effort = "medium"
 developer_instructions = """
 

@@ -1,6 +1,6 @@
 name = "multimodal-looker"
 description = "Visual analysis agent that interprets media files — images, PDFs, diagrams, screenshots — read-only"
-model = "o3"
+model = "gpt-5.4"
 model_reasoning_effort = "medium"
 developer_instructions = """
 

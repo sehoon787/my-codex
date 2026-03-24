@@ -15,6 +15,7 @@
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 ![Agents](https://img.shields.io/badge/agents-444-blue)
 ![Skills](https://img.shields.io/badge/skills-95-purple)
+![MCP](https://img.shields.io/badge/MCP-3-green)
 ![Auto Sync](https://img.shields.io/badge/upstream_sync-weekly-brightgreen)
 
 OpenAI Codex CLI 向けオールインワン マルチエージェント オーケストレーション — 一度インストールするだけで、すべてが手に入ります。

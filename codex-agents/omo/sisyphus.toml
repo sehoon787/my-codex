@@ -1,6 +1,6 @@
 name = "sisyphus"
 description = "Use when a complex multi-step task needs relentless orchestration — classifies intent, delegates to specialists, verifies all work, and never stops until every task is verified complete."
-model = "o3"
+model = "gpt-5.4"
 model_reasoning_effort = "high"
 sandbox_mode = "read-only"
 developer_instructions = """

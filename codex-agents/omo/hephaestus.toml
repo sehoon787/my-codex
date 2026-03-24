@@ -1,6 +1,6 @@
 name = "hephaestus"
 description = "Use when a task needs autonomous end-to-end execution — explores, plans, implements, tests, and verifies without asking permission or delegating."
-model = "o3"
+model = "gpt-5.4"
 model_reasoning_effort = "high"
 sandbox_mode = "workspace-write"
 developer_instructions = """

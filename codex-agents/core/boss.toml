@@ -1,6 +1,6 @@
 name = "boss"
 description = "Use when the user's request needs dynamic agent discovery, intent classification, and delegation to the optimal specialist."
-model = "o3"
+model = "gpt-5.4"
 model_reasoning_effort = "high"
 sandbox_mode = "read-only"
 developer_instructions = """

@@ -1,6 +1,6 @@
 name = "security-reviewer"
 description = "Security vulnerability detection specialist (OWASP Top 10, secrets, unsafe patterns)"
-model = "o3"
+model = "gpt-5.4"
 model_reasoning_effort = "high"
 developer_instructions = """
 

@@ -1,6 +1,6 @@
 name = "scientist"
 description = "Data analysis and research execution specialist"
-model = "o3"
+model = "gpt-5.4"
 model_reasoning_effort = "medium"
 developer_instructions = """
 

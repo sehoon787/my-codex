@@ -1,6 +1,6 @@
 name = "metis"
 description = "Pre-planning intent analyst that classifies requests, detects ambiguity, and prevents AI-slop before planning begins (Opus)"
-model = "o3"
+model = "gpt-5.4"
 model_reasoning_effort = "high"
 developer_instructions = """
 

@@ -32,8 +32,17 @@ mkdir -p "$HOME/.codex/agents" "$HOME/.codex/agent-packs"
 # Core agents (always loaded by Codex — ~/.codex/agents/ is recursively scanned)
 if [ -d "$SCRIPT_DIR/codex-agents/core" ]; then
   cp "$SCRIPT_DIR/codex-agents/core/"*.toml "$HOME/.codex/agents/" 2>/dev/null || true
-  echo "  Core agents: $(find "$HOME/.codex/agents" -maxdepth 1 -name '*.toml' | wc -l | tr -d ' ') installed"
 fi
+if [ -d "$SCRIPT_DIR/codex-agents/omo" ]; then
+  cp "$SCRIPT_DIR/codex-agents/omo/"*.toml "$HOME/.codex/agents/" 2>/dev/null || true
+fi
+if [ -d "$SCRIPT_DIR/codex-agents/omc" ]; then
+  cp "$SCRIPT_DIR/codex-agents/omc/"*.toml "$HOME/.codex/agents/" 2>/dev/null || true
+fi
+if [ -d "$SCRIPT_DIR/codex-agents/awesome-core" ]; then
+  cp "$SCRIPT_DIR/codex-agents/awesome-core/"*.toml "$HOME/.codex/agents/" 2>/dev/null || true
+fi
+echo "  Core agents: $(find "$HOME/.codex/agents" -maxdepth 1 -name '*.toml' | wc -l | tr -d ' ') installed"
 
 # Domain agent-packs (on-demand via symlink)
 for cat_dir in "$SCRIPT_DIR/codex-agents/agent-packs/"*/; do

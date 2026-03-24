@@ -20,11 +20,11 @@ map_model() {
   local m="$1"
   case "$m" in
     claude-opus-4-5|claude-opus-4-6)
-      echo 'model = "o3"'
+      echo 'model = "gpt-5.4"'
       echo 'model_reasoning_effort = "high"'
       ;;
     claude-sonnet-4-6|claude-sonnet-4-5)
-      echo 'model = "o3"'
+      echo 'model = "gpt-5.4"'
       echo 'model_reasoning_effort = "medium"'
       ;;
     claude-haiku-4-5)
@@ -33,7 +33,7 @@ map_model() {
       ;;
     *)
       # default / unknown
-      echo 'model = "o3"'
+      echo 'model = "gpt-5.4"'
       echo 'model_reasoning_effort = "medium"'
       ;;
   esac

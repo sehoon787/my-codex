@@ -15,6 +15,7 @@
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 ![Agents](https://img.shields.io/badge/agents-444-blue)
 ![Skills](https://img.shields.io/badge/skills-95-purple)
+![MCP](https://img.shields.io/badge/MCP-3-green)
 ![Auto Sync](https://img.shields.io/badge/upstream_sync-weekly-brightgreen)
 
 OpenAI Codex CLI를 위한 올인원 멀티에이전트 오케스트레이션 — 한 번 설치하면 모든 것을 얻습니다.

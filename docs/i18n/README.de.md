@@ -15,6 +15,7 @@
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 ![Agents](https://img.shields.io/badge/agents-444-blue)
 ![Skills](https://img.shields.io/badge/skills-95-purple)
+![MCP](https://img.shields.io/badge/MCP-3-green)
 ![Auto Sync](https://img.shields.io/badge/upstream_sync-weekly-brightgreen)
 
 All-in-One Multi-Agent-Orchestrierung für OpenAI Codex CLI — einmalige Installation, alles inklusive.

@@ -1,6 +1,6 @@
 name = "oracle"
 description = "Strategic technical advisor for architecture decisions, hard debugging, and deep consulting — read-only (Opus)"
-model = "o3"
+model = "gpt-5.4"
 model_reasoning_effort = "high"
 developer_instructions = """
 

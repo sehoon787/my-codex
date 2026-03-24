@@ -1,6 +1,6 @@
 name = "architect"
 description = "Strategic Architecture & Debugging Advisor (Opus, READ-ONLY)"
-model = "o3"
+model = "gpt-5.4"
 model_reasoning_effort = "high"
 developer_instructions = """
 

@@ -44,6 +44,17 @@ if [ -d "$SCRIPT_DIR/codex-agents/awesome-core" ]; then
 fi
 echo "  Core agents: $(find "$HOME/.codex/agents" -maxdepth 1 -name '*.toml' | wc -l | tr -d ' ') installed"
 
+# Agency agents (upstream MD→TOML converted, domain specialists)
+if [ -d "$SCRIPT_DIR/codex-agents/agency" ]; then
+  for cat_dir in "$SCRIPT_DIR/codex-agents/agency/"*/; do
+    [ -d "$cat_dir" ] || continue
+    cat_name=$(basename "$cat_dir")
+    mkdir -p "$HOME/.codex/agent-packs/$cat_name"
+    cp "$cat_dir"*.toml "$HOME/.codex/agent-packs/$cat_name/" 2>/dev/null || true
+  done
+  echo "  Agency agents: $(find "$SCRIPT_DIR/codex-agents/agency" -name '*.toml' | wc -l | tr -d ' ') installed to agent-packs"
+fi
+
 # Domain agent-packs (on-demand via symlink)
 for cat_dir in "$SCRIPT_DIR/codex-agents/agent-packs/"*/; do
   [ -d "$cat_dir" ] || continue
@@ -115,9 +126,9 @@ fi
 # ── 5. MCP servers ──
 echo "[5/7] Registering MCP servers..."
 if command -v codex >/dev/null 2>&1; then
-  codex mcp add context7  -- npx -y @anthropic/context7-mcp 2>/dev/null || true
-  codex mcp add exa       -- npx -y exa-mcp-server 2>/dev/null || true
-  codex mcp add grep_app  -- npx -y @anthropic/grep-app-mcp 2>/dev/null || true
+  codex mcp add context7  --url https://mcp.context7.com/mcp 2>/dev/null || true
+  codex mcp add exa       --url "https://mcp.exa.ai/mcp?tools=web_search_exa" 2>/dev/null || true
+  codex mcp add grep_app  --url https://mcp.grep.app 2>/dev/null || true
   echo "  3 MCP servers registered (context7, exa, grep_app)"
 else
   echo "  codex not found — MCP servers will be registered when codex is installed"

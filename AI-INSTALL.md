@@ -15,8 +15,8 @@ rm -rf /tmp/my-codex
 ```
 
 This installs:
-- 37 core agents + 136 awesome agents in `~/.codex/agents/` (always loaded by Codex CLI via `spawn_agent`)
-- 282 domain agent-packs in `~/.codex/agent-packs/` (on-demand via symlink)
+- ~91 core agents in `~/.codex/agents/` (always loaded by Codex CLI via `spawn_agent`)
+- ~498 domain agent-packs in `~/.codex/agent-packs/` (on-demand via symlink)
 - 125 skills in `~/.codex/skills/` (from Everything Claude Code)
 - Global `AGENTS.md` instructions
 - `config.toml` with `multi_agent = true`
@@ -30,14 +30,32 @@ mkdir -p ~/.codex/agents ~/.codex/agent-packs ~/.codex/skills
 
 # Core agents (always loaded)
 cp /tmp/my-codex/codex-agents/core/*.toml ~/.codex/agents/
+cp /tmp/my-codex/codex-agents/omo/*.toml ~/.codex/agents/
+cp /tmp/my-codex/codex-agents/omc/*.toml ~/.codex/agents/
+cp /tmp/my-codex/codex-agents/awesome-core/*.toml ~/.codex/agents/
 
-# Awesome core agents (add to core)
+# Awesome core categories (add to core)
 for d in 01-core-development 03-infrastructure 04-quality-security 09-meta-orchestration; do
   cp /tmp/my-codex/codex-agents/awesome/$d/*.toml ~/.codex/agents/ 2>/dev/null
 done
 
 # Domain agent-packs (on-demand)
 cp -r /tmp/my-codex/codex-agents/agent-packs/* ~/.codex/agent-packs/
+
+# Agency agents (domain specialists → agent-packs)
+for d in /tmp/my-codex/codex-agents/agency/*/; do
+  cat_name=$(basename "$d")
+  mkdir -p ~/.codex/agent-packs/$cat_name
+  cp "$d"*.toml ~/.codex/agent-packs/$cat_name/ 2>/dev/null
+done
+
+# Awesome remaining categories → agent-packs
+for d in /tmp/my-codex/codex-agents/awesome/*/; do
+  cat_name=$(basename "$d")
+  case "$cat_name" in 01-core-development|03-infrastructure|04-quality-security|09-meta-orchestration) continue ;; esac
+  mkdir -p ~/.codex/agent-packs/$cat_name
+  cp "$d"*.toml ~/.codex/agent-packs/$cat_name/ 2>/dev/null
+done
 
 # Skills
 cp -r /tmp/my-codex/skills/ecc/* ~/.codex/skills/
@@ -54,9 +72,9 @@ max_threads = 8
 TOML
 
 # MCP servers
-codex mcp add context7  -- npx -y @anthropic/context7-mcp 2>/dev/null || true
-codex mcp add exa       -- npx -y exa-mcp-server 2>/dev/null || true
-codex mcp add grep_app  -- npx -y @anthropic/grep-app-mcp 2>/dev/null || true
+codex mcp add context7  --url https://mcp.context7.com/mcp 2>/dev/null || true
+codex mcp add exa       --url "https://mcp.exa.ai/mcp?tools=web_search_exa" 2>/dev/null || true
+codex mcp add grep_app  --url https://mcp.grep.app 2>/dev/null || true
 
 rm -rf /tmp/my-codex
 ```
@@ -89,8 +107,8 @@ echo "config.toml:   $(grep -q 'multi_agent' ~/.codex/config.toml 2>/dev/null &&
 ```
 
 Expected:
-- Core agents: 80+
-- Agent packs: 360+
+- Core agents: 90+
+- Agent packs: 490+
 - Skills: 95+
 - AGENTS.md: OK
 - config.toml: OK

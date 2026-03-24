@@ -14,13 +14,13 @@
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 ![Agents](https://img.shields.io/badge/agents-444-blue)
-![Skills](https://img.shields.io/badge/skills-95-purple)
+![Skills](https://img.shields.io/badge/skills-125-purple)
 ![MCP](https://img.shields.io/badge/MCP-3-green)
 ![Auto Sync](https://img.shields.io/badge/upstream_sync-weekly-brightgreen)
 
 Orchestration multi-agents tout-en-un pour OpenAI Codex CLI — une seule installation, tout inclus.
 
-Regroupe **578 agents** (80 chargés automatiquement + 364 packs d'agents) et **125 skills** issus de 4 sources amont au format TOML natif. Codex CLI découvre les agents automatiquement via `spawn_agent` et route les tâches vers le spécialiste optimal. La CI GitHub Actions synchronise les modifications amont chaque semaine.
+Regroupe **444 fichiers d'agents installés** (80 chargés automatiquement + 364 packs d'agents) et **125 skills** issus de 4 sources amont au format TOML natif. Codex CLI découvre les agents automatiquement via `spawn_agent` et route les tâches vers le spécialiste optimal. La CI GitHub Actions synchronise les modifications amont chaque semaine.
 
 Basé sur la spécification officielle [Codex Subagents](https://developers.openai.com/codex/subagents).
 
@@ -32,7 +32,7 @@ Basé sur la spécification officielle [Codex Subagents](https://developers.open
 |----------|-------------|
 | **TOML natif** | Tous les agents au format `.toml` natif de Codex CLI — aucune conversion à l'exécution, aucun problème de compatibilité |
 | **Curation multi-sources** | 4 sources amont agrégées, dédupliquées et contrôlées qualité en une seule collection |
-| **Zéro configuration** | Une installation, 578 agents. `config.toml` est automatiquement configuré avec `multi_agent = true` |
+| **Zéro configuration** | Une installation, 444 fichiers d'agents prêts à l'emploi. `config.toml` est automatiquement configuré avec `multi_agent = true` |
 
 ## Démarrage rapide
 
@@ -71,7 +71,7 @@ Lisez la sortie complète et exécutez chaque étape dans l'ordre. Utilisez `cur
 - **o4-mini (faible)** : Recherches rapides, exploration — mappé depuis les équivalents Claude Haiku
 
 ### Bundle tout-en-un
-- L'installation fournit **578 agents et 125 skills** immédiatement
+- L'installation fournit **444 fichiers d'agents installés et 125 skills** immédiatement
 - Regroupe 4 sources amont (agency-agents, everything-claude-code, oh-my-codex, awesome-codex-subagents)
 - La synchronisation automatique CI hebdomadaire maintient le contenu groupé à jour avec les sources amont
 - La conversion MD-vers-TOML est effectuée automatiquement pour les sources non natives
@@ -80,7 +80,7 @@ Lisez la sortie complète et exécutez chaque étape dans l'ordre. Utilisez `cur
 
 ## Agents principaux
 
-578 agents principaux pour l'infrastructure d'orchestration sont installés dans `~/.codex/agents/`. Ce sont les agents fondamentaux qui orchestrent, planifient, analysent et vérifient le travail. Les spécialistes de domaine se trouvent dans les packs d'agents. Les agents Awesome (136) sont également installés dans `~/.codex/agents/` pour une couverture supplémentaire (578 agents partagés entre Core et Awesome, ce qui donne 578 agents chargés automatiquement uniques).
+37 agents principaux pour l'infrastructure d'orchestration sont installés dans `~/.codex/agents/`. Ce sont les agents fondamentaux qui orchestrent, planifient, analysent et vérifient le travail. Les spécialistes de domaine se trouvent dans les packs d'agents. Les agents Awesome étendent la couverture, mais les collisions de noms de fichiers ramènent l'ensemble auto-chargé final à 80 fichiers installés.
 
 ### Orchestrateurs (5)
 boss, sisyphus, atlas, hephaestus, prometheus
@@ -107,7 +107,7 @@ test-engineer, qa-tester, multimodal-looker
 
 ## Packs d'agents (spécialistes de domaine)
 
-578 agents de domaine répartis en 21 catégories, installés dans `~/.codex/agent-packs/` — **non** chargés par défaut. Activez un pack via un lien symbolique :
+364 fichiers de packs d'agents répartis en 21 catégories sont installés dans `~/.codex/agent-packs/` — **non** chargés par défaut. Activez un pack via un lien symbolique :
 
 ```bash
 # Activer un pack individuel
@@ -148,8 +148,8 @@ rm ~/.codex/agents/<agent-name>.toml
 | Catégorie | Nombre | Source | Emplacement |
 |-----------|--------|--------|-------------|
 | Agents chargés automatiquement | 80 (37 Core + 54 Awesome − 11 partagés) | Infrastructure d'orchestration + Awesome Core | `~/.codex/agents/` |
-| Packs d'agents | 364 (282 packs + 82 Awesome) | 21 catégories de domaine + Awesome Domain | `~/.codex/agent-packs/` |
-| Skills | 95 | ECC | `~/.codex/skills/` |
+| Packs d'agents | 364 fichiers installés | `agent-packs/`, `agency/`, catégories Awesome non core | `~/.codex/agent-packs/` |
+| Skills | 125 | ECC | `~/.codex/skills/` |
 | config.toml | 1 | my-codex | `~/.codex/config.toml` |
 | AGENTS.md | 1 | my-codex | `~/.codex/AGENTS.md` |
 
@@ -173,7 +173,7 @@ agent-organizer, capability-assessor, conflict-resolver, context-manager, execut
 </details>
 
 <details>
-<summary>Skills (95) — Issus de Everything Claude Code</summary>
+<summary>Skills (125) — Issus de Everything Claude Code</summary>
 
 Skills importants :
 
@@ -223,10 +223,10 @@ Skills importants :
 └──────┘ └────────┘ └────────┘ └────────┘
 ┌─────────────────────────────────────────────────────────┐
 │  Agent Layer (444 unique agents in native TOML)          │
-│    ├── Auto-loaded (80): 37 core + 54 awesome − 11 shared│
-│    └── Agent Packs (364): 282 packs + 82 awesome         │
+│    ├── Auto-loaded (80): empreinte installée finale      │
+│    └── Agent Packs (364): empreinte installée finale     │
 ├─────────────────────────────────────────────────────────┤
-│  Skills Layer (95 from ECC)                             │
+│  Skills Layer (125 from ECC)                            │
 │    ├── tdd-workflow, security-review, autopilot         │
 │    └── pdf, docx, pptx, xlsx, team                     │
 └─────────────────────────────────────────────────────────┘
@@ -301,7 +301,7 @@ Codex → spawn_agent("security-reviewer")
 ### Lancement en parallèle
 
 ```
-> Spawn 578 agents: refactor auth, add tests, review security
+> Run a multi-agent pass: refactor auth, add tests, review security
 
 Codex → spawn_agent("executor") × refactoring
       → spawn_agent("test-engineer") × test writing
@@ -347,11 +347,11 @@ Une bibliothèque de 156 personas d'agents spécialistes métier. Offre des pers
 
 ### 2. [Everything Claude Code (ECC)](https://github.com/affaan-m/everything-claude-code)
 
-Un framework de développement conçu à l'origine pour Claude Code, fournissant 125 skills. 125 skills spécifiques à Claude Code ont été supprimés ; les skills restants contiennent des directives de codage génériques utilisables avec n'importe quel agent LLM. Le répertoire rules/ est inclus dans le dépôt comme matériel de référence, mais n'est pas lu par Codex CLI.
+Un framework de développement conçu à l'origine pour Claude Code, fournissant 125 skills. 13 skills spécifiques à Claude Code ont été supprimés ; les skills restants contiennent des directives de codage génériques utilisables avec n'importe quel agent LLM. Le répertoire rules/ est inclus dans le dépôt comme matériel de référence, mais n'est pas lu par Codex CLI.
 
 ### 3. [Awesome Codex Subagents](https://github.com/VoltAgent/awesome-codex-subagents)
 
-578 agents prêts pour la production au format TOML natif. Déjà compatibles Codex — aucune conversion requise. Organisés en 10 catégories, du développement principal à la méta-orchestration.
+80 fichiers d'agents auto-chargés prêts pour la production au format TOML natif. Déjà compatibles Codex — aucune conversion requise. Organisés en 10 catégories, du développement principal à la méta-orchestration.
 
 ### 4. [Oh My Codex (OMX)](https://github.com/Yeachan-Heo/oh-my-codex)
 
@@ -359,7 +359,7 @@ Framework d'orchestration multi-agents Codex CLI de Yeachan Heo. Un runtime Rust
 
 ### 5. [Oh My OpenAgent (omo)](https://github.com/code-yeongyu/oh-my-openagent)
 
-Un harnais d'agents multi-plateforme de code-yeongyu. Les 578 agents d'orchestration de ce dépôt (atlas, hephaestus, metis, momus, oracle, prometheus, sisyphus, librarian, multimodal-looker) sont adaptés des agents omo, convertis au format TOML natif Codex.
+Un harnais d'agents multi-plateforme de code-yeongyu. Les agents d'orchestration de ce dépôt (atlas, hephaestus, metis, momus, oracle, prometheus, sisyphus, librarian, multimodal-looker) sont adaptés des agents omo, convertis au format TOML natif Codex.
 
 ### 6. [OpenAI Official Skills](https://github.com/openai/skills)
 

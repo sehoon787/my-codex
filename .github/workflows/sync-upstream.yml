@@ -112,20 +112,18 @@ jobs:
           AWESOME_CORE_COUNT=$(find codex-agents/awesome-core -name '*.toml' 2>/dev/null | wc -l)
           PACK_COUNT=$(find codex-agents/agent-packs -name '*.toml' 2>/dev/null | wc -l)
           AGENCY_TOML_COUNT=$(find codex-agents/agency -name '*.toml' 2>/dev/null | wc -l)
-          # Subtract core-vs-awesome filename overlap (both install to ~/.codex/agents/)
-          # Overlap: agents in omo/omc/awesome-core that also exist in awesome/
-          OVERLAP=$(comm -12 \
-            <({ find codex-agents/core codex-agents/omo codex-agents/omc codex-agents/awesome-core -name '*.toml' -exec basename {} \; 2>/dev/null; } | sort -u) \
-            <(find codex-agents/awesome -name '*.toml' -exec basename {} \; 2>/dev/null | sort -u) \
-            | wc -l)
-          TOTAL_AGENTS=$((CORE_COUNT + OMO_COUNT + OMC_COUNT + AWESOME_CORE_COUNT + PACK_COUNT + AGENCY_TOML_COUNT + AWESOME_COUNT - OVERLAP))
+          eval "$(bash scripts/compute-install-counts.sh)"
           echo "CORE_COUNT=$CORE_COUNT" >> $GITHUB_ENV
           echo "OMO_COUNT=$OMO_COUNT" >> $GITHUB_ENV
           echo "OMC_COUNT=$OMC_COUNT" >> $GITHUB_ENV
           echo "AWESOME_CORE_COUNT=$AWESOME_CORE_COUNT" >> $GITHUB_ENV
           echo "PACK_COUNT=$PACK_COUNT" >> $GITHUB_ENV
           echo "AGENCY_TOML_COUNT=$AGENCY_TOML_COUNT" >> $GITHUB_ENV
-          echo "TOTAL_AGENTS=$TOTAL_AGENTS" >> $GITHUB_ENV
+          echo "AUTO_LOADED_COUNT=$AUTO_LOADED_COUNT" >> $GITHUB_ENV
+          echo "AGENT_PACK_COUNT=$AGENT_PACK_COUNT" >> $GITHUB_ENV
+          echo "SKILL_COUNT=$SKILL_COUNT" >> $GITHUB_ENV
+          echo "INSTALLED_AGENT_TOTAL=$INSTALLED_AGENT_TOTAL" >> $GITHUB_ENV
+          echo "SOURCE_TOML_COUNT=$SOURCE_TOML_COUNT" >> $GITHUB_ENV
 
       # 6. Update SOURCES.json
       - name: Update SOURCES.json
@@ -166,69 +164,54 @@ jobs:
       # 7. Update documentation counts
       - name: Update documentation counts
         run: |
-          TOTAL_SKILLS=$((ECC_SKILLS + OMX_CDX_SKILLS))
-          # Compute AUTO_LOADED / PACK_LOADED (used by both index.html and AI-INSTALL.md)
-          AWESOME_CORE_CATS=0
-          for d in codex-agents/awesome/01-core-development codex-agents/awesome/03-infrastructure codex-agents/awesome/04-quality-security codex-agents/awesome/09-meta-orchestration; do
-            AWESOME_CORE_CATS=$((AWESOME_CORE_CATS + $(find "$d" -name '*.toml' 2>/dev/null | wc -l)))
-          done
-          AUTO_LOADED=$((CORE_COUNT + OMO_COUNT + OMC_COUNT + AWESOME_CORE_COUNT + AWESOME_CORE_CATS - OVERLAP))
-          PACK_LOADED=$((TOTAL_AGENTS - AUTO_LOADED))
-          for f in README.md docs/i18n/README.ko.md docs/i18n/README.ja.md docs/i18n/README.zh.md docs/i18n/README.de.md docs/i18n/README.fr.md AI-INSTALL.md; do
+          eval "$(bash scripts/compute-install-counts.sh)"
+          for f in README.md docs/i18n/README.ko.md docs/i18n/README.ja.md docs/i18n/README.zh.md docs/i18n/README.de.md docs/i18n/README.fr.md; do
             [ -f "$f" ] || continue
-            # shields.io badges use underscore: "444_agents"
-            sed -i -E "s/[0-9]+_agents/${TOTAL_AGENTS}_agents/g" "$f"
-            sed -i -E "s/[0-9]+_skills/${TOTAL_SKILLS}_skills/g" "$f"
-            # Prose text: "444 agents"
-            sed -i -E "s/[0-9]+ agents/${TOTAL_AGENTS} agents/g" "$f"
-            sed -i -E "s/[0-9]+ skills/${TOTAL_SKILLS} skills/g" "$f"
+            sed -i -E "s/skills-[0-9]+/skills-${SKILL_COUNT}/g" "$f"
+            sed -i -E "s/agents-[0-9]+/agents-${INSTALLED_AGENT_TOTAL}/g" "$f"
+            sed -i -E "s/\\*\\*[0-9]+ installed agent files\\*\\*/**${INSTALLED_AGENT_TOTAL} installed agent files**/g" "$f" || true
           done
 
           # docs/index.html — targeted updates (avoid greedy global replace)
           if [ -f docs/index.html ]; then
-            # Meta tags: "N agents (N auto-loaded + N agent-packs)"
-            sed -i -E 's/[0-9]+ agents \([0-9]+ auto-loaded \+ [0-9]+ agent-packs\)/'"${TOTAL_AGENTS} agents (${AUTO_LOADED} auto-loaded + ${PACK_LOADED} agent-packs)"'/g' docs/index.html
+            sed -i -E 's/[0-9]+ installed agent files \([0-9]+ auto-loaded \+ [0-9]+ agent-packs\)/'"${INSTALLED_AGENT_TOTAL} installed agent files (${AUTO_LOADED_COUNT} auto-loaded + ${AGENT_PACK_COUNT} agent-packs)"'/g' docs/index.html
             # Hero data-count attributes
-            sed -i -E 's/data-count="[0-9]+"(>0<\/em> <span class="lang" data-en="agents")/data-count="'"${TOTAL_AGENTS}"'"\1/' docs/index.html
-            sed -i -E 's/data-count="[0-9]+"(>0<\/em> <span class="lang" data-en="skills")/data-count="'"${TOTAL_SKILLS}"'"\1/' docs/index.html
+            sed -i -E 's/data-count="[0-9]+"(>0<\/em> <span class="lang" data-en="agents")/data-count="'"${INSTALLED_AGENT_TOTAL}"'"\1/' docs/index.html
+            sed -i -E 's/data-count="[0-9]+"(>0<\/em> <span class="lang" data-en="skills")/data-count="'"${SKILL_COUNT}"'"\1/' docs/index.html
             # Comparison table
-            sed -i -E 's/(&#x2705; )[0-9]+(.*Native TOML)/\1'"${TOTAL_AGENTS}"'\2/' docs/index.html
-            sed -i -E 's/(&#x2705; )[0-9]+(.*Skills included)/\1'"${TOTAL_SKILLS}"'\2/' docs/index.html
+            sed -i -E 's/(&#x2705; )[0-9]+(.*Native TOML)/\1'"${INSTALLED_AGENT_TOTAL}"'\2/' docs/index.html
+            sed -i -E 's/(&#x2705; )[0-9]+(.*Skills included)/\1'"${SKILL_COUNT}"'\2/' docs/index.html
             # Badges (shields.io underscore format)
-            sed -i -E "s/[0-9]+_agents/${TOTAL_AGENTS}_agents/g" docs/index.html
-            sed -i -E "s/[0-9]+_skills/${TOTAL_SKILLS}_skills/g" docs/index.html
-            # "All N agents" in principles/catalog (EN + KO)
-            sed -i -E "s/All [0-9]+ agents/All ${TOTAL_AGENTS} agents/g" docs/index.html
-            sed -i -E "s/[0-9]+개 에이전트 모두/${TOTAL_AGENTS}개 에이전트 모두/g" docs/index.html
-            # "N agents organized" in catalog header (EN + KO)
-            sed -i -E "s/[0-9]+ agents organized/${TOTAL_AGENTS} agents organized/g" docs/index.html
-            sed -i -E "s/[0-9]+개 에이전트를 자동/${TOTAL_AGENTS}개 에이전트를 자동/g" docs/index.html
-            # "N native TOML agents" in hero tagline (EN + KO)
-            sed -i -E "s/[0-9]+ native TOML agents/${TOTAL_AGENTS} native TOML agents/g" docs/index.html
-            sed -i -E "s/위한 [0-9]+개 네이티브/위한 ${TOTAL_AGENTS}개 네이티브/g" docs/index.html
-            # "Done. N agents ready." in terminal demo (EN + KO)
-            sed -i -E "s/Done\. [0-9]+ agents ready/Done. ${TOTAL_AGENTS} agents ready/g" docs/index.html
-            sed -i -E "s/완료\. [0-9]+개 에이전트 준비됨/완료. ${TOTAL_AGENTS}개 에이전트 준비됨/g" docs/index.html
-            # "N agents, N skills" in install section (EN + KO)
-            sed -i -E "s/— [0-9]+ agents, [0-9]+ skills/— ${TOTAL_AGENTS} agents, ${TOTAL_SKILLS} skills/g" docs/index.html
-            sed -i -E "s/— [0-9]+개 에이전트, [0-9]+개 스킬/— ${TOTAL_AGENTS}개 에이전트, ${TOTAL_SKILLS}개 스킬/g" docs/index.html
-            # FAQ "aggregates N agents"
-            sed -i -E "s/aggregates [0-9]+ agents/aggregates ${TOTAL_AGENTS} agents/g" docs/index.html
-            sed -i -E "s/소스에서 [0-9]+개 에이전트를/소스에서 ${TOTAL_AGENTS}개 에이전트를/g" docs/index.html
+            sed -i -E "s/[0-9]+_agents/${INSTALLED_AGENT_TOTAL}_agents/g" docs/index.html
+            sed -i -E "s/[0-9]+_skills/${SKILL_COUNT}_skills/g" docs/index.html
+            sed -i -E "s/[0-9]+ installed native TOML agent files/${INSTALLED_AGENT_TOTAL} installed native TOML agent files/g" docs/index.html
+            sed -i -E "s/[0-9]+개 설치 네이티브 TOML 에이전트 파일/${INSTALLED_AGENT_TOTAL}개 설치 네이티브 TOML 에이전트 파일/g" docs/index.html
+            sed -i -E "s/[0-9]+ agent-packs →/$(printf '%s' "${AGENT_PACK_COUNT}") agent-packs →/g" docs/index.html
+            sed -i -E "s/[0-9]+개 에이전트팩 →/${AGENT_PACK_COUNT}개 에이전트팩 →/g" docs/index.html
+            sed -i -E 's/(Agent Packs".*<span class="cnt">)[0-9]+(<\/span>)/\1'"${AGENT_PACK_COUNT}"'\2/' docs/index.html
+            sed -i -E "s/All [0-9]+ installed agent files/All ${INSTALLED_AGENT_TOTAL} installed agent files/g" docs/index.html
+            sed -i -E "s/설치되는 [0-9]+개 에이전트 파일 모두/설치되는 ${INSTALLED_AGENT_TOTAL}개 에이전트 파일 모두/g" docs/index.html
+            sed -i -E "s/[0-9]+ installed agent files organized/${INSTALLED_AGENT_TOTAL} installed agent files organized/g" docs/index.html
+            sed -i -E "s/[0-9]+개 설치 에이전트 파일을/${INSTALLED_AGENT_TOTAL}개 설치 에이전트 파일을/g" docs/index.html
+            sed -i -E "s/Done\. [0-9]+ installed agent files ready/Done. ${INSTALLED_AGENT_TOTAL} installed agent files ready/g" docs/index.html
+            sed -i -E "s/완료\. [0-9]+개 설치 에이전트 파일 준비됨/완료. ${INSTALLED_AGENT_TOTAL}개 설치 에이전트 파일 준비됨/g" docs/index.html
+            sed -i -E "s/aggregates 4 curated upstream sources into [0-9]+ installed agent files and [0-9]+ skills/aggregates 4 curated upstream sources into ${INSTALLED_AGENT_TOTAL} installed agent files and ${SKILL_COUNT} skills/g" docs/index.html
             # Pipeline diagram "N + N + N"
-            sed -i -E "s/[0-9]+ \+ [0-9]+ \+ [0-9]+/${AUTO_LOADED} + ${PACK_LOADED} + ${TOTAL_SKILLS}/" docs/index.html
-            # "All N packs" in catalog (EN + KO)
-            sed -i -E "s/All [0-9]+ packs/All ${PACK_LOADED} packs/g" docs/index.html
-            sed -i -E "s/전체 [0-9]+개 팩이/전체 ${PACK_LOADED}개 팩이/g" docs/index.html
+            sed -i -E "s/[0-9]+ \+ [0-9]+ \+ [0-9]+/${AUTO_LOADED_COUNT} + ${AGENT_PACK_COUNT} + ${SKILL_COUNT}/" docs/index.html
+            sed -i -E "s/All [0-9]+ installed pack files/All ${AGENT_PACK_COUNT} installed pack files/g" docs/index.html
+            sed -i -E "s/전체 [0-9]+개 팩 파일이/전체 ${AGENT_PACK_COUNT}개 팩 파일이/g" docs/index.html
           fi
 
           # AI-INSTALL.md — update detail counts
           if [ -f AI-INSTALL.md ]; then
-            sed -i -E "s/~[0-9]+ core agents/~${AUTO_LOADED} core agents/" AI-INSTALL.md
-            sed -i -E "s/~[0-9]+ domain agent-packs/~${PACK_LOADED} domain agent-packs/" AI-INSTALL.md
-            sed -i -E "s/Core agents: [0-9]+\+/Core agents: ${AUTO_LOADED}+/" AI-INSTALL.md
-            sed -i -E "s/Agent packs: [0-9]+\+/Agent packs: ${PACK_LOADED}+/" AI-INSTALL.md
-            sed -i -E "s/Skills: [0-9]+\+/Skills: ${TOTAL_SKILLS}+/" AI-INSTALL.md
+            sed -i -E "s/installs [0-9]+ agent files \(.*\), [0-9]+ skills/installs ${INSTALLED_AGENT_TOTAL} agent files (${AUTO_LOADED_COUNT} auto-loaded + ${AGENT_PACK_COUNT} agent-packs), ${SKILL_COUNT} skills/" AI-INSTALL.md
+            sed -i -E "s/repository currently contains [0-9]+ TOML definitions/repository currently contains ${SOURCE_TOML_COUNT} TOML definitions/" AI-INSTALL.md
+            sed -i -E "s/- [0-9]+ auto-loaded agents/- ${AUTO_LOADED_COUNT} auto-loaded agents/" AI-INSTALL.md
+            sed -i -E "s/- [0-9]+ domain agent-packs/- ${AGENT_PACK_COUNT} domain agent-packs/" AI-INSTALL.md
+            sed -i -E "s/- [0-9]+ skills/- ${SKILL_COUNT} skills/" AI-INSTALL.md
+            sed -i -E "s/Core agents: [0-9]+/Core agents: ${AUTO_LOADED_COUNT}/" AI-INSTALL.md
+            sed -i -E "s/Agent packs: [0-9]+/Agent packs: ${AGENT_PACK_COUNT}/" AI-INSTALL.md
+            sed -i -E "s/Skills: [0-9]+/Skills: ${SKILL_COUNT}/" AI-INSTALL.md
           fi
 
       # 8. Create PR

@@ -14,13 +14,13 @@
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 ![Agents](https://img.shields.io/badge/agents-444-blue)
-![Skills](https://img.shields.io/badge/skills-95-purple)
+![Skills](https://img.shields.io/badge/skills-125-purple)
 ![MCP](https://img.shields.io/badge/MCP-3-green)
 ![Auto Sync](https://img.shields.io/badge/upstream_sync-weekly-brightgreen)
 
 OpenAI Codex CLI 向けオールインワン マルチエージェント オーケストレーション — 一度インストールするだけで、すべてが手に入ります。
 
-**444 エージェント** (80 自動読み込み + 364 エージェントパック) と 4 つのアップストリームソースから **95 スキル** をネイティブ TOML 形式にバンドルします。Codex CLI は `spawn_agent` 経由でエージェントを自動検出し、タスクを最適なスペシャリストにルーティングします。GitHub Actions CI は週単位でアップストリーム変更を同期します。
+**444 インストール済みエージェントファイル** (80 自動読み込み + 364 エージェントパック) と 4 つのアップストリームソースから **125 スキル** をネイティブ TOML 形式にバンドルします。Codex CLI は `spawn_agent` 経由でエージェントを自動検出し、タスクを最適なスペシャリストにルーティングします。GitHub Actions CI は週単位でアップストリーム変更を同期します。
 
 公式 [Codex Subagents](https://developers.openai.com/codex/subagents) 仕様に基づいています。
 
@@ -71,7 +71,7 @@ curl -s https://raw.githubusercontent.com/sehoon787/my-codex/main/AI-INSTALL.md
 - **o4-mini (低推論)**: 高速ルックアップ、探索 — Claude Haiku 相当からマッピング
 
 ### オールインワン バンドル
-- インストールは **444 エージェントと 95 スキル** を即座に提供
+- インストールは **444 インストール済みエージェントファイルと 125 スキル** を即座に提供
 - 4 つのアップストリームソース (agency-agents、everything-claude-code、oh-my-codex、awesome-codex-subagents) をバンドル
 - 週単位の CI 自動同期がバンドルコンテンツをアップストリーム化
 - ネイティブ以外のソース向け MD-to-TOML 変換は自動処理
@@ -107,7 +107,7 @@ test-engineer, qa-tester, multimodal-looker
 
 ## エージェントパック (ドメイン スペシャリスト)
 
-282 個のドメイン エージェント (21 カテゴリ) が `~/.codex/agent-packs/` にインストールされます — デフォルトでは読み込まれません。シンボリックリンク経由でパックを有効化：
+364 個のインストール済みパックファイル (21 カテゴリ) が `~/.codex/agent-packs/` に配置されます — デフォルトでは読み込まれません。シンボリックリンク経由でパックを有効化：
 
 ```bash
 # 単一パックを有効化
@@ -148,8 +148,8 @@ rm ~/.codex/agents/<agent-name>.toml
 | カテゴリ | 数 | ソース | 場所 |
 |------|------|------|------|
 | 自動読み込みエージェント | 80 (37 コア + 54 素晴らしい − 11 共有) | オーケストレーション インフラストラクチャ + 素晴らしいコア | `~/.codex/agents/` |
-| エージェントパック | 364 (282 パック + 82 素晴らしい) | 21 ドメイン カテゴリ + 素晴らしい ドメイン | `~/.codex/agent-packs/` |
-| スキル | 95 | ECC | `~/.codex/skills/` |
+| エージェントパック | 364 インストール済みファイル | `agent-packs/`, `agency/`, awesome 非コアカテゴリ | `~/.codex/agent-packs/` |
+| スキル | 125 | ECC | `~/.codex/skills/` |
 | config.toml | 1 | my-codex | `~/.codex/config.toml` |
 | AGENTS.md | 1 | my-codex | `~/.codex/AGENTS.md` |
 
@@ -173,7 +173,7 @@ agent-organizer, capability-assessor, conflict-resolver, context-manager, execut
 </details>
 
 <details>
-<summary>スキル (95) — Everything Claude Code から</summary>
+<summary>スキル (125) — Everything Claude Code から</summary>
 
 主要スキル：
 
@@ -223,10 +223,10 @@ agent-organizer, capability-assessor, conflict-resolver, context-manager, execut
 └──────┘ └────────┘ └────────┘ └────────┘
 ┌─────────────────────────────────────────────────────────┐
 │  Agent Layer (444 unique agents in native TOML)          │
-│    ├── Auto-loaded (80): 37 core + 54 awesome − 11 shared│
-│    └── Agent Packs (364): 282 packs + 82 awesome         │
+│    ├── Auto-loaded (80): final installed footprint       │
+│    └── Agent Packs (364): final installed footprint      │
 ├─────────────────────────────────────────────────────────┤
-│  Skills Layer (95 from ECC)                             │
+│  Skills Layer (125 from ECC)                            │
 │    ├── tdd-workflow, security-review, autopilot         │
 │    └── pdf, docx, pptx, xlsx, team                     │
 └─────────────────────────────────────────────────────────┘
@@ -301,7 +301,7 @@ Codex → spawn_agent("security-reviewer")
 ### 並列スポーン
 
 ```
-> Spawn 578 agents: refactor auth, add tests, review security
+> Run a multi-agent pass: refactor auth, add tests, review security
 
 Codex → spawn_agent("executor") × refactoring
       → spawn_agent("test-engineer") × test writing
@@ -347,7 +347,7 @@ Codex → spawn_agent("planner")
 
 ### 2. [Everything Claude Code (ECC)](https://github.com/affaan-m/everything-claude-code)
 
-もともと Claude Code 向けに構築された開発フレームワーク、95 スキルを提供します。13 個の Claude Code 固有スキルは削除されました。残りのスキルはすべてのLLM エージェント全体で使用可能な汎用コーディング ガイダンスを含みます。rules/ ディレクトリは参照資料としてリポジトリに含まれていますが、Codex CLI では読み取られません。
+もともと Claude Code 向けに構築された開発フレームワークで、125 スキルを提供します。13 個の Claude Code 固有スキルは削除されました。残りのスキルはすべての LLM エージェントで使用可能な汎用コーディング ガイダンスを含みます。rules/ ディレクトリは参照資料としてリポジトリに含まれていますが、Codex CLI では読み取られません。
 
 ### 3. [Awesome Codex Subagents](https://github.com/VoltAgent/awesome-codex-subagents)
 

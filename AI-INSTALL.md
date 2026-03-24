@@ -121,6 +121,16 @@ Expected:
 
 Setup complete. Multi-agent orchestration is ready.
 
+## Skills-Only Alternative
+
+To install only the 125 skills (no agents, no rules, no config):
+
+```bash
+npx skills add sehoon787/my-codex -y -g
+```
+
+Installs SKILL.md files to `~/.agents/skills/` and auto-symlinks to Codex CLI, Claude Code, Cursor, and other supported tools. Use this when you only need skills and already have agents configured elsewhere.
+
 ## Also Available
 
 [![Claude Code](https://img.shields.io/badge/Claude_Code-my--claude-d97757?style=flat-square&logo=anthropic&logoColor=white)](https://github.com/sehoon787/my-claude) Looking for Claude Code? → **my-claude** — same agents as Claude Code plugin with Boss meta-orchestrator

@@ -46,6 +46,14 @@ rm -rf /tmp/my-codex
 
 > **Agent Packs**: Domain specialist agents (marketing, sales, gamedev, etc.) are installed to `~/.codex/agent-packs/` and can be activated by symlinking to `~/.codex/agents/` when needed.
 
+### Skills only (cross-platform)
+
+```bash
+npx skills add sehoon787/my-codex -y -g
+```
+
+Installs 125 skills to `~/.agents/skills/` with auto-symlinks to Codex CLI, Claude Code, Cursor, and other tools. Does **not** install agents, rules, or `config.toml` — use `install.sh` for the full bundle.
+
 ### If you are an LLM agent
 
 Fetch the AI installation guide and execute each step:

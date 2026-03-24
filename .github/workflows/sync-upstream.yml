@@ -49,6 +49,15 @@ jobs:
           if [ -d /tmp/ecc/skills ]; then
             rm -rf skills/ecc && mkdir -p skills/ecc
             cp -r /tmp/ecc/skills/* skills/ecc/
+            # Auto-add frontmatter to skills missing it (upstream doesn't always include it)
+            find skills/ecc -name 'SKILL.md' | while read f; do
+              if ! head -1 "$f" | grep -q '^---'; then
+                SKILL_NAME=$(basename "$(dirname "$f")")
+                HEADING=$(head -1 "$f" | sed 's/^# //')
+                { echo '---'; echo "name: $SKILL_NAME"; echo "description: $HEADING"; echo '---'; echo ''; cat "$f"; } > "$f.tmp"
+                mv "$f.tmp" "$f"
+              fi
+            done
           fi
           if [ -d /tmp/ecc/rules ]; then
             rm -rf rules && mkdir -p rules

@@ -20,7 +20,7 @@
 
 All-in-one multi-agent orchestration for OpenAI Codex CLI — install once, get everything.
 
-Bundles **319 agents** (104 core + 215 domain agent-packs), **136 skills**, and **50 rules** from 4 upstream sources into native TOML format. Codex CLI auto-discovers agents via `spawn_agent` and routes tasks to the optimal specialist. GitHub Actions CI syncs upstream changes weekly.
+Bundles **319 agents** (104 core + 215 domain agent-packs), **95 skills**, and **50 rules** from 4 upstream sources into native TOML format. Codex CLI auto-discovers agents via `spawn_agent` and routes tasks to the optimal specialist. GitHub Actions CI syncs upstream changes weekly.
 
 Based on the official [Codex Subagents](https://developers.openai.com/codex/subagents) specification.
 
@@ -71,7 +71,7 @@ Read the full output and execute each step in order. Use `curl`, not `WebFetch`.
 - **o4-mini (low)**: Quick lookups, exploration — mapped from Claude Haiku equivalents
 
 ### All-in-One Bundle
-- Install provides **319 agents, 136 skills, and 50 rules** instantly
+- Install provides **319 agents, 95 skills, and 50 rules** instantly
 - Bundles 4 upstream sources (agency-agents, everything-claude-code, oh-my-codex, awesome-codex-subagents)
 - Weekly CI auto-sync keeps bundled content up-to-date with upstream
 - MD-to-TOML conversion handled automatically for non-native sources
@@ -368,7 +368,7 @@ A library of 156 business specialist agent personas. Provides specialist perspec
 
 ### 2. [Everything Claude Code (ECC)](https://github.com/affaan-m/everything-claude-code)
 
-A development framework originally built for Claude Code, providing 108 skills and 50 rules. Approximately half the skills contain generic coding guidance usable across any LLM agent; the rest reference Claude Code-specific tools. Rules provide language-agnostic coding standards across 8 programming languages.
+A development framework originally built for Claude Code, providing 95 skills and 50 rules. 13 Claude Code-specific skills were removed; the remaining skills contain generic coding guidance usable across any LLM agent. Rules provide language-agnostic coding standards across 8 programming languages.
 
 ### 3. [Awesome Codex Subagents](https://github.com/VoltAgent/awesome-codex-subagents)
 

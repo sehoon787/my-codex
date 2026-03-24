@@ -3,6 +3,11 @@ on:
   push:
     branches: [main]
     paths-ignore: ['**.md', 'docs/**']
+  workflow_dispatch:
+
+concurrency:
+  group: auto-tag
+  cancel-in-progress: false
 
 permissions:
   contents: write

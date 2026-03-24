@@ -90,19 +90,28 @@ jobs:
       # 5. Convert MD agents → TOML
       - name: Convert agents to TOML
         run: |
-          # Also copy core boss.md and omo agents to staging
-          mkdir -p staging/core staging/omo
-          # (These would come from this repo's own agents/ if we maintain them)
+          # omo/, omc/, awesome-core/ agents are maintained directly as .toml in this repo.
+          # They are not re-converted from staging; they persist across sync runs.
 
           # Run conversion: staging/ → codex-agents/
           bash scripts/md-to-toml.sh staging codex-agents
 
           CORE_COUNT=$(find codex-agents/core -name '*.toml' 2>/dev/null | wc -l)
+          OMO_COUNT=$(find codex-agents/omo -name '*.toml' 2>/dev/null | wc -l)
+          OMC_COUNT=$(find codex-agents/omc -name '*.toml' 2>/dev/null | wc -l)
+          AWESOME_CORE_COUNT=$(find codex-agents/awesome-core -name '*.toml' 2>/dev/null | wc -l)
           PACK_COUNT=$(find codex-agents/agent-packs -name '*.toml' 2>/dev/null | wc -l)
           # Subtract core-vs-awesome filename overlap (both install to ~/.codex/agents/)
-          OVERLAP=$(comm -12 <(find codex-agents/core -name '*.toml' -exec basename {} \; 2>/dev/null | sort) <(find codex-agents/awesome -name '*.toml' -exec basename {} \; 2>/dev/null | sort) | wc -l)
-          TOTAL_AGENTS=$((CORE_COUNT + PACK_COUNT + AWESOME_COUNT - OVERLAP))
+          # Overlap: agents in omo/omc/awesome-core that also exist in awesome/
+          OVERLAP=$(comm -12 \
+            <({ find codex-agents/core codex-agents/omo codex-agents/omc codex-agents/awesome-core -name '*.toml' -exec basename {} \; 2>/dev/null; } | sort -u) \
+            <(find codex-agents/awesome -name '*.toml' -exec basename {} \; 2>/dev/null | sort -u) \
+            | wc -l)
+          TOTAL_AGENTS=$((CORE_COUNT + OMO_COUNT + OMC_COUNT + AWESOME_CORE_COUNT + PACK_COUNT + AWESOME_COUNT - OVERLAP))
           echo "CORE_COUNT=$CORE_COUNT" >> $GITHUB_ENV
+          echo "OMO_COUNT=$OMO_COUNT" >> $GITHUB_ENV
+          echo "OMC_COUNT=$OMC_COUNT" >> $GITHUB_ENV
+          echo "AWESOME_CORE_COUNT=$AWESOME_CORE_COUNT" >> $GITHUB_ENV
           echo "PACK_COUNT=$PACK_COUNT" >> $GITHUB_ENV
           echo "TOTAL_AGENTS=$TOTAL_AGENTS" >> $GITHUB_ENV
 
@@ -167,6 +176,7 @@ jobs:
             git add -A
             git commit -m "chore: sync upstream dependencies ($(date +%Y-%m-%d))"
             git push -u origin "$BRANCH"
+            gh label create "auto-sync" --color "0075ca" --description "Automated upstream sync" 2>/dev/null || true
             gh pr create \
               --title "chore: sync upstream ($(date +%Y-%m-%d))" \
               --body "Upstream sync from 4 upstream sources. Review diffs before merging." \

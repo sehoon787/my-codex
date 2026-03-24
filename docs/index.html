@@ -4,9 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>my-codex — All-in-one Codex CLI Multi-Agent Orchestration</title>
-<meta name="description" content="All-in-one Codex CLI multi-agent orchestration toolkit. 444 agents (80 auto-loaded + 364 agent-packs), 95 skills. From 4 curated upstream sources.">
+<meta name="description" content="All-in-one Codex CLI multi-agent orchestration toolkit. 444 agents (80 auto-loaded + 364 agent-packs), 95 skills, 3 MCP servers. From 4 curated upstream sources.">
 <meta property="og:title" content="my-codex — All-in-one Codex CLI Multi-Agent Orchestration">
-<meta property="og:description" content="444 agents (80 auto-loaded + 364 agent-packs), 95 skills from 4 curated upstream sources. Native TOML agents for OpenAI Codex CLI. One install gets everything.">
+<meta property="og:description" content="444 agents (80 auto-loaded + 364 agent-packs), 95 skills, 3 MCP servers from 4 curated upstream sources. Native TOML agents for OpenAI Codex CLI. One install gets everything.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://sehoon787.github.io/my-codex/">
 <meta property="og:image" content="https://sehoon787.github.io/my-codex/assets/og-image.png">
@@ -373,9 +373,11 @@ footer{padding:40px 0;border-top:1px solid rgba(255,255,255,.06);text-align:cent
       </div>
     </div>
     <div class="arch-conn"></div>
+    <div class="arch-layer" style="border-color:var(--accent)"><h4 style="color:var(--accent)">MCP Servers<span class="cnt">3</span></h4><p>Context7 · Exa · grep.app</p></div>
+    <div class="arch-conn"></div>
     <div class="arch-layer">
       <h4><span class="lang" data-en="Codex CLI Runtime" data-ko="Codex CLI 런타임"></span></h4>
-      <p><span class="lang" data-en="spawn_agent · send_input · multi_agent · AGENTS.md · config.toml" data-ko="spawn_agent · send_input · multi_agent · AGENTS.md · config.toml"></span></p>
+      <p><span class="lang" data-en="spawn_agent · send_input · multi_agent · AGENTS.md · config.toml · MCP" data-ko="spawn_agent · send_input · multi_agent · AGENTS.md · config.toml · MCP"></span></p>
     </div>
     <div class="arch-conn"></div>
     <div class="arch-layer" style="border-color:var(--accent)">
@@ -395,56 +397,56 @@ footer{padding:40px 0;border-top:1px solid rgba(255,255,255,.06);text-align:cent
     <details>
       <summary><span class="lang" data-en="Core — Development" data-ko="코어 — 개발"></span> <span class="cat-count">~30 agents</span></summary>
       <div class="cat-grid">
-        <div class="cat-item"><strong>executor</strong> <span class="role">o3 · medium · Task executor</span></div>
-        <div class="cat-item"><strong>debugger</strong> <span class="role">o3 · medium · Bug investigation</span></div>
-        <div class="cat-item"><strong>code-reviewer</strong> <span class="role">o3 · high · Code review</span></div>
-        <div class="cat-item"><strong>architect</strong> <span class="role">o3 · high · System design</span></div>
-        <div class="cat-item"><strong>planner</strong> <span class="role">o3 · high · Implementation planning</span></div>
-        <div class="cat-item"><strong>test-engineer</strong> <span class="role">o3 · medium · TDD specialist</span></div>
-        <div class="cat-item"><strong>frontend-developer</strong> <span class="role">o3 · medium · UI/UX development</span></div>
-        <div class="cat-item"><strong>backend-architect</strong> <span class="role">o3 · high · API &amp; services</span></div>
-        <div class="cat-item"><strong>mobile-developer</strong> <span class="role">o3 · medium · iOS/Android</span></div>
-        <div class="cat-item"><strong>full-stack-developer</strong> <span class="role">o3 · medium · End-to-end</span></div>
+        <div class="cat-item"><strong>executor</strong> <span class="role">gpt-5.4 · medium · Task executor</span></div>
+        <div class="cat-item"><strong>debugger</strong> <span class="role">gpt-5.4 · medium · Bug investigation</span></div>
+        <div class="cat-item"><strong>code-reviewer</strong> <span class="role">gpt-5.4 · high · Code review</span></div>
+        <div class="cat-item"><strong>architect</strong> <span class="role">gpt-5.4 · high · System design</span></div>
+        <div class="cat-item"><strong>planner</strong> <span class="role">gpt-5.4 · high · Implementation planning</span></div>
+        <div class="cat-item"><strong>test-engineer</strong> <span class="role">gpt-5.4 · medium · TDD specialist</span></div>
+        <div class="cat-item"><strong>frontend-developer</strong> <span class="role">gpt-5.4 · medium · UI/UX development</span></div>
+        <div class="cat-item"><strong>backend-architect</strong> <span class="role">gpt-5.4 · high · API &amp; services</span></div>
+        <div class="cat-item"><strong>mobile-developer</strong> <span class="role">gpt-5.4 · medium · iOS/Android</span></div>
+        <div class="cat-item"><strong>full-stack-developer</strong> <span class="role">gpt-5.4 · medium · End-to-end</span></div>
       </div>
     </details>
     <details>
       <summary><span class="lang" data-en="Core — Infrastructure" data-ko="코어 — 인프라"></span> <span class="cat-count">~25 agents</span></summary>
       <div class="cat-grid">
-        <div class="cat-item"><strong>devops-automator</strong> <span class="role">o3 · medium · CI/CD pipelines</span></div>
-        <div class="cat-item"><strong>sre</strong> <span class="role">o3 · medium · Site reliability</span></div>
-        <div class="cat-item"><strong>database-optimizer</strong> <span class="role">o3 · medium · DB performance</span></div>
-        <div class="cat-item"><strong>performance-benchmarker</strong> <span class="role">o3 · medium · Profiling</span></div>
-        <div class="cat-item"><strong>infrastructure-maintainer</strong> <span class="role">o3 · medium · IaC</span></div>
-        <div class="cat-item"><strong>incident-response-commander</strong> <span class="role">o3 · high · On-call</span></div>
-        <div class="cat-item"><strong>cloud-architect</strong> <span class="role">o3 · high · AWS/GCP/Azure</span></div>
-        <div class="cat-item"><strong>kubernetes-operator</strong> <span class="role">o3 · medium · K8s orchestration</span></div>
+        <div class="cat-item"><strong>devops-automator</strong> <span class="role">gpt-5.4 · medium · CI/CD pipelines</span></div>
+        <div class="cat-item"><strong>sre</strong> <span class="role">gpt-5.4 · medium · Site reliability</span></div>
+        <div class="cat-item"><strong>database-optimizer</strong> <span class="role">gpt-5.4 · medium · DB performance</span></div>
+        <div class="cat-item"><strong>performance-benchmarker</strong> <span class="role">gpt-5.4 · medium · Profiling</span></div>
+        <div class="cat-item"><strong>infrastructure-maintainer</strong> <span class="role">gpt-5.4 · medium · IaC</span></div>
+        <div class="cat-item"><strong>incident-response-commander</strong> <span class="role">gpt-5.4 · high · On-call</span></div>
+        <div class="cat-item"><strong>cloud-architect</strong> <span class="role">gpt-5.4 · high · AWS/GCP/Azure</span></div>
+        <div class="cat-item"><strong>kubernetes-operator</strong> <span class="role">gpt-5.4 · medium · K8s orchestration</span></div>
       </div>
     </details>
     <details>
       <summary><span class="lang" data-en="Core — Quality &amp; Security" data-ko="코어 — 품질 &amp; 보안"></span> <span class="cat-count">~20 agents</span></summary>
       <div class="cat-grid">
-        <div class="cat-item"><strong>security-engineer</strong> <span class="role">o3 · high · Vulnerability analysis</span></div>
-        <div class="cat-item"><strong>qa-tester</strong> <span class="role">o3 · medium · Quality assurance</span></div>
-        <div class="cat-item"><strong>accessibility-auditor</strong> <span class="role">o3 · medium · WCAG compliance</span></div>
-        <div class="cat-item"><strong>compliance-auditor</strong> <span class="role">o3 · high · Regulatory review</span></div>
-        <div class="cat-item"><strong>blockchain-security-auditor</strong> <span class="role">o3 · high · Smart contracts</span></div>
-        <div class="cat-item"><strong>threat-detection-engineer</strong> <span class="role">o3 · high · Threat modeling</span></div>
-        <div class="cat-item"><strong>penetration-tester</strong> <span class="role">o3 · high · Ethical hacking</span></div>
+        <div class="cat-item"><strong>security-engineer</strong> <span class="role">gpt-5.4 · high · Vulnerability analysis</span></div>
+        <div class="cat-item"><strong>qa-tester</strong> <span class="role">gpt-5.4 · medium · Quality assurance</span></div>
+        <div class="cat-item"><strong>accessibility-auditor</strong> <span class="role">gpt-5.4 · medium · WCAG compliance</span></div>
+        <div class="cat-item"><strong>compliance-auditor</strong> <span class="role">gpt-5.4 · high · Regulatory review</span></div>
+        <div class="cat-item"><strong>blockchain-security-auditor</strong> <span class="role">gpt-5.4 · high · Smart contracts</span></div>
+        <div class="cat-item"><strong>threat-detection-engineer</strong> <span class="role">gpt-5.4 · high · Threat modeling</span></div>
+        <div class="cat-item"><strong>penetration-tester</strong> <span class="role">gpt-5.4 · high · Ethical hacking</span></div>
       </div>
     </details>
     <details>
       <summary><span class="lang" data-en="Core — Meta &amp; Orchestration" data-ko="코어 — 메타 &amp; 오케스트레이션"></span> <span class="cat-count">~29 agents</span></summary>
       <div class="cat-grid">
-        <div class="cat-item"><strong>analyst</strong> <span class="role">o3 · high · Deep analysis</span></div>
-        <div class="cat-item"><strong>scientist</strong> <span class="role">o3 · medium · Research</span></div>
+        <div class="cat-item"><strong>analyst</strong> <span class="role">gpt-5.4 · high · Deep analysis</span></div>
+        <div class="cat-item"><strong>scientist</strong> <span class="role">gpt-5.4 · medium · Research</span></div>
         <div class="cat-item"><strong>explorer</strong> <span class="role">o4-mini · low · Codebase scan</span></div>
         <div class="cat-item"><strong>writer</strong> <span class="role">o4-mini · low · Documentation</span></div>
-        <div class="cat-item"><strong>tracer</strong> <span class="role">o3 · medium · Evidence tracing</span></div>
-        <div class="cat-item"><strong>git-master</strong> <span class="role">o3 · medium · Git workflows</span></div>
-        <div class="cat-item"><strong>document-specialist</strong> <span class="role">o3 · medium · Doc research</span></div>
-        <div class="cat-item"><strong>senior-project-manager</strong> <span class="role">o3 · high · Project planning</span></div>
-        <div class="cat-item"><strong>code-simplifier</strong> <span class="role">o3 · high · Complexity reduction</span></div>
-        <div class="cat-item"><strong>critic</strong> <span class="role">o3 · high · Critical review</span></div>
+        <div class="cat-item"><strong>tracer</strong> <span class="role">gpt-5.4 · medium · Evidence tracing</span></div>
+        <div class="cat-item"><strong>git-master</strong> <span class="role">gpt-5.4 · medium · Git workflows</span></div>
+        <div class="cat-item"><strong>document-specialist</strong> <span class="role">gpt-5.4 · medium · Doc research</span></div>
+        <div class="cat-item"><strong>senior-project-manager</strong> <span class="role">gpt-5.4 · high · Project planning</span></div>
+        <div class="cat-item"><strong>code-simplifier</strong> <span class="role">gpt-5.4 · high · Complexity reduction</span></div>
+        <div class="cat-item"><strong>critic</strong> <span class="role">gpt-5.4 · high · Critical review</span></div>
       </div>
     </details>
     <details>

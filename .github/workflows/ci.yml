@@ -35,8 +35,25 @@ jobs:
           python3 -c "import json; json.load(open('.mcp.json'))"
       - name: Check core agents exist
         run: |
-          for agent in boss sisyphus atlas hephaestus prometheus executor planner debugger code-reviewer; do
-            test -f "codex-agents/core/${agent}.toml" || (echo "Missing core agent: ${agent}" && exit 1)
+          # Agents are split by source: core/, omo/, omc/, awesome-core/
+          check_agent() {
+            local name=$1 dir=$2
+            test -f "codex-agents/${dir}/${name}.toml" || (echo "Missing agent: ${name} in ${dir}/" && exit 1)
+          }
+          check_agent boss core
+          for agent in sisyphus atlas hephaestus prometheus oracle momus metis librarian multimodal-looker; do
+            check_agent "$agent" omo
+          done
+          for agent in executor planner debugger code-reviewer architect analyst \
+                     code-simplifier critic document-specialist explore git-master \
+                     qa-tester scientist security-reviewer test-engineer tracer \
+                     verifier writer; do
+            check_agent "$agent" omc
+          done
+          for agent in agent-installer agent-organizer code-mapper context-manager \
+                     error-coordinator knowledge-synthesizer multi-agent-coordinator \
+                     task-distributor workflow-orchestrator; do
+            check_agent "$agent" awesome-core
           done
       - name: Validate agent required fields
         run: |

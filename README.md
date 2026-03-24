@@ -20,7 +20,7 @@
 
 All-in-one multi-agent orchestration for OpenAI Codex CLI — install once, get everything.
 
-Bundles **444 agents** (80 auto-loaded + 498 agent-packs) and **125 skills** from 4 upstream sources into native TOML format. Codex CLI auto-discovers agents via `spawn_agent` and routes tasks to the optimal specialist. GitHub Actions CI syncs upstream changes weekly.
+Bundles **578 agents** (80 auto-loaded + 498 agent-packs) and **125 skills** from 4 upstream sources into native TOML format. Codex CLI auto-discovers agents via `spawn_agent` and routes tasks to the optimal specialist. GitHub Actions CI syncs upstream changes weekly.
 
 Based on the official [Codex Subagents](https://developers.openai.com/codex/subagents) specification.
 
@@ -32,7 +32,7 @@ Based on the official [Codex Subagents](https://developers.openai.com/codex/suba
 |-----------|-------------|
 | **Native TOML** | All agents in Codex CLI's native `.toml` format — no runtime conversion, no compatibility issues |
 | **Multi-Source Curation** | 4 upstream sources aggregated, deduplicated, and quality-checked into a single collection |
-| **Zero Configuration** | Install once, get 444 agents. `config.toml` auto-configured with `multi_agent = true` |
+| **Zero Configuration** | Install once, get 578 agents. `config.toml` auto-configured with `multi_agent = true` |
 
 ## Quick Start
 
@@ -71,7 +71,7 @@ Read the full output and execute each step in order. Use `curl`, not `WebFetch`.
 - **o4-mini (low)**: Quick lookups, exploration — mapped from Claude Haiku equivalents
 
 ### All-in-One Bundle
-- Install provides **444 agents and 125 skills** instantly
+- Install provides **578 agents and 125 skills** instantly
 - Bundles 4 upstream sources (agency-agents, everything-claude-code, oh-my-codex, awesome-codex-subagents)
 - Weekly CI auto-sync keeps bundled content up-to-date with upstream
 - MD-to-TOML conversion handled automatically for non-native sources
@@ -80,7 +80,7 @@ Read the full output and execute each step in order. Use `curl`, not `WebFetch`.
 
 ## Core Agents
 
-37 core agents providing orchestration infrastructure are installed to `~/.codex/agents/`. These are the foundation agents that orchestrate, plan, review, and verify work. Domain specialists are in agent-packs. Awesome agents (136) are also installed to `~/.codex/agents/` for additional coverage (444 agents shared between core and awesome, yielding 80 unique auto-loaded agents).
+37 core agents providing orchestration infrastructure are installed to `~/.codex/agents/`. These are the foundation agents that orchestrate, plan, review, and verify work. Domain specialists are in agent-packs. Awesome agents (136) are also installed to `~/.codex/agents/` for additional coverage (578 agents shared between core and awesome, yielding 80 unique auto-loaded agents).
 
 ### Orchestrators (5)
 boss, sisyphus, atlas, hephaestus, prometheus
@@ -301,7 +301,7 @@ Codex → spawn_agent("security-reviewer")
 ### Parallel Spawn
 
 ```
-> Spawn 444 agents: refactor auth, add tests, review security
+> Spawn 578 agents: refactor auth, add tests, review security
 
 Codex → spawn_agent("executor") × refactoring
       → spawn_agent("test-engineer") × test writing

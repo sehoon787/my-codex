@@ -46,7 +46,7 @@ After classifying intent, consider whether a skill would genuinely add value ove
 Signal categories (loose heuristics, not rigid rules):
 - High completion risk (large scope, many parts) → persistence/planning skills: blueprint, verification-loop
 - Ambiguity (vague requirements, unclear criteria) → discovery skills: product-lens
-- Safety-sensitive (auth, secrets, config) → security workflows: security-review
+- Safety-sensitive (auth, secrets, config) → security workflows: security-review, security-scan
 - Unknown root cause ("it doesn't work") → investigation: click-path-audit
 - Quality concern (AI code, no tests, post-impl doubt) → QA skills: tdd-workflow, ai-regression-testing
 - Knowledge gap (new codebase, unfamiliar library) → onboarding: codebase-onboarding, search-first

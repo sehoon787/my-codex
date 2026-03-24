@@ -1,7 +1,7 @@
 # my-codex AI Installation Guide
 
 You are an AI agent setting up a Codex CLI multi-agent orchestration environment.
-The bundle includes 444 agents (80 auto-loaded + 364 agent-packs), 125 skills, and 3 MCP servers.
+The bundle includes 444 agents, 125 skills, and 3 MCP servers.
 Only 2-3 steps are needed.
 
 ---

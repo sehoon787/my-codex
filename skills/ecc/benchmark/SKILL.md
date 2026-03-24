@@ -1,8 +1,3 @@
----
-name: benchmark
-description: Benchmark — Performance Baseline & Regression Detection
----
-
 # Benchmark — Performance Baseline & Regression Detection
 
 ## When to Use

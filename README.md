@@ -89,6 +89,7 @@ Read the full output and execute each step in order. Use `curl`, not `WebFetch`.
 ### Codex Attribution
 - `install.sh` installs a `codex` wrapper plus global `commit-msg` and `post-commit` hooks in `~/.codex/git-hooks/`
 - The wrapper records only files that changed during a real Codex session in the current git repository
+- Codex-authored commits also get `🤖 Generated with [Codex CLI](https://github.com/openai/codex)` in the commit body
 - The commit hook adds `AI-Contributed-By: Codex` only when staged files intersect that recorded change set
 - To add a Claude-style `Co-authored-by:` trailer as well, set `git config --global my-codex.codexContributorEmail '<github-linked-email>'`
 - Local git commits cannot summon GitHub's official `@codex` agent identity directly; GitHub only recognizes co-authors by linked email

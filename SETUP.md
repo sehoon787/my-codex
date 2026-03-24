@@ -88,6 +88,7 @@ Full install enables Codex-aware commit attribution by default:
 
 - `~/.codex/bin/codex` wraps the real Codex CLI
 - the wrapper records files changed during each Codex session inside the current git repo
+- Codex-authored commits get `🤖 Generated with [Codex CLI](https://github.com/openai/codex)` in the commit body
 - `commit-msg` adds `AI-Contributed-By: Codex` only when the commit stages one of those files
 - `post-commit` clears the marker so unrelated commits are not tagged
 

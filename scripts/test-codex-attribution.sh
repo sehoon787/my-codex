@@ -64,6 +64,7 @@ git -C "$REPO_DIR" commit -q -m "chore: initial"
 )
 
 git -C "$REPO_DIR" log -1 --pretty=%B > "$TMP_ROOT/codex-commit.txt"
+grep -F -q '🤖 Generated with [Codex CLI](https://github.com/openai/codex)' "$TMP_ROOT/codex-commit.txt"
 grep -q '^AI-Contributed-By: Codex$' "$TMP_ROOT/codex-commit.txt"
 if grep -qi '^Co-authored-by:' "$TMP_ROOT/codex-commit.txt"; then
   echo "co-author trailer should not be added without explicit email configuration" >&2
@@ -83,6 +84,7 @@ HOME="$TEST_HOME" git config --global my-codex.codexContributorEmail "codex@exam
 )
 
 git -C "$REPO_DIR" log -1 --pretty=%B > "$TMP_ROOT/codex-coauthor-commit.txt"
+grep -F -q '🤖 Generated with [Codex CLI](https://github.com/openai/codex)' "$TMP_ROOT/codex-coauthor-commit.txt"
 grep -q '^AI-Contributed-By: Codex$' "$TMP_ROOT/codex-coauthor-commit.txt"
 grep -q '^Co-authored-by: Codex <codex@example.com>$' "$TMP_ROOT/codex-coauthor-commit.txt"
 
@@ -90,6 +92,10 @@ printf 'manual\n' >> "$REPO_DIR/manual.txt"
 git -C "$REPO_DIR" add manual.txt
 git -C "$REPO_DIR" commit -q -m "docs: manual change"
 git -C "$REPO_DIR" log -1 --pretty=%B > "$TMP_ROOT/manual-commit.txt"
+if grep -F -q '🤖 Generated with [Codex CLI](https://github.com/openai/codex)' "$TMP_ROOT/manual-commit.txt"; then
+  echo "manual commit was incorrectly marked as generated with Codex" >&2
+  exit 1
+fi
 if grep -q '^AI-Contributed-By: Codex$' "$TMP_ROOT/manual-commit.txt"; then
   echo "manual commit was incorrectly attributed to Codex" >&2
   exit 1

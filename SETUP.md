@@ -91,11 +91,13 @@ Full install enables Codex-aware commit attribution by default:
 - `commit-msg` adds `AI-Contributed-By: Codex` only when the commit stages one of those files
 - `post-commit` clears the marker so unrelated commits are not tagged
 
-Optional co-author trailer:
+Optional Claude-style `Co-authored-by:` trailer:
 
 ```bash
 git config --global my-codex.codexContributorEmail "your-verified-email@example.com"
 ```
+
+Local git commits cannot attach GitHub's official `@codex` agent identity directly. GitHub only shows Codex as a co-author/contributor identity when that email is linked to an actual GitHub account.
 
 Disable attribution:
 

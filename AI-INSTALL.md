@@ -129,11 +129,13 @@ Full install also configures a default Codex attribution flow:
 - `git config --global core.hooksPath ~/.codex/git-hooks` installs `commit-msg` and `post-commit` hooks
 - commits only receive `AI-Contributed-By: Codex` when staged files overlap that recorded Codex change set
 
-Optional GitHub-style co-author line:
+Optional Claude-style `Co-authored-by:` trailer:
 
 ```bash
 git config --global my-codex.codexContributorEmail "your-verified-email@example.com"
 ```
+
+Local git commits cannot attach GitHub's official `@codex` agent identity directly. GitHub only recognizes co-authors when the configured email is linked to a real GitHub account.
 
 Disable attribution entirely:
 
@@ -143,13 +145,13 @@ git config --global my-codex.codexAttribution false
 
 ## Skills-Only Alternative
 
-To install only the 125 skills (no agents, no rules, no config):
+To install only the 124 cross-tool skills exposed by `npx skills add` (no agents, no rules, no config):
 
 ```bash
 npx skills add sehoon787/my-codex -y -g
 ```
 
-Installs SKILL.md files to `~/.agents/skills/` and auto-symlinks to Codex CLI, Claude Code, Cursor, and other supported tools. Use this when you only need skills and already have agents configured elsewhere.
+Installs SKILL.md files to `~/.agents/skills/` and auto-symlinks to Codex CLI, Claude Code, Cursor, and other supported tools. Use this when you only need skills and already have agents configured elsewhere. The full `install.sh` bundle still installs 125 skills into `~/.codex/skills/`.
 
 ## Also Available
 

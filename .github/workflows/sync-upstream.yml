@@ -122,6 +122,7 @@ jobs:
           echo "AUTO_LOADED_COUNT=$AUTO_LOADED_COUNT" >> $GITHUB_ENV
           echo "AGENT_PACK_COUNT=$AGENT_PACK_COUNT" >> $GITHUB_ENV
           echo "SKILL_COUNT=$SKILL_COUNT" >> $GITHUB_ENV
+          echo "SKILLS_ONLY_COUNT=$SKILLS_ONLY_COUNT" >> $GITHUB_ENV
           echo "INSTALLED_AGENT_TOTAL=$INSTALLED_AGENT_TOTAL" >> $GITHUB_ENV
           echo "SOURCE_TOML_COUNT=$SOURCE_TOML_COUNT" >> $GITHUB_ENV
 
@@ -176,6 +177,10 @@ jobs:
           if [ -f README.md ]; then
             sed -i -E "s/Awesome agents add additional coverage, but overlapping filenames collapse the final auto-loaded set to [0-9]+ installed files/Awesome agents add additional coverage, but overlapping filenames collapse the final auto-loaded set to ${AUTO_LOADED_COUNT} installed files/" README.md
             sed -i -E "s/[0-9]+ installed pack files across [0-9]+ categories/${AGENT_PACK_COUNT} installed pack files across 21 categories/" README.md
+            sed -i -E "s/Installs [0-9]+ cross-tool skills to `~\\/\\.agents\\/skills\\/`/Installs ${SKILLS_ONLY_COUNT} cross-tool skills to `~\\/\\.agents\\/skills\\/`/" README.md
+          fi
+          if [ -f AI-INSTALL.md ]; then
+            sed -i -E "s/To install only the [0-9]+ cross-tool skills exposed by `npx skills add`/To install only the ${SKILLS_ONLY_COUNT} cross-tool skills exposed by `npx skills add`/" AI-INSTALL.md
           fi
           if [ -f docs/i18n/README.ko.md ]; then
             # Hero line: **NNN개 설치 에이전트 파일** (NNN개 자동 로드 + NNN개 에이전트팩)과 **NNN개 스킬**

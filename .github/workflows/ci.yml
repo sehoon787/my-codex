@@ -86,9 +86,10 @@ jobs:
         run: |
           bash scripts/test-install.sh
           bash scripts/test-codex-attribution.sh
+          bash scripts/test-skills-only-install.sh
       - name: Check install docs consistency
         run: |
-          if rg -n 'Spawn 578 agents|578 agents|319 agents|282 agent-packs|282개 에이전트팩|282개 도메인 에이전트|95 skills|95개 스킬|95 スキル|95 个技能|Skills \| 95|스킬 \| 95|技能 \| 95|Awesome agents \(136\)|어썸 에이전트\(136개\)|素晴らしいエージェント \(136\)|Awesome 智能体（136 个）|Awesome-Agenten \(136\)|136개 프로덕션급|136 個のプロダクション|136 个生产级|136 produktionsreife' README.md AI-INSTALL.md SETUP.md docs/index.html docs/i18n; then
+          if rg -n 'Spawn 578 agents|578 agents|319 agents|282 agent-packs|282개 에이전트팩|282개 도메인 에이전트|95 skills|95개 스킬|95 スキル|95 个技能|Skills \| 95|스킬 \| 95|技能 \| 95|Awesome agents \(136\)|어썸 에이전트\(136개\)|素晴らしいエージェント \(136\)|Awesome 智能体（136 个）|Awesome-Agenten \(136\)|136개 프로덕션급|136 個のプロダクション|136 个生产级|136 produktionsreife|Installs 125 skills to `~/.agents/skills/`|To install only the 125 skills' README.md AI-INSTALL.md SETUP.md docs/index.html docs/i18n; then
             echo "Found stale install counts in first-party docs"
             exit 1
           fi

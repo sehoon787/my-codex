@@ -142,7 +142,7 @@ chmod +x "$HOME/.codex/lib/codex-attribution.sh" \
   "$HOME/.codex/git-hooks/post-commit"
 
 git config --global my-codex.codexAttribution true
-git config --global my-codex.codexContributorName "OpenAI Codex"
+git config --global my-codex.codexContributorName "Codex"
 
 CURRENT_HOOKS_PATH="$(git config --global core.hooksPath 2>/dev/null || true)"
 if [ -n "$CURRENT_HOOKS_PATH" ] && [ "$CURRENT_HOOKS_PATH" != "$HOME/.codex/git-hooks" ]; then

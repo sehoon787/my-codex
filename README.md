@@ -53,7 +53,7 @@ rm -rf /tmp/my-codex
 npx skills add sehoon787/my-codex -y -g
 ```
 
-Installs 125 skills to `~/.agents/skills/` with auto-symlinks to Codex CLI, Claude Code, Cursor, and other tools. Does **not** install agents, rules, or `config.toml` — use `install.sh` for the full bundle.
+Installs 124 cross-tool skills to `~/.agents/skills/` with auto-symlinks to Codex CLI, Claude Code, Cursor, and other tools. Does **not** install agents, rules, or `config.toml` — use `install.sh` for the full 125-skill Codex bundle.
 
 ### If you are an LLM agent
 
@@ -90,7 +90,8 @@ Read the full output and execute each step in order. Use `curl`, not `WebFetch`.
 - `install.sh` installs a `codex` wrapper plus global `commit-msg` and `post-commit` hooks in `~/.codex/git-hooks/`
 - The wrapper records only files that changed during a real Codex session in the current git repository
 - The commit hook adds `AI-Contributed-By: Codex` only when staged files intersect that recorded change set
-- To add a GitHub-style co-author line as well, set `git config --global my-codex.codexContributorEmail '<verified-email>'`
+- To add a Claude-style `Co-authored-by:` trailer as well, set `git config --global my-codex.codexContributorEmail '<github-linked-email>'`
+- Local git commits cannot summon GitHub's official `@codex` agent identity directly; GitHub only recognizes co-authors by linked email
 - To disable attribution entirely, set `git config --global my-codex.codexAttribution false`
 
 ---

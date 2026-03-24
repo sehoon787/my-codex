@@ -391,6 +391,7 @@ The official Skills Catalog for Codex provided by OpenAI. Includes specialist sk
 ## Contributing
 
 Issues and PRs are welcome. When adding a new agent, add a `.toml` file to the `agents/` directory and update the agent list in `SETUP.md`.
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for PR validation steps and Codex commit attribution behavior.
 
 ---
 

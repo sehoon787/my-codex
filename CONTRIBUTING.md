@@ -148,7 +148,13 @@ docs: update README table for engineering agents
 
 Types: `feat` for new agents/skills, `fix` for corrections, `docs` for documentation updates, `refactor` for restructuring without behavior change.
 
-If you work through an installed my-codex environment, `AI-Contributed-By: Codex` may be added automatically when the staged files came from a recorded Codex session. This is expected.
+If you work through an installed my-codex environment, Codex-authored commits may automatically include:
+
+- `🤖 Generated with [Codex CLI](https://github.com/openai/codex)`
+- `AI-Contributed-By: Codex`
+- optional `Co-authored-by: Codex <...>` if you configured `my-codex.codexContributorEmail`
+
+This is expected.
 
 ---
 
@@ -165,3 +171,4 @@ If you work through an installed my-codex environment, `AI-Contributed-By: Codex
 - [ ] File is in the correct directory (`core/` vs `agent-packs/{category}/`)
 - [ ] README category table updated if applicable
 - [ ] PR body describes the use case
+- [ ] If Codex authored the change, the PR notes whether commit attribution markers are expected

@@ -301,7 +301,7 @@ Codex → spawn_agent("security-reviewer")
 ### Paralleles Spawning
 
 ```
-> Spawn 3 agents: refactor auth, add tests, review security
+> Spawn 444 agents: refactor auth, add tests, review security
 
 Codex → spawn_agent("executor") × refactoring
       → spawn_agent("test-engineer") × test writing

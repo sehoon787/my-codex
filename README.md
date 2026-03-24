@@ -20,7 +20,7 @@
 
 All-in-one multi-agent orchestration for OpenAI Codex CLI — install once, get everything.
 
-Bundles **444 agents** (80 auto-loaded + 364 agent-packs) and **95 skills** from 4 upstream sources into native TOML format. Codex CLI auto-discovers agents via `spawn_agent` and routes tasks to the optimal specialist. GitHub Actions CI syncs upstream changes weekly.
+Bundles **444 agents** (80 auto-loaded + 364 agent-packs) and **125 skills** from 4 upstream sources into native TOML format. Codex CLI auto-discovers agents via `spawn_agent` and routes tasks to the optimal specialist. GitHub Actions CI syncs upstream changes weekly.
 
 Based on the official [Codex Subagents](https://developers.openai.com/codex/subagents) specification.
 
@@ -71,7 +71,7 @@ Read the full output and execute each step in order. Use `curl`, not `WebFetch`.
 - **o4-mini (low)**: Quick lookups, exploration — mapped from Claude Haiku equivalents
 
 ### All-in-One Bundle
-- Install provides **444 agents and 95 skills** instantly
+- Install provides **444 agents and 125 skills** instantly
 - Bundles 4 upstream sources (agency-agents, everything-claude-code, oh-my-codex, awesome-codex-subagents)
 - Weekly CI auto-sync keeps bundled content up-to-date with upstream
 - MD-to-TOML conversion handled automatically for non-native sources
@@ -80,7 +80,7 @@ Read the full output and execute each step in order. Use `curl`, not `WebFetch`.
 
 ## Core Agents
 
-37 core agents providing orchestration infrastructure are installed to `~/.codex/agents/`. These are the foundation agents that orchestrate, plan, review, and verify work. Domain specialists are in agent-packs. Awesome agents (136) are also installed to `~/.codex/agents/` for additional coverage (11 agents shared between core and awesome, yielding 80 unique auto-loaded agents).
+37 core agents providing orchestration infrastructure are installed to `~/.codex/agents/`. These are the foundation agents that orchestrate, plan, review, and verify work. Domain specialists are in agent-packs. Awesome agents (136) are also installed to `~/.codex/agents/` for additional coverage (444 agents shared between core and awesome, yielding 80 unique auto-loaded agents).
 
 ### Orchestrators (5)
 boss, sisyphus, atlas, hephaestus, prometheus
@@ -301,7 +301,7 @@ Codex → spawn_agent("security-reviewer")
 ### Parallel Spawn
 
 ```
-> Spawn 3 agents: refactor auth, add tests, review security
+> Spawn 444 agents: refactor auth, add tests, review security
 
 Codex → spawn_agent("executor") × refactoring
       → spawn_agent("test-engineer") × test writing
@@ -347,7 +347,7 @@ A library of 156 business specialist agent personas. Provides specialist perspec
 
 ### 2. [Everything Claude Code (ECC)](https://github.com/affaan-m/everything-claude-code)
 
-A development framework originally built for Claude Code, providing 95 skills. 13 Claude Code-specific skills were removed; the remaining skills contain generic coding guidance usable across any LLM agent. The rules/ directory is included in the repo as reference material but is not read by Codex CLI.
+A development framework originally built for Claude Code, providing 125 skills. 13 Claude Code-specific skills were removed; the remaining skills contain generic coding guidance usable across any LLM agent. The rules/ directory is included in the repo as reference material but is not read by Codex CLI.
 
 ### 3. [Awesome Codex Subagents](https://github.com/VoltAgent/awesome-codex-subagents)
 
@@ -355,7 +355,7 @@ A development framework originally built for Claude Code, providing 95 skills. 1
 
 ### 4. [Oh My Codex (OMX)](https://github.com/Yeachan-Heo/oh-my-codex)
 
-Codex CLI multi-agent orchestration framework by Yeachan Heo. A Rust/TypeScript runtime providing 36 skills, hooks, HUD, and team pipelines for Codex CLI. Referenced as architectural inspiration for my-codex's orchestration patterns. Does not provide agent TOML files directly.
+Codex CLI multi-agent orchestration framework by Yeachan Heo. A Rust/TypeScript runtime providing 125 skills, hooks, HUD, and team pipelines for Codex CLI. Referenced as architectural inspiration for my-codex's orchestration patterns. Does not provide agent TOML files directly.
 
 ### 5. [Oh My OpenAgent (omo)](https://github.com/code-yeongyu/oh-my-openagent)
 

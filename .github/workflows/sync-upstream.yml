@@ -60,18 +60,16 @@ jobs:
           echo "ECC_RULES=$ECC_RULES" >> $GITHUB_ENV
 
       # 3. oh-my-codex
+      # OMX has no agents/ directory — tracked for future skill sync
       - name: Sync oh-my-codex
         run: |
           git clone --depth 1 https://github.com/Yeachan-Heo/oh-my-codex.git /tmp/omx || { echo "OMX_SHA=n/a" >> $GITHUB_ENV; echo "OMX_AGENTS=0" >> $GITHUB_ENV; echo "OMX_CDX_SKILLS=0" >> $GITHUB_ENV; exit 0; }
           OMX_SHA=$(cd /tmp/omx && git rev-parse HEAD)
           echo "OMX_SHA=$OMX_SHA" >> $GITHUB_ENV
 
-          if [ -d /tmp/omx/agents ]; then
-            mkdir -p staging/omx
-            cp /tmp/omx/agents/*.md staging/omx/ 2>/dev/null || true
-            cp /tmp/omx/agents/*.toml staging/omx/ 2>/dev/null || true
-          fi
-          OMX_AGENTS=$(find staging/omx -type f \( -name '*.md' -o -name '*.toml' \) 2>/dev/null | wc -l)
+          # OMX is a CLI runtime (36 skills, hooks, HUD) — it has no agents/ directory.
+          # Agent count is explicitly 0; tracked here for future skill sync if needed.
+          OMX_AGENTS=0
           echo "OMX_AGENTS=$OMX_AGENTS" >> $GITHUB_ENV
           echo "OMX_CDX_SKILLS=0" >> $GITHUB_ENV
 
@@ -101,7 +99,9 @@ jobs:
 
           CORE_COUNT=$(find codex-agents/core -name '*.toml' 2>/dev/null | wc -l)
           PACK_COUNT=$(find codex-agents/agent-packs -name '*.toml' 2>/dev/null | wc -l)
-          TOTAL_AGENTS=$((CORE_COUNT + PACK_COUNT))
+          # Subtract core-vs-awesome filename overlap (both install to ~/.codex/agents/)
+          OVERLAP=$(comm -12 <(find codex-agents/core -name '*.toml' -exec basename {} \; 2>/dev/null | sort) <(find codex-agents/awesome -name '*.toml' -exec basename {} \; 2>/dev/null | sort) | wc -l)
+          TOTAL_AGENTS=$((CORE_COUNT + PACK_COUNT + AWESOME_COUNT - OVERLAP))
           echo "CORE_COUNT=$CORE_COUNT" >> $GITHUB_ENV
           echo "PACK_COUNT=$PACK_COUNT" >> $GITHUB_ENV
           echo "TOTAL_AGENTS=$TOTAL_AGENTS" >> $GITHUB_ENV
@@ -148,14 +148,12 @@ jobs:
           TOTAL_SKILLS=$((ECC_SKILLS + OMX_CDX_SKILLS))
           for f in README.md README.ko.md AI-INSTALL.md; do
             [ -f "$f" ] || continue
-            # shields.io badges use underscore: "319_agents"
+            # shields.io badges use underscore: "444_agents"
             sed -i -E "s/[0-9]+_agents/${TOTAL_AGENTS}_agents/g" "$f"
             sed -i -E "s/[0-9]+_skills/${TOTAL_SKILLS}_skills/g" "$f"
-            sed -i -E "s/[0-9]+_rules/${ECC_RULES}_rules/g" "$f"
-            # Prose text: "319 agents"
+            # Prose text: "444 agents"
             sed -i -E "s/[0-9]+ agents/${TOTAL_AGENTS} agents/g" "$f"
             sed -i -E "s/[0-9]+ skills/${TOTAL_SKILLS} skills/g" "$f"
-            sed -i -E "s/[0-9]+ rules/${ECC_RULES} rules/g" "$f"
           done
 
       # 8. Create PR

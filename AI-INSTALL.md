@@ -1,7 +1,7 @@
 # my-codex AI Installation Guide
 
 You are an AI agent setting up a Codex CLI multi-agent orchestration environment.
-The bundle includes 319 agents (104 core + 215 domain agent-packs), 95 skills, 50 rules, and 1 MCP server.
+The bundle includes 444 agents (80 auto-loaded + 364 agent-packs), 95 skills, and 3 MCP servers.
 Only 2-3 steps are needed.
 
 ---
@@ -15,13 +15,12 @@ rm -rf /tmp/my-codex
 ```
 
 This installs:
-- 104 core agents in `~/.codex/agents/` (always loaded by Codex CLI via `spawn_agent`)
-- 215 domain agent-packs in `~/.codex/agent-packs/` (on-demand via symlink)
+- 37 core agents + 136 awesome agents in `~/.codex/agents/` (always loaded by Codex CLI via `spawn_agent`)
+- 282 domain agent-packs in `~/.codex/agent-packs/` (on-demand via symlink)
 - 95 skills in `~/.codex/skills/` (from Everything Claude Code)
-- 50 rules in project scope (9 common + 8 languages × ~5)
 - Global `AGENTS.md` instructions
 - `config.toml` with `multi_agent = true`
-- 1 MCP server (Context7 — real-time library documentation)
+- 3 MCP servers (Context7 — real-time library docs, Exa — web search, grep_app — GitHub code search)
 
 ## Step 1b: Manual install (if install.sh unavailable)
 
@@ -40,13 +39,24 @@ done
 # Domain agent-packs (on-demand)
 cp -r /tmp/my-codex/codex-agents/agent-packs/* ~/.codex/agent-packs/
 
-# Skills and rules
+# Skills
 cp -r /tmp/my-codex/skills/ecc/* ~/.codex/skills/
-cp /tmp/my-codex/AGENTS.md ~/.codex/AGENTS.md
-cp /tmp/my-codex/config.toml ~/.codex/config.toml
+cp /tmp/my-codex/templates/codex-AGENTS.md ~/.codex/AGENTS.md
 
-# MCP server
-codex mcp add context7 -- npx -y @anthropic/context7-mcp 2>/dev/null || true
+# Create config.toml
+cat >> ~/.codex/config.toml << 'TOML'
+[features]
+multi_agent = true
+child_agents_md = true
+
+[agents]
+max_threads = 8
+TOML
+
+# MCP servers
+codex mcp add context7  -- npx -y @anthropic/context7-mcp 2>/dev/null || true
+codex mcp add exa       -- npx -y exa-mcp-server 2>/dev/null || true
+codex mcp add grep_app  -- npx -y @anthropic/grep-app-mcp 2>/dev/null || true
 
 rm -rf /tmp/my-codex
 ```
@@ -79,9 +89,9 @@ echo "config.toml:   $(grep -q 'multi_agent' ~/.codex/config.toml 2>/dev/null &&
 ```
 
 Expected:
-- Core agents: 100+
-- Agent packs: 210+
-- Skills: 100+
+- Core agents: 80+
+- Agent packs: 360+
+- Skills: 95+
 - AGENTS.md: OK
 - config.toml: OK
 

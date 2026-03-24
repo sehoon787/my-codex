@@ -13,14 +13,13 @@
 # my-codex
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
-![Agents](https://img.shields.io/badge/agents-319_(104_core)-blue)
-![Skills](https://img.shields.io/badge/skills-136-purple)
-![Rules](https://img.shields.io/badge/rules-50-green)
+![Agents](https://img.shields.io/badge/agents-444-blue)
+![Skills](https://img.shields.io/badge/skills-95-purple)
 ![Auto Sync](https://img.shields.io/badge/upstream_sync-weekly-brightgreen)
 
 All-in-one multi-agent orchestration for OpenAI Codex CLI — install once, get everything.
 
-Bundles **319 agents** (104 core + 215 domain agent-packs), **95 skills**, and **50 rules** from 4 upstream sources into native TOML format. Codex CLI auto-discovers agents via `spawn_agent` and routes tasks to the optimal specialist. GitHub Actions CI syncs upstream changes weekly.
+Bundles **444 agents** (80 auto-loaded + 364 agent-packs) and **95 skills** from 4 upstream sources into native TOML format. Codex CLI auto-discovers agents via `spawn_agent` and routes tasks to the optimal specialist. GitHub Actions CI syncs upstream changes weekly.
 
 Based on the official [Codex Subagents](https://developers.openai.com/codex/subagents) specification.
 
@@ -32,7 +31,7 @@ Based on the official [Codex Subagents](https://developers.openai.com/codex/suba
 |-----------|-------------|
 | **Native TOML** | All agents in Codex CLI's native `.toml` format — no runtime conversion, no compatibility issues |
 | **Multi-Source Curation** | 4 upstream sources aggregated, deduplicated, and quality-checked into a single collection |
-| **Zero Configuration** | Install once, get 319 agents. `config.toml` auto-configured with `multi_agent = true` |
+| **Zero Configuration** | Install once, get 444 agents. `config.toml` auto-configured with `multi_agent = true` |
 
 ## Quick Start
 
@@ -71,7 +70,7 @@ Read the full output and execute each step in order. Use `curl`, not `WebFetch`.
 - **o4-mini (low)**: Quick lookups, exploration — mapped from Claude Haiku equivalents
 
 ### All-in-One Bundle
-- Install provides **319 agents, 95 skills, and 50 rules** instantly
+- Install provides **444 agents and 95 skills** instantly
 - Bundles 4 upstream sources (agency-agents, everything-claude-code, oh-my-codex, awesome-codex-subagents)
 - Weekly CI auto-sync keeps bundled content up-to-date with upstream
 - MD-to-TOML conversion handled automatically for non-native sources
@@ -80,25 +79,34 @@ Read the full output and execute each step in order. Use `curl`, not `WebFetch`.
 
 ## Core Agents
 
-104 core agents from 3 sources (OMX + Engineering 24 + Awesome Core 52 + 9 system agents) are installed to `~/.codex/agents/`. Codex CLI auto-discovers all `.toml` files in this directory via `spawn_agent`. The 136 awesome-codex-subagents are split: core categories go to agents, others to agent-packs.
+37 core agents providing orchestration infrastructure are installed to `~/.codex/agents/`. These are the foundation agents that orchestrate, plan, review, and verify work. Domain specialists are in agent-packs. Awesome agents (136) are also installed to `~/.codex/agents/` for additional coverage (11 agents shared between core and awesome, yielding 80 unique auto-loaded agents).
 
-### Development (19 agents)
-executor, architect, planner, debugger, code-reviewer, code-simplifier, critic, designer, document-specialist, explore, git-master, qa-tester, scientist, security-reviewer, test-engineer, tracer, verifier, writer, analyst
+### Orchestrators (5)
+boss, sisyphus, atlas, hephaestus, prometheus
 
-### Orchestration (9 agents)
-atlas, hephaestus, metis, momus, oracle, prometheus, sisyphus, librarian, multimodal-looker
+### Advisors (5)
+metis, momus, oracle, analyst, critic
 
-### Engineering (24 agents)
-AI Engineer, Backend Architect, Blockchain Security Auditor, Data Engineer, Database Optimizer, DevOps Automator, Embedded Firmware Engineer, Frontend Developer, Incident Response Commander, Infrastructure Maintainer, LSP/Index Engineer, MCP Builder, Performance Benchmarker, Rapid Prototyper, Security Engineer, Senior Developer, Solidity Smart Contract Engineer, SRE, Terminal Integration Specialist, Threat Detection Engineer, visionOS Spatial Engineer, macOS Spatial/Metal Engineer, WeChat Mini Program Developer, Feishu Integration Developer
+### General Workers (6)
+executor, explore, planner, verifier, tracer, debugger
 
-### Awesome Core (52 agents)
-Production-grade agents from [awesome-codex-subagents](https://github.com/VoltAgent/awesome-codex-subagents) across core-development, infrastructure, quality-security, and meta-orchestration categories.
+### Orchestration Support (8)
+agent-organizer, multi-agent-coordinator, workflow-orchestrator, error-coordinator, task-distributor, context-manager, agent-installer, knowledge-synthesizer
+
+### Utility Workers (5)
+writer, librarian, scientist, document-specialist, git-master
+
+### Code Quality (5)
+code-reviewer, code-simplifier, code-mapper, security-reviewer, architect
+
+### Testing & Media (3)
+test-engineer, qa-tester, multimodal-looker
 
 ---
 
 ## Agent Packs (Domain Specialists)
 
-215 domain agents installed to `~/.codex/agent-packs/` — **not** loaded by default. Activate a pack by symlinking:
+282 domain agents across 21 categories installed to `~/.codex/agent-packs/` — **not** loaded by default. Activate a pack by symlinking:
 
 ```bash
 # Activate a single pack
@@ -110,18 +118,27 @@ rm ~/.codex/agents/<agent-name>.toml
 
 | Pack | Count | Examples |
 |------|-------|---------|
+| engineering | 32 | Backend, Frontend, Mobile, DevOps, AI, Data |
 | marketing | 27 | Douyin, Xiaohongshu, WeChat OA, TikTok, SEO |
+| language-specialists | 27 | Python, Go, Rust, Swift, Kotlin, Java |
+| specialized | 31 | Legal, Finance, Healthcare, Workflow |
 | game-development | 20 | Unity, Unreal, Godot, Roblox, Blender |
-| specialized | 20+ | Legal, Finance, Healthcare, Education |
-| sales | 10 | Deal strategy, pipeline, outbound |
-| paid-media | 10 | Google Ads, Meta Ads, Programmatic |
-| product | 10 | Product management, UX research, analytics |
-| design | 8 | Brand, UI, UX, Visual Storytelling |
-| project-management | 8 | Agile, Jira, workflows |
-| testing | 8 | API, Accessibility, Performance, E2E |
+| infrastructure | 19 | Cloud, K8s, Terraform, Docker, SRE |
+| developer-experience | 13 | MCP Builder, LSP, Terminal, Rapid Prototyper |
+| data-ai | 13 | Data Engineer, ML, Database, ClickHouse |
+| specialized-domains | 12 | Supply Chain, Logistics, E-Commerce |
+| design | 11 | Brand, UI, UX, Visual Storytelling |
+| business-product | 11 | Product Manager, Growth, Analytics |
+| testing | 11 | API, Accessibility, Performance, E2E, QA |
+| sales | 8 | Deal strategy, pipeline, outbound |
+| paid-media | 7 | Google Ads, Meta Ads, Programmatic |
+| research-analysis | 7 | Trend, Market, Competitive Analysis |
+| project-management | 6 | Agile, Jira, workflows |
+| spatial-computing | 6 | XR, WebXR, AR/VR, visionOS |
+| support | 6 | Customer support, developer advocacy |
 | academic | 5 | Study abroad, corporate training |
-| support | 5 | Customer support, developer advocacy |
-| spatial-computing | 3 | XR, WebXR, AR/VR |
+| product | 5 | Product management, UX research |
+| security | 5 | Penetration testing, compliance, audit |
 
 ---
 
@@ -129,10 +146,9 @@ rm ~/.codex/agents/<agent-name>.toml
 
 | Category | Count | Source | Location |
 |------|------|------|------|
-| Core Agents | 104 | OMX + Engineering 24 + System 9 + Awesome Core 52 | `~/.codex/agents/` |
-| Agent Packs | 215+ | 18 domain categories | `~/.codex/agent-packs/` |
-| Skills | 108 | ECC | `~/.codex/skills/` |
-| Rules | 50 | ECC | project scope |
+| Auto-loaded Agents | 80 (37 core + 54 awesome − 11 shared) | Orchestration infrastructure + awesome core | `~/.codex/agents/` |
+| Agent Packs | 364 (282 packs + 82 awesome) | 21 domain categories + awesome domain | `~/.codex/agent-packs/` |
+| Skills | 95 | ECC | `~/.codex/skills/` |
 | config.toml | 1 | my-codex | `~/.codex/config.toml` |
 | AGENTS.md | 1 | my-codex | `~/.codex/AGENTS.md` |
 
@@ -156,7 +172,7 @@ agent-organizer, capability-assessor, conflict-resolver, context-manager, execut
 </details>
 
 <details>
-<summary>Skills (108) — From Everything Claude Code</summary>
+<summary>Skills (95) — From Everything Claude Code</summary>
 
 Key skills include:
 
@@ -179,39 +195,6 @@ Key skills include:
 | strategic-compact | Strategic context compression |
 | iterative-retrieval | Incremental context retrieval |
 | continuous-learning | Automatic pattern extraction from sessions |
-
-</details>
-
-<details>
-<summary>Rules (50) — ECC Coding Rules</summary>
-
-**Common (9)** — Applied to all projects
-
-| Rule | Description |
-|----|------|
-| agents.md | Agent behavioral rules |
-| coding-style.md | Coding style |
-| development-workflow.md | Development workflow |
-| git-workflow.md | Git workflow |
-| hooks.md | Hook usage rules |
-| patterns.md | Design patterns |
-| performance.md | Performance optimization |
-| security.md | Security rules |
-| testing.md | Testing rules |
-
-**TypeScript (5)** — TypeScript projects only
-
-| Rule | Description |
-|----|------|
-| coding-style.md | TS coding style |
-| hooks.md | TS hook patterns |
-| patterns.md | TS design patterns |
-| security.md | TS security rules |
-| testing.md | TS testing rules |
-
-**Other Languages (5 rules each)** — C++, Go, Kotlin, Perl, PHP, Python, Swift
-
-Each language directory contains: coding-style.md, hooks.md, patterns.md, security.md, testing.md
 
 </details>
 
@@ -238,18 +221,13 @@ Each language directory contains: coding-style.md, hooks.md, patterns.md, securi
 │_agent│ │N       │ │input   │ │toml    │
 └──────┘ └────────┘ └────────┘ └────────┘
 ┌─────────────────────────────────────────────────────────┐
-│  Agent Layer (319 agents in native TOML)                │
-│    ├── Core (104): OMX + Engineering + System agents    │
-│    ├── Awesome (136): 10 specialist categories          │
-│    └── Agent Packs (215): 18 domain categories          │
+│  Agent Layer (444 unique agents in native TOML)          │
+│    ├── Auto-loaded (80): 37 core + 54 awesome − 11 shared│
+│    └── Agent Packs (364): 282 packs + 82 awesome         │
 ├─────────────────────────────────────────────────────────┤
-│  Skills Layer (108 from ECC)                            │
+│  Skills Layer (95 from ECC)                             │
 │    ├── tdd-workflow, security-review, autopilot         │
 │    └── pdf, docx, pptx, xlsx, team                     │
-├─────────────────────────────────────────────────────────┤
-│  Rules Layer (50 from ECC)                              │
-│    ├── Common (9): coding-style, testing, security      │
-│    └── Language-specific (8 languages × ~5 each)        │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -368,7 +346,7 @@ A library of 156 business specialist agent personas. Provides specialist perspec
 
 ### 2. [Everything Claude Code (ECC)](https://github.com/affaan-m/everything-claude-code)
 
-A development framework originally built for Claude Code, providing 95 skills and 50 rules. 13 Claude Code-specific skills were removed; the remaining skills contain generic coding guidance usable across any LLM agent. Rules provide language-agnostic coding standards across 8 programming languages.
+A development framework originally built for Claude Code, providing 95 skills. 13 Claude Code-specific skills were removed; the remaining skills contain generic coding guidance usable across any LLM agent. The rules/ directory is included in the repo as reference material but is not read by Codex CLI.
 
 ### 3. [Awesome Codex Subagents](https://github.com/VoltAgent/awesome-codex-subagents)
 
@@ -376,7 +354,7 @@ A development framework originally built for Claude Code, providing 95 skills an
 
 ### 4. [Oh My Codex (OMX)](https://github.com/Yeachan-Heo/oh-my-codex)
 
-Codex CLI multi-agent orchestration by Yeachan Heo. Provides 6 Codex-native agents (architect, planner, executor, debugger, verifier, security-reviewer), hooks, HUD, and team pipelines. Already in native TOML format — no conversion needed.
+Codex CLI multi-agent orchestration framework by Yeachan Heo. A Rust/TypeScript runtime providing 36 skills, hooks, HUD, and team pipelines for Codex CLI. Referenced as architectural inspiration for my-codex's orchestration patterns. Does not provide agent TOML files directly.
 
 ### 5. [Oh My OpenAgent (omo)](https://github.com/code-yeongyu/oh-my-openagent)
 

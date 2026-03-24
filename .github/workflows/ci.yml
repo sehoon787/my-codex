@@ -1,0 +1,67 @@
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate TOML agents
+        run: |
+          python3 -c "
+          import tomllib, os, sys
+          errors = []
+          for root, dirs, files in os.walk('codex-agents'):
+              for f in files:
+                  if not f.endswith('.toml'): continue
+                  path = os.path.join(root, f)
+                  try:
+                      with open(path, 'rb') as fh: tomllib.load(fh)
+                  except Exception as e:
+                      errors.append(f'{path}: {e}')
+          if errors:
+              for e in errors: print(f'ERROR: {e}')
+              sys.exit(1)
+          print(f'All {len([f for r,d,fs in os.walk(\"codex-agents\") for f in fs if f.endswith(\".toml\")])} TOML files valid')
+          "
+      - name: Validate MCP config
+        run: |
+          python3 -c "import json; json.load(open('.mcp.json'))"
+      - name: Check core agents exist
+        run: |
+          for agent in boss sisyphus atlas hephaestus prometheus executor planner debugger code-reviewer; do
+            test -f "codex-agents/core/${agent}.toml" || (echo "Missing core agent: ${agent}" && exit 1)
+          done
+      - name: Validate agent required fields
+        run: |
+          python3 -c "
+          import tomllib, os, sys
+          errors = []
+          for root, dirs, files in os.walk('codex-agents'):
+              for f in files:
+                  if not f.endswith('.toml'): continue
+                  path = os.path.join(root, f)
+                  with open(path, 'rb') as fh:
+                      data = tomllib.load(fh)
+                  for field in ['name', 'description', 'developer_instructions']:
+                      if field not in data:
+                          errors.append(f'{path}: missing {field}')
+          if errors:
+              for e in errors: print(f'ERROR: {e}')
+              sys.exit(1)
+          print('All agents have required fields')
+          "
+      - name: Validate skills
+        run: |
+          count=0
+          for f in $(find skills/ecc -name 'SKILL.md' 2>/dev/null); do
+            head -1 "$f" | grep -q '^---' || (echo "Missing frontmatter: $f" && exit 1)
+            count=$((count + 1))
+          done
+          echo "All $count skills have valid frontmatter"

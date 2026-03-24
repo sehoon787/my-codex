@@ -24,7 +24,7 @@ This repository aggregates agents from four upstream sources:
 |--------|--------|--------|
 | `agency` | agency-agents (domain agents, MD converted to TOML) | TOML |
 | `ecc` | everything-claude-code (skills and rules) | MD |
-| `omx` | oh-my-codex (Codex-native agents, hooks, HUD) | TOML |
+| `omx` | oh-my-codex (CLI runtime, skills, hooks, HUD — no agent files) | N/A |
 | `awesome` | awesome-codex-subagents (native TOML agents) | TOML |
 
 New contributions that originate from this repository go into `codex-agents/core/` (infrastructure) or `codex-agents/agent-packs/{category}/` (domain).

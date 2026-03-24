@@ -19,6 +19,12 @@ if ! command -v codex >/dev/null 2>&1; then
 fi
 echo "  Prerequisites OK"
 
+# ── 0.5. Clean previous installation ──
+echo "[0.5/7] Cleaning previous agent installation..."
+rm -f "$HOME/.codex/agents/"*.toml 2>/dev/null || true
+rm -rf "$HOME/.codex/agent-packs/" 2>/dev/null || true
+echo "  Previous agents cleaned"
+
 # ── 1. Codex agents (TOML format) ──
 echo "[1/7] Installing Codex agents..."
 mkdir -p "$HOME/.codex/agents" "$HOME/.codex/agent-packs"
@@ -100,9 +106,10 @@ fi
 # ── 5. MCP servers ──
 echo "[5/7] Registering MCP servers..."
 if command -v codex >/dev/null 2>&1; then
-  # Register MCP servers via codex mcp command
   codex mcp add context7  -- npx -y @anthropic/context7-mcp 2>/dev/null || true
-  echo "  MCP servers registered"
+  codex mcp add exa       -- npx -y exa-mcp-server 2>/dev/null || true
+  codex mcp add grep_app  -- npx -y @anthropic/grep-app-mcp 2>/dev/null || true
+  echo "  3 MCP servers registered (context7, exa, grep_app)"
 else
   echo "  codex not found — MCP servers will be registered when codex is installed"
 fi

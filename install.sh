@@ -217,6 +217,13 @@ legacy_cleanup() {
       rm -rf "$CODEX_ROOT/skills/$(basename "$skill_dir")" 2>/dev/null || true
     done
   fi
+
+  if [ -d "$REPO_ROOT/skills/core" ] && [ -d "$CODEX_ROOT/skills" ]; then
+    for skill_dir in "$REPO_ROOT/skills/core/"*/; do
+      [ -d "$skill_dir" ] || continue
+      rm -rf "$CODEX_ROOT/skills/$(basename "$skill_dir")" 2>/dev/null || true
+    done
+  fi
 }
 
 copy_toml_dir() {
@@ -248,6 +255,18 @@ copy_skill_dirs() {
     rel_path="${dest_dir#"$CODEX_ROOT"/}"
     add_manifest_entry "$rel_path"
   done
+
+  if [ -d "$REPO_ROOT/skills/core" ]; then
+    mkdir -p "$CODEX_ROOT/skills"
+    for skill_dir in "$REPO_ROOT/skills/core/"*/; do
+      [ -d "$skill_dir" ] || continue
+      dest_dir="$CODEX_ROOT/skills/$(basename "$skill_dir")"
+      rm -rf "$dest_dir" 2>/dev/null || true
+      cp -R "$skill_dir" "$dest_dir"
+      rel_path="${dest_dir#"$CODEX_ROOT"/}"
+      add_manifest_entry "$rel_path"
+    done
+  fi
 }
 
 count_managed_skills() {
@@ -261,6 +280,13 @@ count_managed_skills() {
     [ -f "$CODEX_ROOT/skills/$(basename "$skill_dir")/SKILL.md" ] || continue
     count=$((count + 1))
   done
+
+  if [ -d "$REPO_ROOT/skills/core" ]; then
+    for skill_dir in "$REPO_ROOT/skills/core/"*/; do
+      [ -f "$CODEX_ROOT/skills/$(basename "$skill_dir")/SKILL.md" ] || continue
+      count=$((count + 1))
+    done
+  fi
 
   printf '%s' "$count"
 }
@@ -295,6 +321,35 @@ cleanup_cross_tool_skills() {
       fi
     fi
   done
+
+  if [ -d "$REPO_ROOT/skills/core" ]; then
+    for skill_dir in "$REPO_ROOT/skills/core/"*/; do
+      [ -d "$skill_dir" ] || continue
+      skill_name="$(basename "$skill_dir")"
+      source_skill="$skill_dir/SKILL.md"
+
+      installed_skill="$AGENTS_SKILLS_ROOT/$skill_name/SKILL.md"
+      if [ -f "$installed_skill" ] && [ -f "$source_skill" ]; then
+        if [ "$(head -n 1 "$installed_skill" | tr -d '\r')" != '---' ] && [ "$(head -n 1 "$source_skill" | tr -d '\r')" = '---' ]; then
+          rm -rf "$AGENTS_SKILLS_ROOT/$skill_name" 2>/dev/null || true
+        fi
+      fi
+
+      installed_skill="$CLAUDE_SKILLS_ROOT/$skill_name/SKILL.md"
+      if [ -L "$CLAUDE_SKILLS_ROOT/$skill_name" ]; then
+        link_target="$(readlink "$CLAUDE_SKILLS_ROOT/$skill_name" 2>/dev/null || true)"
+        case "$link_target" in
+          *".agents/skills/$skill_name"|*".agents/skills/$skill_name/")
+            rm -f "$CLAUDE_SKILLS_ROOT/$skill_name" 2>/dev/null || true
+            ;;
+        esac
+      elif [ -f "$installed_skill" ] && [ -f "$source_skill" ]; then
+        if [ "$(head -n 1 "$installed_skill" | tr -d '\r')" != '---' ] && [ "$(head -n 1 "$source_skill" | tr -d '\r')" = '---' ]; then
+          rm -rf "$CLAUDE_SKILLS_ROOT/$skill_name" 2>/dev/null || true
+        fi
+      fi
+    done
+  fi
 }
 
 INSTALLING_VERSION="$(current_install_version)"

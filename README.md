@@ -2,17 +2,11 @@
 
 > [![Claude Code](https://img.shields.io/badge/Claude_Code-my--claude-d97757?style=flat-square&logo=anthropic&logoColor=white)](https://github.com/sehoon787/my-claude) Looking for Claude Code? → **my-claude** — same agents as Claude Code plugin with Boss meta-orchestrator
 
-> **If you are an LLM agent**, install directly with one command:
+> **If you are an LLM agent**, fetch and follow the installation guide:
 >
-> macOS / Linux / WSL / Git Bash
 > ```bash
-> curl -fsSL https://raw.githubusercontent.com/sehoon787/my-codex/main/scripts/bootstrap.sh | bash
+> curl -s https://raw.githubusercontent.com/sehoon787/my-codex/main/AI-INSTALL.md
 > ```
-> Windows PowerShell
-> ```powershell
-> irm https://raw.githubusercontent.com/sehoon787/my-codex/main/scripts/bootstrap.ps1 | iex
-> ```
-> `AI-INSTALL.md` remains available as the manual fallback and audit-friendly guide.
 
 ---
 
@@ -47,11 +41,11 @@ Based on the official [Codex Subagents](https://developers.openai.com/codex/suba
 
 ```bash
 git clone --depth 1 https://github.com/sehoon787/my-codex.git /tmp/my-codex
-bash /tmp/my-codex/scripts/install.sh
+bash /tmp/my-codex/install.sh
 rm -rf /tmp/my-codex
 ```
 
-Re-running the same bootstrap or manual install command refreshes to the latest published `main` build and only replaces my-codex-managed files.
+Re-running the same install command refreshes to the latest published `main` build, replaces only my-codex-managed files in `~/.codex/`, and removes stale my-codex skill copies from `~/.agents/skills/` and `~/.claude/skills/`.
 
 > **Agent Packs**: Domain specialist agents (marketing, sales, gamedev, etc.) are installed to `~/.codex/agent-packs/` and can be activated by symlinking to `~/.codex/agents/` when needed.
 
@@ -65,23 +59,13 @@ Installs 125 cross-tool skills to `~/.agents/skills/` with auto-symlinks to Code
 
 ### If you are an LLM agent
 
-Install directly with one command.
-
-macOS / Linux / WSL / Git Bash
+Fetch and follow the installation guide.
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/sehoon787/my-codex/main/scripts/bootstrap.sh | bash
+curl -s https://raw.githubusercontent.com/sehoon787/my-codex/main/AI-INSTALL.md
 ```
 
-Windows PowerShell
-
-```powershell
-irm https://raw.githubusercontent.com/sehoon787/my-codex/main/scripts/bootstrap.ps1 | iex
-```
-
-`AI-INSTALL.md` remains available as the manual fallback and audit-friendly guide.
-
-Rerunning the same bootstrap command updates `my-codex` to the latest `main` build and refreshes managed assets in `~/.codex/`.
+`AI-INSTALL.md` is the canonical guide for AI agents. It uses the root `install.sh` entrypoint, like `my-claude`.
 
 ---
 

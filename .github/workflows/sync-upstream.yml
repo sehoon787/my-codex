@@ -358,7 +358,7 @@ jobs:
             sed -i -E "s/- [0-9]+ skills/- ${SKILL_COUNT} skills/" AI-INSTALL.md
             sed -i -E "s/Core agents: [0-9]+/Core agents: ${AUTO_LOADED_COUNT}/" AI-INSTALL.md
             sed -i -E "s/Agent packs: [0-9]+/Agent packs: ${AGENT_PACK_COUNT}/" AI-INSTALL.md
-            sed -i -E "s/Skills: [0-9]+/Skills: ${SKILL_COUNT}/" AI-INSTALL.md
+            sed -i -E "s/Skills: [0-9]+( managed installs)?/Skills: ${SKILL_COUNT} managed installs/" AI-INSTALL.md
           fi
 
       # 8. Create PR

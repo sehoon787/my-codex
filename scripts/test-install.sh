@@ -13,6 +13,7 @@ cleanup() {
 trap cleanup EXIT
 
 mkdir -p "$TEST_HOME" "$BIN_DIR"
+mkdir -p "$TEST_HOME/.agents/skills" "$TEST_HOME/.claude/skills"
 
 cat > "$BIN_DIR/codex" <<'EOF'
 #!/usr/bin/env bash
@@ -51,7 +52,7 @@ eval "$("$REPO_ROOT/scripts/compute-install-counts.sh")"
 expected_version="$(git -C "$REPO_ROOT" rev-parse --short=12 HEAD 2>/dev/null || printf 'unknown')"
 
 HOME="$TEST_HOME" PATH="$BIN_DIR:$PATH" MY_CODEX_TEST_LOG="$LOG_FILE" \
-  bash "$REPO_ROOT/scripts/install.sh" > "$TMP_ROOT/install.out"
+  bash "$REPO_ROOT/install.sh" > "$TMP_ROOT/install.out"
 
 actual_auto=$(find "$TEST_HOME/.codex/agents" -name '*.toml' | wc -l | tr -d ' ')
 actual_packs=$(find "$TEST_HOME/.codex/agent-packs" -name '*.toml' | wc -l | tr -d ' ')
@@ -81,13 +82,18 @@ mkdir -p "$TEST_HOME/.codex/agent-packs/custom" "$TEST_HOME/.codex/skills/custom
 printf 'name = "custom-user-agent"\ndescription = "custom"\n[developer_instructions]\ncontent = "custom"\n' > "$TEST_HOME/.codex/agents/custom-user-agent.toml"
 printf 'name = "custom-pack-agent"\ndescription = "custom"\n[developer_instructions]\ncontent = "custom"\n' > "$TEST_HOME/.codex/agent-packs/custom/custom-pack-agent.toml"
 printf -- '---\nname: custom-skill\n---\n' > "$TEST_HOME/.codex/skills/custom-skill/SKILL.md"
+mkdir -p "$TEST_HOME/.agents/skills/benchmark"
+printf 'broken\n' > "$TEST_HOME/.agents/skills/benchmark/SKILL.md"
+ln -s "$TEST_HOME/.agents/skills/benchmark" "$TEST_HOME/.claude/skills/benchmark"
 
 HOME="$TEST_HOME" PATH="$BIN_DIR:$PATH" MY_CODEX_TEST_LOG="$LOG_FILE" \
-  bash "$REPO_ROOT/scripts/install.sh" > "$TMP_ROOT/reinstall.out"
+  bash "$REPO_ROOT/install.sh" > "$TMP_ROOT/reinstall.out"
 
 test -f "$TEST_HOME/.codex/agents/custom-user-agent.toml"
 test -f "$TEST_HOME/.codex/agent-packs/custom/custom-pack-agent.toml"
 test -f "$TEST_HOME/.codex/skills/custom-skill/SKILL.md"
+test ! -e "$TEST_HOME/.agents/skills/benchmark"
+test ! -e "$TEST_HOME/.claude/skills/benchmark"
 test "$(cat "$TEST_HOME/.codex/.my-codex-version")" = "$expected_version"
 
 echo "Install smoke test passed"

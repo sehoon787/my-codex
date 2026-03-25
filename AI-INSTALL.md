@@ -9,29 +9,16 @@ Only 2-3 steps are needed.
 
 ## Step 1: Install agents and assets
 
-Direct install:
-
-macOS / Linux / WSL / Git Bash
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/sehoon787/my-codex/main/scripts/bootstrap.sh | bash
-```
-
-Windows PowerShell
-
-```powershell
-irm https://raw.githubusercontent.com/sehoon787/my-codex/main/scripts/bootstrap.ps1 | iex
-```
-
-Manual equivalent:
+This repository uses a single root installer entrypoint: `install.sh`.
+Use a POSIX shell. On Windows, run it from Git Bash or WSL.
 
 ```bash
 git clone --depth 1 https://github.com/sehoon787/my-codex.git /tmp/my-codex
-bash /tmp/my-codex/scripts/install.sh
+bash /tmp/my-codex/install.sh
 rm -rf /tmp/my-codex
 ```
 
-Rerunning the bootstrap or manual install command installs the latest published `main` snapshot and updates only my-codex-managed assets in `~/.codex/`.
+Rerunning the same install command installs the latest published `main` snapshot, updates only my-codex-managed assets in `~/.codex/`, and removes stale my-codex skills-only copies from `~/.agents/skills/` and `~/.claude/skills/`.
 
 This installs:
 - 80 auto-loaded agents in `~/.codex/agents/` (always loaded by Codex CLI via `spawn_agent`)
@@ -134,7 +121,7 @@ echo "config.toml:   $(grep -q 'multi_agent' ~/.codex/config.toml 2>/dev/null &&
 Expected:
 - Core agents: 80
 - Agent packs: 364
-- Skills: 125
+- Skills: 125 managed installs
 - AGENTS.md: OK
 - config.toml: OK
 

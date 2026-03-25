@@ -147,13 +147,14 @@ Full install also configures a default Codex attribution flow:
 - commits only receive `AI-Contributed-By: Codex` when staged files overlap that recorded Codex change set
 - `my-codex` does not modify `git user.name`, `git user.email`, commit author, or committer identity
 
-Optional Claude-style `Co-authored-by:` trailer:
+Optional `Co-authored-by:` trailer:
 
 ```bash
+git config --global my-codex.codexContributorName "Pair Programmer"
 git config --global my-codex.codexContributorEmail "your-verified-email@example.com"
 ```
 
-Local git commits cannot attach GitHub's official `@codex` agent identity directly. GitHub only recognizes co-authors when the configured email is linked to a real GitHub account.
+Local git commits cannot attach GitHub's official `@codex` agent identity directly. GitHub only recognizes co-authors when the configured email is linked to a real GitHub account, and no co-author is added unless you opt in with both settings.
 
 Disable attribution entirely:
 

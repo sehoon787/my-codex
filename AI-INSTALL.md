@@ -143,8 +143,9 @@ Setup complete. Multi-agent orchestration is ready.
 Full install also configures a default Codex attribution flow:
 - `~/.codex/bin/codex` wraps the real Codex CLI and records which files changed during a Codex session
 - `git config --global core.hooksPath ~/.codex/git-hooks` installs `commit-msg` and `post-commit` hooks
-- Codex-authored commits get `🤖 Generated with [Codex CLI](https://github.com/openai/codex)` in the commit body
+- Commits that include recorded Codex-touched files get `🤖 Generated with [Codex CLI](https://github.com/openai/codex)` in the commit body
 - commits only receive `AI-Contributed-By: Codex` when staged files overlap that recorded Codex change set
+- `my-codex` does not modify `git user.name`, `git user.email`, commit author, or committer identity
 
 Optional Claude-style `Co-authored-by:` trailer:
 

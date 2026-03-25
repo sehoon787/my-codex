@@ -43,7 +43,10 @@ test -x "$TEST_HOME/.codex/bin/codex-mark-used"
 test -x "$TEST_HOME/.codex/git-hooks/commit-msg"
 test -x "$TEST_HOME/.codex/git-hooks/post-commit"
 test "$(HOME="$TEST_HOME" git config --global --get core.hooksPath)" = "$TEST_HOME/.codex/git-hooks"
-test "$(HOME="$TEST_HOME" git config --global --get my-codex.codexContributorName)" = "Codex"
+if HOME="$TEST_HOME" git config --global --get my-codex.codexContributorName >/dev/null 2>&1; then
+  echo "co-author name should not be configured by default" >&2
+  exit 1
+fi
 
 git -C "$REPO_DIR" init -q
 git -C "$REPO_DIR" config user.name "Test User"
@@ -64,13 +67,15 @@ git -C "$REPO_DIR" commit -q -m "chore: initial"
 )
 
 git -C "$REPO_DIR" log -1 --pretty=%B > "$TMP_ROOT/codex-commit.txt"
+test "$(git -C "$REPO_DIR" log -1 --pretty='%an <%ae>')" = "Test User <test@example.com>"
 grep -F -q '🤖 Generated with [Codex CLI](https://github.com/openai/codex)' "$TMP_ROOT/codex-commit.txt"
 grep -q '^AI-Contributed-By: Codex$' "$TMP_ROOT/codex-commit.txt"
 if grep -qi '^Co-authored-by:' "$TMP_ROOT/codex-commit.txt"; then
-  echo "co-author trailer should not be added without explicit email configuration" >&2
+  echo "co-author trailer should not be added without explicit configuration" >&2
   exit 1
 fi
 
+HOME="$TEST_HOME" git config --global my-codex.codexContributorName "Pair Programmer"
 HOME="$TEST_HOME" git config --global my-codex.codexContributorEmail "codex@example.com"
 
 (
@@ -84,9 +89,10 @@ HOME="$TEST_HOME" git config --global my-codex.codexContributorEmail "codex@exam
 )
 
 git -C "$REPO_DIR" log -1 --pretty=%B > "$TMP_ROOT/codex-coauthor-commit.txt"
+test "$(git -C "$REPO_DIR" log -1 --pretty='%an <%ae>')" = "Test User <test@example.com>"
 grep -F -q '🤖 Generated with [Codex CLI](https://github.com/openai/codex)' "$TMP_ROOT/codex-coauthor-commit.txt"
 grep -q '^AI-Contributed-By: Codex$' "$TMP_ROOT/codex-coauthor-commit.txt"
-grep -q '^Co-authored-by: Codex <codex@example.com>$' "$TMP_ROOT/codex-coauthor-commit.txt"
+grep -q '^Co-authored-by: Pair Programmer <codex@example.com>$' "$TMP_ROOT/codex-coauthor-commit.txt"
 
 printf 'manual\n' >> "$REPO_DIR/manual.txt"
 git -C "$REPO_DIR" add manual.txt

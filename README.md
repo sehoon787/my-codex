@@ -2,11 +2,17 @@
 
 > [![Claude Code](https://img.shields.io/badge/Claude_Code-my--claude-d97757?style=flat-square&logo=anthropic&logoColor=white)](https://github.com/sehoon787/my-claude) Looking for Claude Code? → **my-claude** — same agents as Claude Code plugin with Boss meta-orchestrator
 
-> **If you are an LLM agent**, fetch and follow the installation guide:
+> **If you are an LLM agent**, install directly with one command:
+>
+> macOS / Linux / WSL / Git Bash
 > ```bash
-> curl -s https://raw.githubusercontent.com/sehoon787/my-codex/main/AI-INSTALL.md
+> curl -fsSL https://raw.githubusercontent.com/sehoon787/my-codex/main/bootstrap.sh | bash
 > ```
-> Read the FULL output, then execute each step in order. Use `curl`, NOT `WebFetch` (summaries lose critical config values).
+> Windows PowerShell
+> ```powershell
+> irm https://raw.githubusercontent.com/sehoon787/my-codex/main/bootstrap.ps1 | iex
+> ```
+> `AI-INSTALL.md` remains available as the manual fallback and audit-friendly guide.
 
 ---
 
@@ -57,13 +63,21 @@ Installs 124 cross-tool skills to `~/.agents/skills/` with auto-symlinks to Code
 
 ### If you are an LLM agent
 
-Fetch the AI installation guide and execute each step:
+Install directly with one command.
+
+macOS / Linux / WSL / Git Bash
 
 ```bash
-curl -s https://raw.githubusercontent.com/sehoon787/my-codex/main/AI-INSTALL.md
+curl -fsSL https://raw.githubusercontent.com/sehoon787/my-codex/main/bootstrap.sh | bash
 ```
 
-Read the full output and execute each step in order. Use `curl`, not `WebFetch`.
+Windows PowerShell
+
+```powershell
+irm https://raw.githubusercontent.com/sehoon787/my-codex/main/bootstrap.ps1 | iex
+```
+
+`AI-INSTALL.md` remains available as the manual fallback and audit-friendly guide.
 
 ---
 

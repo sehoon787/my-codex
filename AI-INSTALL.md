@@ -9,6 +9,22 @@ Only 2-3 steps are needed.
 
 ## Step 1: Install agents and assets
 
+Direct install:
+
+macOS / Linux / WSL / Git Bash
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/sehoon787/my-codex/main/bootstrap.sh | bash
+```
+
+Windows PowerShell
+
+```powershell
+irm https://raw.githubusercontent.com/sehoon787/my-codex/main/bootstrap.ps1 | iex
+```
+
+Manual equivalent:
+
 ```bash
 git clone --depth 1 https://github.com/sehoon787/my-codex.git /tmp/my-codex
 bash /tmp/my-codex/install.sh

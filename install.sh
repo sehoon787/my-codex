@@ -27,6 +27,12 @@ echo "  Prerequisites OK"
 echo "[0.5/7] Cleaning previous agent installation..."
 rm -f "$HOME/.codex/agents/"*.toml 2>/dev/null || true
 rm -rf "$HOME/.codex/agent-packs/" 2>/dev/null || true
+if [ -d "$SCRIPT_DIR/skills/ecc" ] && [ -d "$HOME/.codex/skills" ]; then
+  for skill_dir in "$SCRIPT_DIR/skills/ecc/"*/; do
+    [ -d "$skill_dir" ] || continue
+    rm -rf "$HOME/.codex/skills/$(basename "$skill_dir")" 2>/dev/null || true
+  done
+fi
 echo "  Previous agents cleaned"
 
 # ── 1. Codex agents (TOML format) ──

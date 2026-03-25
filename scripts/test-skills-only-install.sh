@@ -47,4 +47,9 @@ test "$actual_skills" = "$SKILLS_ONLY_COUNT" || fail "Expected $SKILLS_ONLY_COUN
 test -f "$TEST_HOME/.agents/skills/skill-stocktake/SKILL.md" || fail "skill-stocktake was not installed into ~/.agents/skills"
 test -L "$TEST_HOME/.claude/skills/skill-stocktake" || fail "skill-stocktake was not symlinked into ~/.claude/skills"
 
+while IFS= read -r skill_file; do
+  first_line="$(head -n 1 "$skill_file" | tr -d '\r' || true)"
+  test "$first_line" = "---" || fail "Invalid frontmatter start in $skill_file"
+done < <(find "$TEST_HOME/.agents/skills" -name 'SKILL.md' | sort)
+
 echo "Skills-only smoke test passed"

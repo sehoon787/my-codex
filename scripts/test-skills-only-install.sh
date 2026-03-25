@@ -12,7 +12,7 @@ trap cleanup EXIT
 
 mkdir -p "$TEST_HOME"
 
-eval "$("$REPO_ROOT/scripts/compute-install-counts.sh")"
+eval "$("$REPO_ROOT/scripts/compute-skills-only-count.sh")"
 
 HOME="$TEST_HOME" npx skills add "$REPO_ROOT" -y -g > "$TMP_ROOT/install.out"
 

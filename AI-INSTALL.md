@@ -162,7 +162,7 @@ git config --global my-codex.codexAttribution false
 
 ## Skills-Only Alternative
 
-To install only the 124 cross-tool skills exposed by `npx skills add` (no agents, no rules, no config):
+To install only the 125 cross-tool skills exposed by `npx skills add` (no agents, no rules, no config):
 
 ```bash
 npx skills add sehoon787/my-codex -y -g

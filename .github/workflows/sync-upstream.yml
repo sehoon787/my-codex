@@ -113,6 +113,7 @@ jobs:
           PACK_COUNT=$(find codex-agents/agent-packs -name '*.toml' 2>/dev/null | wc -l)
           AGENCY_TOML_COUNT=$(find codex-agents/agency -name '*.toml' 2>/dev/null | wc -l)
           eval "$(bash scripts/compute-install-counts.sh)"
+          eval "$(bash scripts/compute-skills-only-count.sh)"
           echo "CORE_COUNT=$CORE_COUNT" >> $GITHUB_ENV
           echo "OMO_COUNT=$OMO_COUNT" >> $GITHUB_ENV
           echo "OMC_COUNT=$OMC_COUNT" >> $GITHUB_ENV

@@ -59,7 +59,7 @@ rm -rf /tmp/my-codex
 npx skills add sehoon787/my-codex -y -g
 ```
 
-Installs 124 cross-tool skills to `~/.agents/skills/` with auto-symlinks to Codex CLI, Claude Code, Cursor, and other tools. Does **not** install agents, rules, or `config.toml` — use `install.sh` for the full 125-skill Codex bundle.
+Installs 125 cross-tool skills to `~/.agents/skills/` with auto-symlinks to Codex CLI, Claude Code, Cursor, and other tools. Does **not** install agents, rules, or `config.toml` — use `install.sh` for the full 125-skill Codex bundle.
 
 ### If you are an LLM agent
 

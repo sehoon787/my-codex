@@ -105,7 +105,10 @@ EOF
 while IFS= read -r pack; do
   [ -n "$pack" ] || continue
   case "$pack" in \#*) continue ;; esac
-  find ~/.codex/agent-packs/"$pack" -maxdepth 1 -name '*.toml' -exec ln -sf {} ~/.codex/agents/ \;
+  find ~/.codex/agent-packs/"$pack" -maxdepth 1 -name '*.toml' | while IFS= read -r agent_file; do
+    destination=~/.codex/agents/"$(basename "$agent_file")"
+    [ -e "$destination" ] || ln -sf "$agent_file" "$destination"
+  done
 done < ~/.codex/enabled-agent-packs.txt
 
 # Create config.toml

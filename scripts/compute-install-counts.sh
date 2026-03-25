@@ -65,6 +65,9 @@ done
 if [ -d "$SCRIPT_DIR/skills/ecc" ]; then
   cp -R "$SCRIPT_DIR/skills/ecc/." "$SKILLS_DIR/"
 fi
+if [ -d "$SCRIPT_DIR/skills/core" ]; then
+  cp -R "$SCRIPT_DIR/skills/core/." "$SKILLS_DIR/"
+fi
 
 AUTO_LOADED_COUNT=$(find "$AGENTS_DIR" -name '*.toml' | wc -l | tr -d ' ')
 AGENT_PACK_COUNT=$(find "$PACKS_DIR" -name '*.toml' | wc -l | tr -d ' ')

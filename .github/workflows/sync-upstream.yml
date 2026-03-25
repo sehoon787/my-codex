@@ -66,8 +66,12 @@ jobs:
           fi
           ECC_SKILLS=$(find skills/ecc -name 'SKILL.md' | wc -l)
           ECC_RULES=$(find rules -name '*.md' | wc -l)
+          CORE_SKILLS=$(find skills/core -name 'SKILL.md' 2>/dev/null | wc -l | tr -d ' ')
+          TOTAL_SKILLS=$((ECC_SKILLS + CORE_SKILLS))
           echo "ECC_SKILLS=$ECC_SKILLS" >> $GITHUB_ENV
           echo "ECC_RULES=$ECC_RULES" >> $GITHUB_ENV
+          echo "CORE_SKILLS=$CORE_SKILLS" >> $GITHUB_ENV
+          echo "TOTAL_SKILLS=$TOTAL_SKILLS" >> $GITHUB_ENV
 
       # 3. oh-my-codex
       # OMX has no agents/ directory — tracked for future skill sync

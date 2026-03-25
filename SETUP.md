@@ -75,7 +75,7 @@ echo "Enabled set:  $(grep -Ev '^(#|$)' ~/.codex/enabled-agent-packs.txt | paste
 Expected output:
 ```
 Core agents:  80
-Active packs: 65
+Active packs: 90
 Agent packs:  364
 Skills:       125
 AGENTS.md:    OK
@@ -119,10 +119,12 @@ Agent packs are stored in `~/.codex/agent-packs/`. On first install, `my-codex` 
 
 - `engineering`
 - `language-specialists`
+- `developer-experience`
+- `data-ai`
 - `research-analysis`
 - `testing`
 
-That state is persisted in `~/.codex/enabled-agent-packs.txt`. Re-running `install.sh` rehydrates the symlinks from that file. You can also change it live with the installed helper.
+That state is persisted in `~/.codex/enabled-agent-packs.txt`. Re-running `install.sh` rehydrates the symlinks from that file. The default is biased toward packs that add net-new specialists beyond the core registry, which is why `security` and `infrastructure` stay opt-in even though they are popular domains. You can also change it live with the installed helper.
 
 ```bash
 # Inspect current state

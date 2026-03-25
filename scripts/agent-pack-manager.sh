@@ -9,6 +9,8 @@ STATE_FILE="${CODEX_DIR}/enabled-agent-packs.txt"
 DEFAULT_PACKS=(
   engineering
   language-specialists
+  developer-experience
+  data-ai
   research-analysis
   testing
 )

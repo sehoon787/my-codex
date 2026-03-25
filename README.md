@@ -47,7 +47,7 @@ rm -rf /tmp/my-codex
 
 Re-running the same install command refreshes to the latest published `main` build, replaces only my-codex-managed files in `~/.codex/`, and removes stale my-codex skill copies from `~/.agents/skills/` and `~/.claude/skills/`.
 
-> **Agent Packs**: Domain specialist agents are installed to `~/.codex/agent-packs/`. On first install, `my-codex` auto-activates a recommended `dev` set (`engineering`, `language-specialists`, `research-analysis`, `testing`) and remembers it in `~/.codex/enabled-agent-packs.txt`.
+> **Agent Packs**: Domain specialist agents are installed to `~/.codex/agent-packs/`. On first install, `my-codex` auto-activates a recommended `dev` set (`engineering`, `language-specialists`, `developer-experience`, `data-ai`, `research-analysis`, `testing`) and remembers it in `~/.codex/enabled-agent-packs.txt`.
 
 ### Skills only (cross-platform)
 
@@ -142,7 +142,7 @@ test-engineer, qa-tester, multimodal-looker
 
 ## Agent Packs (Domain Specialists)
 
-364 installed pack files across 21 categories are written to `~/.codex/agent-packs/`. On first install, `my-codex` writes `~/.codex/enabled-agent-packs.txt` with a recommended `dev` set and materializes those packs into `~/.codex/agents/` as symlinks. Use the helper to inspect or change the active set:
+364 installed pack files across 21 categories are written to `~/.codex/agent-packs/`. On first install, `my-codex` writes `~/.codex/enabled-agent-packs.txt` with a recommended `dev` set and materializes those packs into `~/.codex/agents/` as symlinks. The default favors packs that add distinct specialists beyond the core registry, so heavily overlapping packs such as `security` and `infrastructure` remain opt-in. Use the helper to inspect or change the active set:
 
 ```bash
 # View current state

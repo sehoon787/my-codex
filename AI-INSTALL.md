@@ -35,7 +35,7 @@ Rerunning either install command installs the latest published `main` snapshot, 
 This installs:
 - 80 core agents in `~/.codex/agents/` (always loaded by Codex CLI via `spawn_agent`)
 - 364 domain agent-packs in `~/.codex/agent-packs/`
-- `~/.codex/enabled-agent-packs.txt` with a recommended default set (`engineering`, `language-specialists`, `research-analysis`, `testing`)
+- `~/.codex/enabled-agent-packs.txt` with a recommended default set (`engineering`, `language-specialists`, `developer-experience`, `data-ai`, `research-analysis`, `testing`)
 - symlinks for that enabled set into `~/.codex/agents/`
 - 125 skills in `~/.codex/skills/` (from Everything Claude Code)
 - Global `AGENTS.md` instructions
@@ -96,6 +96,8 @@ cat > ~/.codex/enabled-agent-packs.txt <<'EOF'
 # This file is managed by my-codex and preserved across reinstalls.
 engineering
 language-specialists
+developer-experience
+data-ai
 research-analysis
 testing
 EOF
@@ -159,7 +161,7 @@ echo "Enabled packs: $(grep -Ev '^(#|$)' ~/.codex/enabled-agent-packs.txt 2>/dev
 
 Expected:
 - Core agents: 80
-- Active packs: 77
+- Active packs: 90
 - Agent packs: 364
 - Skills: 125 managed installs
 - AGENTS.md: OK

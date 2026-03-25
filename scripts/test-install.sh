@@ -54,6 +54,8 @@ default_pack_count=$(
   comm -23 \
     <(find "$REPO_ROOT/codex-agents/agent-packs/engineering" \
             "$REPO_ROOT/codex-agents/agent-packs/language-specialists" \
+            "$REPO_ROOT/codex-agents/agent-packs/developer-experience" \
+            "$REPO_ROOT/codex-agents/agent-packs/data-ai" \
             "$REPO_ROOT/codex-agents/agent-packs/research-analysis" \
             "$REPO_ROOT/codex-agents/agent-packs/testing" \
             -maxdepth 1 -name '*.toml' -exec basename {} \; | sort -u) \
@@ -98,10 +100,14 @@ test -f "$TEST_HOME/.codex/.my-codex-manifest.txt"
 test "$(cat "$TEST_HOME/.codex/.my-codex-version")" = "$expected_version"
 grep -q '^engineering$' "$TEST_HOME/.codex/enabled-agent-packs.txt"
 grep -q '^language-specialists$' "$TEST_HOME/.codex/enabled-agent-packs.txt"
+grep -q '^developer-experience$' "$TEST_HOME/.codex/enabled-agent-packs.txt"
+grep -q '^data-ai$' "$TEST_HOME/.codex/enabled-agent-packs.txt"
 grep -q '^research-analysis$' "$TEST_HOME/.codex/enabled-agent-packs.txt"
 grep -q '^testing$' "$TEST_HOME/.codex/enabled-agent-packs.txt"
 test -L "$TEST_HOME/.codex/agents/engineering-ai-engineer.toml"
 test -L "$TEST_HOME/.codex/agents/python-pro.toml"
+test -L "$TEST_HOME/.codex/agents/build-engineer.toml"
+test -L "$TEST_HOME/.codex/agents/ai-engineer.toml"
 test -L "$TEST_HOME/.codex/agents/trend-analyst.toml"
 test -L "$TEST_HOME/.codex/agents/testing-api-tester.toml"
 

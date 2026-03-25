@@ -45,7 +45,11 @@ HOME="$first_home" PATH="$BIN_DIR:$PATH" bash "$REPO_ROOT/install.sh" > "$TMP_RO
 
 grep -q '^engineering$' "$first_home/.codex/enabled-agent-packs.txt"
 grep -q '^language-specialists$' "$first_home/.codex/enabled-agent-packs.txt"
+grep -q '^developer-experience$' "$first_home/.codex/enabled-agent-packs.txt"
+grep -q '^data-ai$' "$first_home/.codex/enabled-agent-packs.txt"
 test -L "$first_home/.codex/agents/engineering-ai-engineer.toml"
+test -L "$first_home/.codex/agents/build-engineer.toml"
+test -L "$first_home/.codex/agents/ai-engineer.toml"
 
 cat > "$first_home/.codex/enabled-agent-packs.txt" <<'EOF'
 marketing

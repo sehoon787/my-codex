@@ -19,7 +19,7 @@
 ![Auto Sync](https://img.shields.io/badge/upstream_sync-weekly-brightgreen)
 ![Codex Attribution](https://img.shields.io/badge/Codex_attribution-enabled-black)
 
-All-in-one multi-agent orchestration for OpenAI Codex CLI — install once, get everything.
+All-in-one agent harness for OpenAI Codex CLI — install once, get everything.
 
 Bundles **444 installed agent files** (80 auto-loaded + 364 agent-packs) and **125 skills** from 4 upstream sources into native TOML format. The repo currently contains 589 TOML source definitions; install-time deduplication resolves overlapping destination filenames into the final installed footprint. Codex CLI auto-discovers agents via `spawn_agent` and routes tasks to the optimal specialist. GitHub Actions CI syncs upstream changes weekly.
 
@@ -33,7 +33,7 @@ Based on the official [Codex Subagents](https://developers.openai.com/codex/suba
 |-----------|-------------|
 | **Native TOML** | All agents in Codex CLI's native `.toml` format — no runtime conversion, no compatibility issues |
 | **Multi-Source Curation** | 4 upstream sources aggregated, deduplicated, and quality-checked into a single collection |
-| **Zero Configuration** | Install once, get the orchestration core plus a default developer specialist profile. `config.toml` auto-configured with `multi_agent = true` |
+| **Zero Configuration** | Install once, get the harness core plus a default developer specialist profile. `config.toml` auto-configured with `multi_agent = true` |
 
 ## Quick Start
 
@@ -396,7 +396,7 @@ A development framework originally built for Claude Code, providing 125 skills. 
 
 ### 4. [Oh My Codex (OMX)](https://github.com/Yeachan-Heo/oh-my-codex)
 
-Codex CLI multi-agent orchestration framework by Yeachan Heo. A Rust/TypeScript runtime providing 36 skills, hooks, HUD, and team pipelines for Codex CLI. Referenced as architectural inspiration for my-codex's orchestration patterns. Does not provide agent TOML files directly.
+Codex CLI multi-agent harness framework by Yeachan Heo. A Rust/TypeScript runtime providing 36 skills, hooks, HUD, and team pipelines for Codex CLI. Referenced as architectural inspiration for my-codex's harness patterns. Does not provide agent TOML files directly.
 
 ### 5. [Oh My OpenAgent (omo)](https://github.com/code-yeongyu/oh-my-openagent)
 

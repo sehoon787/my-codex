@@ -6,11 +6,11 @@
 >
 > macOS / Linux / WSL / Git Bash
 > ```bash
-> curl -fsSL https://raw.githubusercontent.com/sehoon787/my-codex/main/bootstrap.sh | bash
+> curl -fsSL https://raw.githubusercontent.com/sehoon787/my-codex/main/scripts/bootstrap.sh | bash
 > ```
 > Windows PowerShell
 > ```powershell
-> irm https://raw.githubusercontent.com/sehoon787/my-codex/main/bootstrap.ps1 | iex
+> irm https://raw.githubusercontent.com/sehoon787/my-codex/main/scripts/bootstrap.ps1 | iex
 > ```
 > `AI-INSTALL.md` remains available as the manual fallback and audit-friendly guide.
 
@@ -47,9 +47,11 @@ Based on the official [Codex Subagents](https://developers.openai.com/codex/suba
 
 ```bash
 git clone --depth 1 https://github.com/sehoon787/my-codex.git /tmp/my-codex
-bash /tmp/my-codex/install.sh
+bash /tmp/my-codex/scripts/install.sh
 rm -rf /tmp/my-codex
 ```
+
+Re-running the same bootstrap or manual install command refreshes to the latest published `main` build and only replaces my-codex-managed files.
 
 > **Agent Packs**: Domain specialist agents (marketing, sales, gamedev, etc.) are installed to `~/.codex/agent-packs/` and can be activated by symlinking to `~/.codex/agents/` when needed.
 
@@ -68,16 +70,18 @@ Install directly with one command.
 macOS / Linux / WSL / Git Bash
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/sehoon787/my-codex/main/bootstrap.sh | bash
+curl -fsSL https://raw.githubusercontent.com/sehoon787/my-codex/main/scripts/bootstrap.sh | bash
 ```
 
 Windows PowerShell
 
 ```powershell
-irm https://raw.githubusercontent.com/sehoon787/my-codex/main/bootstrap.ps1 | iex
+irm https://raw.githubusercontent.com/sehoon787/my-codex/main/scripts/bootstrap.ps1 | iex
 ```
 
 `AI-INSTALL.md` remains available as the manual fallback and audit-friendly guide.
+
+Rerunning the same bootstrap command updates `my-codex` to the latest `main` build and refreshes managed assets in `~/.codex/`.
 
 ---
 
@@ -109,6 +113,7 @@ irm https://raw.githubusercontent.com/sehoon787/my-codex/main/bootstrap.ps1 | ie
 - To add an optional `Co-authored-by:` trailer as well, explicitly set both `git config --global my-codex.codexContributorName '<label>'` and `git config --global my-codex.codexContributorEmail '<github-linked-email>'`
 - Local git commits cannot summon GitHub's official `@codex` agent identity directly; GitHub only recognizes co-authors by linked email, and no co-author is added unless you opt in with both settings
 - To disable attribution entirely, set `git config --global my-codex.codexAttribution false`
+- `my-claude` is a separate repository and is not version-managed or updated by `my-codex`
 
 ---
 

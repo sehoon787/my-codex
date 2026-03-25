@@ -48,9 +48,10 @@ EOF
 chmod +x "$BIN_DIR/ast-grep"
 
 eval "$("$REPO_ROOT/scripts/compute-install-counts.sh")"
+expected_version="$(git -C "$REPO_ROOT" rev-parse --short=12 HEAD 2>/dev/null || printf 'unknown')"
 
 HOME="$TEST_HOME" PATH="$BIN_DIR:$PATH" MY_CODEX_TEST_LOG="$LOG_FILE" \
-  bash "$REPO_ROOT/install.sh" > "$TMP_ROOT/install.out"
+  bash "$REPO_ROOT/scripts/install.sh" > "$TMP_ROOT/install.out"
 
 actual_auto=$(find "$TEST_HOME/.codex/agents" -name '*.toml' | wc -l | tr -d ' ')
 actual_packs=$(find "$TEST_HOME/.codex/agent-packs" -name '*.toml' | wc -l | tr -d ' ')
@@ -69,9 +70,24 @@ grep -q 'child_agents_md = true' "$TEST_HOME/.codex/config.toml"
 grep -q 'max_threads = 8' "$TEST_HOME/.codex/config.toml"
 test "$(HOME="$TEST_HOME" git config --global --get core.hooksPath)" = "$TEST_HOME/.codex/git-hooks"
 test "$(HOME="$TEST_HOME" git config --global --get my-codex.codexAttribution)" = "true"
+test -f "$TEST_HOME/.codex/.my-codex-manifest.txt"
+test "$(cat "$TEST_HOME/.codex/.my-codex-version")" = "$expected_version"
 
 grep -q 'mcp add context7' "$LOG_FILE"
 grep -q 'mcp add exa' "$LOG_FILE"
 grep -q 'mcp add grep_app' "$LOG_FILE"
+
+mkdir -p "$TEST_HOME/.codex/agent-packs/custom" "$TEST_HOME/.codex/skills/custom-skill"
+printf 'name = "custom-user-agent"\ndescription = "custom"\n[developer_instructions]\ncontent = "custom"\n' > "$TEST_HOME/.codex/agents/custom-user-agent.toml"
+printf 'name = "custom-pack-agent"\ndescription = "custom"\n[developer_instructions]\ncontent = "custom"\n' > "$TEST_HOME/.codex/agent-packs/custom/custom-pack-agent.toml"
+printf -- '---\nname: custom-skill\n---\n' > "$TEST_HOME/.codex/skills/custom-skill/SKILL.md"
+
+HOME="$TEST_HOME" PATH="$BIN_DIR:$PATH" MY_CODEX_TEST_LOG="$LOG_FILE" \
+  bash "$REPO_ROOT/scripts/install.sh" > "$TMP_ROOT/reinstall.out"
+
+test -f "$TEST_HOME/.codex/agents/custom-user-agent.toml"
+test -f "$TEST_HOME/.codex/agent-packs/custom/custom-pack-agent.toml"
+test -f "$TEST_HOME/.codex/skills/custom-skill/SKILL.md"
+test "$(cat "$TEST_HOME/.codex/.my-codex-version")" = "$expected_version"
 
 echo "Install smoke test passed"

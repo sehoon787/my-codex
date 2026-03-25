@@ -39,22 +39,31 @@ if ! grep -F -x -f "$files_file" "$staged_file" >/dev/null 2>&1; then
 fi
 
 message_file="$1"
-generated_line='🤖 Generated with [Codex CLI](https://github.com/openai/codex)'
-if ! grep -F -x -q "$generated_line" "$message_file"; then
-  tmp_message="$(mktemp)"
-  {
-    cat "$message_file"
-    printf '\n%s\n' "$generated_line"
-  } > "$tmp_message"
-  mv "$tmp_message" "$message_file"
-fi
+contributor_name="$(git config --global --get my-codex.codexContributorName 2>/dev/null || true)"
+contributor_email="$(git config --global --get my-codex.codexContributorEmail 2>/dev/null || true)"
+generated_line='Generated with Codex CLI: https://github.com/openai/codex'
+tmp_message="$(mktemp)"
+cleanup_message() {
+  rm -f "$tmp_message"
+}
+trap cleanup_message EXIT
 
-if ! grep -qi '^AI-Contributed-By:[[:space:]]*Codex$' "$message_file"; then
-  git interpret-trailers --in-place --if-exists doNothing --trailer "AI-Contributed-By: Codex" "$message_file"
-fi
+awk -v generated="$generated_line" '
+  $0 == generated { next }
+  $0 ~ /^AI-Contributed-By:[[:space:]]*Codex$/ { next }
+  $0 ~ /^Co-authored-by:[[:space:]]*Codex </ { next }
+  { print }
+' "$message_file" > "$tmp_message"
 
 contributor_name="$(git config --global --get my-codex.codexContributorName 2>/dev/null || true)"
 contributor_email="$(git config --global --get my-codex.codexContributorEmail 2>/dev/null || true)"
-if [ -n "$contributor_name" ] && [ -n "$contributor_email" ]; then
-  git interpret-trailers --in-place --if-exists doNothing --trailer "Co-authored-by: ${contributor_name} <${contributor_email}>" "$message_file"
-fi
+
+{
+  cat "$tmp_message"
+  printf '\n%s\n' "$generated_line"
+  printf '\n'
+  printf 'AI-Contributed-By: Codex\n'
+  if [ -n "$contributor_name" ] && [ -n "$contributor_email" ]; then
+    printf 'Co-authored-by: %s <%s>\n' "$contributor_name" "$contributor_email"
+  fi
+} > "$message_file"

@@ -33,8 +33,10 @@ rm -rf /tmp/my-codex
 Rerunning either install command installs the latest published `main` snapshot, updates only my-codex-managed assets in `~/.codex/`, and removes stale my-codex skills-only copies from `~/.agents/skills/` and `~/.claude/skills/`.
 
 This installs:
-- 80 auto-loaded agents in `~/.codex/agents/` (always loaded by Codex CLI via `spawn_agent`)
-- 364 domain agent-packs in `~/.codex/agent-packs/` (on-demand via symlink)
+- 80 core agents in `~/.codex/agents/` (always loaded by Codex CLI via `spawn_agent`)
+- 364 domain agent-packs in `~/.codex/agent-packs/`
+- `~/.codex/enabled-agent-packs.txt` with a recommended default set (`engineering`, `language-specialists`, `research-analysis`, `testing`)
+- symlinks for that enabled set into `~/.codex/agents/`
 - 125 skills in `~/.codex/skills/` (from Everything Claude Code)
 - Global `AGENTS.md` instructions
 - `config.toml` with `multi_agent = true`
@@ -51,6 +53,7 @@ Why the numbers are lower than raw source totals:
 ```bash
 git clone --depth 1 https://github.com/sehoon787/my-codex.git /tmp/my-codex
 mkdir -p ~/.codex/agents ~/.codex/agent-packs ~/.codex/skills
+mkdir -p ~/.codex/bin
 
 # Core agents (always loaded)
 cp /tmp/my-codex/codex-agents/core/*.toml ~/.codex/agents/
@@ -63,7 +66,7 @@ for d in 01-core-development 03-infrastructure 04-quality-security 09-meta-orche
   cp /tmp/my-codex/codex-agents/awesome/$d/*.toml ~/.codex/agents/ 2>/dev/null
 done
 
-# Domain agent-packs (on-demand)
+# Domain agent-packs
 cp -r /tmp/my-codex/codex-agents/agent-packs/* ~/.codex/agent-packs/
 
 # Agency agents (domain specialists → agent-packs)
@@ -84,6 +87,24 @@ done
 # Skills
 cp -R /tmp/my-codex/skills/ecc/. ~/.codex/skills/
 cp /tmp/my-codex/templates/codex-AGENTS.md ~/.codex/AGENTS.md
+cp /tmp/my-codex/scripts/agent-pack-manager.sh ~/.codex/bin/my-codex-packs
+chmod +x ~/.codex/bin/my-codex-packs
+
+# Persist and activate the recommended pack set
+cat > ~/.codex/enabled-agent-packs.txt <<'EOF'
+# One pack name per line.
+# This file is managed by my-codex and preserved across reinstalls.
+engineering
+language-specialists
+research-analysis
+testing
+EOF
+
+while IFS= read -r pack; do
+  [ -n "$pack" ] || continue
+  case "$pack" in \#*) continue ;; esac
+  find ~/.codex/agent-packs/"$pack" -maxdepth 1 -name '*.toml' -exec ln -sf {} ~/.codex/agents/ \;
+done < ~/.codex/enabled-agent-packs.txt
 
 # Create config.toml
 cat >> ~/.codex/config.toml << 'TOML'
@@ -110,28 +131,35 @@ rm -rf /tmp/my-codex
 npm i -g @ast-grep/cli@0.42.0
 ```
 
-## Step 3: Activate agent packs (optional)
+## Step 3: Customize active agent packs (optional)
 
 ```bash
-# Example: activate marketing agents
-ln -s ~/.codex/agent-packs/marketing/*.toml ~/.codex/agents/
+# Inspect the current active set
+~/.codex/bin/my-codex-packs status
 
-# Example: activate game development agents
-ln -s ~/.codex/agent-packs/game-development/*.toml ~/.codex/agents/
+# Enable another pack immediately
+~/.codex/bin/my-codex-packs enable marketing
+
+# Or switch profiles at install time
+bash /tmp/my-codex/install.sh --profile minimal
+bash /tmp/my-codex/install.sh --profile full
 ```
 
 ## Verify
 
 ```bash
-echo "Core agents:   $(find ~/.codex/agents -name '*.toml' 2>/dev/null | wc -l)"
+echo "Core agents:   $(find ~/.codex/agents -maxdepth 1 -type f -name '*.toml' 2>/dev/null | wc -l)"
+echo "Active packs:  $(find ~/.codex/agents -maxdepth 1 -type l -name '*.toml' 2>/dev/null | wc -l)"
 echo "Agent packs:   $(find ~/.codex/agent-packs -name '*.toml' 2>/dev/null | wc -l)"
 echo "Skills:        $(find ~/.codex/skills -name 'SKILL.md' 2>/dev/null | wc -l)"
 echo "AGENTS.md:     $(test -f ~/.codex/AGENTS.md && echo 'OK' || echo 'MISSING')"
 echo "config.toml:   $(grep -q 'multi_agent' ~/.codex/config.toml 2>/dev/null && echo 'OK' || echo 'NEEDS CONFIG')"
+echo "Enabled packs: $(grep -Ev '^(#|$)' ~/.codex/enabled-agent-packs.txt 2>/dev/null | paste -sd ', ' -)"
 ```
 
 Expected:
 - Core agents: 80
+- Active packs: 77
 - Agent packs: 364
 - Skills: 125 managed installs
 - AGENTS.md: OK
@@ -143,8 +171,8 @@ Setup complete. Multi-agent orchestration is ready.
 
 Full install also configures a default Codex attribution flow:
 - `~/.codex/bin/codex` wraps the real Codex CLI and records which files changed during a Codex session
-- `git config --global core.hooksPath ~/.codex/git-hooks` installs `commit-msg` and `post-commit` hooks
-- Commits that include recorded Codex-touched files get `🤖 Generated with [Codex CLI](https://github.com/openai/codex)` in the commit body
+- `git config --global core.hooksPath ~/.codex/git-hooks` installs `prepare-commit-msg`, `commit-msg`, and `post-commit` hooks
+- Commits that include recorded Codex-touched files get `Generated with Codex CLI: https://github.com/openai/codex` in the commit message
 - commits only receive `AI-Contributed-By: Codex` when staged files overlap that recorded Codex change set
 - `my-codex` does not modify `git user.name`, `git user.email`, commit author, or committer identity
 

@@ -5,13 +5,13 @@ Coordinate specialized agents, tools, and skills so work is completed accurately
 
 ## Boss-First Routing (Default Behavior)
 
-Before executing any task, first scan ~/.codex/agents/*.toml to discover all available specialists and their descriptions. For any non-trivial request (multi-file changes, architecture decisions, debugging, refactoring, code review, or unfamiliar domains), route through the Boss meta-orchestrator:
+Before executing any task, first scan `~/.codex/agents/*.toml` to discover active specialists and `~/.codex/agent-packs/*/*.toml` to discover installed-but-inactive specialists. For any non-trivial request (multi-file changes, architecture decisions, debugging, refactoring, code review, or unfamiliar domains), route through the Boss meta-orchestrator:
 
 ```
 spawn_agent(prompt="<user's full request>", agent_type="boss")
 ```
 
-Boss will classify intent, match the task to the optimal specialist from the discovered registry, delegate with structured prompts, and verify results independently. Only handle trivial single-command tasks (ls, git status, simple questions) directly.
+Boss will classify intent, match the task to the optimal specialist from the discovered registry, delegate with structured prompts, and verify results independently. Only handle trivial single-command tasks (ls, git status, simple questions) directly. If the best specialist is installed only in an inactive pack, activate the smallest matching pack with `~/.codex/bin/my-codex-packs enable <pack>` before delegating.
 
 ## Operating Principles
 - Delegate specialized work to the most appropriate agent via spawn_agent

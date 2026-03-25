@@ -33,7 +33,7 @@ Based on the official [Codex Subagents](https://developers.openai.com/codex/suba
 |-----------|-------------|
 | **Native TOML** | All agents in Codex CLI's native `.toml` format — no runtime conversion, no compatibility issues |
 | **Multi-Source Curation** | 4 upstream sources aggregated, deduplicated, and quality-checked into a single collection |
-| **Zero Configuration** | Install once, get 444 ready-to-use agent files. `config.toml` auto-configured with `multi_agent = true` |
+| **Zero Configuration** | Install once, get the orchestration core plus a default developer specialist profile. `config.toml` auto-configured with `multi_agent = true` |
 
 ## Quick Start
 
@@ -47,7 +47,7 @@ rm -rf /tmp/my-codex
 
 Re-running the same install command refreshes to the latest published `main` build, replaces only my-codex-managed files in `~/.codex/`, and removes stale my-codex skill copies from `~/.agents/skills/` and `~/.claude/skills/`.
 
-> **Agent Packs**: Domain specialist agents (marketing, sales, gamedev, etc.) are installed to `~/.codex/agent-packs/` and can be activated by symlinking to `~/.codex/agents/` when needed.
+> **Agent Packs**: Domain specialist agents are installed to `~/.codex/agent-packs/`. On first install, `my-codex` auto-activates a recommended `dev` set (`engineering`, `language-specialists`, `research-analysis`, `testing`) and remembers it in `~/.codex/enabled-agent-packs.txt`.
 
 ### Skills only (cross-platform)
 
@@ -86,7 +86,7 @@ If you use the full Codex bundle, rerun `install.sh` once as well. The full inst
 ### Multi-Agent Orchestration
 - **spawn_agent**: Codex CLI auto-discovers agents from `~/.codex/agents/` and spawns them in parallel for complex tasks
 - **send_input**: Parent-to-child agent communication for iterative workflows
-- **Agent Packs**: Activate domain specialists on-demand via symlinks — no restart needed
+- **Agent Packs**: Recommended domain specialists auto-activate on first install, and the active set persists across reinstalls
 
 ### Model-Optimized Routing
 - **o3 (high reasoning)**: Complex architecture, deep analysis — mapped from Claude Opus equivalents
@@ -101,9 +101,9 @@ If you use the full Codex bundle, rerun `install.sh` once as well. The full inst
 - Installs a default git attribution flow so commits touched by real Codex sessions automatically receive `AI-Contributed-By: Codex`
 
 ### Codex Attribution
-- `install.sh` installs a `codex` wrapper plus global `commit-msg` and `post-commit` hooks in `~/.codex/git-hooks/`
+- `install.sh` installs a `codex` wrapper plus global `prepare-commit-msg`, `commit-msg`, and `post-commit` hooks in `~/.codex/git-hooks/`
 - The wrapper records only files that changed during a real Codex session in the current git repository
-- Commits that include recorded Codex-touched files get `🤖 Generated with [Codex CLI](https://github.com/openai/codex)` in the commit body
+- Commits that include recorded Codex-touched files get `Generated with Codex CLI: https://github.com/openai/codex` in the commit message
 - The commit hook adds `AI-Contributed-By: Codex` only when staged files intersect that recorded change set
 - `my-codex` does not change `git user.name`, `git user.email`, commit author, or committer identity
 - To add an optional `Co-authored-by:` trailer as well, explicitly set both `git config --global my-codex.codexContributorName '<label>'` and `git config --global my-codex.codexContributorEmail '<github-linked-email>'`
@@ -142,14 +142,18 @@ test-engineer, qa-tester, multimodal-looker
 
 ## Agent Packs (Domain Specialists)
 
-364 installed pack files across 21 categories are written to `~/.codex/agent-packs/` — **not** loaded by default. Those files come from `agent-packs/`, `agency/`, and non-core awesome categories after install-time deduplication. Activate a pack by symlinking:
+364 installed pack files across 21 categories are written to `~/.codex/agent-packs/`. On first install, `my-codex` writes `~/.codex/enabled-agent-packs.txt` with a recommended `dev` set and materializes those packs into `~/.codex/agents/` as symlinks. Use the helper to inspect or change the active set:
 
 ```bash
-# Activate a single pack
-ln -s ~/.codex/agent-packs/marketing/*.toml ~/.codex/agents/
+# View current state
+~/.codex/bin/my-codex-packs status
 
-# Deactivate
-rm ~/.codex/agents/<agent-name>.toml
+# Enable another pack immediately
+~/.codex/bin/my-codex-packs enable marketing
+
+# Or switch profiles at install time
+bash /tmp/my-codex/install.sh --profile minimal
+bash /tmp/my-codex/install.sh --profile full
 ```
 
 | Pack | Count | Examples |

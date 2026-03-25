@@ -82,9 +82,59 @@ cleanup() {
 trap cleanup EXIT
 
 eval "$("$SCRIPT_DIR/scripts/compute-install-counts.sh")"
+PACK_MANAGER="$SCRIPT_DIR/scripts/agent-pack-manager.sh"
+PROFILE_OVERRIDE=""
+
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    --profile)
+      PROFILE_OVERRIDE="${2:-}"
+      shift 2
+      ;;
+    -h|--help)
+      cat <<'EOF'
+Usage:
+  bash install.sh
+  bash install.sh --profile minimal|dev|full
+  curl -fsSL https://raw.githubusercontent.com/sehoon787/my-codex/main/install.sh | bash
+EOF
+      exit 0
+      ;;
+    *)
+      echo "ERROR: unknown option: $1" >&2
+      exit 1
+      ;;
+  esac
+done
 
 add_manifest_entry() {
   printf '%s\n' "$1" >> "$TMP_MANIFEST"
+}
+
+format_enabled_packs() {
+  local state_file="$1"
+  if [ ! -f "$state_file" ]; then
+    echo "UNSET"
+    return
+  fi
+
+  awk '
+    /^[[:space:]]*#/ { next }
+    /^[[:space:]]*$/ { next }
+    {
+      gsub(/^[[:space:]]+|[[:space:]]+$/, "", $0)
+      packs[count++] = $0
+    }
+    END {
+      if (count == 0) {
+        print "none"
+        exit
+      }
+      for (i = 0; i < count; i++) {
+        printf "%s%s", packs[i], (i + 1 < count ? ", " : "\n")
+      }
+    }
+  ' "$state_file"
 }
 
 current_install_version() {
@@ -278,6 +328,9 @@ echo "  Prerequisites OK"
 
 echo "[0.5/7] Cleaning previous my-codex-managed installation..."
 mkdir -p "$CODEX_ROOT/agents" "$CODEX_ROOT/agent-packs" "$CODEX_ROOT/skills"
+if [ -x "$PACK_MANAGER" ]; then
+  HOME="$HOME" "$PACK_MANAGER" ensure-state
+fi
 if ! remove_manifest_paths "$MANIFEST_FILE"; then
   legacy_cleanup
 fi
@@ -325,6 +378,10 @@ if [ -d "$REPO_ROOT/codex-agents/awesome" ]; then
 fi
 echo "  Agent packs: $(find "$CODEX_ROOT/agent-packs" -name '*.toml' | wc -l | tr -d ' ') installed (expected ${AGENT_PACK_COUNT})"
 
+if [ -n "$PROFILE_OVERRIDE" ] && [ -x "$PACK_MANAGER" ]; then
+  HOME="$HOME" "$PACK_MANAGER" set-profile "$PROFILE_OVERRIDE"
+fi
+
 echo "[2/7] Installing skills..."
 copy_skill_dirs
 managed_skills="$(count_managed_skills)"
@@ -333,6 +390,15 @@ extra_skills=$((total_skills - managed_skills))
 echo "  Skills: ${managed_skills} managed installs refreshed (expected ${SKILL_COUNT})"
 if [ "$extra_skills" -gt 0 ]; then
   echo "  Preserved custom ~/.codex skills: ${extra_skills}"
+fi
+
+echo "[2.5/7] Activating recommended agent packs..."
+if [ -x "$PACK_MANAGER" ]; then
+  active_pack_agents="$(HOME="$HOME" "$PACK_MANAGER" activate)"
+  echo "  Enabled packs: $(format_enabled_packs "$CODEX_ROOT/enabled-agent-packs.txt")"
+  echo "  Active pack agents: ${active_pack_agents}"
+else
+  echo "  WARNING: agent pack manager missing; no packs were activated"
 fi
 
 echo "[3/7] Setting up AGENTS.md..."
@@ -367,11 +433,15 @@ mkdir -p "$CODEX_ROOT/bin" "$CODEX_ROOT/lib" "$CODEX_ROOT/git-hooks"
 cp "$REPO_ROOT/scripts/codex-attribution-lib.sh" "$CODEX_ROOT/lib/codex-attribution.sh"
 cp "$REPO_ROOT/scripts/codex-wrapper.sh" "$CODEX_ROOT/bin/codex"
 cp "$REPO_ROOT/scripts/codex-mark-used.sh" "$CODEX_ROOT/bin/codex-mark-used"
+cp "$REPO_ROOT/scripts/agent-pack-manager.sh" "$CODEX_ROOT/bin/my-codex-packs"
+cp "$REPO_ROOT/templates/git-hooks/prepare-commit-msg" "$CODEX_ROOT/git-hooks/prepare-commit-msg"
 cp "$REPO_ROOT/templates/git-hooks/commit-msg" "$CODEX_ROOT/git-hooks/commit-msg"
 cp "$REPO_ROOT/templates/git-hooks/post-commit" "$CODEX_ROOT/git-hooks/post-commit"
 chmod +x "$CODEX_ROOT/lib/codex-attribution.sh" \
   "$CODEX_ROOT/bin/codex" \
   "$CODEX_ROOT/bin/codex-mark-used" \
+  "$CODEX_ROOT/bin/my-codex-packs" \
+  "$CODEX_ROOT/git-hooks/prepare-commit-msg" \
   "$CODEX_ROOT/git-hooks/commit-msg" \
   "$CODEX_ROOT/git-hooks/post-commit"
 
@@ -432,8 +502,10 @@ printf '%s\n' "$INSTALLING_VERSION" > "$VERSION_FILE"
 echo ""
 echo "[7/7] Verification"
 echo "  Source TOML:   ${SOURCE_TOML_COUNT} definitions"
-echo "  Core agents:   $(find "$CODEX_ROOT/agents" -name '*.toml' 2>/dev/null | wc -l | tr -d ' ') files (expected ${AUTO_LOADED_COUNT})"
+echo "  Core agents:   $(find "$CODEX_ROOT/agents" -maxdepth 1 -type f -name '*.toml' 2>/dev/null | wc -l | tr -d ' ') files (expected ${AUTO_LOADED_COUNT})"
+echo "  Active packs:  $(find "$CODEX_ROOT/agents" -maxdepth 1 -type l -name '*.toml' 2>/dev/null | wc -l | tr -d ' ') linked files"
 echo "  Agent packs:   $(find "$CODEX_ROOT/agent-packs" -name '*.toml' 2>/dev/null | wc -l | tr -d ' ') files (expected ${AGENT_PACK_COUNT})"
+echo "  Enabled packs: $(format_enabled_packs "$CODEX_ROOT/enabled-agent-packs.txt")"
 echo "  Skills:        ${managed_skills} managed installs refreshed (expected ${SKILL_COUNT})"
 if [ "$extra_skills" -gt 0 ]; then
   echo "  Extra skills:  ${extra_skills} preserved under ~/.codex/skills"
@@ -454,5 +526,8 @@ fi
 echo "Only my-codex-managed files tracked in $MANIFEST_FILE are replaced; custom files are preserved."
 echo "Stale invalid my-codex skills-only copies under ~/.agents/skills and ~/.claude/skills are removed during full install."
 echo ""
-echo "Activate domain agent packs with symlinks:"
-echo "  ln -s ~/.codex/agent-packs/marketing/*.toml ~/.codex/agents/"
+echo "Recommended agent packs are auto-activated on first install and remembered in:"
+echo "  ~/.codex/enabled-agent-packs.txt"
+echo "Or manage them with:"
+echo "  ~/.codex/bin/my-codex-packs status"
+echo "  ~/.codex/bin/my-codex-packs enable marketing"

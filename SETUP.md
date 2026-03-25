@@ -49,11 +49,12 @@ What gets installed:
 | Destination | Contents |
 |---|---|
 | `~/.codex/agents/` | 80 unique agents (37 core + 54 awesome core, deduplicated) |
-| `~/.codex/agent-packs/` | 364 on-demand pack files after upstream overlap is deduplicated during install |
+| `~/.codex/agent-packs/` | 364 pack files after upstream overlap is deduplicated during install |
 | `~/.codex/skills/` | 125 skills |
 | `~/.codex/AGENTS.md` | Agent catalog and routing instructions |
+| `~/.codex/enabled-agent-packs.txt` | Persisted active pack set; first install writes a recommended default |
 | `~/.codex/config.toml` | `multi_agent = true` + model defaults |
-| `~/.codex/git-hooks/` | `commit-msg` + `post-commit` hooks for Codex attribution |
+| `~/.codex/git-hooks/` | `prepare-commit-msg` + `commit-msg` + `post-commit` hooks for Codex attribution |
 | `~/.codex/bin/codex` | Wrapper that records Codex-touched files for commit attribution |
 | `~/.codex/.mcp.json` | 3 MCP servers: context7, exa, grep_app |
 
@@ -62,16 +63,19 @@ What gets installed:
 ## 3. Verify Installation
 
 ```bash
-echo "Core agents:  $(find ~/.codex/agents -name '*.toml' | wc -l)"
+echo "Core agents:  $(find ~/.codex/agents -maxdepth 1 -type f -name '*.toml' | wc -l)"
+echo "Active packs: $(find ~/.codex/agents -maxdepth 1 -type l -name '*.toml' | wc -l)"
 echo "Agent packs:  $(find ~/.codex/agent-packs -name '*.toml' | wc -l)"
 echo "Skills:       $(find ~/.codex/skills -name 'SKILL.md' | wc -l)"
 echo "AGENTS.md:    $(test -f ~/.codex/AGENTS.md && echo OK || echo MISSING)"
 echo "config.toml:  $(grep -q multi_agent ~/.codex/config.toml && echo OK || echo MISSING)"
+echo "Enabled set:  $(grep -Ev '^(#|$)' ~/.codex/enabled-agent-packs.txt | paste -sd ', ' -)"
 ```
 
 Expected output:
 ```
 Core agents:  80
+Active packs: 65
 Agent packs:  364
 Skills:       125
 AGENTS.md:    OK
@@ -88,7 +92,8 @@ Full install enables Codex-aware commit attribution by default:
 
 - `~/.codex/bin/codex` wraps the real Codex CLI
 - the wrapper records files changed during each Codex session inside the current git repo
-- Codex-authored commits get `🤖 Generated with [Codex CLI](https://github.com/openai/codex)` in the commit body
+- `prepare-commit-msg` adds `Generated with Codex CLI: https://github.com/openai/codex` to Codex-authored commits
+- Codex-authored commits get `Generated with Codex CLI: https://github.com/openai/codex` in the commit message
 - `commit-msg` adds `AI-Contributed-By: Codex` only when the commit stages one of those files
 - `post-commit` clears the marker so unrelated commits are not tagged
 
@@ -110,17 +115,25 @@ git config --global my-codex.codexAttribution false
 
 ## 5. Agent Packs Activation
 
-Agent packs are stored in `~/.codex/agent-packs/` and activated via symlink.
+Agent packs are stored in `~/.codex/agent-packs/`. On first install, `my-codex` auto-activates a recommended set:
+
+- `engineering`
+- `language-specialists`
+- `research-analysis`
+- `testing`
+
+That state is persisted in `~/.codex/enabled-agent-packs.txt`. Re-running `install.sh` rehydrates the symlinks from that file. You can also change it live with the installed helper.
 
 ```bash
-# List available packs
-ls ~/.codex/agent-packs/
+# Inspect current state
+~/.codex/bin/my-codex-packs status
 
-# Activate a pack (e.g., marketing)
-ln -s ~/.codex/agent-packs/marketing/*.toml ~/.codex/agents/
+# Enable another pack immediately
+~/.codex/bin/my-codex-packs enable security
 
-# Deactivate a specific agent
-rm ~/.codex/agents/<agent-name>.toml
+# Switch profiles during install
+bash /tmp/my-codex/install.sh --profile minimal
+bash /tmp/my-codex/install.sh --profile full
 ```
 
 Available packs and agent counts:

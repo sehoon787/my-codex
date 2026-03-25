@@ -4,7 +4,7 @@
 
 > **如果你是 LLM 智能体**，获取并遵循安装指南：
 > ```bash
-> curl -s https://raw.githubusercontent.com/sehoon787/my-codex/main/AI-INSTALL.md
+> curl -fsSL https://raw.githubusercontent.com/sehoon787/my-codex/main/install.sh | bash
 > ```
 > 阅读完整输出，然后按顺序执行每个步骤。使用 `curl`，而不是 `WebFetch`（摘要会丢失关键配置值）。
 
@@ -51,7 +51,7 @@ rm -rf /tmp/my-codex
 获取 AI 安装指南并执行每个步骤：
 
 ```bash
-curl -s https://raw.githubusercontent.com/sehoon787/my-codex/main/AI-INSTALL.md
+curl -fsSL https://raw.githubusercontent.com/sehoon787/my-codex/main/install.sh | bash
 ```
 
 阅读完整输出并按顺序执行每个步骤。使用 `curl`，而不是 `WebFetch`。

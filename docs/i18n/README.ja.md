@@ -4,7 +4,7 @@
 
 > **LLM エージェントの場合**、インストールガイドをフェッチして実行してください：
 > ```bash
-> curl -s https://raw.githubusercontent.com/sehoon787/my-codex/main/AI-INSTALL.md
+> curl -fsSL https://raw.githubusercontent.com/sehoon787/my-codex/main/install.sh | bash
 > ```
 > 完全な出力を読み、各ステップを順序通りに実行してください。`WebFetch` ではなく `curl` を使用してください (概要は重要な設定値を失うため)。
 
@@ -51,7 +51,7 @@ rm -rf /tmp/my-codex
 AI インストールガイドをフェッチして、各ステップを実行します：
 
 ```bash
-curl -s https://raw.githubusercontent.com/sehoon787/my-codex/main/AI-INSTALL.md
+curl -fsSL https://raw.githubusercontent.com/sehoon787/my-codex/main/install.sh | bash
 ```
 
 完全な出力を読み、各ステップを順序通りに実行してください。`WebFetch` ではなく `curl` を使用してください。

@@ -5,6 +5,10 @@ The bundle installs 444 agent files (80 auto-loaded + 364 agent-packs), 125 skil
 The repository currently contains 589 TOML definitions from overlapping upstream sources; install-time deduplication reduces that to the final installed footprint.
 Only 2-3 steps are needed.
 
+Important:
+- Fetching this markdown file by itself does not install anything.
+- `install.sh` is the only installer entrypoint. It can now bootstrap the rest of the repository when run standalone.
+
 ---
 
 ## Step 1: Install agents and assets
@@ -12,13 +16,21 @@ Only 2-3 steps are needed.
 This repository uses a single root installer entrypoint: `install.sh`.
 Use a POSIX shell. On Windows, run it from Git Bash or WSL.
 
+Fast path:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/sehoon787/my-codex/main/install.sh | bash
+```
+
+Clone-based path:
+
 ```bash
 git clone --depth 1 https://github.com/sehoon787/my-codex.git /tmp/my-codex
 bash /tmp/my-codex/install.sh
 rm -rf /tmp/my-codex
 ```
 
-Rerunning the same install command installs the latest published `main` snapshot, updates only my-codex-managed assets in `~/.codex/`, and removes stale my-codex skills-only copies from `~/.agents/skills/` and `~/.claude/skills/`.
+Rerunning either install command installs the latest published `main` snapshot, updates only my-codex-managed assets in `~/.codex/`, and removes stale my-codex skills-only copies from `~/.agents/skills/` and `~/.claude/skills/`.
 
 This installs:
 - 80 auto-loaded agents in `~/.codex/agents/` (always loaded by Codex CLI via `spawn_agent`)

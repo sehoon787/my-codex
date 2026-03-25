@@ -1,10 +1,74 @@
 #!/usr/bin/env bash
 # my-codex full installer -- installs agents and skills for OpenAI Codex CLI
-# Usage: bash install.sh
+# Usage:
+#   bash install.sh
+#   curl -fsSL https://raw.githubusercontent.com/sehoon787/my-codex/main/install.sh | bash
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$SCRIPT_DIR"
+
+has_repo_assets() {
+  [ -d "$REPO_ROOT/codex-agents" ] &&
+  [ -d "$REPO_ROOT/skills/ecc" ] &&
+  [ -d "$REPO_ROOT/templates" ] &&
+  [ -f "$REPO_ROOT/scripts/compute-install-counts.sh" ]
+}
+
+bootstrap_remote_install() {
+  local repo_slug ref archive_url bootstrap_root archive_path extracted_root status
+
+  if has_repo_assets; then
+    return 0
+  fi
+
+  if [ "${MY_CODEX_BOOTSTRAPPED:-0}" = "1" ]; then
+    echo "ERROR: install.sh was started without the repository assets and bootstrap retry also failed."
+    echo "Run from a full my-codex checkout or set MY_CODEX_ARCHIVE_URL to a valid source archive."
+    exit 1
+  fi
+
+  command -v curl >/dev/null 2>&1 || {
+    echo "ERROR: curl is required when running install.sh without a local repository checkout."
+    exit 1
+  }
+  command -v tar >/dev/null 2>&1 || {
+    echo "ERROR: tar is required when running install.sh without a local repository checkout."
+    exit 1
+  }
+
+  repo_slug="${MY_CODEX_REPO_SLUG:-sehoon787/my-codex}"
+  ref="${MY_CODEX_REF:-main}"
+  archive_url="${MY_CODEX_ARCHIVE_URL:-https://github.com/${repo_slug}/archive/refs/heads/${ref}.tar.gz}"
+
+  bootstrap_root="$(mktemp -d)"
+  archive_path="$bootstrap_root/my-codex.tar.gz"
+
+  echo "Repository assets not found next to install.sh."
+  echo "Bootstrapping my-codex from: $archive_url"
+
+  curl -fsSL "$archive_url" -o "$archive_path"
+  tar -xzf "$archive_path" -C "$bootstrap_root"
+  extracted_root="$(find "$bootstrap_root" -mindepth 1 -maxdepth 1 -type d | head -n 1)"
+
+  if [ -z "$extracted_root" ] || [ ! -f "$extracted_root/install.sh" ]; then
+    rm -rf "$bootstrap_root"
+    echo "ERROR: downloaded archive did not contain install.sh at the expected location."
+    exit 1
+  fi
+
+  (
+    export MY_CODEX_BOOTSTRAPPED=1
+    export MY_CODEX_BOOTSTRAP_SOURCE="$archive_url"
+    bash "$extracted_root/install.sh" "$@"
+  )
+  status=$?
+  rm -rf "$bootstrap_root"
+  exit "$status"
+}
+
+bootstrap_remote_install "$@"
+
 CODEX_ROOT="$HOME/.codex"
 MANIFEST_FILE="$CODEX_ROOT/.my-codex-manifest.txt"
 VERSION_FILE="$CODEX_ROOT/.my-codex-version"
@@ -384,6 +448,9 @@ echo ""
 echo "=== Install complete ==="
 echo ""
 echo "Re-run the same install command later to refresh to the latest published main branch."
+if [ -n "${MY_CODEX_BOOTSTRAP_SOURCE:-}" ]; then
+  echo "Bootstrap source: ${MY_CODEX_BOOTSTRAP_SOURCE}"
+fi
 echo "Only my-codex-managed files tracked in $MANIFEST_FILE are replaced; custom files are preserved."
 echo "Stale invalid my-codex skills-only copies under ~/.agents/skills and ~/.claude/skills are removed during full install."
 echo ""

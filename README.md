@@ -2,10 +2,10 @@
 
 > [![Claude Code](https://img.shields.io/badge/Claude_Code-my--claude-d97757?style=flat-square&logo=anthropic&logoColor=white)](https://github.com/sehoon787/my-claude) Looking for Claude Code? → **my-claude** — same agents as Claude Code plugin with Boss meta-orchestrator
 
-> **If you are an LLM agent**, fetch and follow the installation guide:
+> **If you are an LLM agent**, run the installer entrypoint directly:
 >
 > ```bash
-> curl -s https://raw.githubusercontent.com/sehoon787/my-codex/main/AI-INSTALL.md
+> curl -fsSL https://raw.githubusercontent.com/sehoon787/my-codex/main/install.sh | bash
 > ```
 
 ---
@@ -59,13 +59,25 @@ Installs 125 cross-tool skills to `~/.agents/skills/` with auto-symlinks to Code
 
 ### If you are an LLM agent
 
-Fetch and follow the installation guide.
+Run the installer entrypoint directly.
 
 ```bash
-curl -s https://raw.githubusercontent.com/sehoon787/my-codex/main/AI-INSTALL.md
+curl -fsSL https://raw.githubusercontent.com/sehoon787/my-codex/main/install.sh | bash
 ```
 
-`AI-INSTALL.md` is the canonical guide for AI agents. It uses the root `install.sh` entrypoint, like `my-claude`.
+`install.sh` is the only installer entrypoint. `AI-INSTALL.md` is reference documentation and does not install anything by itself.
+
+### Skills-only recovery
+
+If a tool reports invalid `SKILL.md` files under `~/.agents/skills/`, the most common cause is a stale local copy or stale symlink target from an older install.
+
+Remove the affected directories from `~/.agents/skills/` and matching entries under `~/.claude/skills/`, then reinstall:
+
+```bash
+npx skills add sehoon787/my-codex -y -g
+```
+
+If you use the full Codex bundle, rerun `install.sh` once as well. The full installer refreshes `~/.codex/skills/` and removes stale my-codex-managed copies under `~/.agents/skills/` and `~/.claude/skills/`.
 
 ---
 

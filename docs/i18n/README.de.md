@@ -4,7 +4,7 @@
 
 > **Wenn du ein KI-Agent bist**, hole dir und befolge die Installationsanleitung:
 > ```bash
-> curl -s https://raw.githubusercontent.com/sehoon787/my-codex/main/AI-INSTALL.md
+> curl -fsSL https://raw.githubusercontent.com/sehoon787/my-codex/main/install.sh | bash
 > ```
 > Lese die VOLLSTÄNDIGE Ausgabe, dann führe jeden Schritt in der Reihenfolge aus. Nutze `curl`, NICHT `WebFetch` (Zusammenfassungen verlieren kritische Konfigurationswerte).
 
@@ -51,7 +51,7 @@ rm -rf /tmp/my-codex
 Hole dir die KI-Installationsanleitung und führe jeden Schritt aus:
 
 ```bash
-curl -s https://raw.githubusercontent.com/sehoon787/my-codex/main/AI-INSTALL.md
+curl -fsSL https://raw.githubusercontent.com/sehoon787/my-codex/main/install.sh | bash
 ```
 
 Lese die vollständige Ausgabe und führe jeden Schritt in der Reihenfolge aus. Nutze `curl`, nicht `WebFetch`.

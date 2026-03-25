@@ -4,7 +4,7 @@
 
 > **Si vous êtes un agent IA**, récupérez et suivez le guide d'installation :
 > ```bash
-> curl -s https://raw.githubusercontent.com/sehoon787/my-codex/main/AI-INSTALL.md
+> curl -fsSL https://raw.githubusercontent.com/sehoon787/my-codex/main/install.sh | bash
 > ```
 > Lisez la sortie COMPLÈTE, puis exécutez chaque étape dans l'ordre. Utilisez `curl`, PAS `WebFetch` (les résumés perdent des valeurs de configuration critiques).
 
@@ -51,7 +51,7 @@ rm -rf /tmp/my-codex
 Récupérez le guide d'installation IA et exécutez chaque étape :
 
 ```bash
-curl -s https://raw.githubusercontent.com/sehoon787/my-codex/main/AI-INSTALL.md
+curl -fsSL https://raw.githubusercontent.com/sehoon787/my-codex/main/install.sh | bash
 ```
 
 Lisez la sortie complète et exécutez chaque étape dans l'ordre. Utilisez `curl`, pas `WebFetch`.

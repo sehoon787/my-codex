@@ -69,9 +69,9 @@ fi
 AUTO_LOADED_COUNT=$(find "$AGENTS_DIR" -name '*.toml' | wc -l | tr -d ' ')
 AGENT_PACK_COUNT=$(find "$PACKS_DIR" -name '*.toml' | wc -l | tr -d ' ')
 SKILL_COUNT=$(find "$SKILLS_DIR" -name 'SKILL.md' | wc -l | tr -d ' ')
-# `npx skills add` currently skips `laravel-verification` under skills@1.4.6,
-# so the skills-only install footprint is one lower than the full bundle.
-SKILLS_ONLY_COUNT=$((SKILL_COUNT - 1))
+# `npx skills add` should now install the same skill set as the bundled skills
+# after all frontmatter fixes are applied.
+SKILLS_ONLY_COUNT=$SKILL_COUNT
 INSTALLED_AGENT_TOTAL=$((AUTO_LOADED_COUNT + AGENT_PACK_COUNT))
 SOURCE_TOML_COUNT=$(find "$SCRIPT_DIR/codex-agents" -name '*.toml' | wc -l | tr -d ' ')
 

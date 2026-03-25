@@ -152,14 +152,34 @@ count_managed_skills() {
 }
 
 cleanup_cross_tool_skills() {
-  local skill_dir skill_name
+  local skill_dir skill_name source_skill installed_skill
   [ -d "$REPO_ROOT/skills/ecc" ] || return 0
 
   for skill_dir in "$REPO_ROOT/skills/ecc/"*/; do
     [ -d "$skill_dir" ] || continue
     skill_name="$(basename "$skill_dir")"
-    rm -rf "$AGENTS_SKILLS_ROOT/$skill_name" 2>/dev/null || true
-    rm -rf "$CLAUDE_SKILLS_ROOT/$skill_name" 2>/dev/null || true
+    source_skill="$skill_dir/SKILL.md"
+
+    installed_skill="$AGENTS_SKILLS_ROOT/$skill_name/SKILL.md"
+    if [ -f "$installed_skill" ] && [ -f "$source_skill" ]; then
+      if [ "$(head -n 1 "$installed_skill" | tr -d '\r')" != '---' ] && [ "$(head -n 1 "$source_skill" | tr -d '\r')" = '---' ]; then
+        rm -rf "$AGENTS_SKILLS_ROOT/$skill_name" 2>/dev/null || true
+      fi
+    fi
+
+    installed_skill="$CLAUDE_SKILLS_ROOT/$skill_name/SKILL.md"
+    if [ -L "$CLAUDE_SKILLS_ROOT/$skill_name" ]; then
+      link_target="$(readlink "$CLAUDE_SKILLS_ROOT/$skill_name" 2>/dev/null || true)"
+      case "$link_target" in
+        *".agents/skills/$skill_name"|*".agents/skills/$skill_name/")
+          rm -f "$CLAUDE_SKILLS_ROOT/$skill_name" 2>/dev/null || true
+          ;;
+      esac
+    elif [ -f "$installed_skill" ] && [ -f "$source_skill" ]; then
+      if [ "$(head -n 1 "$installed_skill" | tr -d '\r')" != '---' ] && [ "$(head -n 1 "$source_skill" | tr -d '\r')" = '---' ]; then
+        rm -rf "$CLAUDE_SKILLS_ROOT/$skill_name" 2>/dev/null || true
+      fi
+    fi
   done
 }
 
@@ -365,7 +385,7 @@ echo "=== Install complete ==="
 echo ""
 echo "Re-run the same install command later to refresh to the latest published main branch."
 echo "Only my-codex-managed files tracked in $MANIFEST_FILE are replaced; custom files are preserved."
-echo "Stale my-codex skills-only copies under ~/.agents/skills and ~/.claude/skills are removed during full install."
+echo "Stale invalid my-codex skills-only copies under ~/.agents/skills and ~/.claude/skills are removed during full install."
 echo ""
 echo "Activate domain agent packs with symlinks:"
 echo "  ln -s ~/.codex/agent-packs/marketing/*.toml ~/.codex/agents/"

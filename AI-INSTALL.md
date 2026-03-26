@@ -1,7 +1,7 @@
 # my-codex AI Installation Guide
 
 You are an AI agent setting up a Codex CLI multi-agent orchestration environment.
-The bundle installs 444 agent files (80 auto-loaded + 364 agent-packs), 125 skills, and 3 MCP servers.
+The bundle installs 444 agent files (80 auto-loaded + 364 agent-packs), 119 skills (+ 27 gstack runtime), and 3 MCP servers.
 The repository currently contains 589 TOML definitions from overlapping upstream sources; install-time deduplication reduces that to the final installed footprint.
 Only 2-3 steps are needed.
 
@@ -37,7 +37,8 @@ This installs:
 - 364 domain agent-packs in `~/.codex/agent-packs/`
 - `~/.codex/enabled-agent-packs.txt` with a recommended default set (`engineering`, `language-specialists`, `developer-experience`, `data-ai`, `research-analysis`, `testing`)
 - symlinks for that enabled set into `~/.codex/agents/`
-- 125 skills in `~/.codex/skills/` (from Everything Claude Code)
+- 119 skills in `~/.codex/skills/` (ECC, minus 7 superseded by gstack)
+- 27 gstack skills (runtime-installed from garrytan/gstack — code review, QA, debugging, security, deployment)
 - Global `AGENTS.md` instructions
 - `config.toml` with `multi_agent = true`
 - `~/.codex/bin/codex` wrapper plus git hooks for Codex-only commit attribution
@@ -86,6 +87,31 @@ done
 
 # Skills
 cp -R /tmp/my-codex/skills/ecc/. ~/.codex/skills/
+# ── gstack (sprint-process harness with 27 skills) ──
+GSTACK_DIR="$HOME/.codex/skills/gstack"
+if [ -d "$GSTACK_DIR/.git" ]; then
+  (cd "$GSTACK_DIR" && git pull --ff-only 2>/dev/null || true)
+else
+  git clone --depth 1 https://github.com/garrytan/gstack.git "$GSTACK_DIR" 2>/dev/null || true
+fi
+# Remove ECC skills superseded by gstack
+for skill in benchmark canary-watch safety-guard browser-qa verification-loop security-review design-system; do
+  target="$HOME/.codex/skills/$skill"
+  if [ -L "$target" ]; then
+    link_dest=$(readlink "$target")
+    case "$link_dest" in *gstack*) continue ;; esac
+    rm -f "$target"
+  elif [ -d "$target" ]; then
+    rm -rf "$target"
+  fi
+done
+# Run gstack setup if bun is available
+if [ -d "$GSTACK_DIR" ] && command -v bun >/dev/null 2>&1 && [ -f "$GSTACK_DIR/setup" ]; then
+  (cd "$GSTACK_DIR" && bun install 2>/dev/null && ./setup --host codex 2>/dev/null || true)
+  git -C "$GSTACK_DIR" checkout -- '*/SKILL.md' 'SKILL.md' 2>/dev/null || true
+fi
+mkdir -p "$HOME/.gstack"
+echo '{"auto_upgrade":true}' > "$HOME/.gstack/config.json"
 cp /tmp/my-codex/templates/codex-AGENTS.md ~/.codex/AGENTS.md
 cp /tmp/my-codex/scripts/agent-pack-manager.sh ~/.codex/bin/my-codex-packs
 chmod +x ~/.codex/bin/my-codex-packs
@@ -166,7 +192,7 @@ Expected:
 - Core agents: 80
 - Active packs: 90
 - Agent packs: 364
-- Skills: 125 managed installs
+- Skills: 119 ECC + 27 gstack (runtime)
 - AGENTS.md: OK
 - config.toml: OK
 
@@ -200,13 +226,13 @@ git config --global my-codex.codexAttribution false
 
 ## Skills-Only Alternative
 
-To install only the 125 cross-tool skills exposed by `npx skills add` (no agents, no rules, no config):
+To install only the 126 cross-tool skills exposed by `npx skills add` (no agents, no rules, no config):
 
 ```bash
 npx skills add sehoon787/my-codex -y -g
 ```
 
-Installs SKILL.md files to `~/.agents/skills/` and auto-symlinks to Codex CLI, Claude Code, Cursor, and other supported tools. Use this when you only need skills and already have agents configured elsewhere. The full `install.sh` bundle still installs 125 skills into `~/.codex/skills/`.
+Installs SKILL.md files to `~/.agents/skills/` and auto-symlinks to Codex CLI, Claude Code, Cursor, and other supported tools. Use this when you only need skills and already have agents configured elsewhere. The full `install.sh` bundle installs 119 ECC skills into `~/.codex/skills/` plus 27 gstack skills at runtime.
 
 ## Also Available
 

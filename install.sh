@@ -224,6 +224,13 @@ legacy_cleanup() {
       rm -rf "$CODEX_ROOT/skills/$(basename "$skill_dir")" 2>/dev/null || true
     done
   fi
+
+  if [ -d "$REPO_ROOT/skills/gstack" ] && [ -d "$CODEX_ROOT/skills" ]; then
+    for skill_dir in "$REPO_ROOT/skills/gstack/"*/; do
+      [ -d "$skill_dir" ] || continue
+      rm -rf "$CODEX_ROOT/skills/$(basename "$skill_dir")" 2>/dev/null || true
+    done
+  fi
 }
 
 copy_toml_dir() {
@@ -259,6 +266,22 @@ copy_skill_dirs() {
   if [ -d "$REPO_ROOT/skills/core" ]; then
     mkdir -p "$CODEX_ROOT/skills"
     for skill_dir in "$REPO_ROOT/skills/core/"*/; do
+      [ -d "$skill_dir" ] || continue
+      dest_dir="$CODEX_ROOT/skills/$(basename "$skill_dir")"
+      rm -rf "$dest_dir" 2>/dev/null || true
+      cp -R "$skill_dir" "$dest_dir"
+      rel_path="${dest_dir#"$CODEX_ROOT"/}"
+      add_manifest_entry "$rel_path"
+    done
+  fi
+
+  # Remove superseded ECC skills before copying gstack replacements
+  for skill in benchmark canary-watch safety-guard browser-qa verification-loop security-review design-system; do
+    rm -rf "$CODEX_ROOT/skills/$skill" 2>/dev/null || true
+  done
+
+  if [ -d "$REPO_ROOT/skills/gstack" ]; then
+    for skill_dir in "$REPO_ROOT/skills/gstack/"*/; do
       [ -d "$skill_dir" ] || continue
       dest_dir="$CODEX_ROOT/skills/$(basename "$skill_dir")"
       rm -rf "$dest_dir" 2>/dev/null || true

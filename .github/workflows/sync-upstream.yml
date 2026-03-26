@@ -73,6 +73,26 @@ jobs:
           echo "CORE_SKILLS=$CORE_SKILLS" >> $GITHUB_ENV
           echo "TOTAL_SKILLS=$TOTAL_SKILLS" >> $GITHUB_ENV
 
+      # 2b. gstack Skills
+      - name: Sync gstack skills
+        run: |
+          git clone --depth 1 https://github.com/garrytan/gstack.git /tmp/gstack
+          rm -rf skills/gstack && mkdir -p skills/gstack
+          for d in /tmp/gstack/*/; do
+            skill_name=$(basename "$d")
+            if [ -f "$d/SKILL.md" ]; then
+              mkdir -p "skills/gstack/$skill_name"
+              cp "$d/SKILL.md" "skills/gstack/$skill_name/"
+              [ -d "$d/bin" ] && cp -r "$d/bin" "skills/gstack/$skill_name/"
+            fi
+          done
+          # Remove ECC skills superseded by gstack
+          for d in benchmark canary-watch safety-guard browser-qa verification-loop security-review design-system; do
+            rm -rf "skills/ecc/$d"
+          done
+          GSTACK_SKILLS=$(find skills/gstack -name 'SKILL.md' | wc -l | tr -d ' ')
+          echo "GSTACK_SKILLS=$GSTACK_SKILLS" >> $GITHUB_ENV
+
       # 3. oh-my-codex
       # OMX has no agents/ directory — tracked for future skill sync
       - name: Sync oh-my-codex
@@ -161,6 +181,12 @@ jobs:
                 syncedSha: '$OMX_SHA',
                 syncedAt: '$NOW',
                 files: { agents: parseInt('$OMX_AGENTS') }
+              },
+              'gstack': {
+                repo: 'https://github.com/garrytan/gstack',
+                syncedAt: '$NOW',
+                license: 'MIT',
+                files: { skills: parseInt('$GSTACK_SKILLS') }
               }
             };
             fs.mkdirSync('upstream', { recursive: true });

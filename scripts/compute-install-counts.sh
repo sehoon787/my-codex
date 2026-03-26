@@ -69,6 +69,15 @@ if [ -d "$SCRIPT_DIR/skills/core" ]; then
   cp -R "$SCRIPT_DIR/skills/core/." "$SKILLS_DIR/"
 fi
 
+# Remove superseded ECC skills before copying gstack replacements
+for d in benchmark canary-watch safety-guard browser-qa verification-loop security-review design-system; do
+  rm -rf "$SKILLS_DIR/$d" 2>/dev/null || true
+done
+
+if [ -d "$SCRIPT_DIR/skills/gstack" ]; then
+  cp -R "$SCRIPT_DIR/skills/gstack/." "$SKILLS_DIR/"
+fi
+
 AUTO_LOADED_COUNT=$(find "$AGENTS_DIR" -name '*.toml' | wc -l | tr -d ' ')
 AGENT_PACK_COUNT=$(find "$PACKS_DIR" -name '*.toml' | wc -l | tr -d ' ')
 SKILL_COUNT=$(find "$SKILLS_DIR" -name 'SKILL.md' | wc -l | tr -d ' ')

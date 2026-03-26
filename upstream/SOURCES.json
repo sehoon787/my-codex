@@ -31,5 +31,13 @@
     "files": {
       "agents": 0
     }
+  },
+  "gstack": {
+    "repo": "https://github.com/garrytan/gstack",
+    "syncedAt": "2026-03-26T00:00:00Z",
+    "license": "MIT",
+    "files": {
+      "skills": 27
+    }
   }
 }

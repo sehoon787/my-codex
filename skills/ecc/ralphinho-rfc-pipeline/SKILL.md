@@ -18,7 +18,7 @@ Use this skill when a feature is too large for a single agent pass and must be s
 4. Unit implementation
 5. Unit validation
 6. Merge queue and integration
-7. Final system verification
+7. Final system verification (7a gstack /review + 7b reviewer, see Quality Pipeline)
 
 ## Unit Spec Template
 
@@ -42,7 +42,11 @@ Each work unit should include:
 2. implementation plan
 3. implementation
 4. tests
-5. review
+5a. gstack /review (additive, non-blocking):
+   - If gstack is installed, invoke /review skill for code review (scope drift detection, adversarial review, plan-item completion check)
+   - If gstack is not installed or /review fails, skip this step silently and proceed to step 5b
+   - This is an additional verification layer — does NOT replace step 5b
+5b. review (always runs, regardless of step 5a result)
 6. merge-ready report
 
 ## Merge Queue Rules

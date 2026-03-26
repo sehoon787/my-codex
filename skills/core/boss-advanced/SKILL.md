@@ -52,6 +52,18 @@ Q1. Are the subtasks fully independent? (no file overlap)
 
 ---
 
+## gstack 3-Phase Sprint (End-to-End Requests)
+
+For end-to-end feature or deployment requests, Boss follows the 3-Phase Sprint sequence:
+
+- **Phase 1: Design (interactive)** — `/plan-ceo-review` → `/plan-eng-review`. User confirms design before Phase 2.
+- **Phase 2: Execute (autonomous)** — Delegate to ralphinho. gstack `/review` is attempted non-blocking (skip silently if unavailable). Architect/critic verification always runs after.
+- **Phase 3: Review (interactive)** — Re-read design doc from `~/.gstack/projects/`. Compare vs implementation. If improvements needed, re-enter Phase 2. On approval: `/ship` or manual commit.
+
+Phase transitions are sequential. If gstack is not installed, fall back to standard Priority 1–4 routing.
+
+---
+
 ## Priority 3a: Boss Direct Orchestration (Mid-sized tasks)
 
 When 2-4 agents are needed and dependencies are simple:

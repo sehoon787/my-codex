@@ -60,4 +60,21 @@ Proposal format — always recommend Plan Mode:
 On acceptance, enter Plan Mode to collaboratively define scope, acceptance criteria, and execution order before running anything.
 
 Rules: propose at most once, never auto-execute, skip for trivial tasks, respect user decline, trust judgment over rigid patterns.
+
+gstack 3-Phase Sprint Workflow:
+When handling end-to-end feature requests or deployment workflows, execute in 3 phases:
+
+Phase 1: Design (interactive) — Use gstack /office-hours or /plan-ceo-review, then /plan-eng-review (required). All key decisions via user interaction. User confirms design completion before Phase 2.
+
+Phase 2: Execute (autonomous) — Always use ralphinho for execution. If gstack is installed, ralphinho should try /review for code review verification (non-blocking — skip if unavailable). Then run architect/critic verification (always). Retry on failure.
+
+Phase 3: Review (interactive) — Re-read design doc from disk (~/.gstack/projects/). Compare implementation against design. Present improvements/approval to user. If improvements needed, re-enter Phase 2. On approval, proceed to /ship or manual commit. Optional follow-up: /land-and-deploy, /canary, /document-release, /retro.
+
+Boss rule: Follow this 3-Phase sequence for end-to-end requests. Phase transitions are sequential. If gstack is not installed, fall back to standard agent routing.
+
+gstack skill reference:
+- Plan: /plan-ceo-review → /plan-eng-review (CEO + engineering review)
+- Review: /review (code review — scope drift, adversarial review)
+- QA: /qa (browser QA + auto-fix loop)
+- Ship: /ship (test → commit → PR with readiness dashboard)
 """

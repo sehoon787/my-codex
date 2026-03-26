@@ -82,7 +82,7 @@ actual_skills=$(find "$TEST_HOME/.codex/skills" -name 'SKILL.md' | wc -l | tr -d
 test "$actual_core" = "$AUTO_LOADED_COUNT"
 test "$actual_active_pack_links" = "$default_pack_count"
 test "$actual_packs" = "$AGENT_PACK_COUNT"
-test "$actual_skills" = "$SKILL_COUNT"
+test "$actual_skills" -ge "$SKILL_COUNT"
 test -f "$TEST_HOME/.codex/AGENTS.md"
 test -f "$TEST_HOME/.codex/enabled-agent-packs.txt"
 test -x "$TEST_HOME/.codex/bin/codex"

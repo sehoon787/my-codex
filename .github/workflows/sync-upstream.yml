@@ -73,25 +73,16 @@ jobs:
           echo "CORE_SKILLS=$CORE_SKILLS" >> $GITHUB_ENV
           echo "TOTAL_SKILLS=$TOTAL_SKILLS" >> $GITHUB_ENV
 
-      # 2b. gstack Skills
-      - name: Sync gstack skills
+      # 2b. gstack count (runtime-only — not stored in repo)
+      - name: Count gstack skills
         run: |
           git clone --depth 1 https://github.com/garrytan/gstack.git /tmp/gstack
-          rm -rf skills/gstack && mkdir -p skills/gstack
-          for d in /tmp/gstack/*/; do
-            skill_name=$(basename "$d")
-            if [ -f "$d/SKILL.md" ]; then
-              mkdir -p "skills/gstack/$skill_name"
-              cp "$d/SKILL.md" "skills/gstack/$skill_name/"
-              [ -d "$d/bin" ] && cp -r "$d/bin" "skills/gstack/$skill_name/"
-            fi
-          done
+          GSTACK_SKILLS=$(find /tmp/gstack -maxdepth 2 -name 'SKILL.md' | wc -l | tr -d ' ')
+          echo "GSTACK_SKILLS=$GSTACK_SKILLS" >> $GITHUB_ENV
           # Remove ECC skills superseded by gstack
           for d in benchmark canary-watch safety-guard browser-qa verification-loop security-review design-system; do
             rm -rf "skills/ecc/$d"
           done
-          GSTACK_SKILLS=$(find skills/gstack -name 'SKILL.md' | wc -l | tr -d ' ')
-          echo "GSTACK_SKILLS=$GSTACK_SKILLS" >> $GITHUB_ENV
 
       # 3. oh-my-codex
       # OMX has no agents/ directory — tracked for future skill sync

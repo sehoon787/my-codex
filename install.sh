@@ -225,12 +225,6 @@ legacy_cleanup() {
     done
   fi
 
-  if [ -d "$REPO_ROOT/skills/gstack" ] && [ -d "$CODEX_ROOT/skills" ]; then
-    for skill_dir in "$REPO_ROOT/skills/gstack/"*/; do
-      [ -d "$skill_dir" ] || continue
-      rm -rf "$CODEX_ROOT/skills/$(basename "$skill_dir")" 2>/dev/null || true
-    done
-  fi
 }
 
 copy_toml_dir() {
@@ -275,21 +269,63 @@ copy_skill_dirs() {
     done
   fi
 
-  # Remove superseded ECC skills before copying gstack replacements
-  for skill in benchmark canary-watch safety-guard browser-qa verification-loop security-review design-system; do
-    rm -rf "$CODEX_ROOT/skills/$skill" 2>/dev/null || true
-  done
+  # gstack (runtime install — not bundled in repo)
+  echo "  [gstack] Installing/updating..."
+  GSTACK_DIR="$CODEX_ROOT/skills/gstack"
+  if [ -d "$GSTACK_DIR/.git" ]; then
+    git -C "$GSTACK_DIR" pull --ff-only 2>/dev/null || true
+  else
+    rm -rf "$GSTACK_DIR"
+    git clone --depth 1 https://github.com/garrytan/gstack.git "$GSTACK_DIR" 2>/dev/null || true
+  fi
 
-  if [ -d "$REPO_ROOT/skills/gstack" ]; then
-    for skill_dir in "$REPO_ROOT/skills/gstack/"*/; do
-      [ -d "$skill_dir" ] || continue
-      dest_dir="$CODEX_ROOT/skills/$(basename "$skill_dir")"
-      rm -rf "$dest_dir" 2>/dev/null || true
-      cp -R "$skill_dir" "$dest_dir"
-      rel_path="${dest_dir#"$CODEX_ROOT"/}"
-      add_manifest_entry "$rel_path"
+  # Install bun if missing (required for gstack browser)
+  if ! command -v bun >/dev/null 2>&1; then
+    echo "  [gstack] Installing bun..."
+    curl -fsSL https://bun.sh/install | bash 2>/dev/null || true
+    export BUN_INSTALL="$HOME/.bun"
+    export PATH="$BUN_INSTALL/bin:$PATH"
+  fi
+
+  # Run gstack setup
+  if [ -d "$GSTACK_DIR" ] && command -v bun >/dev/null 2>&1 && [ -f "$GSTACK_DIR/setup" ]; then
+    (cd "$GSTACK_DIR" && ./setup --host codex 2>/dev/null || true)
+  fi
+
+  # Fallback: ensure individual gstack skills are accessible at depth 1
+  if [ -d "$GSTACK_DIR" ]; then
+    for skill_dir in "$GSTACK_DIR"/*/; do
+      [ -f "$skill_dir/SKILL.md" ] || continue
+      skill_name=$(basename "$skill_dir")
+      case "$skill_name" in .git|bin|node_modules|agents) continue ;; esac
+      target="$CODEX_ROOT/skills/$skill_name"
+      if [ ! -e "$target" ] && [ ! -L "$target" ]; then
+        ln -s "$(cd "$skill_dir" && pwd)" "$target" 2>/dev/null || cp -r "$skill_dir" "$target"
+      fi
     done
   fi
+
+  # gstack auto_upgrade config
+  mkdir -p "$HOME/.gstack"
+  GSTACK_CONFIG="$HOME/.gstack/config.json"
+  if [ -f "$GSTACK_CONFIG" ]; then
+    node -e "
+      const fs = require('fs');
+      const cfg = JSON.parse(fs.readFileSync('$GSTACK_CONFIG', 'utf8'));
+      cfg.auto_upgrade = true;
+      fs.writeFileSync('$GSTACK_CONFIG', JSON.stringify(cfg, null, 2));
+    " 2>/dev/null || true
+  else
+    echo '{"auto_upgrade":true}' > "$GSTACK_CONFIG"
+  fi
+
+  # Remove superseded ECC skills replaced by gstack
+  for skill in benchmark canary-watch safety-guard browser-qa verification-loop security-review design-system; do
+    target="$CODEX_ROOT/skills/$skill"
+    if [ -L "$target" ] || [ -d "$target" ]; then
+      rm -rf "$target"
+    fi
+  done
 }
 
 count_managed_skills() {

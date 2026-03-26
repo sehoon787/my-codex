@@ -13,13 +13,10 @@ fi
 if [ -d "$REPO_ROOT/skills/core" ]; then
   cp -R "$REPO_ROOT/skills/core/." "$TMP_SKILLS/"
 fi
-# Remove superseded ECC skills
+# Remove superseded ECC skills (replaced by gstack at runtime)
 for d in benchmark canary-watch safety-guard browser-qa verification-loop security-review design-system; do
   rm -rf "$TMP_SKILLS/$d" 2>/dev/null || true
 done
-if [ -d "$REPO_ROOT/skills/gstack" ]; then
-  cp -R "$REPO_ROOT/skills/gstack/." "$TMP_SKILLS/"
-fi
 SKILLS_ONLY_COUNT=$(find "$TMP_SKILLS" -name 'SKILL.md' | wc -l | tr -d ' ')
 
 cat <<EOF

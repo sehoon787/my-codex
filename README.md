@@ -21,7 +21,7 @@
 
 All-in-one agent harness for OpenAI Codex CLI — install once, get everything.
 
-Bundles **444 installed agent files** (80 auto-loaded + 364 agent-packs) and **125 skills** from 4 upstream sources into native TOML format. The repo currently contains 589 TOML source definitions; install-time deduplication resolves overlapping destination filenames into the final installed footprint. Codex CLI auto-discovers agents via `spawn_agent` and routes tasks to the optimal specialist. GitHub Actions CI syncs upstream changes weekly.
+Bundles **444 installed agent files** (80 auto-loaded + 364 agent-packs) and **125 skills** from 5 upstream sources into native TOML format. The repo currently contains 589 TOML source definitions; install-time deduplication resolves overlapping destination filenames into the final installed footprint. Codex CLI auto-discovers agents via `spawn_agent` and routes tasks to the optimal specialist. GitHub Actions CI syncs upstream changes weekly.
 
 Based on the official [Codex Subagents](https://developers.openai.com/codex/subagents) specification.
 
@@ -32,7 +32,7 @@ Based on the official [Codex Subagents](https://developers.openai.com/codex/suba
 | Principle | Description |
 |-----------|-------------|
 | **Native TOML** | All agents in Codex CLI's native `.toml` format — no runtime conversion, no compatibility issues |
-| **Multi-Source Curation** | 4 upstream sources aggregated, deduplicated, and quality-checked into a single collection |
+| **Multi-Source Curation** | 5 upstream sources aggregated, deduplicated, and quality-checked into a single collection |
 | **Zero Configuration** | Install once, get the harness core plus a default developer specialist profile. `config.toml` auto-configured with `multi_agent = true` |
 
 ## Quick Start
@@ -95,7 +95,7 @@ If you use the full Codex bundle, rerun `install.sh` once as well. The full inst
 
 ### All-in-One Bundle
 - Install provides **444 installed agent files and 125 skills** instantly
-- Bundles 4 upstream sources (agency-agents, everything-claude-code, oh-my-codex, awesome-codex-subagents)
+- Bundles 5 upstream sources (agency-agents, everything-claude-code, oh-my-codex, awesome-codex-subagents, gstack)
 - Weekly CI auto-sync keeps bundled content up-to-date with upstream
 - MD-to-TOML conversion handled automatically for non-native sources
 - Installs a default git attribution flow so commits touched by real Codex sessions automatically receive `AI-Contributed-By: Codex`
@@ -406,6 +406,11 @@ A multi-platform agent harness by code-yeongyu. The 9 orchestration agents in th
 
 The official Skills Catalog for Codex provided by OpenAI. Includes specialist skills for document processing, code generation, and development workflows. Can be installed via `$skill-installer` in Codex CLI.
 
+### 7. [gstack](https://github.com/garrytan/gstack)
+- garrytan's sprint-process harness with 27 skills
+- Code review, QA, debugging, benchmarking, security audit, deployment workflows
+- Built-in headless Chromium browser daemon for real browser testing
+
 ---
 
 ## Contributing
@@ -425,6 +430,7 @@ Updated weekly by CI auto-sync. No SOURCES.json yet — versions tracked via syn
 | [everything-claude-code](https://github.com/affaan-m/everything-claude-code) | Weekly CI |
 | [oh-my-codex](https://github.com/Yeachan-Heo/oh-my-codex) | Weekly CI |
 | [awesome-codex-subagents](https://github.com/VoltAgent/awesome-codex-subagents) | Weekly CI |
+| [gstack](https://github.com/garrytan/gstack) | Weekly CI |
 
 ---
 
@@ -438,6 +444,7 @@ This repository builds on the work of the following open-source projects:
 - [oh-my-openagent](https://github.com/code-yeongyu/oh-my-openagent) — code-yeongyu
 - [awesome-codex-subagents](https://github.com/VoltAgent/awesome-codex-subagents) — VoltAgent
 - [openai/skills](https://github.com/openai/skills) — OpenAI
+- [gstack](https://github.com/garrytan/gstack) — garrytan
 - [Codex Subagents Spec](https://developers.openai.com/codex/subagents) — OpenAI
 
 ---

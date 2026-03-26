@@ -14,14 +14,14 @@
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 ![Agents](https://img.shields.io/badge/agents-444-blue)
-![Skills](https://img.shields.io/badge/skills-125-purple)
+![Skills](https://img.shields.io/badge/skills-119-purple)
 ![MCP](https://img.shields.io/badge/MCP-3-green)
 ![Auto Sync](https://img.shields.io/badge/upstream_sync-weekly-brightgreen)
 ![Codex Attribution](https://img.shields.io/badge/Codex_attribution-enabled-black)
 
 All-in-one agent harness for OpenAI Codex CLI — install once, get everything.
 
-Bundles **444 installed agent files** (80 auto-loaded + 364 agent-packs) and **125 skills** from 5 upstream sources into native TOML format. The repo currently contains 589 TOML source definitions; install-time deduplication resolves overlapping destination filenames into the final installed footprint. Codex CLI auto-discovers agents via `spawn_agent` and routes tasks to the optimal specialist. GitHub Actions CI syncs upstream changes weekly.
+Bundles **444 installed agent files** (80 auto-loaded + 364 agent-packs) and **119 skills** from 5 upstream sources into native TOML format. The repo currently contains 589 TOML source definitions; install-time deduplication resolves overlapping destination filenames into the final installed footprint. Codex CLI auto-discovers agents via `spawn_agent` and routes tasks to the optimal specialist. GitHub Actions CI syncs upstream changes weekly.
 
 Based on the official [Codex Subagents](https://developers.openai.com/codex/subagents) specification.
 
@@ -55,7 +55,7 @@ Re-running the same install command refreshes to the latest published `main` bui
 npx skills add sehoon787/my-codex -y -g
 ```
 
-Installs 125 cross-tool skills to `~/.agents/skills/` with auto-symlinks to Codex CLI, Claude Code, Cursor, and other tools. Does **not** install agents, rules, or `config.toml` — use `install.sh` for the full 125-skill Codex bundle.
+Installs 126 cross-tool skills to `~/.agents/skills/` with auto-symlinks to Codex CLI, Claude Code, Cursor, and other tools. Does **not** install agents, rules, or `config.toml` — use `install.sh` for the full 119-skill Codex bundle.
 
 ### If you are an LLM agent
 
@@ -94,7 +94,7 @@ If you use the full Codex bundle, rerun `install.sh` once as well. The full inst
 - **o4-mini (low)**: Quick lookups, exploration — mapped from Claude Haiku equivalents
 
 ### All-in-One Bundle
-- Install provides **444 installed agent files and 125 skills** instantly
+- Install provides **444 installed agent files and 119 skills** instantly
 - Bundles 5 upstream sources (agency-agents, everything-claude-code, oh-my-codex, awesome-codex-subagents, gstack)
 - Weekly CI auto-sync keeps bundled content up-to-date with upstream
 - MD-to-TOML conversion handled automatically for non-native sources
@@ -188,7 +188,7 @@ bash /tmp/my-codex/install.sh --profile full
 |------|------|------|------|
 | Auto-loaded Agents | 80 installed files | `core/`, `omo/`, `omc/`, `awesome-core/`, awesome core categories | `~/.codex/agents/` |
 | Agent Packs | 364 installed files | `agent-packs/`, `agency/`, awesome non-core categories | `~/.codex/agent-packs/` |
-| Skills | 125 | ECC | `~/.codex/skills/` |
+| Skills | 119 | ECC | `~/.codex/skills/` |
 | config.toml | 1 | my-codex | `~/.codex/config.toml` |
 | AGENTS.md | 1 | my-codex | `~/.codex/AGENTS.md` |
 
@@ -214,7 +214,7 @@ agent-organizer, capability-assessor, conflict-resolver, context-manager, execut
 </details>
 
 <details>
-<summary>Skills (125) — From Everything Claude Code</summary>
+<summary>Skills (119) — From Everything Claude Code</summary>
 
 Key skills include:
 
@@ -267,7 +267,7 @@ Key skills include:
 │    ├── Auto-loaded (80): final installed footprint       │
 │    └── Agent Packs (364): final installed footprint      │
 ├─────────────────────────────────────────────────────────┤
-│  Skills Layer (125 from ECC)                            │
+│  Skills Layer (119 from ECC)                            │
 │    ├── tdd-workflow, security-review, autopilot         │
 │    └── pdf, docx, pptx, xlsx, team                     │
 └─────────────────────────────────────────────────────────┘
@@ -388,7 +388,7 @@ A library of 156 business specialist agent personas. Provides specialist perspec
 
 ### 2. [Everything Claude Code (ECC)](https://github.com/affaan-m/everything-claude-code)
 
-A development framework originally built for Claude Code, providing 125 skills. 13 Claude Code-specific skills were removed; the remaining skills contain generic coding guidance usable across any LLM agent. The rules/ directory is included in the repo as reference material but is not read by Codex CLI.
+A development framework originally built for Claude Code, providing 119 skills. 13 Claude Code-specific skills were removed; the remaining skills contain generic coding guidance usable across any LLM agent. The rules/ directory is included in the repo as reference material but is not read by Codex CLI.
 
 ### 3. [Awesome Codex Subagents](https://github.com/VoltAgent/awesome-codex-subagents)
 

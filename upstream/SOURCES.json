@@ -4,7 +4,7 @@
     "syncedSha": "6254154899f510eb4a4de10561fecfc1f32ff17f",
     "syncedAt": "2026-03-24T06:16:45Z",
     "files": {
-      "agents": 137
+      "agents": 134
     },
     "strategy": "vendor",
     "patchRules": ["inject-model-field"],
@@ -38,7 +38,7 @@
     "syncedSha": "07b6bd926ee270ee9fe24fd0a5f1ea0ffa7c2427",
     "syncedAt": "2026-03-24T06:16:45Z",
     "files": {
-      "agents": 0
+      "agents": 18
     },
     "strategy": "vendor",
     "patchRules": [],

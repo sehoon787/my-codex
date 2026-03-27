@@ -82,18 +82,6 @@ curl -fsSL https://raw.githubusercontent.com/sehoon787/my-codex/main/install.sh 
 
 `install.sh` is the only installer entrypoint. `AI-INSTALL.md` is reference documentation and does not install anything by itself.
 
-### Skills-only recovery
-
-If a tool reports invalid `SKILL.md` files under `~/.agents/skills/`, the most common cause is a stale local copy or stale symlink target from an older install.
-
-Remove the affected directories from `~/.agents/skills/` and matching entries under `~/.claude/skills/`, then reinstall:
-
-```bash
-npx skills add sehoon787/my-codex -y -g
-```
-
-If you use the full Codex bundle, rerun `install.sh` once as well. The full installer refreshes `~/.codex/skills/` and removes stale my-codex-managed copies under `~/.agents/skills/` and `~/.claude/skills/`.
-
 ---
 
 ## Key Features
@@ -210,7 +198,7 @@ bash /tmp/my-codex/install.sh --profile full
 The repository source inventory is larger than the install footprint because multiple upstreams ship the same destination filename. `install.sh` verifies the installed counts above, not the raw source totals.
 
 <details>
-<summary>Awesome Core Agents (52) — From awesome-codex-subagents</summary>
+<summary>Awesome Core Agents (54) — From awesome-codex-subagents</summary>
 
 4 core categories installed to `~/.codex/agents/`:
 
@@ -399,7 +387,7 @@ Codex → spawn_agent("planner")
 
 ### 1. [Agency Agents](https://github.com/msitarzewski/agency-agents)
 
-A library of 156 business specialist agent personas. Provides specialist perspectives across 14 categories — UX architects, data engineers, security auditors, and more. Converted from Markdown to native TOML via automated `md-to-toml.sh` pipeline.
+A library of 134 business specialist agent personas. Provides specialist perspectives across 14 categories — UX architects, data engineers, security auditors, and more. Converted from Markdown to native TOML via automated `md-to-toml.sh` pipeline.
 
 ### 2. [Everything Claude Code (ECC)](https://github.com/affaan-m/everything-claude-code)
 
@@ -428,6 +416,22 @@ The official Skills Catalog for Codex provided by OpenAI. Includes specialist sk
 
 ---
 
+## Troubleshooting
+
+### Skills-only recovery
+
+If a tool reports invalid `SKILL.md` files under `~/.agents/skills/`, the most common cause is a stale local copy or stale symlink target from an older install.
+
+Remove the affected directories from `~/.agents/skills/` and matching entries under `~/.claude/skills/`, then reinstall:
+
+```bash
+npx skills add sehoon787/my-codex -y -g
+```
+
+If you use the full Codex bundle, rerun `install.sh` once as well. The full installer refreshes `~/.codex/skills/` and removes stale my-codex-managed copies under `~/.agents/skills/` and `~/.claude/skills/`.
+
+---
+
 ## Contributing
 
 Issues and PRs are welcome. When adding a new agent, add a `.toml` file to the `agents/` directory and update the agent list in `SETUP.md`.
@@ -437,7 +441,7 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md) for PR validation steps and Codex commi
 
 ## Bundled Upstream Versions
 
-Updated weekly by CI auto-sync. No SOURCES.json yet — versions tracked via sync-upstream.yml.
+Updated weekly by CI auto-sync. Pinned SHAs and sync timestamps are recorded in [`upstream/SOURCES.json`](./upstream/SOURCES.json).
 
 | Source | Sync |
 |--------|------|

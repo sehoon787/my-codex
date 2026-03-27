@@ -5,7 +5,10 @@
     "syncedAt": "2026-03-24T06:16:45Z",
     "files": {
       "agents": 137
-    }
+    },
+    "strategy": "vendor",
+    "patchRules": ["inject-model-field"],
+    "syncFrequency": "weekly"
   },
   "everything-claude-code": {
     "repo": "https://github.com/affaan-m/everything-claude-code",
@@ -14,7 +17,10 @@
     "files": {
       "skills": 125,
       "rules": 65
-    }
+    },
+    "strategy": "vendor",
+    "patchRules": ["remove-gstack-superseded"],
+    "syncFrequency": "weekly"
   },
   "awesome-codex-subagents": {
     "repo": "https://github.com/VoltAgent/awesome-codex-subagents",
@@ -22,7 +28,10 @@
     "syncedAt": "2026-03-24T06:16:45Z",
     "files": {
       "agents": 136
-    }
+    },
+    "strategy": "vendor",
+    "patchRules": [],
+    "syncFrequency": "weekly"
   },
   "oh-my-codex": {
     "repo": "https://github.com/Yeachan-Heo/oh-my-codex",
@@ -30,7 +39,10 @@
     "syncedAt": "2026-03-24T06:16:45Z",
     "files": {
       "agents": 0
-    }
+    },
+    "strategy": "vendor",
+    "patchRules": [],
+    "syncFrequency": "weekly"
   },
   "gstack": {
     "repo": "https://github.com/garrytan/gstack",
@@ -38,6 +50,10 @@
     "license": "MIT",
     "files": {
       "skills": 27
-    }
+    },
+    "strategy": "runtime",
+    "installCommand": "git clone --depth 1",
+    "updateCommand": "git pull --ff-only",
+    "syncFrequency": "on-install"
   }
 }

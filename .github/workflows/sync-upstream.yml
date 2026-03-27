@@ -16,7 +16,21 @@ jobs:
       - uses: actions/checkout@v4
 
       # 1. Agency Agents (MD format → staging)
+      - name: Check agency-agents for changes
+        id: check-agency
+        run: |
+          REMOTE_SHA=$(git ls-remote https://github.com/msitarzewski/agency-agents.git HEAD | cut -f1)
+          LOCAL_SHA=$(jq -r '.["agency-agents"].syncedSha' upstream/SOURCES.json)
+          if [ "$REMOTE_SHA" = "$LOCAL_SHA" ]; then
+            echo "skip=true" >> $GITHUB_OUTPUT
+            echo "agency-agents: no changes (SHA $LOCAL_SHA)"
+          else
+            echo "skip=false" >> $GITHUB_OUTPUT
+            echo "agency-agents: changes detected ($LOCAL_SHA → $REMOTE_SHA)"
+          fi
+
       - name: Sync agency-agents
+        if: steps.check-agency.outputs.skip != 'true'
         run: |
           git clone --depth 1 https://github.com/msitarzewski/agency-agents.git /tmp/agency
           AGENCY_SHA=$(cd /tmp/agency && git rev-parse HEAD)
@@ -41,7 +55,21 @@ jobs:
           echo "AGENCY_COUNT=$AGENCY_COUNT" >> $GITHUB_ENV
 
       # 2. ECC Skills + Rules
+      - name: Check everything-claude-code for changes
+        id: check-ecc
+        run: |
+          REMOTE_SHA=$(git ls-remote https://github.com/affaan-m/everything-claude-code.git HEAD | cut -f1)
+          LOCAL_SHA=$(jq -r '.["everything-claude-code"].syncedSha' upstream/SOURCES.json)
+          if [ "$REMOTE_SHA" = "$LOCAL_SHA" ]; then
+            echo "skip=true" >> $GITHUB_OUTPUT
+            echo "everything-claude-code: no changes (SHA $LOCAL_SHA)"
+          else
+            echo "skip=false" >> $GITHUB_OUTPUT
+            echo "everything-claude-code: changes detected ($LOCAL_SHA → $REMOTE_SHA)"
+          fi
+
       - name: Sync everything-claude-code
+        if: steps.check-ecc.outputs.skip != 'true'
         run: |
           git clone --depth 1 https://github.com/affaan-m/everything-claude-code.git /tmp/ecc
           ECC_SHA=$(cd /tmp/ecc && git rev-parse HEAD)
@@ -86,7 +114,21 @@ jobs:
 
       # 3. oh-my-codex
       # OMX has no agents/ directory — tracked for future skill sync
+      - name: Check oh-my-codex for changes
+        id: check-omx
+        run: |
+          REMOTE_SHA=$(git ls-remote https://github.com/Yeachan-Heo/oh-my-codex.git HEAD | cut -f1)
+          LOCAL_SHA=$(jq -r '.["oh-my-codex"].syncedSha' upstream/SOURCES.json)
+          if [ "$REMOTE_SHA" = "$LOCAL_SHA" ]; then
+            echo "skip=true" >> $GITHUB_OUTPUT
+            echo "oh-my-codex: no changes (SHA $LOCAL_SHA)"
+          else
+            echo "skip=false" >> $GITHUB_OUTPUT
+            echo "oh-my-codex: changes detected ($LOCAL_SHA → $REMOTE_SHA)"
+          fi
+
       - name: Sync oh-my-codex
+        if: steps.check-omx.outputs.skip != 'true'
         run: |
           git clone --depth 1 https://github.com/Yeachan-Heo/oh-my-codex.git /tmp/omx || { echo "OMX_SHA=n/a" >> $GITHUB_ENV; echo "OMX_AGENTS=0" >> $GITHUB_ENV; echo "OMX_CDX_SKILLS=0" >> $GITHUB_ENV; exit 0; }
           OMX_SHA=$(cd /tmp/omx && git rev-parse HEAD)
@@ -99,7 +141,21 @@ jobs:
           echo "OMX_CDX_SKILLS=0" >> $GITHUB_ENV
 
       # 4. Awesome Codex Subagents
+      - name: Check awesome-codex-subagents for changes
+        id: check-awesome
+        run: |
+          REMOTE_SHA=$(git ls-remote https://github.com/VoltAgent/awesome-codex-subagents.git HEAD | cut -f1)
+          LOCAL_SHA=$(jq -r '.["awesome-codex-subagents"].syncedSha' upstream/SOURCES.json)
+          if [ "$REMOTE_SHA" = "$LOCAL_SHA" ]; then
+            echo "skip=true" >> $GITHUB_OUTPUT
+            echo "awesome-codex-subagents: no changes (SHA $LOCAL_SHA)"
+          else
+            echo "skip=false" >> $GITHUB_OUTPUT
+            echo "awesome-codex-subagents: changes detected ($LOCAL_SHA → $REMOTE_SHA)"
+          fi
+
       - name: Sync awesome-codex-subagents
+        if: steps.check-awesome.outputs.skip != 'true'
         run: |
           git clone --depth 1 https://github.com/VoltAgent/awesome-codex-subagents.git /tmp/awesome
           AWESOME_SHA=$(cd /tmp/awesome && git rev-parse HEAD)

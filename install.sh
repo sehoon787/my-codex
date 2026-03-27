@@ -84,6 +84,7 @@ trap cleanup EXIT
 eval "$("$SCRIPT_DIR/scripts/compute-install-counts.sh")"
 PACK_MANAGER="$SCRIPT_DIR/scripts/agent-pack-manager.sh"
 PROFILE_OVERRIDE=""
+WITH_PACKS=""
 
 while [ "$#" -gt 0 ]; do
   case "$1" in
@@ -91,12 +92,20 @@ while [ "$#" -gt 0 ]; do
       PROFILE_OVERRIDE="${2:-}"
       shift 2
       ;;
+    --with-packs=*)
+      WITH_PACKS="${1#*=}"
+      shift
+      ;;
     -h|--help)
       cat <<'EOF'
 Usage:
   bash install.sh
   bash install.sh --profile minimal|dev|full
+  bash install.sh --with-packs <pack1,pack2,...>
   curl -fsSL https://raw.githubusercontent.com/sehoon787/my-codex/main/install.sh | bash
+
+Options:
+  --with-packs=<packs>  Comma-separated list of agent packs to symlink into ~/.codex/agents/
 EOF
       exit 0
       ;;
@@ -499,6 +508,26 @@ if [ -d "$REPO_ROOT/codex-agents/awesome" ]; then
   done
 fi
 echo "  Agent packs: $(find "$CODEX_ROOT/agent-packs" -name '*.toml' | wc -l | tr -d ' ') installed (expected ${AGENT_PACK_COUNT})"
+
+# --with-packs: symlink requested pack agents into ~/.codex/agents/
+if [ -n "$WITH_PACKS" ]; then
+  IFS=',' read -ra PACKS <<< "$WITH_PACKS"
+  for pack in "${PACKS[@]}"; do
+    pack_dir="$CODEX_ROOT/agent-packs/$pack"
+    if [ -d "$pack_dir" ]; then
+      for agent in "$pack_dir"/*.toml; do
+        [ -f "$agent" ] || continue
+        basename=$(basename "$agent")
+        # Skip if file already exists (dedup)
+        [ -f "$CODEX_ROOT/agents/$basename" ] && continue
+        ln -sf "$agent" "$CODEX_ROOT/agents/$basename"
+        echo "  Symlinked: $basename (from $pack)"
+      done
+    else
+      echo "  WARNING: Pack '$pack' not found in $CODEX_ROOT/agent-packs/"
+    fi
+  done
+fi
 
 if [ -n "$PROFILE_OVERRIDE" ] && [ -x "$PACK_MANAGER" ]; then
   HOME="$HOME" "$PACK_MANAGER" set-profile "$PROFILE_OVERRIDE"

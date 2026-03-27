@@ -35,6 +35,21 @@ Based on the official [Codex Subagents](https://developers.openai.com/codex/suba
 | **Multi-Source Curation** | 5 upstream sources aggregated, deduplicated, and quality-checked into a single collection |
 | **Zero Configuration** | Install once, get the harness core plus a default developer specialist profile. `config.toml` auto-configured with `multi_agent = true` |
 
+## 🎯 my-codex Originals
+
+Features built on top of upstream sources — unique to my-codex:
+
+| Feature | Description |
+|---------|-------------|
+| **Boss Meta-Orchestrator** | Dynamic capability discovery + intent-based routing to 400+ agents |
+| **3-Phase Sprint** | Design(interactive) → Execute(autonomous) → Review(interactive) workflow |
+| **Agent Tier Priority** | core > omo > omc > agency dedup resolution |
+| **Agency Cost Optimization** | Auto-routes simple advisory to Haiku, implementation to Sonnet |
+| **Agent Telemetry** | PostToolUse hook logs agent usage to analytics |
+| **Smart Packs** | Project-type detection recommends relevant agent packs |
+| **Agent Pack System** | On-demand domain specialist activation via `--with-packs` |
+| **CI Dedup Detection** | Automated duplicate agent detection across upstream syncs |
+
 ## Quick Start
 
 ### If you are a human

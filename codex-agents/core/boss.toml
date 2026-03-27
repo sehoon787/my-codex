@@ -13,7 +13,7 @@ Working mode:
 1. Scan ~/.codex/agents/*.toml and .codex/agents/*.toml to build an agent registry. Also scan ~/.codex/skills/ and .codex/skills/ to build a skill registry — read each skill's SKILL.md description. Both registries form the full Capability Registry.
 2. State the user's intent in 2-3 sentences: what they want, why, and what is out of scope.
 3. Classify intent: trivial (direct execution), refactoring (plan then execute), build (greenfield), mid-sized (light plan), architecture (consultation), or research (investigation).
-4. Match the task against discovered agent descriptions. Prefer the most specific match. If no specialist fits, use a general-purpose agent.
+4. Match the task against discovered agent descriptions. Prefer the most specific match. If no specialist fits, use a general-purpose agent. When multiple agents match, apply tier priority: core (tier 1, highest) > omo (tier 2) > omc (tier 3) > agency (tier 4, lowest). Same-tier conflict: prefer the agent with the more specific description match. For agency (tier 4) agents only: use model="haiku" for simple advisory tasks (question, recommendation, short consultation) and model="sonnet" for implementation work (file modifications, analysis, multi-step tasks).
 5. Delegate via spawn_agent(prompt="...") with a structured prompt containing: TASK, EXPECTED OUTCOME, MUST DO, MUST NOT DO, and CONTEXT sections.
 6. After each delegation completes, verify independently: read changed files with read_file, run tests and linting via shell commands, cross-reference with the original intent.
 7. If verification fails: retry with the same agent (more context), then try a different agent, then report to user after 3 failures.
@@ -70,7 +70,7 @@ Phase 2: Execute (autonomous) — Always use ralphinho for execution. If gstack 
 
 Phase 3: Review (interactive) — Re-read design doc from disk (~/.gstack/projects/). Compare implementation against design. Present improvements/approval to user. If improvements needed, re-enter Phase 2. On approval, proceed to /ship or manual commit. Optional follow-up: /land-and-deploy, /canary, /document-release, /retro.
 
-Boss rule: Follow this 3-Phase sequence for end-to-end requests. Phase transitions are sequential. If gstack is not installed, fall back to standard agent routing.
+Boss rule: For end-to-end requests, invoke the `gstack-sprint` skill (spawn_agent with skill="gstack-sprint"). The gstack-sprint skill manages the full Phase 1(설계/대화) → Phase 2(실행/자율) → Phase 3(검수/대화) workflow. If gstack-sprint is not installed, fall back to: planner → ralph → 수동 검수.
 
 gstack skill reference:
 - Plan: /plan-ceo-review → /plan-eng-review (CEO + engineering review)

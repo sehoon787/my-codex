@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Agent",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'mkdir -p ~/.codex/analytics && node -e \"const j=JSON.parse(require(\\\"fs\\\").readFileSync(0,\\\"utf8\\\"));const i=j.tool_input||{};process.stdout.write(JSON.stringify({agent:i.name||i.description||\\\"unknown\\\",model:i.model||\\\"unknown\\\",ts:new Date().toISOString(),tool:\\\"Agent\\\"})+\\\"\\\\n\\\")\" >> ~/.codex/analytics/agent-usage.jsonl 2>/dev/null || true'",
+            "timeout": 5000
+          }
+        ]
+      }
+    ]
+  }
+}

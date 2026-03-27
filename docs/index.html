@@ -648,7 +648,7 @@ footer{padding:40px 0;border-top:1px solid rgba(255,255,255,.06);text-align:cent
 let lang=localStorage.getItem('lang')||'en';
 function setLang(l){
   lang=l;localStorage.setItem('lang',l);
-  document.querySelectorAll('.lang').forEach(el=>{el.textContent=el.dataset[l]||''});
+  document.querySelectorAll('.lang').forEach(el=>{el.innerHTML=el.dataset[l]||''});
   document.getElementById('lt-en').className=l==='en'?'active':'';
   document.getElementById('lt-ko').className=l==='ko'?'active':'';
   document.getElementById('flt-en').className=l==='en'?'active':'';

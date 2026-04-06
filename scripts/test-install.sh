@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
+trap 'echo "FAILED at line $LINENO (exit $?)" >&2' ERR
 
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 TMP_ROOT="${TMPDIR:-/tmp}/my-codex-install-test.$$"
@@ -57,6 +58,9 @@ actual_core=$(find "$TEST_HOME/.codex/agents" -maxdepth 1 -type f -name '*.toml'
 actual_active_pack_links=$(find "$TEST_HOME/.codex/agents" -maxdepth 1 -type l -name '*.toml' | wc -l | tr -d ' ')
 actual_packs=$(find "$TEST_HOME/.codex/agent-packs" -name '*.toml' | wc -l | tr -d ' ')
 actual_skills=$(find "$TEST_HOME/.codex/skills" -name 'SKILL.md' | wc -l | tr -d ' ')
+
+echo "DEBUG: core=$actual_core links=$actual_active_pack_links packs=$actual_packs skills=$actual_skills" >&2
+echo "DEBUG: pack dirs=$(ls "$TEST_HOME/.codex/agent-packs/" 2>/dev/null | tr '\n' ' ')" >&2
 
 test "$actual_core" -ge 10
 test "$actual_active_pack_links" -ge 1

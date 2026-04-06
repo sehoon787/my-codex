@@ -14,14 +14,14 @@
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 ![Agents](https://img.shields.io/badge/agents-444-blue)
-![Skills](https://img.shields.io/badge/skills-133-purple)
+![Skills](https://img.shields.io/badge/skills-140-purple)
 ![MCP](https://img.shields.io/badge/MCP-3-green)
 ![Auto Sync](https://img.shields.io/badge/upstream_sync-weekly-brightgreen)
 ![Codex Attribution](https://img.shields.io/badge/Codex_attribution-enabled-black)
 
 All-in-one agent harness for OpenAI Codex CLI — install once, get everything.
 
-Bundles **444 installed agent files** (80 auto-loaded + 364 agent-packs) and **133 skills** from 6 upstream sources into native TOML format. The repo currently contains 589 TOML source definitions; install-time deduplication resolves overlapping destination filenames into the final installed footprint. Codex CLI auto-discovers agents via `spawn_agent` and routes tasks to the optimal specialist. GitHub Actions CI syncs upstream changes weekly.
+Bundles **444 installed agent files** (80 auto-loaded + 364 agent-packs) and **140 skills** from 6 upstream sources into native TOML format. The repo currently contains 590 TOML source definitions; install-time deduplication resolves overlapping destination filenames into the final installed footprint. Codex CLI auto-discovers agents via `spawn_agent` and routes tasks to the optimal specialist. GitHub Actions CI syncs upstream changes weekly.
 
 Based on the official [Codex Subagents](https://developers.openai.com/codex/subagents) specification.
 
@@ -41,7 +41,7 @@ Features built on top of upstream sources — unique to my-codex:
 
 | Feature | Description |
 |---------|-------------|
-| **Boss Meta-Orchestrator** | Dynamic capability discovery + intent-based routing to 400+ agents |
+| **Boss Meta-Orchestrator** | Dynamic capability discovery + intent-based routing to 440+ agents |
 | **3-Phase Sprint** | Design(interactive) → Execute(autonomous) → Review(interactive) workflow |
 | **Agent Tier Priority** | core > omo > omc > agency dedup resolution |
 | **Agency Cost Optimization** | Auto-routes simple advisory to Haiku, implementation to Sonnet |
@@ -70,7 +70,7 @@ Re-running the same install command refreshes to the latest published `main` bui
 npx skills add sehoon787/my-codex -y -g
 ```
 
-Installs 126 cross-tool skills to `~/.agents/skills/` with auto-symlinks to Codex CLI, Claude Code, Cursor, and other tools. Does **not** install agents, rules, or `config.toml` — use `install.sh` for the full 133-skill Codex bundle.
+Installs 126 cross-tool skills to `~/.agents/skills/` with auto-symlinks to Codex CLI, Claude Code, Cursor, and other tools. Does **not** install agents, rules, or `config.toml` — use `install.sh` for the full 140-skill Codex bundle.
 
 ### If you are an LLM agent
 
@@ -97,7 +97,7 @@ curl -fsSL https://raw.githubusercontent.com/sehoon787/my-codex/main/install.sh 
 - **o4-mini (low)**: Quick lookups, exploration — mapped from Claude Haiku equivalents
 
 ### All-in-One Bundle
-- Install provides **444 installed agent files and 133 skills** instantly
+- Install provides **444 installed agent files and 140 skills** instantly
 - Bundles 6 upstream sources (agency-agents, everything-claude-code, oh-my-codex, awesome-codex-subagents, gstack, superpowers)
 - Weekly CI auto-sync keeps bundled content up-to-date with upstream
 - MD-to-TOML conversion handled automatically for non-native sources
@@ -118,28 +118,22 @@ curl -fsSL https://raw.githubusercontent.com/sehoon787/my-codex/main/install.sh 
 
 ## Core Agents
 
-37 core agents providing orchestration infrastructure are installed to `~/.codex/agents/`. These are the foundation agents that orchestrate, plan, review, and verify work. Domain specialists are in agent-packs. Awesome agents add additional coverage, but overlapping filenames collapse the final auto-loaded set to 80 installed files.
+38 core agents from 4 source repos plus 54 Awesome Core agents are installed to `~/.codex/agents/`. Overlapping filenames between sources collapse the final auto-loaded set to 80 installed files. Domain specialists are in agent-packs.
 
-### Orchestrators (5)
-boss, sisyphus, atlas, hephaestus, prometheus
+### my-codex Core (1) — Boss meta-orchestrator
+boss
 
-### Advisors (5)
-metis, momus, oracle, analyst, critic
+### Oh My OpenAgent / OMO (9) — Sub-orchestrators and specialists
+atlas, hephaestus, librarian, metis, momus, multimodal-looker, oracle, prometheus, sisyphus
 
-### General Workers (6)
-executor, explore, planner, verifier, tracer, debugger
+### Oh My Claude Code / OMC (18) — Specialist agents
+analyst, architect, code-reviewer, code-simplifier, critic, debugger, document-specialist, executor, explore, git-master, planner, qa-tester, scientist, security-reviewer, test-engineer, tracer, verifier, writer
 
-### Orchestration Support (8)
-agent-organizer, multi-agent-coordinator, workflow-orchestrator, error-coordinator, task-distributor, context-manager, agent-installer, knowledge-synthesizer
+### Awesome Core (9) — Orchestration support from awesome-codex-subagents
+agent-installer, agent-organizer, code-mapper, context-manager, error-coordinator, knowledge-synthesizer, multi-agent-coordinator, task-distributor, workflow-orchestrator
 
-### Utility Workers (5)
-writer, librarian, scientist, document-specialist, git-master
-
-### Code Quality (5)
-code-reviewer, code-simplifier, code-mapper, security-reviewer, architect
-
-### Testing & Media (3)
-test-engineer, qa-tester, multimodal-looker
+### Superpowers (1) — Code reviewer from obra/superpowers
+superpowers-code-reviewer
 
 ---
 
@@ -189,9 +183,9 @@ bash /tmp/my-codex/install.sh --profile full
 
 | Category | Count | Source | Location |
 |------|------|------|------|
-| Auto-loaded Agents | 80 installed files | `core/`, `omo/`, `omc/`, `awesome-core/`, awesome core categories | `~/.codex/agents/` |
+| Auto-loaded Agents | 80 installed files | `core/`, `omo/`, `omc/`, `awesome-core/`, `superpowers/`, awesome core categories | `~/.codex/agents/` |
 | Agent Packs | 364 installed files | `agent-packs/`, `agency/`, awesome non-core categories | `~/.codex/agent-packs/` |
-| Skills | 133 | ECC, superpowers | `~/.codex/skills/` |
+| Skills | 140 | ECC 125, Superpowers 14, Core 1 | `~/.codex/skills/` |
 | config.toml | 1 | my-codex | `~/.codex/config.toml` |
 | AGENTS.md | 1 | my-codex | `~/.codex/AGENTS.md` |
 
@@ -217,7 +211,7 @@ agent-organizer, capability-assessor, conflict-resolver, context-manager, execut
 </details>
 
 <details>
-<summary>Skills (133) — From Everything Claude Code and superpowers</summary>
+<summary>Skills (140) — From Everything Claude Code (125), Superpowers (14), and Core (1)</summary>
 
 Key skills include:
 
@@ -270,7 +264,7 @@ Key skills include:
 │    ├── Auto-loaded (80): final installed footprint       │
 │    └── Agent Packs (364): final installed footprint      │
 ├─────────────────────────────────────────────────────────┤
-│  Skills Layer (133 from ECC + superpowers)              │
+│  Skills Layer (140 from ECC + superpowers + core)        │
 │    ├── tdd-workflow, security-review, autopilot         │
 │    └── pdf, docx, pptx, xlsx, team                     │
 └─────────────────────────────────────────────────────────┘
@@ -391,7 +385,7 @@ A library of 134 business specialist agent personas. Provides specialist perspec
 
 ### 2. [Everything Claude Code (ECC)](https://github.com/affaan-m/everything-claude-code)
 
-A development framework originally built for Claude Code, providing 119 skills. 13 Claude Code-specific skills were removed; the remaining skills contain generic coding guidance usable across any LLM agent. The rules/ directory is included in the repo as reference material but is not read by Codex CLI.
+A development framework originally built for Claude Code, providing 125 skills. Claude Code-specific skills were removed; the remaining skills contain generic coding guidance usable across any LLM agent. The rules/ directory is included in the repo as reference material but is not read by Codex CLI.
 
 ### 3. [Awesome Codex Subagents](https://github.com/VoltAgent/awesome-codex-subagents)
 

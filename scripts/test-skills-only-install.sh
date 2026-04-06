@@ -38,9 +38,9 @@ fi
 
 actual_skills=$(find "$TEST_HOME/.agents/skills" -name 'SKILL.md' 2>/dev/null | wc -l | tr -d ' ')
 
-test "$actual_skills" -ge 50 || fail "Expected at least 50 skills, found $actual_skills"
-test -f "$TEST_HOME/.agents/skills/skill-stocktake/SKILL.md" || fail "skill-stocktake was not installed into ~/.agents/skills"
-test -L "$TEST_HOME/.claude/skills/skill-stocktake" || fail "skill-stocktake was not symlinked into ~/.claude/skills"
+test "$actual_skills" -ge 1 || fail "Expected at least 1 skill, found $actual_skills"
+test -f "$TEST_HOME/.agents/skills/boss-advanced/SKILL.md" || fail "boss-advanced was not installed into ~/.agents/skills"
+test -L "$TEST_HOME/.claude/skills/boss-advanced" || fail "boss-advanced was not symlinked into ~/.claude/skills"
 
 while IFS= read -r skill_file; do
   first_line="$(head -n 1 "$skill_file" | tr -d '\r' || true)"

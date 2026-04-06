@@ -12,7 +12,6 @@ DEFAULT_PACKS=(
   testing
   marketing
   support
-  strategy
 )
 
 usage() {

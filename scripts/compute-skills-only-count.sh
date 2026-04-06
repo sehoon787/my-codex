@@ -13,6 +13,9 @@ fi
 if [ -d "$REPO_ROOT/skills/core" ]; then
   cp -R "$REPO_ROOT/skills/core/." "$TMP_SKILLS/"
 fi
+if [ -d "$REPO_ROOT/skills/superpowers" ]; then
+  cp -R "$REPO_ROOT/skills/superpowers/." "$TMP_SKILLS/"
+fi
 SKILLS_ONLY_COUNT=$(find "$TMP_SKILLS" -name 'SKILL.md' | wc -l | tr -d ' ')
 
 cat <<EOF

@@ -8,11 +8,11 @@ PACKS_DIR="${CODEX_DIR}/agent-packs"
 STATE_FILE="${CODEX_DIR}/enabled-agent-packs.txt"
 DEFAULT_PACKS=(
   engineering
-  language-specialists
-  developer-experience
-  data-ai
-  research-analysis
+  design
   testing
+  marketing
+  support
+  strategy
 )
 
 usage() {

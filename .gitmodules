@@ -1,0 +1,18 @@
+[submodule "upstream/agency-agents"]
+	path = upstream/agency-agents
+	url = https://github.com/msitarzewski/agency-agents
+[submodule "upstream/ecc"]
+	path = upstream/ecc
+	url = https://github.com/affaan-m/everything-claude-code
+[submodule "upstream/awesome"]
+	path = upstream/awesome
+	url = https://github.com/VoltAgent/awesome-codex-subagents
+[submodule "upstream/omx"]
+	path = upstream/omx
+	url = https://github.com/Yeachan-Heo/oh-my-codex
+[submodule "upstream/gstack"]
+	path = upstream/gstack
+	url = https://github.com/garrytan/gstack
+[submodule "upstream/superpowers"]
+	path = upstream/superpowers
+	url = https://github.com/obra/superpowers

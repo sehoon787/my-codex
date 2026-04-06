@@ -10,9 +10,7 @@ REPO_ROOT="$SCRIPT_DIR"
 
 has_repo_assets() {
   [ -d "$REPO_ROOT/codex-agents" ] &&
-  [ -d "$REPO_ROOT/skills/ecc" ] &&
-  [ -d "$REPO_ROOT/templates" ] &&
-  [ -f "$REPO_ROOT/scripts/compute-install-counts.sh" ]
+  [ -d "$REPO_ROOT/templates" ]
 }
 
 bootstrap_remote_install() {
@@ -81,10 +79,40 @@ cleanup() {
 }
 trap cleanup EXIT
 
-eval "$("$SCRIPT_DIR/scripts/compute-install-counts.sh")"
+# ── Upstream helper ──
+CLONE_TMPDIR=$(mktemp -d)
+cleanup_clone() { rm -rf "$CLONE_TMPDIR"; rm -f "$TMP_MANIFEST"; }
+trap cleanup_clone EXIT
+
+UPSTREAM_DIR=""
+init_upstream() {
+  local name="$1" url="$2"
+  local submod_path="$REPO_ROOT/upstream/$name"
+  if [ -d "$submod_path/.git" ] || [ -f "$submod_path/.git" ]; then
+    UPSTREAM_DIR="$submod_path"
+    return 0
+  fi
+  if git -C "$REPO_ROOT" submodule update --init --depth 1 "upstream/$name" 2>/dev/null; then
+    UPSTREAM_DIR="$submod_path"
+    return 0
+  fi
+  echo "  WARNING: submodule init failed for $name, falling back to git clone..."
+  UPSTREAM_DIR="$CLONE_TMPDIR/$name"
+  git clone --depth 1 "$url" "$UPSTREAM_DIR" 2>/dev/null || return 1
+}
+
 PACK_MANAGER="$SCRIPT_DIR/scripts/agent-pack-manager.sh"
 PROFILE_OVERRIDE=""
 WITH_PACKS=""
+
+# ── Argument parsing ──
+SKIP_AGENCY=0
+SKIP_ECC=0
+SKIP_AWESOME=0
+SKIP_OMX=0
+SKIP_GSTACK=0
+SKIP_SUPERPOWERS=0
+SELF_ONLY=0
 
 while [ "$#" -gt 0 ]; do
   case "$1" in
@@ -96,16 +124,33 @@ while [ "$#" -gt 0 ]; do
       WITH_PACKS="${1#*=}"
       shift
       ;;
+    --skip-agency)     SKIP_AGENCY=1; shift ;;
+    --skip-ecc)        SKIP_ECC=1; shift ;;
+    --skip-awesome)    SKIP_AWESOME=1; shift ;;
+    --skip-omx)        SKIP_OMX=1; shift ;;
+    --skip-gstack)     SKIP_GSTACK=1; shift ;;
+    --skip-superpowers) SKIP_SUPERPOWERS=1; shift ;;
+    --self-only)
+      SELF_ONLY=1; SKIP_AGENCY=1; SKIP_ECC=1; SKIP_AWESOME=1
+      SKIP_OMX=1; SKIP_GSTACK=1; SKIP_SUPERPOWERS=1
+      shift
+      ;;
     -h|--help)
       cat <<'EOF'
 Usage:
   bash install.sh
   bash install.sh --profile minimal|dev|full
   bash install.sh --with-packs <pack1,pack2,...>
-  curl -fsSL https://raw.githubusercontent.com/sehoon787/my-codex/main/install.sh | bash
 
 Options:
   --with-packs=<packs>  Comma-separated list of agent packs to symlink into ~/.codex/agents/
+  --skip-agency         Skip agency-agents upstream install
+  --skip-ecc            Skip everything-claude-code upstream install
+  --skip-awesome        Skip awesome-codex-subagents upstream install
+  --skip-omx            Skip oh-my-codex upstream install
+  --skip-gstack         Skip gstack upstream install
+  --skip-superpowers    Skip superpowers upstream install
+  --self-only           Install only self-owned files (implies all --skip-* flags)
 EOF
       exit 0
       ;;
@@ -167,11 +212,10 @@ remove_manifest_paths() {
 legacy_cleanup() {
   local src_dir cat_dir cat_name file_name skill_dir
 
+  # Clean flat agents from core/omo/omc/awesome-core (self-owned dirs)
   for src_dir in \
     "$REPO_ROOT/codex-agents/core" \
-    "$REPO_ROOT/codex-agents/omo" \
-    "$REPO_ROOT/codex-agents/omc" \
-    "$REPO_ROOT/codex-agents/awesome-core"
+    "$REPO_ROOT/codex-agents/omo"
   do
     [ -d "$src_dir" ] || continue
     for file_name in "$src_dir"/*.toml; do
@@ -180,67 +224,13 @@ legacy_cleanup() {
     done
   done
 
-  if [ -d "$REPO_ROOT/codex-agents/awesome" ]; then
-    for cat_dir in "$REPO_ROOT/codex-agents/awesome/"*/; do
-      [ -d "$cat_dir" ] || continue
-      cat_name="$(basename "$cat_dir")"
-      case "$cat_name" in
-        01-core-development|03-infrastructure|04-quality-security|09-meta-orchestration)
-          for file_name in "$cat_dir"/*.toml; do
-            [ -f "$file_name" ] || continue
-            rm -f "$CODEX_ROOT/agents/$(basename "$file_name")" 2>/dev/null || true
-          done
-          ;;
-      esac
-    done
-  fi
-
-  for cat_dir in "$REPO_ROOT/codex-agents/agent-packs/"*/ "$REPO_ROOT/codex-agents/agency/"*/; do
-    [ -d "$cat_dir" ] || continue
-    cat_name="$(basename "$cat_dir")"
-    for file_name in "$cat_dir"/*.toml; do
-      [ -f "$file_name" ] || continue
-      rm -f "$CODEX_ROOT/agent-packs/$cat_name/$(basename "$file_name")" 2>/dev/null || true
-    done
-  done
-
-  if [ -d "$REPO_ROOT/codex-agents/awesome" ]; then
-    for cat_dir in "$REPO_ROOT/codex-agents/awesome/"*/; do
-      [ -d "$cat_dir" ] || continue
-      cat_name="$(basename "$cat_dir")"
-      case "$cat_name" in
-        01-core-development|03-infrastructure|04-quality-security|09-meta-orchestration)
-          continue
-          ;;
-      esac
-      for file_name in "$cat_dir"/*.toml; do
-        [ -f "$file_name" ] || continue
-        rm -f "$CODEX_ROOT/agent-packs/$cat_name/$(basename "$file_name")" 2>/dev/null || true
-      done
-    done
-  fi
-
-  if [ -d "$REPO_ROOT/skills/ecc" ] && [ -d "$CODEX_ROOT/skills" ]; then
-    for skill_dir in "$REPO_ROOT/skills/ecc/"*/; do
-      [ -d "$skill_dir" ] || continue
-      rm -rf "$CODEX_ROOT/skills/$(basename "$skill_dir")" 2>/dev/null || true
-    done
-  fi
-
+  # Clean skills from self-owned core
   if [ -d "$REPO_ROOT/skills/core" ] && [ -d "$CODEX_ROOT/skills" ]; then
     for skill_dir in "$REPO_ROOT/skills/core/"*/; do
       [ -d "$skill_dir" ] || continue
       rm -rf "$CODEX_ROOT/skills/$(basename "$skill_dir")" 2>/dev/null || true
     done
   fi
-
-  if [ -d "$REPO_ROOT/skills/superpowers" ] && [ -d "$CODEX_ROOT/skills" ]; then
-    for skill_dir in "$REPO_ROOT/skills/superpowers/"*/; do
-      [ -d "$skill_dir" ] || continue
-      rm -rf "$CODEX_ROOT/skills/$(basename "$skill_dir")" 2>/dev/null || true
-    done
-  fi
-
 }
 
 copy_toml_dir() {
@@ -260,11 +250,12 @@ copy_toml_dir() {
 }
 
 copy_skill_dirs() {
+  local skill_src="$1"
   local skill_dir dest_dir rel_path
-  [ -d "$REPO_ROOT/skills/ecc" ] || return 0
+  [ -d "$skill_src" ] || return 0
 
   mkdir -p "$CODEX_ROOT/skills"
-  for skill_dir in "$REPO_ROOT/skills/ecc/"*/; do
+  for skill_dir in "$skill_src/"*/; do
     [ -d "$skill_dir" ] || continue
     dest_dir="$CODEX_ROOT/skills/$(basename "$skill_dir")"
     rm -rf "$dest_dir" 2>/dev/null || true
@@ -272,215 +263,48 @@ copy_skill_dirs() {
     rel_path="${dest_dir#"$CODEX_ROOT"/}"
     add_manifest_entry "$rel_path"
   done
-
-  if [ -d "$REPO_ROOT/skills/core" ]; then
-    mkdir -p "$CODEX_ROOT/skills"
-    for skill_dir in "$REPO_ROOT/skills/core/"*/; do
-      [ -d "$skill_dir" ] || continue
-      dest_dir="$CODEX_ROOT/skills/$(basename "$skill_dir")"
-      rm -rf "$dest_dir" 2>/dev/null || true
-      cp -R "$skill_dir" "$dest_dir"
-      rel_path="${dest_dir#"$CODEX_ROOT"/}"
-      add_manifest_entry "$rel_path"
-    done
-  fi
-
-  if [ -d "$REPO_ROOT/skills/superpowers" ]; then
-    mkdir -p "$CODEX_ROOT/skills"
-    for skill_dir in "$REPO_ROOT/skills/superpowers/"*/; do
-      [ -d "$skill_dir" ] || continue
-      dest_dir="$CODEX_ROOT/skills/$(basename "$skill_dir")"
-      rm -rf "$dest_dir" 2>/dev/null || true
-      cp -R "$skill_dir" "$dest_dir"
-      rel_path="${dest_dir#"$CODEX_ROOT"/}"
-      add_manifest_entry "$rel_path"
-    done
-  fi
-
-  # gstack (runtime install — not bundled in repo)
-  echo "  [gstack] Installing/updating..."
-  GSTACK_DIR="$CODEX_ROOT/skills/gstack"
-  if [ -d "$GSTACK_DIR/.git" ]; then
-    git -C "$GSTACK_DIR" pull --ff-only 2>/dev/null || true
-  else
-    rm -rf "$GSTACK_DIR"
-    git clone --depth 1 https://github.com/garrytan/gstack.git "$GSTACK_DIR" 2>/dev/null || true
-  fi
-
-  # Install bun if missing (required for gstack browser)
-  if ! command -v bun >/dev/null 2>&1; then
-    echo "  [gstack] Installing bun..."
-    curl -fsSL https://bun.sh/install | bash 2>/dev/null || true
-    export BUN_INSTALL="$HOME/.bun"
-    export PATH="$BUN_INSTALL/bin:$PATH"
-  fi
-
-  # Remove superseded ECC skills replaced by gstack (preserve gstack symlinks)
-  for skill in benchmark canary-watch safety-guard browser-qa verification-loop security-review design-system; do
-    target="$CODEX_ROOT/skills/$skill"
-    # Skip if it's a symlink pointing into gstack (i.e. gstack's own replacement)
-    if [ -L "$target" ]; then
-      link_dest=$(readlink "$target")
-      case "$link_dest" in *gstack*) continue ;; esac
-      rm -f "$target"
-    elif [ -d "$target" ]; then
-      rm -rf "$target"
-    fi
-  done
-
-  # Run gstack setup
-  if [ -d "$GSTACK_DIR" ] && command -v bun >/dev/null 2>&1 && [ -f "$GSTACK_DIR/setup" ]; then
-    (cd "$GSTACK_DIR" && ./setup --host codex 2>/dev/null || true)
-  fi
-
-  # Restore SKILL.md files if deleted by gen:skill-docs
-  git -C "$GSTACK_DIR" checkout -- '*/SKILL.md' 'SKILL.md' 2>/dev/null || true
-
-  # Fallback: ensure individual gstack skills are accessible at depth 1
-  if [ -d "$GSTACK_DIR" ]; then
-    for skill_dir in "$GSTACK_DIR"/*/; do
-      [ -f "$skill_dir/SKILL.md" ] || continue
-      skill_name=$(basename "$skill_dir")
-      case "$skill_name" in .git|bin|node_modules|agents) continue ;; esac
-      target="$CODEX_ROOT/skills/$skill_name"
-      if [ ! -e "$target" ] && [ ! -L "$target" ]; then
-        ln -s "$(cd "$skill_dir" && pwd)" "$target" 2>/dev/null || cp -r "$skill_dir" "$target"
-      fi
-    done
-  fi
-
-  # gstack auto_upgrade config
-  mkdir -p "$HOME/.gstack"
-  GSTACK_CONFIG="$HOME/.gstack/config.json"
-  if [ -f "$GSTACK_CONFIG" ]; then
-    node -e "
-      const fs = require('fs');
-      const cfg = JSON.parse(fs.readFileSync('$GSTACK_CONFIG', 'utf8'));
-      cfg.auto_upgrade = true;
-      fs.writeFileSync('$GSTACK_CONFIG', JSON.stringify(cfg, null, 2));
-    " 2>/dev/null || true
-  else
-    echo '{"auto_upgrade":true}' > "$GSTACK_CONFIG"
-  fi
 }
 
 count_managed_skills() {
-  local count=0 skill_dir
-  [ -d "$REPO_ROOT/skills/ecc" ] || {
-    printf '0'
-    return
-  }
-
-  for skill_dir in "$REPO_ROOT/skills/ecc/"*/; do
-    [ -f "$CODEX_ROOT/skills/$(basename "$skill_dir")/SKILL.md" ] || continue
-    count=$((count + 1))
-  done
-
-  if [ -d "$REPO_ROOT/skills/core" ]; then
-    for skill_dir in "$REPO_ROOT/skills/core/"*/; do
-      [ -f "$CODEX_ROOT/skills/$(basename "$skill_dir")/SKILL.md" ] || continue
-      count=$((count + 1))
-    done
-  fi
-
-  if [ -d "$REPO_ROOT/skills/superpowers" ]; then
-    for skill_dir in "$REPO_ROOT/skills/superpowers/"*/; do
-      [ -f "$CODEX_ROOT/skills/$(basename "$skill_dir")/SKILL.md" ] || continue
-      count=$((count + 1))
-    done
-  fi
-
+  local count=0
+  [ -d "$CODEX_ROOT/skills" ] || { printf '0'; return; }
+  count=$(find "$CODEX_ROOT/skills" -name 'SKILL.md' 2>/dev/null | wc -l | tr -d ' ')
   printf '%s' "$count"
 }
 
 cleanup_cross_tool_skills() {
-  local skill_dir skill_name source_skill installed_skill
-  [ -d "$REPO_ROOT/skills/ecc" ] || return 0
+  local skill_dir skill_name source_skill installed_skill link_target
+  # Clean ECC skills from cross-tool locations
+  for skills_src in "$CODEX_ROOT/skills"; do
+    [ -d "$skills_src" ] || continue
+    for skill_dir in "$skills_src/"*/; do
+      [ -d "$skill_dir" ] || continue
+      skill_name="$(basename "$skill_dir")"
+      source_skill="$skill_dir/SKILL.md"
+      [ -f "$source_skill" ] || continue
 
-  for skill_dir in "$REPO_ROOT/skills/ecc/"*/; do
-    [ -d "$skill_dir" ] || continue
-    skill_name="$(basename "$skill_dir")"
-    source_skill="$skill_dir/SKILL.md"
-
-    installed_skill="$AGENTS_SKILLS_ROOT/$skill_name/SKILL.md"
-    if [ -f "$installed_skill" ] && [ -f "$source_skill" ]; then
-      if [ "$(head -n 1 "$installed_skill" | tr -d '\r')" != '---' ] && [ "$(head -n 1 "$source_skill" | tr -d '\r')" = '---' ]; then
-        rm -rf "$AGENTS_SKILLS_ROOT/$skill_name" 2>/dev/null || true
+      installed_skill="$AGENTS_SKILLS_ROOT/$skill_name/SKILL.md"
+      if [ -f "$installed_skill" ] && [ -f "$source_skill" ]; then
+        if [ "$(head -n 1 "$installed_skill" | tr -d '\r')" != '---' ] && [ "$(head -n 1 "$source_skill" | tr -d '\r')" = '---' ]; then
+          rm -rf "$AGENTS_SKILLS_ROOT/$skill_name" 2>/dev/null || true
+        fi
       fi
-    fi
 
-    installed_skill="$CLAUDE_SKILLS_ROOT/$skill_name/SKILL.md"
-    if [ -L "$CLAUDE_SKILLS_ROOT/$skill_name" ]; then
-      link_target="$(readlink "$CLAUDE_SKILLS_ROOT/$skill_name" 2>/dev/null || true)"
-      case "$link_target" in
-        *".agents/skills/$skill_name"|*".agents/skills/$skill_name/")
-          rm -f "$CLAUDE_SKILLS_ROOT/$skill_name" 2>/dev/null || true
-          ;;
-      esac
-    elif [ -f "$installed_skill" ] && [ -f "$source_skill" ]; then
-      if [ "$(head -n 1 "$installed_skill" | tr -d '\r')" != '---' ] && [ "$(head -n 1 "$source_skill" | tr -d '\r')" = '---' ]; then
-        rm -rf "$CLAUDE_SKILLS_ROOT/$skill_name" 2>/dev/null || true
+      installed_skill="$CLAUDE_SKILLS_ROOT/$skill_name/SKILL.md"
+      if [ -L "$CLAUDE_SKILLS_ROOT/$skill_name" ]; then
+        link_target="$(readlink "$CLAUDE_SKILLS_ROOT/$skill_name" 2>/dev/null || true)"
+        case "$link_target" in
+          *".agents/skills/$skill_name"|*".agents/skills/$skill_name/")
+            rm -f "$CLAUDE_SKILLS_ROOT/$skill_name" 2>/dev/null || true
+            ;;
+        esac
+      elif [ -f "$installed_skill" ] && [ -f "$source_skill" ]; then
+        if [ "$(head -n 1 "$installed_skill" | tr -d '\r')" != '---' ] && [ "$(head -n 1 "$source_skill" | tr -d '\r')" = '---' ]; then
+          rm -rf "$CLAUDE_SKILLS_ROOT/$skill_name" 2>/dev/null || true
+        fi
       fi
-    fi
+    done
   done
-
-  if [ -d "$REPO_ROOT/skills/core" ]; then
-    for skill_dir in "$REPO_ROOT/skills/core/"*/; do
-      [ -d "$skill_dir" ] || continue
-      skill_name="$(basename "$skill_dir")"
-      source_skill="$skill_dir/SKILL.md"
-
-      installed_skill="$AGENTS_SKILLS_ROOT/$skill_name/SKILL.md"
-      if [ -f "$installed_skill" ] && [ -f "$source_skill" ]; then
-        if [ "$(head -n 1 "$installed_skill" | tr -d '\r')" != '---' ] && [ "$(head -n 1 "$source_skill" | tr -d '\r')" = '---' ]; then
-          rm -rf "$AGENTS_SKILLS_ROOT/$skill_name" 2>/dev/null || true
-        fi
-      fi
-
-      installed_skill="$CLAUDE_SKILLS_ROOT/$skill_name/SKILL.md"
-      if [ -L "$CLAUDE_SKILLS_ROOT/$skill_name" ]; then
-        link_target="$(readlink "$CLAUDE_SKILLS_ROOT/$skill_name" 2>/dev/null || true)"
-        case "$link_target" in
-          *".agents/skills/$skill_name"|*".agents/skills/$skill_name/")
-            rm -f "$CLAUDE_SKILLS_ROOT/$skill_name" 2>/dev/null || true
-            ;;
-        esac
-      elif [ -f "$installed_skill" ] && [ -f "$source_skill" ]; then
-        if [ "$(head -n 1 "$installed_skill" | tr -d '\r')" != '---' ] && [ "$(head -n 1 "$source_skill" | tr -d '\r')" = '---' ]; then
-          rm -rf "$CLAUDE_SKILLS_ROOT/$skill_name" 2>/dev/null || true
-        fi
-      fi
-    done
-  fi
-
-  if [ -d "$REPO_ROOT/skills/superpowers" ]; then
-    for skill_dir in "$REPO_ROOT/skills/superpowers/"*/; do
-      [ -d "$skill_dir" ] || continue
-      skill_name="$(basename "$skill_dir")"
-      source_skill="$skill_dir/SKILL.md"
-
-      installed_skill="$AGENTS_SKILLS_ROOT/$skill_name/SKILL.md"
-      if [ -f "$installed_skill" ] && [ -f "$source_skill" ]; then
-        if [ "$(head -n 1 "$installed_skill" | tr -d '\r')" != '---' ] && [ "$(head -n 1 "$source_skill" | tr -d '\r')" = '---' ]; then
-          rm -rf "$AGENTS_SKILLS_ROOT/$skill_name" 2>/dev/null || true
-        fi
-      fi
-
-      installed_skill="$CLAUDE_SKILLS_ROOT/$skill_name/SKILL.md"
-      if [ -L "$CLAUDE_SKILLS_ROOT/$skill_name" ]; then
-        link_target="$(readlink "$CLAUDE_SKILLS_ROOT/$skill_name" 2>/dev/null || true)"
-        case "$link_target" in
-          *".agents/skills/$skill_name"|*".agents/skills/$skill_name/")
-            rm -f "$CLAUDE_SKILLS_ROOT/$skill_name" 2>/dev/null || true
-            ;;
-        esac
-      elif [ -f "$installed_skill" ] && [ -f "$source_skill" ]; then
-        if [ "$(head -n 1 "$installed_skill" | tr -d '\r')" != '---' ] && [ "$(head -n 1 "$source_skill" | tr -d '\r')" = '---' ]; then
-          rm -rf "$CLAUDE_SKILLS_ROOT/$skill_name" 2>/dev/null || true
-        fi
-      fi
-    done
-  fi
 }
 
 INSTALLING_VERSION="$(current_install_version)"
@@ -491,8 +315,7 @@ fi
 
 echo "=== my-codex installer ==="
 echo ""
-echo "Expected install footprint: ${INSTALLED_AGENT_TOTAL} agents (${AUTO_LOADED_COUNT} auto-loaded + ${AGENT_PACK_COUNT} agent-packs), ${SKILL_COUNT} skills"
-echo "Source inventory: ${SOURCE_TOML_COUNT} TOML definitions before install-time deduplication"
+echo "Install footprint: 400+ agents, 200+ skills from 6 upstream sources"
 if [ "$INSTALLED_VERSION" = "none" ]; then
   echo "Install mode: fresh (${INSTALLING_VERSION})"
 elif [ "$INSTALLED_VERSION" = "$INSTALLING_VERSION" ]; then
@@ -526,44 +349,137 @@ echo "  Previous my-codex-managed files cleaned"
 echo "[1/7] Installing Codex agents..."
 mkdir -p "$CODEX_ROOT/agents" "$CODEX_ROOT/agent-packs"
 
+# ── 1a. Self-owned agents (always installed) ──
+echo "  [core] Installing self-owned agents..."
 copy_toml_dir "$REPO_ROOT/codex-agents/core" "$CODEX_ROOT/agents"
 copy_toml_dir "$REPO_ROOT/codex-agents/omo" "$CODEX_ROOT/agents"
-copy_toml_dir "$REPO_ROOT/codex-agents/omc" "$CODEX_ROOT/agents"
-copy_toml_dir "$REPO_ROOT/codex-agents/superpowers" "$CODEX_ROOT/agents"
-copy_toml_dir "$REPO_ROOT/codex-agents/awesome-core" "$CODEX_ROOT/agents"
 
-if [ -d "$REPO_ROOT/codex-agents/awesome" ]; then
-  for cat_dir in "$REPO_ROOT/codex-agents/awesome/"*/; do
-    [ -d "$cat_dir" ] || continue
-    cat_name="$(basename "$cat_dir")"
-    case "$cat_name" in
-      01-core-development|03-infrastructure|04-quality-security|09-meta-orchestration)
-        copy_toml_dir "$cat_dir" "$CODEX_ROOT/agents"
-        ;;
-    esac
-  done
+# ── 1b. Upstream: oh-my-codex (omc agents) ──
+if [ "$SKIP_OMX" = "0" ]; then
+  echo "  [omx] Initializing oh-my-codex..."
+  if init_upstream omx https://github.com/Yeachan-Heo/oh-my-codex; then
+    # OMX has prompts/ in MD format — need conversion to TOML
+    if [ -d "$UPSTREAM_DIR/prompts" ] && [ -f "$REPO_ROOT/scripts/md-to-toml.sh" ]; then
+      omc_staging="$CLONE_TMPDIR/omc-staging"
+      mkdir -p "$omc_staging/omc"
+      for md_file in "$UPSTREAM_DIR/prompts/"*.md; do
+        [ -f "$md_file" ] || continue
+        bname="$(basename "$md_file")"
+        # Add name: field from filename if missing
+        if ! grep -q '^name:' "$md_file" 2>/dev/null; then
+          fname="${bname%.md}"
+          cp "$md_file" "$omc_staging/omc/$bname"
+          # Insert name: after first ---
+          sed -i "1,/^---$/{/^---$/a\\
+name: $fname
+}" "$omc_staging/omc/$bname" 2>/dev/null || true
+        else
+          cp "$md_file" "$omc_staging/omc/$bname"
+        fi
+        # Add model: if missing
+        if ! grep -q '^model:' "$omc_staging/omc/$bname" 2>/dev/null; then
+          sed -i '/^description:/a model: gpt-5.4' "$omc_staging/omc/$bname" 2>/dev/null || true
+        fi
+      done
+      omc_toml_out="$CLONE_TMPDIR/omc-toml"
+      bash "$REPO_ROOT/scripts/md-to-toml.sh" "$omc_staging" "$omc_toml_out" 2>/dev/null || true
+      if [ -d "$omc_toml_out/omc" ]; then
+        copy_toml_dir "$omc_toml_out/omc" "$CODEX_ROOT/agents"
+      fi
+    fi
+  fi
 fi
-echo "  Core agents: $(find "$CODEX_ROOT/agents" -maxdepth 1 -name '*.toml' | wc -l | tr -d ' ') installed (expected ${AUTO_LOADED_COUNT})"
 
-for cat_dir in "$REPO_ROOT/codex-agents/agency/"*/ "$REPO_ROOT/codex-agents/agent-packs/"*/; do
-  [ -d "$cat_dir" ] || continue
-  cat_name="$(basename "$cat_dir")"
-  copy_toml_dir "$cat_dir" "$CODEX_ROOT/agent-packs/$cat_name"
-done
-
-if [ -d "$REPO_ROOT/codex-agents/awesome" ]; then
-  for cat_dir in "$REPO_ROOT/codex-agents/awesome/"*/; do
-    [ -d "$cat_dir" ] || continue
-    cat_name="$(basename "$cat_dir")"
-    case "$cat_name" in
-      01-core-development|03-infrastructure|04-quality-security|09-meta-orchestration)
-        continue
-        ;;
-    esac
-    copy_toml_dir "$cat_dir" "$CODEX_ROOT/agent-packs/$cat_name"
-  done
+# ── 1c. Upstream: awesome-codex-subagents ──
+if [ "$SKIP_AWESOME" = "0" ]; then
+  echo "  [awesome] Initializing awesome-codex-subagents..."
+  if init_upstream awesome https://github.com/VoltAgent/awesome-codex-subagents; then
+    # awesome-core categories → auto-loaded agents
+    if [ -d "$UPSTREAM_DIR/categories" ]; then
+      for cat_dir in "$UPSTREAM_DIR/categories/"*/; do
+        [ -d "$cat_dir" ] || continue
+        cat_name="$(basename "$cat_dir")"
+        case "$cat_name" in
+          01-core-development|03-infrastructure|04-quality-security|09-meta-orchestration)
+            copy_toml_dir "$cat_dir" "$CODEX_ROOT/agents"
+            ;;
+          *)
+            copy_toml_dir "$cat_dir" "$CODEX_ROOT/agent-packs/$cat_name"
+            ;;
+        esac
+      done
+    fi
+  fi
 fi
-echo "  Agent packs: $(find "$CODEX_ROOT/agent-packs" -name '*.toml' | wc -l | tr -d ' ') installed (expected ${AGENT_PACK_COUNT})"
+
+# ── 1d. Upstream: superpowers ──
+if [ "$SKIP_SUPERPOWERS" = "0" ]; then
+  echo "  [superpowers] Initializing superpowers..."
+  if init_upstream superpowers https://github.com/obra/superpowers; then
+    # superpowers has a single agent (code-reviewer.md) — convert at install time
+    if [ -f "$UPSTREAM_DIR/agents/code-reviewer.md" ] && [ -f "$REPO_ROOT/scripts/md-to-toml.sh" ]; then
+      local_staging="$CLONE_TMPDIR/superpowers-staging"
+      mkdir -p "$local_staging/agents"
+      cp "$UPSTREAM_DIR/agents/code-reviewer.md" "$local_staging/agents/"
+      local_toml_out="$CLONE_TMPDIR/superpowers-toml"
+      mkdir -p "$local_toml_out"
+      bash "$REPO_ROOT/scripts/md-to-toml.sh" "$local_staging" "$local_toml_out" 2>/dev/null || true
+      # Rename to superpowers-code-reviewer to avoid collision with other code-reviewer agents
+      if [ -f "$local_toml_out/agents/code-reviewer.toml" ]; then
+        cp "$local_toml_out/agents/code-reviewer.toml" "$CODEX_ROOT/agents/superpowers-code-reviewer.toml"
+        add_manifest_entry "agents/superpowers-code-reviewer.toml"
+      fi
+    fi
+  fi
+fi
+
+# ── 1e. Upstream: agency-agents (MD → TOML conversion) ──
+if [ "$SKIP_AGENCY" = "0" ]; then
+  echo "  [agency] Initializing agency-agents..."
+  if init_upstream agency-agents https://github.com/msitarzewski/agency-agents; then
+    # Agency agents are in MD format — need staging + conversion
+    agency_staging="$CLONE_TMPDIR/agency-staging"
+    mkdir -p "$agency_staging"
+    for cat in engineering design testing product game-development marketing \
+               sales academic project-management specialized spatial-computing \
+               support strategy paid-media; do
+      if [ -d "$UPSTREAM_DIR/$cat" ]; then
+        mkdir -p "$agency_staging/$cat"
+        cp "$UPSTREAM_DIR/$cat/"*.md "$agency_staging/$cat/" 2>/dev/null || true
+      fi
+    done
+    # Add model field to agents missing it
+    find "$agency_staging" -name '*.md' | while read f; do
+      if ! grep -q '^model:' "$f" 2>/dev/null; then
+        sed -i '/^description:/a model: gpt-5.4' "$f" 2>/dev/null || true
+      fi
+    done
+    # Convert MD → TOML
+    agency_toml_out="$CLONE_TMPDIR/agency-toml"
+    if [ -f "$REPO_ROOT/scripts/md-to-toml.sh" ]; then
+      bash "$REPO_ROOT/scripts/md-to-toml.sh" "$agency_staging" "$agency_toml_out" 2>/dev/null || true
+    fi
+    # Copy converted TOML to agent-packs (agency agents are domain specialists)
+    if [ -d "$agency_toml_out" ]; then
+      for cat_dir in "$agency_toml_out/"*/; do
+        [ -d "$cat_dir" ] || continue
+        cat_name="$(basename "$cat_dir")"
+        copy_toml_dir "$cat_dir" "$CODEX_ROOT/agent-packs/$cat_name"
+      done
+    fi
+    # Also create agent-packs from the pre-converted agent-packs in staging
+    if [ -d "$REPO_ROOT/staging/agent-packs" ]; then
+      for cat_dir in "$REPO_ROOT/staging/agent-packs/"*/; do
+        [ -d "$cat_dir" ] || continue
+        cat_name="$(basename "$cat_dir")"
+        copy_toml_dir "$cat_dir" "$CODEX_ROOT/agent-packs/$cat_name"
+      done
+    fi
+  fi
+fi
+
+echo "  Core agents: $(find "$CODEX_ROOT/agents" -maxdepth 1 -name '*.toml' | wc -l | tr -d ' ') installed"
+echo "  Agent packs: $(find "$CODEX_ROOT/agent-packs" -name '*.toml' | wc -l | tr -d ' ') installed"
 
 # --with-packs: symlink requested pack agents into ~/.codex/agents/
 if [ -n "$WITH_PACKS" ]; then
@@ -590,11 +506,109 @@ if [ -n "$PROFILE_OVERRIDE" ] && [ -x "$PACK_MANAGER" ]; then
 fi
 
 echo "[2/7] Installing skills..."
-copy_skill_dirs
+mkdir -p "$CODEX_ROOT/skills"
+
+# ── 2a. Self-owned skills ──
+echo "  [core] Installing self-owned skills..."
+copy_skill_dirs "$REPO_ROOT/skills/core"
+
+# ── 2b. Upstream: ECC skills ──
+if [ "$SKIP_ECC" = "0" ]; then
+  echo "  [ecc] Initializing everything-claude-code..."
+  if init_upstream ecc https://github.com/affaan-m/everything-claude-code; then
+    if [ -d "$UPSTREAM_DIR/skills" ]; then
+      copy_skill_dirs "$UPSTREAM_DIR/skills"
+    fi
+  fi
+fi
+
+# ── 2c. Upstream: superpowers skills ──
+if [ "$SKIP_SUPERPOWERS" = "0" ]; then
+  # init_upstream already called above; reuse UPSTREAM_DIR if set
+  sp_dir="$REPO_ROOT/upstream/superpowers"
+  if [ ! -d "$sp_dir/.git" ] && [ ! -f "$sp_dir/.git" ]; then
+    sp_dir="$CLONE_TMPDIR/superpowers"
+  fi
+  if [ -d "$sp_dir/skills" ]; then
+    echo "  [superpowers] Installing superpowers skills..."
+    copy_skill_dirs "$sp_dir/skills"
+  fi
+fi
+
+# ── 2d. Upstream: gstack (runtime install) ──
+if [ "$SKIP_GSTACK" = "0" ]; then
+  echo "  [gstack] Initializing gstack..."
+  if init_upstream gstack https://github.com/garrytan/gstack; then
+    GSTACK_DIR="$CODEX_ROOT/skills/gstack"
+    if [ -d "$GSTACK_DIR/.git" ]; then
+      git -C "$GSTACK_DIR" pull --ff-only 2>/dev/null || true
+    else
+      rm -rf "$GSTACK_DIR"
+      cp -R "$UPSTREAM_DIR" "$GSTACK_DIR" 2>/dev/null || \
+        git clone --depth 1 https://github.com/garrytan/gstack.git "$GSTACK_DIR" 2>/dev/null || true
+    fi
+
+    # Install bun if missing (required for gstack browser)
+    if ! command -v bun >/dev/null 2>&1; then
+      echo "  [gstack] Installing bun..."
+      curl -fsSL https://bun.sh/install | bash 2>/dev/null || true
+      export BUN_INSTALL="$HOME/.bun"
+      export PATH="$BUN_INSTALL/bin:$PATH"
+    fi
+
+    # Remove superseded ECC skills replaced by gstack (preserve gstack symlinks)
+    for skill in benchmark canary-watch safety-guard browser-qa verification-loop security-review design-system; do
+      target="$CODEX_ROOT/skills/$skill"
+      if [ -L "$target" ]; then
+        link_dest=$(readlink "$target")
+        case "$link_dest" in *gstack*) continue ;; esac
+        rm -f "$target"
+      elif [ -d "$target" ]; then
+        rm -rf "$target"
+      fi
+    done
+
+    # Run gstack setup
+    if [ -d "$GSTACK_DIR" ] && command -v bun >/dev/null 2>&1 && [ -f "$GSTACK_DIR/setup" ]; then
+      (cd "$GSTACK_DIR" && ./setup --host codex 2>/dev/null || true)
+    fi
+
+    # Restore SKILL.md files if deleted by gen:skill-docs
+    git -C "$GSTACK_DIR" checkout -- '*/SKILL.md' 'SKILL.md' 2>/dev/null || true
+
+    # Fallback: ensure individual gstack skills are accessible at depth 1
+    if [ -d "$GSTACK_DIR" ]; then
+      for skill_dir in "$GSTACK_DIR"/*/; do
+        [ -f "$skill_dir/SKILL.md" ] || continue
+        skill_name=$(basename "$skill_dir")
+        case "$skill_name" in .git|bin|node_modules|agents) continue ;; esac
+        target="$CODEX_ROOT/skills/$skill_name"
+        if [ ! -e "$target" ] && [ ! -L "$target" ]; then
+          ln -s "$(cd "$skill_dir" && pwd)" "$target" 2>/dev/null || cp -r "$skill_dir" "$target"
+        fi
+      done
+    fi
+
+    # gstack auto_upgrade config
+    mkdir -p "$HOME/.gstack"
+    GSTACK_CONFIG="$HOME/.gstack/config.json"
+    if [ -f "$GSTACK_CONFIG" ]; then
+      node -e "
+        const fs = require('fs');
+        const cfg = JSON.parse(fs.readFileSync('$GSTACK_CONFIG', 'utf8'));
+        cfg.auto_upgrade = true;
+        fs.writeFileSync('$GSTACK_CONFIG', JSON.stringify(cfg, null, 2));
+      " 2>/dev/null || true
+    else
+      echo '{"auto_upgrade":true}' > "$GSTACK_CONFIG"
+    fi
+  fi
+fi
+
 managed_skills="$(count_managed_skills)"
 total_skills="$(find "$CODEX_ROOT/skills" -name 'SKILL.md' 2>/dev/null | wc -l | tr -d ' ')"
 extra_skills=$((total_skills - managed_skills))
-echo "  Skills: ${managed_skills} managed installs refreshed (expected ${SKILL_COUNT})"
+echo "  Skills: ${managed_skills} installed"
 if [ "$extra_skills" -gt 0 ]; then
   echo "  Preserved custom ~/.codex skills: ${extra_skills}"
 fi
@@ -708,12 +722,11 @@ printf '%s\n' "$INSTALLING_VERSION" > "$VERSION_FILE"
 
 echo ""
 echo "[7/7] Verification"
-echo "  Source TOML:   ${SOURCE_TOML_COUNT} definitions"
-echo "  Core agents:   $(find "$CODEX_ROOT/agents" -maxdepth 1 -type f -name '*.toml' 2>/dev/null | wc -l | tr -d ' ') files (expected ${AUTO_LOADED_COUNT})"
+echo "  Core agents:   $(find "$CODEX_ROOT/agents" -maxdepth 1 -type f -name '*.toml' 2>/dev/null | wc -l | tr -d ' ') files"
 echo "  Active packs:  $(find "$CODEX_ROOT/agents" -maxdepth 1 -type l -name '*.toml' 2>/dev/null | wc -l | tr -d ' ') linked files"
-echo "  Agent packs:   $(find "$CODEX_ROOT/agent-packs" -name '*.toml' 2>/dev/null | wc -l | tr -d ' ') files (expected ${AGENT_PACK_COUNT})"
+echo "  Agent packs:   $(find "$CODEX_ROOT/agent-packs" -name '*.toml' 2>/dev/null | wc -l | tr -d ' ') files"
 echo "  Enabled packs: $(format_enabled_packs "$CODEX_ROOT/enabled-agent-packs.txt")"
-echo "  Skills:        ${managed_skills} managed installs refreshed (expected ${SKILL_COUNT})"
+echo "  Skills:        ${managed_skills} installed"
 if [ "$extra_skills" -gt 0 ]; then
   echo "  Extra skills:  ${extra_skills} preserved under ~/.codex/skills"
 fi

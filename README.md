@@ -13,15 +13,15 @@
 # my-codex
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
-![Agents](https://img.shields.io/badge/agents-444-blue)
-![Skills](https://img.shields.io/badge/skills-140-purple)
+![Agents](https://img.shields.io/badge/agents-400%2B-blue)
+![Skills](https://img.shields.io/badge/skills-200%2B-purple)
 ![MCP](https://img.shields.io/badge/MCP-3-green)
 ![Auto Sync](https://img.shields.io/badge/upstream_sync-weekly-brightgreen)
 ![Codex Attribution](https://img.shields.io/badge/Codex_attribution-enabled-black)
 
 All-in-one agent harness for OpenAI Codex CLI — install once, get everything.
 
-Bundles **444 installed agent files** (80 auto-loaded + 364 agent-packs) and **140 skills** from 6 upstream sources into native TOML format. The repo currently contains 590 TOML source definitions; install-time deduplication resolves overlapping destination filenames into the final installed footprint. Codex CLI auto-discovers agents via `spawn_agent` and routes tasks to the optimal specialist. GitHub Actions CI syncs upstream changes weekly.
+Bundles **400+ installed agent files** (auto-loaded + agent-packs) and **200+ skills** from 6 upstream sources into native TOML format. The repo currently contains TOML source definitions; install-time deduplication resolves overlapping destination filenames into the final installed footprint. Codex CLI auto-discovers agents via `spawn_agent` and routes tasks to the optimal specialist. GitHub Actions CI syncs upstream changes weekly.
 
 Based on the official [Codex Subagents](https://developers.openai.com/codex/subagents) specification.
 
@@ -33,7 +33,7 @@ Based on the official [Codex Subagents](https://developers.openai.com/codex/suba
 |-----------|-------------|
 | **Native TOML** | All agents in Codex CLI's native `.toml` format — no runtime conversion, no compatibility issues |
 | **Multi-Source Curation** | 6 upstream sources aggregated, deduplicated, and quality-checked into a single collection |
-| **Zero Configuration** | Install once, get the harness core plus a default developer specialist profile. `config.toml` auto-configured with `multi_agent = true` |
+| **Zero Configuration** | Install once, get the harness core plus a default developer specialist profile. Upstream content served via git submodules |
 
 ## 🎯 my-codex Originals
 
@@ -41,7 +41,7 @@ Features built on top of upstream sources — unique to my-codex:
 
 | Feature | Description |
 |---------|-------------|
-| **Boss Meta-Orchestrator** | Dynamic capability discovery + intent-based routing to 440+ agents |
+| **Boss Meta-Orchestrator** | Dynamic capability discovery + intent-based routing to 400+ agents |
 | **3-Phase Sprint** | Design(interactive) → Execute(autonomous) → Review(interactive) workflow |
 | **Agent Tier Priority** | core > omo > omc > agency dedup resolution |
 | **Agency Cost Optimization** | Auto-routes simple advisory to Haiku, implementation to Sonnet |
@@ -70,7 +70,7 @@ Re-running the same install command refreshes to the latest published `main` bui
 npx skills add sehoon787/my-codex -y -g
 ```
 
-Installs 126 cross-tool skills to `~/.agents/skills/` with auto-symlinks to Codex CLI, Claude Code, Cursor, and other tools. Does **not** install agents, rules, or `config.toml` — use `install.sh` for the full 140-skill Codex bundle.
+Installs cross-tool skills to `~/.agents/skills/` with auto-symlinks to Codex CLI, Claude Code, Cursor, and other tools. Does **not** install agents, rules, or `config.toml` — use `install.sh` for the full 140-skill Codex bundle.
 
 ### If you are an LLM agent
 
@@ -97,9 +97,9 @@ curl -fsSL https://raw.githubusercontent.com/sehoon787/my-codex/main/install.sh 
 - **o4-mini (low)**: Quick lookups, exploration — mapped from Claude Haiku equivalents
 
 ### All-in-One Bundle
-- Install provides **444 installed agent files and 140 skills** instantly
-- Bundles 6 upstream sources (agency-agents, everything-claude-code, oh-my-codex, awesome-codex-subagents, gstack, superpowers)
-- Weekly CI auto-sync keeps bundled content up-to-date with upstream
+- Install provides **400+ installed agent files and 140 skills** instantly
+- Bundles 6 upstream sources via git submodules (agency-agents, everything-claude-code, oh-my-codex, awesome-codex-subagents, gstack, superpowers)
+- Upstream content pinned via git submodules
 - MD-to-TOML conversion handled automatically for non-native sources
 - Installs a default git attribution flow so commits touched by real Codex sessions automatically receive `AI-Contributed-By: Codex`
 
@@ -139,7 +139,7 @@ superpowers-code-reviewer
 
 ## Agent Packs (Domain Specialists)
 
-364 installed pack files across 21 categories are written to `~/.codex/agent-packs/`. On first install, `my-codex` writes `~/.codex/enabled-agent-packs.txt` with a recommended `dev` set and materializes those packs into `~/.codex/agents/` as symlinks. The default favors packs that add distinct specialists beyond the core registry, so heavily overlapping packs such as `security` and `infrastructure` remain opt-in. Use the helper to inspect or change the active set:
+installed pack files across 21 categories are written to `~/.codex/agent-packs/`. On first install, `my-codex` writes `~/.codex/enabled-agent-packs.txt` with a recommended `dev` set and materializes those packs into `~/.codex/agents/` as symlinks. The default favors packs that add distinct specialists beyond the core registry, so heavily overlapping packs such as `security` and `infrastructure` remain opt-in. Use the helper to inspect or change the active set:
 
 ```bash
 # View current state
@@ -183,9 +183,9 @@ bash /tmp/my-codex/install.sh --profile full
 
 | Category | Count | Source | Location |
 |------|------|------|------|
-| Auto-loaded Agents | 80 installed files | `core/`, `omo/`, `omc/`, `awesome-core/`, `superpowers/`, awesome core categories | `~/.codex/agents/` |
-| Agent Packs | 364 installed files | `agent-packs/`, `agency/`, awesome non-core categories | `~/.codex/agent-packs/` |
-| Skills | 140 | ECC 125, Superpowers 14, Core 1 | `~/.codex/skills/` |
+| Auto-loaded Agents | files | `core/`, `omo/`, `omc/`, `awesome-core/`, `superpowers/`, awesome core categories | `~/.codex/agents/` |
+| Agent Packs | files | `agent-packs/`, `agency/`, awesome non-core categories | `~/.codex/agent-packs/` |
+| Skills | 200+ | ECC 125, Superpowers 14, Core 1 | `~/.codex/skills/` |
 | config.toml | 1 | my-codex | `~/.codex/config.toml` |
 | AGENTS.md | 1 | my-codex | `~/.codex/AGENTS.md` |
 
@@ -260,11 +260,11 @@ Key skills include:
 │_agent│ │N       │ │input   │ │toml    │
 └──────┘ └────────┘ └────────┘ └────────┘
 ┌─────────────────────────────────────────────────────────┐
-│  Agent Layer (444 installed TOML files)                  │
-│    ├── Auto-loaded (80): final installed footprint       │
-│    └── Agent Packs (364): final installed footprint      │
+│  Agent Layer (400+ installed TOML files)                  │
+│    ├── Auto-loaded: final installed footprint       │
+│    └── Agent Packs: final installed footprint      │
 ├─────────────────────────────────────────────────────────┤
-│  Skills Layer (140 from ECC + superpowers + core)        │
+│  Skills Layer (200+ from ECC + superpowers + core + gstack)        │
 │    ├── tdd-workflow, security-review, autopilot         │
 │    └── pdf, docx, pptx, xlsx, team                     │
 └─────────────────────────────────────────────────────────┘
@@ -439,16 +439,16 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md) for PR validation steps and Codex commi
 
 ## Bundled Upstream Versions
 
-Updated weekly by CI auto-sync. Pinned SHAs and sync timestamps are recorded in [`upstream/SOURCES.json`](./upstream/SOURCES.json).
+Upstream sources managed as git submodules. Metadata recorded in [`upstream/SOURCES.json`](./upstream/SOURCES.json).
 
 | Source | Sync |
 |--------|------|
-| [agency-agents](https://github.com/msitarzewski/agency-agents) | Weekly CI |
-| [everything-claude-code](https://github.com/affaan-m/everything-claude-code) | Weekly CI |
-| [oh-my-codex](https://github.com/Yeachan-Heo/oh-my-codex) | Weekly CI |
-| [awesome-codex-subagents](https://github.com/VoltAgent/awesome-codex-subagents) | Weekly CI |
-| [gstack](https://github.com/garrytan/gstack) | Weekly CI |
-| [superpowers](https://github.com/obra/superpowers) | Weekly CI |
+| [agency-agents](https://github.com/msitarzewski/agency-agents) | submodule |
+| [everything-claude-code](https://github.com/affaan-m/everything-claude-code) | submodule |
+| [oh-my-codex](https://github.com/Yeachan-Heo/oh-my-codex) | submodule |
+| [awesome-codex-subagents](https://github.com/VoltAgent/awesome-codex-subagents) | submodule |
+| [gstack](https://github.com/garrytan/gstack) | submodule |
+| [superpowers](https://github.com/obra/superpowers) | submodule |
 
 ---
 

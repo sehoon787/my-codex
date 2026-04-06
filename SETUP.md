@@ -48,9 +48,9 @@ What gets installed:
 
 | Destination | Contents |
 |---|---|
-| `~/.codex/agents/` | 80 unique agents (37 core + 54 awesome core, deduplicated) |
+| `~/.codex/agents/` | agents (core + awesome core, deduplicated) |
 | `~/.codex/agent-packs/` | 364 pack files after upstream overlap is deduplicated during install |
-| `~/.codex/skills/` | 125 skills |
+| `~/.codex/skills/` | skills |
 | `~/.codex/AGENTS.md` | Agent catalog and routing instructions |
 | `~/.codex/enabled-agent-packs.txt` | Persisted active pack set; first install writes a recommended default |
 | `~/.codex/config.toml` | `multi_agent = true` + model defaults |
@@ -74,10 +74,10 @@ echo "Enabled set:  $(grep -Ev '^(#|$)' ~/.codex/enabled-agent-packs.txt | paste
 
 Expected output:
 ```
-Core agents:  80
+Core agents:  (dynamic)
 Active packs: 90
-Agent packs:  364
-Skills:       125
+Agent packs:  (dynamic)
+Skills:       (dynamic)
 AGENTS.md:    OK
 config.toml:  OK
 ```

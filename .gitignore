@@ -3,3 +3,15 @@
 node_modules/
 .DS_Store
 *.log
+
+# Legacy vendored paths (now served via submodules in upstream/)
+codex-agents/agency/
+codex-agents/awesome/
+codex-agents/awesome-core/
+codex-agents/agent-packs/
+codex-agents/omc/
+codex-agents/superpowers/
+skills/ecc/
+skills/gstack/
+skills/superpowers/
+rules/

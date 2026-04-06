@@ -13,14 +13,14 @@
 # my-codex
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
-![Agents](https://img.shields.io/badge/agents-444-blue)
-![Skills](https://img.shields.io/badge/skills-140-purple)
+![Agents](https://img.shields.io/badge/agents-400%2B-blue)
+![Skills](https://img.shields.io/badge/skills-200%2B-purple)
 ![MCP](https://img.shields.io/badge/MCP-3-green)
 ![Auto Sync](https://img.shields.io/badge/upstream_sync-weekly-brightgreen)
 
 OpenAI Codex CLI 向けオールインワン マルチエージェント オーケストレーション — 一度インストールするだけで、すべてが手に入ります。
 
-**444 インストール済みエージェントファイル** (80 自動読み込み + 364 エージェントパック) と 6 つのアップストリームソースから **140 スキル** をネイティブ TOML 形式にバンドルします。Codex CLI は `spawn_agent` 経由でエージェントを自動検出し、タスクを最適なスペシャリストにルーティングします。GitHub Actions CI は週単位でアップストリーム変更を同期します。
+**400以上のインストール済みエージェントファイル** と 6 つのアップストリームソースから **200以上のスキル** をネイティブ TOML 形式にバンドルします。Codex CLI は `spawn_agent` 経由でエージェントを自動検出し、タスクを最適なスペシャリストにルーティングします。GitHub Actions CI は週単位でアップストリーム変更を同期します。
 
 公式 [Codex Subagents](https://developers.openai.com/codex/subagents) 仕様に基づいています。
 
@@ -71,7 +71,7 @@ curl -fsSL https://raw.githubusercontent.com/sehoon787/my-codex/main/install.sh 
 - **o4-mini (低推論)**: 高速ルックアップ、探索 — Claude Haiku 相当からマッピング
 
 ### オールインワン バンドル
-- インストールは **444 インストール済みエージェントファイルと 140 スキル** を即座に提供
+- インストールは **400以上のインストール済みエージェントファイルと200以上のスキル** を即座に提供
 - 6 つのアップストリームソース (agency-agents、everything-claude-code、oh-my-codex、awesome-codex-subagents、gstack、superpowers) をバンドル
 - 週単位の CI 自動同期がバンドルコンテンツをアップストリーム化
 - ネイティブ以外のソース向け MD-to-TOML 変換は自動処理

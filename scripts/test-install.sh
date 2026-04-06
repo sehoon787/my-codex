@@ -108,9 +108,9 @@ mkdir -p "$TEST_HOME/.codex/agent-packs/custom" "$TEST_HOME/.codex/skills/custom
 printf 'name = "custom-user-agent"\ndescription = "custom"\n[developer_instructions]\ncontent = "custom"\n' > "$TEST_HOME/.codex/agents/custom-user-agent.toml"
 printf 'name = "custom-pack-agent"\ndescription = "custom"\n[developer_instructions]\ncontent = "custom"\n' > "$TEST_HOME/.codex/agent-packs/custom/custom-pack-agent.toml"
 printf -- '---\nname: custom-skill\n---\n' > "$TEST_HOME/.codex/skills/custom-skill/SKILL.md"
-mkdir -p "$TEST_HOME/.agents/skills/benchmark"
-printf 'broken\n' > "$TEST_HOME/.agents/skills/benchmark/SKILL.md"
-ln -s "$TEST_HOME/.agents/skills/benchmark" "$TEST_HOME/.claude/skills/benchmark"
+mkdir -p "$TEST_HOME/.agents/skills/boss-advanced"
+printf 'broken\n' > "$TEST_HOME/.agents/skills/boss-advanced/SKILL.md"
+ln -s "$TEST_HOME/.agents/skills/boss-advanced" "$TEST_HOME/.claude/skills/boss-advanced"
 
 HOME="$TEST_HOME" PATH="$BIN_DIR:$PATH" MY_CODEX_TEST_LOG="$LOG_FILE" \
   bash "$REPO_ROOT/install.sh" > "$TMP_ROOT/reinstall.out"
@@ -118,8 +118,8 @@ HOME="$TEST_HOME" PATH="$BIN_DIR:$PATH" MY_CODEX_TEST_LOG="$LOG_FILE" \
 test -f "$TEST_HOME/.codex/agents/custom-user-agent.toml"
 test -f "$TEST_HOME/.codex/agent-packs/custom/custom-pack-agent.toml"
 test -f "$TEST_HOME/.codex/skills/custom-skill/SKILL.md"
-test ! -e "$TEST_HOME/.agents/skills/benchmark"
-test ! -e "$TEST_HOME/.claude/skills/benchmark"
+test ! -e "$TEST_HOME/.agents/skills/boss-advanced"
+test ! -e "$TEST_HOME/.claude/skills/boss-advanced"
 test "$(cat "$TEST_HOME/.codex/.my-codex-version")" = "$expected_version"
 
 echo "Install smoke test passed"

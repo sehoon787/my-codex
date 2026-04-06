@@ -13,14 +13,14 @@
 # my-codex
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
-![Agents](https://img.shields.io/badge/agents-444-blue)
-![Skills](https://img.shields.io/badge/skills-140-purple)
+![Agents](https://img.shields.io/badge/agents-400%2B-blue)
+![Skills](https://img.shields.io/badge/skills-200%2B-purple)
 ![MCP](https://img.shields.io/badge/MCP-3-green)
 ![Auto Sync](https://img.shields.io/badge/upstream_sync-weekly-brightgreen)
 
 Orchestration multi-agents tout-en-un pour OpenAI Codex CLI — une seule installation, tout inclus.
 
-Regroupe **444 fichiers d'agents installés** (80 chargés automatiquement + 364 packs d'agents) et **140 skills** issus de 6 sources amont au format TOML natif. Codex CLI découvre les agents automatiquement via `spawn_agent` et route les tâches vers le spécialiste optimal. La CI GitHub Actions synchronise les modifications amont chaque semaine.
+Regroupe **400+ fichiers d'agents installés** et **200+ skills** issus de 6 sources amont au format TOML natif. Codex CLI découvre les agents automatiquement via `spawn_agent` et route les tâches vers le spécialiste optimal. La CI GitHub Actions synchronise les modifications amont chaque semaine.
 
 Basé sur la spécification officielle [Codex Subagents](https://developers.openai.com/codex/subagents).
 
@@ -71,7 +71,7 @@ Lisez la sortie complète et exécutez chaque étape dans l'ordre. Utilisez `cur
 - **o4-mini (faible)** : Recherches rapides, exploration — mappé depuis les équivalents Claude Haiku
 
 ### Bundle tout-en-un
-- L'installation fournit **444 fichiers d'agents installés et 140 skills** immédiatement
+- L'installation fournit **400+ fichiers d'agents installés et 200+ skills** immédiatement
 - Regroupe 6 sources amont (agency-agents, everything-claude-code, oh-my-codex, awesome-codex-subagents, gstack, superpowers)
 - La synchronisation automatique CI hebdomadaire maintient le contenu groupé à jour avec les sources amont
 - La conversion MD-vers-TOML est effectuée automatiquement pour les sources non natives

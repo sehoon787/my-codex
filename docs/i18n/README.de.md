@@ -13,14 +13,14 @@
 # my-codex
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
-![Agents](https://img.shields.io/badge/agents-444-blue)
-![Skills](https://img.shields.io/badge/skills-140-purple)
+![Agents](https://img.shields.io/badge/agents-400%2B-blue)
+![Skills](https://img.shields.io/badge/skills-200%2B-purple)
 ![MCP](https://img.shields.io/badge/MCP-3-green)
 ![Auto Sync](https://img.shields.io/badge/upstream_sync-weekly-brightgreen)
 
 All-in-One Multi-Agent-Orchestrierung für OpenAI Codex CLI — einmalige Installation, alles inklusive.
 
-Bündelt **444 installierte Agent-Dateien** (80 automatisch geladen + 364 Agent-Pakete) und **140 Skills** aus 6 vorgelagerten Quellen im nativen TOML-Format. Codex CLI entdeckt Agenten automatisch über `spawn_agent` und leitet Aufgaben zum optimalen Spezialisten weiter. GitHub Actions CI synchronisiert vorgelagerte Änderungen wöchentlich.
+Bündelt **400+ installierte Agent-Dateien** und **200+ Skills** aus 6 vorgelagerten Quellen im nativen TOML-Format. Codex CLI entdeckt Agenten automatisch über `spawn_agent` und leitet Aufgaben zum optimalen Spezialisten weiter. GitHub Actions CI synchronisiert vorgelagerte Änderungen wöchentlich.
 
 Basierend auf der offiziellen [Codex Subagents](https://developers.openai.com/codex/subagents) Spezifikation.
 
@@ -32,7 +32,7 @@ Basierend auf der offiziellen [Codex Subagents](https://developers.openai.com/co
 |---------|-------------|
 | **Native TOML** | Alle Agenten im nativen `.toml`-Format der Codex CLI — keine Laufzeit-Konvertierung, keine Kompatibilitätsprobleme |
 | **Multi-Source Kurierung** | 6 vorgelagerte Quellen aggregiert, dedupliziert und qualitätskontrolliert in einer Sammlung |
-| **Null-Konfiguration** | Einmalige Installation, 444 Agenten und 140 Skills. `config.toml` wird automatisch mit `multi_agent = true` konfiguriert |
+| **Null-Konfiguration** | Einmalige Installation, 400+ Agenten und 140 Skills. `config.toml` wird automatisch mit `multi_agent = true` konfiguriert |
 
 ## Schnelleinstieg
 
@@ -71,7 +71,7 @@ Lese die vollständige Ausgabe und führe jeden Schritt in der Reihenfolge aus. 
 - **o4-mini (niedrig)**: Schnelle Lookups, Exploration — aus Claude Haiku Äquivalenten zugeordnet
 
 ### All-in-One Bundle
-- Installation bietet **444 installierte Agent-Dateien und 140 Skills** sofort
+- Installation bietet **400+ installierte Agent-Dateien und 200+ Skills** sofort
 - Bündelt 6 vorgelagerte Quellen (agency-agents, everything-claude-code, oh-my-codex, awesome-codex-subagents, gstack, superpowers)
 - Wöchentliche CI Auto-Sync hält gebündelte Inhalte mit vorgelagerten Quellen aktuell
 - MD-zu-TOML-Konvertierung wird automatisch für Nicht-Native-Quellen durchgeführt

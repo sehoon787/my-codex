@@ -55,5 +55,17 @@
     "installCommand": "git clone --depth 1",
     "updateCommand": "git pull --ff-only",
     "syncFrequency": "on-install"
+  },
+  "superpowers": {
+    "repo": "https://github.com/obra/superpowers",
+    "syncedSha": "b7a8f76985f1e93e75dd2f2a3b424dc731bd9d37",
+    "syncedAt": "2026-04-06T00:00:00Z",
+    "files": {
+      "agents": 1,
+      "skills": 14
+    },
+    "strategy": "vendor",
+    "patchRules": [],
+    "syncFrequency": "weekly"
   }
 }

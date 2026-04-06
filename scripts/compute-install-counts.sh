@@ -32,6 +32,7 @@ copy_glob() {
 copy_glob "$SCRIPT_DIR/codex-agents/core/*.toml" "$AGENTS_DIR"
 copy_glob "$SCRIPT_DIR/codex-agents/omo/*.toml" "$AGENTS_DIR"
 copy_glob "$SCRIPT_DIR/codex-agents/omc/*.toml" "$AGENTS_DIR"
+copy_glob "$SCRIPT_DIR/codex-agents/superpowers/*.toml" "$AGENTS_DIR"
 copy_glob "$SCRIPT_DIR/codex-agents/awesome-core/*.toml" "$AGENTS_DIR"
 
 for cat_dir in "$SCRIPT_DIR/codex-agents/agency/"*/; do
@@ -67,6 +68,9 @@ if [ -d "$SCRIPT_DIR/skills/ecc" ]; then
 fi
 if [ -d "$SCRIPT_DIR/skills/core" ]; then
   cp -R "$SCRIPT_DIR/skills/core/." "$SKILLS_DIR/"
+fi
+if [ -d "$SCRIPT_DIR/skills/superpowers" ]; then
+  cp -R "$SCRIPT_DIR/skills/superpowers/." "$SKILLS_DIR/"
 fi
 
 # Remove superseded ECC skills (replaced by gstack at runtime)

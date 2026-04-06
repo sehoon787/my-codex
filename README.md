@@ -14,14 +14,14 @@
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 ![Agents](https://img.shields.io/badge/agents-444-blue)
-![Skills](https://img.shields.io/badge/skills-119-purple)
+![Skills](https://img.shields.io/badge/skills-133-purple)
 ![MCP](https://img.shields.io/badge/MCP-3-green)
 ![Auto Sync](https://img.shields.io/badge/upstream_sync-weekly-brightgreen)
 ![Codex Attribution](https://img.shields.io/badge/Codex_attribution-enabled-black)
 
 All-in-one agent harness for OpenAI Codex CLI — install once, get everything.
 
-Bundles **444 installed agent files** (80 auto-loaded + 364 agent-packs) and **119 skills** from 5 upstream sources into native TOML format. The repo currently contains 589 TOML source definitions; install-time deduplication resolves overlapping destination filenames into the final installed footprint. Codex CLI auto-discovers agents via `spawn_agent` and routes tasks to the optimal specialist. GitHub Actions CI syncs upstream changes weekly.
+Bundles **444 installed agent files** (80 auto-loaded + 364 agent-packs) and **133 skills** from 6 upstream sources into native TOML format. The repo currently contains 589 TOML source definitions; install-time deduplication resolves overlapping destination filenames into the final installed footprint. Codex CLI auto-discovers agents via `spawn_agent` and routes tasks to the optimal specialist. GitHub Actions CI syncs upstream changes weekly.
 
 Based on the official [Codex Subagents](https://developers.openai.com/codex/subagents) specification.
 
@@ -32,7 +32,7 @@ Based on the official [Codex Subagents](https://developers.openai.com/codex/suba
 | Principle | Description |
 |-----------|-------------|
 | **Native TOML** | All agents in Codex CLI's native `.toml` format — no runtime conversion, no compatibility issues |
-| **Multi-Source Curation** | 5 upstream sources aggregated, deduplicated, and quality-checked into a single collection |
+| **Multi-Source Curation** | 6 upstream sources aggregated, deduplicated, and quality-checked into a single collection |
 | **Zero Configuration** | Install once, get the harness core plus a default developer specialist profile. `config.toml` auto-configured with `multi_agent = true` |
 
 ## 🎯 my-codex Originals
@@ -70,7 +70,7 @@ Re-running the same install command refreshes to the latest published `main` bui
 npx skills add sehoon787/my-codex -y -g
 ```
 
-Installs 126 cross-tool skills to `~/.agents/skills/` with auto-symlinks to Codex CLI, Claude Code, Cursor, and other tools. Does **not** install agents, rules, or `config.toml` — use `install.sh` for the full 119-skill Codex bundle.
+Installs 126 cross-tool skills to `~/.agents/skills/` with auto-symlinks to Codex CLI, Claude Code, Cursor, and other tools. Does **not** install agents, rules, or `config.toml` — use `install.sh` for the full 133-skill Codex bundle.
 
 ### If you are an LLM agent
 
@@ -97,8 +97,8 @@ curl -fsSL https://raw.githubusercontent.com/sehoon787/my-codex/main/install.sh 
 - **o4-mini (low)**: Quick lookups, exploration — mapped from Claude Haiku equivalents
 
 ### All-in-One Bundle
-- Install provides **444 installed agent files and 119 skills** instantly
-- Bundles 5 upstream sources (agency-agents, everything-claude-code, oh-my-codex, awesome-codex-subagents, gstack)
+- Install provides **444 installed agent files and 133 skills** instantly
+- Bundles 6 upstream sources (agency-agents, everything-claude-code, oh-my-codex, awesome-codex-subagents, gstack, superpowers)
 - Weekly CI auto-sync keeps bundled content up-to-date with upstream
 - MD-to-TOML conversion handled automatically for non-native sources
 - Installs a default git attribution flow so commits touched by real Codex sessions automatically receive `AI-Contributed-By: Codex`
@@ -191,7 +191,7 @@ bash /tmp/my-codex/install.sh --profile full
 |------|------|------|------|
 | Auto-loaded Agents | 80 installed files | `core/`, `omo/`, `omc/`, `awesome-core/`, awesome core categories | `~/.codex/agents/` |
 | Agent Packs | 364 installed files | `agent-packs/`, `agency/`, awesome non-core categories | `~/.codex/agent-packs/` |
-| Skills | 119 | ECC | `~/.codex/skills/` |
+| Skills | 133 | ECC, superpowers | `~/.codex/skills/` |
 | config.toml | 1 | my-codex | `~/.codex/config.toml` |
 | AGENTS.md | 1 | my-codex | `~/.codex/AGENTS.md` |
 
@@ -217,7 +217,7 @@ agent-organizer, capability-assessor, conflict-resolver, context-manager, execut
 </details>
 
 <details>
-<summary>Skills (119) — From Everything Claude Code</summary>
+<summary>Skills (133) — From Everything Claude Code and superpowers</summary>
 
 Key skills include:
 
@@ -270,7 +270,7 @@ Key skills include:
 │    ├── Auto-loaded (80): final installed footprint       │
 │    └── Agent Packs (364): final installed footprint      │
 ├─────────────────────────────────────────────────────────┤
-│  Skills Layer (119 from ECC)                            │
+│  Skills Layer (133 from ECC + superpowers)              │
 │    ├── tdd-workflow, security-review, autopilot         │
 │    └── pdf, docx, pptx, xlsx, team                     │
 └─────────────────────────────────────────────────────────┘
@@ -414,6 +414,10 @@ The official Skills Catalog for Codex provided by OpenAI. Includes specialist sk
 - Code review, QA, debugging, benchmarking, security audit, deployment workflows
 - Built-in headless Chromium browser daemon for real browser testing
 
+### 8. [superpowers](https://github.com/obra/superpowers)
+- Jesse Vincent's workflow skills library (v5.0.7, MIT)
+- 14 skills covering brainstorming, planning, TDD, code review, debugging, and agent orchestration workflows
+
 ---
 
 ## Troubleshooting
@@ -450,6 +454,7 @@ Updated weekly by CI auto-sync. Pinned SHAs and sync timestamps are recorded in 
 | [oh-my-codex](https://github.com/Yeachan-Heo/oh-my-codex) | Weekly CI |
 | [awesome-codex-subagents](https://github.com/VoltAgent/awesome-codex-subagents) | Weekly CI |
 | [gstack](https://github.com/garrytan/gstack) | Weekly CI |
+| [superpowers](https://github.com/obra/superpowers) | Weekly CI |
 
 ---
 
@@ -464,6 +469,7 @@ This repository builds on the work of the following open-source projects:
 - [awesome-codex-subagents](https://github.com/VoltAgent/awesome-codex-subagents) — VoltAgent
 - [openai/skills](https://github.com/openai/skills) — OpenAI
 - [gstack](https://github.com/garrytan/gstack) — garrytan
+- [superpowers](https://github.com/obra/superpowers) — Jesse Vincent
 - [Codex Subagents Spec](https://developers.openai.com/codex/subagents) — OpenAI
 
 ---

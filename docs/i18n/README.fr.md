@@ -14,13 +14,13 @@
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 ![Agents](https://img.shields.io/badge/agents-444-blue)
-![Skills](https://img.shields.io/badge/skills-125-purple)
+![Skills](https://img.shields.io/badge/skills-133-purple)
 ![MCP](https://img.shields.io/badge/MCP-3-green)
 ![Auto Sync](https://img.shields.io/badge/upstream_sync-weekly-brightgreen)
 
 Orchestration multi-agents tout-en-un pour OpenAI Codex CLI — une seule installation, tout inclus.
 
-Regroupe **444 fichiers d'agents installés** (80 chargés automatiquement + 364 packs d'agents) et **125 skills** issus de 4 sources amont au format TOML natif. Codex CLI découvre les agents automatiquement via `spawn_agent` et route les tâches vers le spécialiste optimal. La CI GitHub Actions synchronise les modifications amont chaque semaine.
+Regroupe **444 fichiers d'agents installés** (80 chargés automatiquement + 364 packs d'agents) et **133 skills** issus de 6 sources amont au format TOML natif. Codex CLI découvre les agents automatiquement via `spawn_agent` et route les tâches vers le spécialiste optimal. La CI GitHub Actions synchronise les modifications amont chaque semaine.
 
 Basé sur la spécification officielle [Codex Subagents](https://developers.openai.com/codex/subagents).
 
@@ -31,7 +31,7 @@ Basé sur la spécification officielle [Codex Subagents](https://developers.open
 | Principe | Description |
 |----------|-------------|
 | **TOML natif** | Tous les agents au format `.toml` natif de Codex CLI — aucune conversion à l'exécution, aucun problème de compatibilité |
-| **Curation multi-sources** | 4 sources amont agrégées, dédupliquées et contrôlées qualité en une seule collection |
+| **Curation multi-sources** | 6 sources amont agrégées, dédupliquées et contrôlées qualité en une seule collection |
 | **Zéro configuration** | Une installation, 444 fichiers d'agents prêts à l'emploi. `config.toml` est automatiquement configuré avec `multi_agent = true` |
 
 ## Démarrage rapide
@@ -71,8 +71,8 @@ Lisez la sortie complète et exécutez chaque étape dans l'ordre. Utilisez `cur
 - **o4-mini (faible)** : Recherches rapides, exploration — mappé depuis les équivalents Claude Haiku
 
 ### Bundle tout-en-un
-- L'installation fournit **444 fichiers d'agents installés et 125 skills** immédiatement
-- Regroupe 4 sources amont (agency-agents, everything-claude-code, oh-my-codex, awesome-codex-subagents)
+- L'installation fournit **444 fichiers d'agents installés et 133 skills** immédiatement
+- Regroupe 6 sources amont (agency-agents, everything-claude-code, oh-my-codex, awesome-codex-subagents, gstack, superpowers)
 - La synchronisation automatique CI hebdomadaire maintient le contenu groupé à jour avec les sources amont
 - La conversion MD-vers-TOML est effectuée automatiquement pour les sources non natives
 
@@ -149,7 +149,7 @@ rm ~/.codex/agents/<agent-name>.toml
 |-----------|--------|--------|-------------|
 | Agents chargés automatiquement | 80 (37 Core + 54 Awesome − 11 partagés) | Infrastructure d'orchestration + Awesome Core | `~/.codex/agents/` |
 | Packs d'agents | 364 fichiers installés | `agent-packs/`, `agency/`, catégories Awesome non core | `~/.codex/agent-packs/` |
-| Skills | 125 | ECC | `~/.codex/skills/` |
+| Skills | 133 | ECC, superpowers | `~/.codex/skills/` |
 | config.toml | 1 | my-codex | `~/.codex/config.toml` |
 | AGENTS.md | 1 | my-codex | `~/.codex/AGENTS.md` |
 
@@ -173,7 +173,7 @@ agent-organizer, capability-assessor, conflict-resolver, context-manager, execut
 </details>
 
 <details>
-<summary>Skills (125) — Issus de Everything Claude Code</summary>
+<summary>Skills (133) — Issus de Everything Claude Code et superpowers</summary>
 
 Skills importants :
 
@@ -226,7 +226,7 @@ Skills importants :
 │    ├── Auto-loaded (80): empreinte installée finale      │
 │    └── Agent Packs (364): empreinte installée finale     │
 ├─────────────────────────────────────────────────────────┤
-│  Skills Layer (125 from ECC)                            │
+│  Skills Layer (133 from ECC + superpowers)              │
 │    ├── tdd-workflow, security-review, autopilot         │
 │    └── pdf, docx, pptx, xlsx, team                     │
 └─────────────────────────────────────────────────────────┘
@@ -365,6 +365,10 @@ Un harnais d'agents multi-plateforme de code-yeongyu. Les agents d'orchestration
 
 Le catalogue officiel de skills pour Codex par OpenAI. Comprend des skills spécialisés pour le traitement de documents, la génération de code et les workflows de développement. Peut être installé via `$skill-installer` dans Codex CLI.
 
+### 7. [superpowers](https://github.com/obra/superpowers)
+
+Boîte à outils de workflow de codage IA composable sans dépendances par Jesse Vincent. Fournit 14 skills couvrant l'intégralité du cycle de développement : brainstorming, rédaction de plans, exécution de plans, TDD, débogage systématique, revue de code (demande et réception), dispatch d'agents parallèles, utilisation de worktrees git, vérification avant finalisation, clôture des branches de développement, développement piloté par sous-agents et rédaction de skills personnalisés.
+
 ---
 
 ## Contribuer
@@ -383,6 +387,7 @@ Mises à jour hebdomadairement par la synchronisation automatique CI. Pas encore
 | [everything-claude-code](https://github.com/affaan-m/everything-claude-code) | CI hebdomadaire |
 | [oh-my-codex](https://github.com/Yeachan-Heo/oh-my-codex) | CI hebdomadaire |
 | [awesome-codex-subagents](https://github.com/VoltAgent/awesome-codex-subagents) | CI hebdomadaire |
+| [superpowers](https://github.com/obra/superpowers) | CI hebdomadaire |
 
 ---
 
@@ -396,6 +401,7 @@ Ce dépôt s'appuie sur le travail des projets open source suivants :
 - [oh-my-openagent](https://github.com/code-yeongyu/oh-my-openagent) — code-yeongyu
 - [awesome-codex-subagents](https://github.com/VoltAgent/awesome-codex-subagents) — VoltAgent
 - [openai/skills](https://github.com/openai/skills) — OpenAI
+- [superpowers](https://github.com/obra/superpowers) — Jesse Vincent
 - [Codex Subagents Spec](https://developers.openai.com/codex/subagents) — OpenAI
 
 ---

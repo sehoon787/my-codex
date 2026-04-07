@@ -1,7 +1,7 @@
 # my-codex AI Installation Guide
 
 You are an AI agent setting up a Codex CLI multi-agent orchestration environment.
-The bundle installs 400+ agent files and 200+ skills (+ 27 gstack runtime), and 3 MCP servers.
+The bundle installs 400+ agent files and 200+ skills (+ 36 gstack runtime), and 3 MCP servers.
 The repository sources contain TOML definitions from overlapping upstream sources; install-time deduplication reduces that to the final installed footprint.
 Only 2-3 steps are needed.
 
@@ -35,7 +35,7 @@ Rerunning either install command installs the latest published `main` snapshot, 
 This installs:
 - Core agents in `~/.codex/agents/` (always loaded by Codex CLI via `spawn_agent`)
 - Domain agent-packs in `~/.codex/agent-packs/`
-- `~/.codex/enabled-agent-packs.txt` with a recommended default set (`engineering`, `language-specialists`, `developer-experience`, `data-ai`, `research-analysis`, `testing`)
+- `~/.codex/enabled-agent-packs.txt` with a recommended default set (`engineering`, `design`, `testing`, `marketing`, `support`)
 - symlinks for that enabled set into `~/.codex/agents/`
 - Skills in `~/.codex/skills/` (ECC, minus 7 superseded by gstack)
 - gstack skills (runtime-installed from garrytan/gstack — code review, QA, debugging, security, deployment)
@@ -51,8 +51,11 @@ Why the numbers are lower than raw source totals:
 
 ## Step 1b: Manual install (if install.sh unavailable)
 
+> **Note**: This repository uses git submodules for upstream content. Run `git submodule update --init` after cloning to populate the `upstream/` directories used below. Paths like `upstream/everything-claude-code/`, `upstream/agency-agents/`, etc. will be empty without this step.
+
 ```bash
 git clone --depth 1 https://github.com/sehoon787/my-codex.git /tmp/my-codex
+cd /tmp/my-codex && git submodule update --init
 mkdir -p ~/.codex/agents ~/.codex/agent-packs ~/.codex/skills
 mkdir -p ~/.codex/bin
 
@@ -64,21 +67,21 @@ cp /tmp/my-codex/codex-agents/awesome-core/*.toml ~/.codex/agents/
 
 # Awesome core categories (add to core)
 for d in 01-core-development 03-infrastructure 04-quality-security 09-meta-orchestration; do
-  cp /tmp/my-codex/codex-agents/awesome/$d/*.toml ~/.codex/agents/ 2>/dev/null
+  cp /tmp/my-codex/upstream/awesome-codex-subagents/$d/*.toml ~/.codex/agents/ 2>/dev/null
 done
 
 # Domain agent-packs
 cp -r /tmp/my-codex/codex-agents/agent-packs/* ~/.codex/agent-packs/
 
 # Agency agents (domain specialists → agent-packs)
-for d in /tmp/my-codex/codex-agents/agency/*/; do
+for d in /tmp/my-codex/upstream/agency-agents/*/; do
   cat_name=$(basename "$d")
   mkdir -p ~/.codex/agent-packs/$cat_name
   cp "$d"*.toml ~/.codex/agent-packs/$cat_name/ 2>/dev/null
 done
 
 # Awesome remaining categories → agent-packs
-for d in /tmp/my-codex/codex-agents/awesome/*/; do
+for d in /tmp/my-codex/upstream/awesome-codex-subagents/*/; do
   cat_name=$(basename "$d")
   case "$cat_name" in 01-core-development|03-infrastructure|04-quality-security|09-meta-orchestration) continue ;; esac
   mkdir -p ~/.codex/agent-packs/$cat_name
@@ -86,8 +89,8 @@ for d in /tmp/my-codex/codex-agents/awesome/*/; do
 done
 
 # Skills
-cp -R /tmp/my-codex/skills/ecc/. ~/.codex/skills/
-# ── gstack (sprint-process harness with 27 skills) ──
+cp -R /tmp/my-codex/upstream/everything-claude-code/. ~/.codex/skills/
+# ── gstack (sprint-process harness with 36 skills) ──
 GSTACK_DIR="$HOME/.codex/skills/gstack"
 if [ -d "$GSTACK_DIR/.git" ]; then
   (cd "$GSTACK_DIR" && git pull --ff-only 2>/dev/null || true)
@@ -121,11 +124,10 @@ cat > ~/.codex/enabled-agent-packs.txt <<'EOF'
 # One pack name per line.
 # This file is managed by my-codex and preserved across reinstalls.
 engineering
-language-specialists
-developer-experience
-data-ai
-research-analysis
+design
 testing
+marketing
+support
 EOF
 
 while IFS= read -r pack; do

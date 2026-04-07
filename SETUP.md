@@ -118,11 +118,10 @@ git config --global my-codex.codexAttribution false
 Agent packs are stored in `~/.codex/agent-packs/`. On first install, `my-codex` auto-activates a recommended set:
 
 - `engineering`
-- `language-specialists`
-- `developer-experience`
-- `data-ai`
-- `research-analysis`
+- `design`
 - `testing`
+- `marketing`
+- `support`
 
 That state is persisted in `~/.codex/enabled-agent-packs.txt`. Re-running `install.sh` rehydrates the symlinks from that file. The default is biased toward packs that add net-new specialists beyond the core registry, which is why `security` and `infrastructure` stay opt-in even though they are popular domains. You can also change it live with the installed helper.
 

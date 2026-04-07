@@ -398,8 +398,9 @@ if [ "$SKIP_AWESOME" = "0" ]; then
     if [ -d "$UPSTREAM_DIR/categories" ]; then
       for cat_dir in "$UPSTREAM_DIR/categories/"*/; do
         [ -d "$cat_dir" ] || continue
-        cat_name="$(basename "$cat_dir")"
-        case "$cat_name" in
+        raw_name="$(basename "$cat_dir")"
+        cat_name="${raw_name#[0-9][0-9]-}"
+        case "$raw_name" in
           01-core-development|03-infrastructure|04-quality-security|09-meta-orchestration)
             copy_toml_dir "$cat_dir" "$CODEX_ROOT/agents"
             ;;

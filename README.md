@@ -62,7 +62,7 @@ rm -rf /tmp/my-codex
 
 Re-running the same install command refreshes to the latest published `main` build, replaces only my-codex-managed files in `~/.codex/`, and removes stale my-codex skill copies from `~/.agents/skills/` and `~/.claude/skills/`.
 
-> **Agent Packs**: Domain specialist agents are installed to `~/.codex/agent-packs/`. On first install, `my-codex` auto-activates a recommended `dev` set (`engineering`, `language-specialists`, `developer-experience`, `data-ai`, `research-analysis`, `testing`) and remembers it in `~/.codex/enabled-agent-packs.txt`.
+> **Agent Packs**: Domain specialist agents are installed to `~/.codex/agent-packs/`. On first install, `my-codex` auto-activates a recommended `dev` set (`engineering`, `design`, `testing`, `marketing`, `support`) and remembers it in `~/.codex/enabled-agent-packs.txt`.
 
 ### Skills only (cross-platform)
 
@@ -70,7 +70,7 @@ Re-running the same install command refreshes to the latest published `main` bui
 npx skills add sehoon787/my-codex -y -g
 ```
 
-Installs cross-tool skills to `~/.agents/skills/` with auto-symlinks to Codex CLI, Claude Code, Cursor, and other tools. Does **not** install agents, rules, or `config.toml` — use `install.sh` for the full 140-skill Codex bundle.
+Installs cross-tool skills to `~/.agents/skills/` with auto-symlinks to Codex CLI, Claude Code, Cursor, and other tools. Does **not** install agents, rules, or `config.toml` — use `install.sh` for the full Codex skill bundle.
 
 ### If you are an LLM agent
 
@@ -97,7 +97,7 @@ curl -fsSL https://raw.githubusercontent.com/sehoon787/my-codex/main/install.sh 
 - **o4-mini (low)**: Quick lookups, exploration — mapped from Claude Haiku equivalents
 
 ### All-in-One Bundle
-- Install provides **400+ installed agent files and 140 skills** instantly
+- Install provides **400+ installed agent files and 200+ skills** instantly
 - Bundles 6 upstream sources via git submodules (agency-agents, everything-claude-code, oh-my-codex, awesome-codex-subagents, gstack, superpowers)
 - Upstream content pinned via git submodules
 - MD-to-TOML conversion handled automatically for non-native sources
@@ -185,7 +185,7 @@ bash /tmp/my-codex/install.sh --profile full
 |------|------|------|------|
 | Auto-loaded Agents | files | `core/`, `omo/`, `omc/`, `awesome-core/`, `superpowers/`, awesome core categories | `~/.codex/agents/` |
 | Agent Packs | files | `agent-packs/`, `agency/`, awesome non-core categories | `~/.codex/agent-packs/` |
-| Skills | 200+ | ECC 125, Superpowers 14, Core 1 | `~/.codex/skills/` |
+| Skills | 200+ | ECC 180+, gstack 36, OMX 36, Superpowers 14, Core 1 | `~/.codex/skills/` |
 | config.toml | 1 | my-codex | `~/.codex/config.toml` |
 | AGENTS.md | 1 | my-codex | `~/.codex/AGENTS.md` |
 
@@ -211,7 +211,7 @@ agent-organizer, capability-assessor, conflict-resolver, context-manager, execut
 </details>
 
 <details>
-<summary>Skills (140) — From Everything Claude Code (125), Superpowers (14), and Core (1)</summary>
+<summary>Skills (200+) — From ECC, gstack, OMX, Superpowers, and Core</summary>
 
 Key skills include:
 
@@ -381,7 +381,7 @@ Codex → spawn_agent("planner")
 
 ### 1. [Agency Agents](https://github.com/msitarzewski/agency-agents)
 
-A library of 134 business specialist agent personas. Provides specialist perspectives across 14 categories — UX architects, data engineers, security auditors, and more. Converted from Markdown to native TOML via automated `md-to-toml.sh` pipeline.
+A library of 180+ business specialist agent personas. Provides specialist perspectives across 14 categories — UX architects, data engineers, security auditors, and more. Converted from Markdown to native TOML via automated `md-to-toml.sh` pipeline.
 
 ### 2. [Everything Claude Code (ECC)](https://github.com/affaan-m/everything-claude-code)
 
@@ -404,7 +404,7 @@ A multi-platform agent harness by code-yeongyu. The 9 orchestration agents in th
 The official Skills Catalog for Codex provided by OpenAI. Includes specialist skills for document processing, code generation, and development workflows. Can be installed via `$skill-installer` in Codex CLI.
 
 ### 7. [gstack](https://github.com/garrytan/gstack)
-- garrytan's sprint-process harness with 27 skills
+- garrytan's sprint-process harness with 36 skills
 - Code review, QA, debugging, benchmarking, security audit, deployment workflows
 - Built-in headless Chromium browser daemon for real browser testing
 
@@ -432,7 +432,7 @@ If you use the full Codex bundle, rerun `install.sh` once as well. The full inst
 
 ## Contributing
 
-Issues and PRs are welcome. When adding a new agent, add a `.toml` file to the `agents/` directory and update the agent list in `SETUP.md`.
+Issues and PRs are welcome. When adding a new agent, add a `.toml` file to the `codex-agents/core/` or `codex-agents/omo/` directory and update the agent list in `SETUP.md`.
 See [CONTRIBUTING.md](./CONTRIBUTING.md) for PR validation steps and Codex commit attribution behavior.
 
 ---

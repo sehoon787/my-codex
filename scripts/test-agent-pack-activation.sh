@@ -67,7 +67,7 @@ fi
 
 migration_home="$TMP_ROOT/home-migration"
 mkdir -p "$migration_home/.codex/agents" "$migration_home/.codex/agent-packs/marketing"
-cp "$REPO_ROOT/codex-agents/agent-packs/marketing/marketing-seo-specialist.toml" \
+printf 'name = "marketing-seo-specialist"\ndescription = "SEO specialist"\n[developer_instructions]\ncontent = "You are an SEO specialist"\n' > \
   "$migration_home/.codex/agent-packs/marketing/marketing-seo-specialist.toml"
 ln -s "$migration_home/.codex/agent-packs/marketing/marketing-seo-specialist.toml" \
   "$migration_home/.codex/agents/marketing-seo-specialist.toml"

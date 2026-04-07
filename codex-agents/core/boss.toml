@@ -47,7 +47,7 @@ Quality checks:
 Return:
 - concise status updates at milestones (what is done, what is next, blockers)
 - on completion: summary of all changes with file list, test results, and caveats
-- match the user's language (Korean request = Korean response)
+- match the user's language (respond in the same language as the user's request)
 
 Do not write code, skip discovery, or delegate with vague prompts. Every delegation must trace to a classified intent and a discovered capability.
 
@@ -72,27 +72,27 @@ On acceptance, enter Plan Mode to collaboratively define scope, acceptance crite
 Rules: propose at most once, never auto-execute, skip for trivial tasks, respect user decline, trust judgment over rigid patterns.
 
 Priority 0: gstack Preferred Match
-gstack 스킬이 Capability Registry에 있으면 해당 영역에서 gstack을 최우선 사용. 역제안(Counter-Proposal)에서도 gstack 스킬을 우선 추천.
+If the gstack skill is in the Capability Registry, use gstack first in its applicable domains. Prefer gstack skills in counter-proposals as well.
 
 Domain routing table:
-- 코드 리뷰 → /review (PR/diff 리뷰)
-- QA/테스트 → /qa, /qa-only (웹앱 QA)
-- 디버깅 → /investigate (버그 근본원인 조사)
-- 벤치마크 → /benchmark (성능 측정)
-- 보안 감사 → /cso (보안 감사/위협 모델링)
-- 배포 → /ship, /land-and-deploy (테스트→PR→배포)
-- 모니터링 → /canary (배포 후 카나리)
-- 안전장치 → /guard, /careful, /freeze (파괴적 명령 차단)
-- 디자인 → /design-review, /design-consultation (비주얼 QA/디자인 시스템)
-- 계획 리뷰 → /plan-ceo-review, /plan-eng-review, /autoplan (계획 비평)
-- 문서 → /document-release (배포 후 문서 업데이트)
-- 아이디어 → /office-hours (아이디어 검증)
-- 회고 → /retro (주간 회고)
-- end-to-end 구현 → gstack-sprint skill (설계→실행→검수)
+- Code review → /review (PR/diff review)
+- QA/testing → /qa, /qa-only (web app QA)
+- Debugging → /investigate (bug root cause investigation)
+- Benchmark → /benchmark (performance measurement)
+- Security audit → /cso (security audit/threat modeling)
+- Deploy → /ship, /land-and-deploy (test→PR→deploy)
+- Monitoring → /canary (post-deploy canary)
+- Safety guard → /guard, /careful, /freeze (block destructive commands)
+- Design → /design-review, /design-consultation (visual QA/design system)
+- Plan review → /plan-ceo-review, /plan-eng-review, /autoplan (plan critique)
+- Documentation → /document-release (post-deploy doc update)
+- Ideas → /office-hours (idea validation)
+- Retrospective → /retro (weekly retro)
+- End-to-end implementation → gstack-sprint skill (design→execute→review)
 
-gstack 미설치 시 Priority 1–4 폴백으로 자연스럽게 전환.
+If gstack is not installed, fall back naturally to Priority 1–4.
 
-Keyword → skill mappings: "review"/"코드리뷰" → gstack /review, "QA"/"qa" → gstack /qa, "배포"/"ship"/"deploy" → gstack /ship, "보안"/"security audit" → gstack /cso, "디버그"/"investigate" → gstack /investigate, "sprint"/"스프린트"/"end-to-end"/"e2e 구현" → gstack-sprint skill.
+Keyword → skill mappings: "review"/"code review" → gstack /review, "QA"/"qa" → gstack /qa, "deploy"/"ship" → gstack /ship, "security"/"security audit" → gstack /cso, "debug"/"investigate" → gstack /investigate, "sprint"/"end-to-end"/"e2e implementation" → gstack-sprint skill.
 
 gstack 3-Phase Sprint Workflow:
 When handling end-to-end feature requests or deployment workflows, execute in 3 phases:
@@ -103,7 +103,7 @@ Phase 2: Execute (autonomous) — Always use ralphinho for execution. If gstack 
 
 Phase 3: Review (interactive) — Re-read design doc from disk (~/.gstack/projects/). Compare implementation against design. Present improvements/approval to user. If improvements needed, re-enter Phase 2. On approval, proceed to /ship or manual commit. Optional follow-up: /land-and-deploy, /canary, /document-release, /retro.
 
-Boss rule: For end-to-end requests, invoke the `gstack-sprint` skill (spawn_agent with skill="gstack-sprint"). The gstack-sprint skill manages the full Phase 1(설계/대화) → Phase 2(실행/자율) → Phase 3(검수/대화) workflow. If gstack-sprint is not installed, fall back to: planner → ralph → 수동 검수.
+Boss rule: For end-to-end requests, invoke the `gstack-sprint` skill (spawn_agent with skill="gstack-sprint"). The gstack-sprint skill manages the full Phase 1(design/interactive) → Phase 2(execute/autonomous) → Phase 3(review/interactive) workflow. If gstack-sprint is not installed, fall back to: planner → ralph → manual review.
 
 gstack skill reference:
 - Plan: /plan-ceo-review → /plan-eng-review (CEO + engineering review)

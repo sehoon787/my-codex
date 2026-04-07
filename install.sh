@@ -264,6 +264,86 @@ copy_skill_dirs() {
   done
 }
 
+patch_yaml_scalar_line() {
+  local file_path="$1"
+  local key="$2"
+  [ -f "$file_path" ] || return 0
+
+  awk -v key="$key" '
+    BEGIN { patched = 0 }
+    index($0, key ": ") == 1 && patched == 0 {
+      value = substr($0, length(key) + 3)
+      gsub(/\r/, "", value)
+      gsub(/"/, "\\\"", value)
+      print key ": \"" value "\""
+      patched = 1
+      next
+    }
+    { print }
+  ' "$file_path" > "$file_path.tmp" && mv "$file_path.tmp" "$file_path"
+}
+
+patch_gstack_openclaw_skills() {
+  local gstack_root="$1"
+  local skill_file
+  [ -d "$gstack_root/openclaw/skills" ] || return 0
+
+  for skill_file in \
+    "$gstack_root/openclaw/skills/gstack-openclaw-ceo-review/SKILL.md" \
+    "$gstack_root/openclaw/skills/gstack-openclaw-investigate/SKILL.md" \
+    "$gstack_root/openclaw/skills/gstack-openclaw-office-hours/SKILL.md"
+  do
+    patch_yaml_scalar_line "$skill_file" description
+  done
+}
+
+install_skill_copy() {
+  local src_dir="$1"
+  local dest_name="$2"
+  local dest_dir rel_path
+  [ -d "$src_dir" ] || return 0
+
+  dest_dir="$CODEX_ROOT/skills/$dest_name"
+  rm -rf "$dest_dir" 2>/dev/null || true
+  cp -R "$src_dir" "$dest_dir"
+  rel_path="${dest_dir#"$CODEX_ROOT"/}"
+  add_manifest_entry "$rel_path"
+}
+
+fix_windows_gstack_skill_aliases() {
+  local gstack_root="$1"
+  local connect_skill
+
+  case "$(uname -s)" in
+    MINGW*|MSYS*|CYGWIN*) ;;
+    *) return 0 ;;
+  esac
+
+  install_skill_copy "$gstack_root/benchmark" "benchmark"
+
+  rm -rf "$CODEX_ROOT/skills/connect-chrome" 2>/dev/null || true
+  if [ -d "$gstack_root/open-gstack-browser" ]; then
+    install_skill_copy "$gstack_root/open-gstack-browser" "connect-chrome"
+    connect_skill="$CODEX_ROOT/skills/connect-chrome/SKILL.md"
+    if [ -f "$connect_skill" ]; then
+      awk '
+        BEGIN { name_done = 0; desc_done = 0 }
+        /^name:[[:space:]]/ && name_done == 0 {
+          print "name: connect-chrome"
+          name_done = 1
+          next
+        }
+        /^description:[[:space:]]/ && desc_done == 0 {
+          print "description: \"Backward-compatible alias for open-gstack-browser.\""
+          desc_done = 1
+          next
+        }
+        { print }
+      ' "$connect_skill" > "$connect_skill.tmp" && mv "$connect_skill.tmp" "$connect_skill"
+    fi
+  fi
+}
+
 count_managed_skills() {
   local count=0
   [ -d "$CODEX_ROOT/skills" ] || { printf '0'; return; }
@@ -426,6 +506,8 @@ if [ "$SKIP_SUPERPOWERS" = "0" ]; then
       bash "$REPO_ROOT/scripts/md-to-toml.sh" "$local_staging" "$local_toml_out" 2>/dev/null || true
       # Rename to superpowers-code-reviewer to avoid collision with other code-reviewer agents
       if [ -f "$local_toml_out/agents/code-reviewer.toml" ]; then
+        sed -i 's/^name = "code-reviewer"$/name = "superpowers-code-reviewer"/' \
+          "$local_toml_out/agents/code-reviewer.toml" 2>/dev/null || true
         cp "$local_toml_out/agents/code-reviewer.toml" "$CODEX_ROOT/agents/superpowers-code-reviewer.toml"
         add_manifest_entry "agents/superpowers-code-reviewer.toml"
       fi
@@ -567,6 +649,8 @@ if [ "$SKIP_GSTACK" = "0" ]; then
 
     # Restore SKILL.md files if deleted by gen:skill-docs
     git -C "$GSTACK_DIR" checkout -- '*/SKILL.md' 'SKILL.md' 2>/dev/null || true
+    patch_gstack_openclaw_skills "$GSTACK_DIR"
+    fix_windows_gstack_skill_aliases "$GSTACK_DIR"
 
     # Fallback: ensure individual gstack skills are accessible at depth 1
     if [ -d "$GSTACK_DIR" ]; then
@@ -576,7 +660,10 @@ if [ "$SKIP_GSTACK" = "0" ]; then
         case "$skill_name" in .git|bin|node_modules|agents) continue ;; esac
         target="$CODEX_ROOT/skills/$skill_name"
         if [ ! -e "$target" ] && [ ! -L "$target" ]; then
-          ln -s "$(cd "$skill_dir" && pwd)" "$target" 2>/dev/null || cp -r "$skill_dir" "$target"
+          case "$(uname -s)" in
+            MINGW*|MSYS*|CYGWIN*) cp -r "$skill_dir" "$target" ;;
+            *) ln -s "$(cd "$skill_dir" && pwd)" "$target" 2>/dev/null || cp -r "$skill_dir" "$target" ;;
+          esac
         fi
       done
     fi

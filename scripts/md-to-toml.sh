@@ -39,6 +39,32 @@ map_model() {
   esac
 }
 
+strip_wrapping_quotes() {
+  local value="$1"
+  if [[ "$value" == \"*\" && "$value" == *\" ]]; then
+    value="${value#\"}"
+    value="${value%\"}"
+  elif [[ "$value" == \'*\' ]]; then
+    value="${value#\'}"
+    value="${value%\'}"
+  fi
+  printf '%s' "$value"
+}
+
+extract_block_description() {
+  local frontmatter="$1"
+  printf '%s\n' "$frontmatter" | awk '
+    /^description:[[:space:]]*\|[[:space:]]*$/ { capture = 1; next }
+    capture {
+      if ($0 ~ /^[^[:space:]].*:[[:space:]]*/) {
+        exit
+      }
+      sub(/^[[:space:]]+/, "", $0)
+      print
+    }
+  ' | paste -sd ' ' -
+}
+
 # Apply Claude→Codex API substitutions in body text (reads stdin, writes stdout).
 apply_substitutions() {
   sed \
@@ -51,11 +77,15 @@ apply_substitutions() {
 process_file() {
   local src="$1"
   local basename
+  local normalized
   basename="$(basename "$src")"
+  normalized="$(mktemp)"
+  tr -d '\r' < "$src" > "$normalized"
 
   # Skip known non-agent files
   for skip in "${SKIP_FILES[@]}"; do
     if [[ "$basename" == "$skip" ]]; then
+      rm -f "$normalized"
       echo "  SKIP (blocklist): $src"
       return 0
     fi
@@ -63,27 +93,29 @@ process_file() {
 
   # Must start with --- on line 1
   local first_line
-  first_line="$(head -1 "$src")"
+  first_line="$(head -1 "$normalized")"
   if [[ "$first_line" != "---" ]]; then
+    rm -f "$normalized"
     echo "  SKIP (no frontmatter): $src"
     return 0
   fi
 
   # Find line numbers of the two --- delimiters
   local delim_lines
-  delim_lines=$(awk '/^---$/{print NR; count++; if(count==2) exit}' "$src")
+  delim_lines=$(awk '/^---$/{print NR; count++; if(count==2) exit}' "$normalized")
   local line1 line2
   line1=$(echo "$delim_lines" | sed -n '1p')
   line2=$(echo "$delim_lines" | sed -n '2p')
 
   if [[ -z "$line2" ]]; then
+    rm -f "$normalized"
     echo "  SKIP (unclosed frontmatter): $src"
     return 0
   fi
 
   # Extract frontmatter (lines between the two ---)
   local frontmatter
-  frontmatter=$(awk "NR > $line1 && NR < $line2" "$src")
+  frontmatter=$(awk "NR > $line1 && NR < $line2" "$normalized")
 
   # Parse fields from frontmatter
   local name description model
@@ -92,15 +124,21 @@ process_file() {
   description=$(echo "$frontmatter" | awk '/^description:/{sub(/^description:[[:space:]]*/,"",$0); print; exit}')
   model=$(echo "$frontmatter" | awk '/^model:/{sub(/^model:[[:space:]]*/,"",$0); print; exit}')
 
-  # Skip if no name field
+  if [[ "$description" == "|" ]]; then
+    description="$(extract_block_description "$frontmatter")"
+  fi
+
+  name="$(strip_wrapping_quotes "$name")"
+  description="$(strip_wrapping_quotes "$description")"
+  model="$(strip_wrapping_quotes "$model")"
+
   if [[ -z "$name" ]]; then
-    echo "  SKIP (no name field): $src"
-    return 0
+    name="${basename%.md}"
   fi
 
   # Extract body (everything after the second ---)
   local body_raw body
-  body_raw=$(awk "NR > $line2" "$src")
+  body_raw=$(awk "NR > $line2" "$normalized")
 
   # Apply API substitutions
   body=$(echo "$body_raw" | apply_substitutions)
@@ -137,6 +175,7 @@ process_file() {
     printf '%s\n' "$body"
     printf '"""\n'
   } > "$out_path"
+  rm -f "$normalized"
 
   echo "  OK: $src -> $out_path"
 }

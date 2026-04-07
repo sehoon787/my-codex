@@ -6,19 +6,19 @@ user-invocable: true
 ---
 
 <Purpose>
-gstack-sprint wraps the 3-Phase Sprint workflow (설계→실행→검수) as a structured skill to guarantee deterministic execution. Without this skill, the 3-Phase workflow exists only as prompt instructions in boss.md and may be forgotten during long sessions. This skill is the single entry point for end-to-end feature implementation — it coordinates design, execution, and review with user confirmation at each phase boundary.
+gstack-sprint wraps the 3-Phase Sprint workflow (design→execute→review) as a structured skill to guarantee deterministic execution. Without this skill, the 3-Phase workflow exists only as prompt instructions in boss.md and may be forgotten during long sessions. This skill is the single entry point for end-to-end feature implementation — it coordinates design, execution, and review with user confirmation at each phase boundary.
 </Purpose>
 
 <Use_When>
-- End-to-end feature implementation ("이 기능 만들어줘", "설계하고 구현까지 해줘")
+- End-to-end feature implementation ("build this feature", "design it and implement it")
 - Build or Mid-sized intent type with implementation phase included
-- User says "sprint", "스프린트", "end-to-end", "e2e 구현"
+- User says "sprint", "end-to-end", "e2e implementation"
 </Use_When>
 
 <Do_Not_Use_When>
 - Pure design/planning/idea review without implementation → use /office-hours or /plan-ceo-review directly
 - Architecture intent type (design only, no build)
-- "설계해줘", "기획해줘", "아이디어 검토해줘" — these route to /office-hours or /plan-ceo-review
+- "just design it", "just plan it", "review my idea" — these route to /office-hours or /plan-ceo-review
 - Single-purpose requests: code review → /review, QA → /qa, deploy → /ship
 - Trivial fixes, research, documentation
 </Do_Not_Use_When>
@@ -34,7 +34,7 @@ gstack-sprint enforces the three-phase contract: user-confirmed design → autom
 
 <Steps>
 
-## Phase 1: 설계 (대화/상호작용 — 사용자 결정)
+## Phase 1: Design (interactive — user decisions)
 
 1. **Determine scale** from the user's request:
    - Large (new feature, cross-system architecture, significant refactor) → invoke /plan-ceo-review first, then proceed to step 2
@@ -49,15 +49,15 @@ gstack-sprint enforces the three-phase contract: user-confirmed design → autom
    - Scope boundary decisions
    - Do not batch decisions silently — each decision that affects implementation requires explicit user input
 
-4. **Wait for user to confirm "설계 완료"** before transitioning to Phase 2. Do not proceed to Phase 2 on your own judgment.
+4. **Wait for user to confirm "design complete"** before transitioning to Phase 2. Do not proceed to Phase 2 on your own judgment.
 
-5. **Skip condition**: If the user's original message already confirms design is done ("설계는 이미 했어, 구현만 해줘", "design is done, just build it") → skip Phase 1 entirely and proceed to Phase 2 with the provided design context
+5. **Skip condition**: If the user's original message already confirms design is done ("design is done, just build it") → skip Phase 1 entirely and proceed to Phase 2 with the provided design context
 
 6. **Fallback** (gstack not installed): Use the OMC planner agent (opus) to produce a structured plan. Present the plan to the user and wait for their confirmation before proceeding.
 
 ---
 
-## Phase 2: 실행 (자율/자동화 — ralph)
+## Phase 2: Execute (autonomous/automated — ralph)
 
 Phase 2 runs as an independent skill invocation, not nested within gstack-sprint's prompt context. Boss invokes `Skill(skill: "ralph")` for this phase.
 
@@ -77,7 +77,7 @@ Phase 2 runs as an independent skill invocation, not nested within gstack-sprint
 
 ---
 
-## Phase 3: 검수 (대화/개선 — 사용자 확인)
+## Phase 3: Review (interactive/iterative — user confirmation)
 
 1. **Find design doc**: Search `~/.gstack/projects/` for the most recent design file matching the current repo.
    ```bash
@@ -101,13 +101,13 @@ Phase 2 runs as an independent skill invocation, not nested within gstack-sprint
    | Bonus: Feature D | Added (not in design) | Confirm or revert |
 
 5. **AskUserQuestion** with the following options:
-   - "승인" — implementation matches design intent, proceed to next step
-   - "개선 필요" — significant gaps exist, re-enter Phase 2 with corrections
-   - "부분 수정" — minor gaps, specify what to fix before approving
+   - "approve" — implementation matches design intent, proceed to next step
+   - "needs improvement" — significant gaps exist, re-enter Phase 2 with corrections
+   - "minor fixes" — minor gaps, specify what to fix before approving
 
-6. **If "개선 필요" or "부분 수정"**: Re-enter Phase 2 with a targeted correction delta. Pass the specific gaps to ralph rather than re-running the full implementation. After correction, return to Phase 3 Step 1.
+6. **If "needs improvement" or "minor fixes"**: Re-enter Phase 2 with a targeted correction delta. Pass the specific gaps to ralph rather than re-running the full implementation. After correction, return to Phase 3 Step 1.
 
-7. **If "승인"**: Suggest next steps — /ship or manual commit. Do not proceed autonomously.
+7. **If "approved"**: Suggest next steps — /ship or manual commit. Do not proceed autonomously.
 
 8. **Optional follow-up chain** (present as options, do not auto-invoke):
    - /land-and-deploy → /canary → /document-release → /retro
@@ -129,10 +129,10 @@ Phase 2 runs as an independent skill invocation, not nested within gstack-sprint
 <Good>
 Phase 1 — surfacing decisions before implementation:
 ```
-AskUserQuestion: "설계 검토 중 두 가지 결정이 필요합니다:
-1. API 인증: JWT 토큰 방식과 세션 쿠키 방식 중 어느 것을 사용할까요?
-2. 데이터 저장: 실시간 조회를 위해 Redis 캐시를 추가할까요, 아니면 DB 직접 조회로 시작할까요?
-결정 후 '설계 완료'라고 말씀해 주시면 구현을 시작합니다."
+AskUserQuestion: "Two decisions are needed while reviewing the design:
+1. API auth: Should we use JWT tokens or session cookies?
+2. Data storage: Should we add a Redis cache for real-time lookups, or start with direct DB queries?
+Once you've decided, say 'design complete' and we'll start implementation."
 ```
 Why good: Decisions are explicit, user controls phase transition, implementation cannot start without confirmation.
 </Good>
@@ -150,8 +150,8 @@ Design doc: ~/.gstack/projects/sehoon787-my-claude/sehunkim-main-design-20260326
 | Audit log for auth events | Not implemented | Descoped during execution |
 | OpenAPI schema update | Implemented | |
 
-3개 항목 구현 완료, 1개 부분 구현, 1개 미구현입니다.
-어떻게 하시겠습니까? (승인 / 개선 필요 / 부분 수정)
+3 items fully implemented, 1 partially implemented, 1 not implemented.
+How would you like to proceed? (approve / needs improvement / minor fixes)
 ```
 Why good: Reads the actual design doc, presents concrete status per item, asks before proceeding.
 </Good>
@@ -159,7 +159,7 @@ Why good: Reads the actual design doc, presents concrete status per item, asks b
 <Bad>
 Skipping Phase 1 and jumping straight to implementation:
 ```
-"알겠습니다, 바로 구현하겠습니다."
+"Understood, I'll start implementing right away."
 [immediately starts writing code without design confirmation]
 ```
 Why bad: Phase 1 exists to align on design before implementation. Skipping it risks building the wrong thing.
@@ -168,18 +168,18 @@ Why bad: Phase 1 exists to align on design before implementation. Skipping it ri
 <Bad>
 Claiming Phase 3 complete without reading the design doc:
 ```
-"구현이 완료되었습니다. 모든 기능이 잘 동작합니다."
+"Implementation is complete. All features are working well."
 ```
 Why bad: Did not read the design doc, did not produce a comparison table, did not ask the user for confirmation. This is completion theater.
 </Bad>
 </Examples>
 
 <Final_Checklist>
-- [ ] Phase 1: Design doc produced and user confirmed "설계 완료" (or Phase 1 explicitly skipped per user request)
+- [ ] Phase 1: Design doc produced and user confirmed "design complete" (or Phase 1 explicitly skipped per user request)
 - [ ] Phase 2: ralph invoked and completed with its own verification (7a + 7b)
 - [ ] Phase 3: Design doc located (or fallback to original request)
 - [ ] Phase 3: Comparison table presented to user
-- [ ] Phase 3: User selected "승인", "개선 필요", or "부분 수정"
-- [ ] If "개선 필요": correction delta passed to ralph, Phase 3 re-run after correction
-- [ ] If "승인": next steps suggested (/ship or manual commit), no autonomous action taken
+- [ ] Phase 3: User selected "approve", "needs improvement", or "minor fixes"
+- [ ] If "needs improvement": correction delta passed to ralph, Phase 3 re-run after correction
+- [ ] If "approve": next steps suggested (/ship or manual commit), no autonomous action taken
 </Final_Checklist>

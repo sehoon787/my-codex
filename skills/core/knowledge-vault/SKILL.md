@@ -18,6 +18,7 @@ When starting a new vault (first time in a project):
 ├── sessions/
 ├── decisions/
 ├── learnings/
+├── references/
 └── agents/
 ```
 
@@ -125,6 +126,32 @@ related: []
 
 ## Why It Works
 <Root cause explanation>
+```
+
+### Reference Note (`references/name.md`)
+```markdown
+---
+date: YYYY-MM-DD
+type: reference
+source: <URL or source description>
+tags: [reference, topic]
+related: []
+---
+
+# <Title>
+
+## Source
+<URL or citation>
+
+## Key Points
+- <Main finding 1>
+- <Main finding 2>
+
+## Context
+<Why this reference is relevant>
+
+## Raw Notes
+<Verbatim excerpts or detailed notes>
 ```
 
 ## Search Vault

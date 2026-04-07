@@ -66,6 +66,9 @@ test "$actual_active_pack_links" -ge 1
 test "$actual_packs" -ge 100
 test "$actual_skills" -ge 50
 test -f "$TEST_HOME/.codex/AGENTS.md"
+test -f "$TEST_HOME/.codex/agents/analyst.toml"
+test -f "$TEST_HOME/.codex/agents/superpowers-code-reviewer.toml"
+test -f "$TEST_HOME/.codex/agent-packs/engineering/engineering-ai-engineer.toml"
 test -f "$TEST_HOME/.codex/enabled-agent-packs.txt"
 test -x "$TEST_HOME/.codex/bin/codex"
 test -x "$TEST_HOME/.codex/bin/codex-mark-used"

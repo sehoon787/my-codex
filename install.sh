@@ -112,7 +112,6 @@ SKIP_AWESOME=0
 SKIP_OMX=0
 SKIP_GSTACK=0
 SKIP_SUPERPOWERS=0
-SELF_ONLY=0
 
 while [ "$#" -gt 0 ]; do
   case "$1" in
@@ -131,7 +130,7 @@ while [ "$#" -gt 0 ]; do
     --skip-gstack)     SKIP_GSTACK=1; shift ;;
     --skip-superpowers) SKIP_SUPERPOWERS=1; shift ;;
     --self-only)
-      SELF_ONLY=1; SKIP_AGENCY=1; SKIP_ECC=1; SKIP_AWESOME=1
+      SKIP_AGENCY=1; SKIP_ECC=1; SKIP_AWESOME=1
       SKIP_OMX=1; SKIP_GSTACK=1; SKIP_SUPERPOWERS=1
       shift
       ;;
@@ -463,14 +462,6 @@ if [ "$SKIP_AGENCY" = "0" ]; then
     # Copy converted TOML to agent-packs (agency agents are domain specialists)
     if [ -d "$agency_toml_out" ]; then
       for cat_dir in "$agency_toml_out/"*/; do
-        [ -d "$cat_dir" ] || continue
-        cat_name="$(basename "$cat_dir")"
-        copy_toml_dir "$cat_dir" "$CODEX_ROOT/agent-packs/$cat_name"
-      done
-    fi
-    # Also create agent-packs from the pre-converted agent-packs in staging
-    if [ -d "$REPO_ROOT/staging/agent-packs" ]; then
-      for cat_dir in "$REPO_ROOT/staging/agent-packs/"*/; do
         [ -d "$cat_dir" ] || continue
         cat_name="$(basename "$cat_dir")"
         copy_toml_dir "$cat_dir" "$CODEX_ROOT/agent-packs/$cat_name"

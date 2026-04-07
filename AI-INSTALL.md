@@ -51,7 +51,7 @@ Why the numbers are lower than raw source totals:
 
 ## Step 1b: Manual install (if install.sh unavailable)
 
-> **Note**: This repository uses git submodules for upstream content. Run `git submodule update --init` after cloning to populate the `upstream/` directories used below. Paths like `upstream/everything-claude-code/`, `upstream/agency-agents/`, etc. will be empty without this step.
+> **Note**: This repository uses git submodules for upstream content. Run `git submodule update --init` after cloning to populate the `upstream/` directories used below. Paths like `upstream/ecc/`, `upstream/agency-agents/`, etc. will be empty without this step.
 
 ```bash
 git clone --depth 1 https://github.com/sehoon787/my-codex.git /tmp/my-codex
@@ -62,34 +62,33 @@ mkdir -p ~/.codex/bin
 # Core agents (always loaded)
 cp /tmp/my-codex/codex-agents/core/*.toml ~/.codex/agents/
 cp /tmp/my-codex/codex-agents/omo/*.toml ~/.codex/agents/
-cp /tmp/my-codex/codex-agents/omc/*.toml ~/.codex/agents/
-cp /tmp/my-codex/codex-agents/awesome-core/*.toml ~/.codex/agents/
 
-# Awesome core categories (add to core)
+# Awesome core categories → auto-loaded agents
 for d in 01-core-development 03-infrastructure 04-quality-security 09-meta-orchestration; do
-  cp /tmp/my-codex/upstream/awesome-codex-subagents/$d/*.toml ~/.codex/agents/ 2>/dev/null
+  cp /tmp/my-codex/upstream/awesome/categories/$d/*.toml ~/.codex/agents/ 2>/dev/null
 done
 
-# Domain agent-packs
-cp -r /tmp/my-codex/codex-agents/agent-packs/* ~/.codex/agent-packs/
-
-# Agency agents (domain specialists → agent-packs)
-for d in /tmp/my-codex/upstream/agency-agents/*/; do
-  cat_name=$(basename "$d")
+# Awesome remaining categories → agent-packs
+for d in /tmp/my-codex/upstream/awesome/categories/*/; do
+  raw_name=$(basename "$d")
+  case "$raw_name" in 01-core-development|03-infrastructure|04-quality-security|09-meta-orchestration) continue ;; esac
+  cat_name="${raw_name#[0-9][0-9]-}"
   mkdir -p ~/.codex/agent-packs/$cat_name
   cp "$d"*.toml ~/.codex/agent-packs/$cat_name/ 2>/dev/null
 done
 
-# Awesome remaining categories → agent-packs
-for d in /tmp/my-codex/upstream/awesome-codex-subagents/*/; do
+# Agency agents (MD → TOML conversion needed; use install.sh for this)
+# install.sh handles md-to-toml.sh conversion at runtime.
+# Manual alternative: run scripts/md-to-toml.sh on upstream/agency-agents/ categories
+bash /tmp/my-codex/scripts/md-to-toml.sh /tmp/my-codex/upstream/agency-agents /tmp/agency-toml 2>/dev/null
+for d in /tmp/agency-toml/*/; do
   cat_name=$(basename "$d")
-  case "$cat_name" in 01-core-development|03-infrastructure|04-quality-security|09-meta-orchestration) continue ;; esac
   mkdir -p ~/.codex/agent-packs/$cat_name
   cp "$d"*.toml ~/.codex/agent-packs/$cat_name/ 2>/dev/null
 done
 
 # Skills
-cp -R /tmp/my-codex/upstream/everything-claude-code/. ~/.codex/skills/
+cp -R /tmp/my-codex/upstream/ecc/skills/* ~/.codex/skills/
 # ── gstack (sprint-process harness with 36 skills) ──
 GSTACK_DIR="$HOME/.codex/skills/gstack"
 if [ -d "$GSTACK_DIR/.git" ]; then

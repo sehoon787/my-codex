@@ -4,6 +4,7 @@ on:
     branches: [main, 'auto/**']
   pull_request:
     branches: [main]
+  workflow_dispatch:
 jobs:
   validate:
     runs-on: ubuntu-latest
@@ -101,3 +102,4 @@ jobs:
           bash scripts/test-install.sh
           bash scripts/test-codex-attribution.sh
           bash scripts/test-skills-only-install.sh
+          bash scripts/test-agent-pack-activation.sh

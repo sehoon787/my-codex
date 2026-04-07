@@ -56,7 +56,7 @@ What gets installed:
 | `~/.codex/config.toml` | `multi_agent = true` + model defaults |
 | `~/.codex/git-hooks/` | `prepare-commit-msg` + `commit-msg` + `post-commit` hooks for Codex attribution |
 | `~/.codex/bin/codex` | Wrapper that records Codex-touched files for commit attribution |
-| `~/.codex/.mcp.json` | 3 MCP servers: context7, exa, grep_app |
+| MCP servers | 3 servers registered via `codex mcp add`: context7, exa, grep_app |
 
 ---
 
@@ -167,7 +167,7 @@ Available packs and agent counts:
 
 ## 6. MCP Server Configuration
 
-Three MCP servers are registered in `~/.codex/.mcp.json`:
+Three MCP servers are registered via `codex mcp add`:
 
 | Server | Purpose |
 |---|---|
@@ -182,9 +182,9 @@ codex mcp list
 
 If a server is missing, re-run `install.sh` or add it manually:
 ```bash
-codex mcp add context7 -- npx -y @upstash/context7-mcp
-codex mcp add exa -- npx -y exa-mcp-server
-codex mcp add grep_app -- npx -y @modelcontextprotocol/server-grep-app
+codex mcp add context7 --url https://mcp.context7.com/mcp
+codex mcp add exa --url "https://mcp.exa.ai/mcp?tools=web_search_exa"
+codex mcp add grep_app --url https://mcp.grep.app
 ```
 
 ---
@@ -274,7 +274,7 @@ grep multi_agent ~/.codex/config.toml
 # Check registered servers
 codex mcp list
 # Re-add if missing
-codex mcp add context7 -- npx -y @upstash/context7-mcp
+codex mcp add context7 --url https://mcp.context7.com/mcp
 ```
 
 **Agent ignores instructions**

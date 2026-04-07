@@ -32,7 +32,7 @@ Basierend auf der offiziellen [Codex Subagents](https://developers.openai.com/co
 |---------|-------------|
 | **Native TOML** | Alle Agenten im nativen `.toml`-Format der Codex CLI — keine Laufzeit-Konvertierung, keine Kompatibilitätsprobleme |
 | **Multi-Source Kurierung** | 6 vorgelagerte Quellen aggregiert, dedupliziert und qualitätskontrolliert in einer Sammlung |
-| **Null-Konfiguration** | Einmalige Installation, 400+ Agenten und 140 Skills. `config.toml` wird automatisch mit `multi_agent = true` konfiguriert |
+| **Null-Konfiguration** | Einmalige Installation, 400+ Agenten und 200+ Skills. `config.toml` wird automatisch mit `multi_agent = true` konfiguriert |
 
 ## Schnelleinstieg
 
@@ -143,7 +143,7 @@ rm ~/.codex/agents/<agent-name>.toml
 |------|--------|--------|-----|
 | Automatisch geladene Agenten | 80 installierte Dateien | `core/`, `omo/`, `omc/`, `awesome-core/`, `superpowers/`, Awesome Core Kategorien | `~/.codex/agents/` |
 | Agent-Pakete | 364 installierte Dateien | `agent-packs/`, `agency/`, Awesome-Nicht-Core-Kategorien | `~/.codex/agent-packs/` |
-| Skills | 140 | ECC 125, Superpowers 14, Core 1 | `~/.codex/skills/` |
+| Skills | 200+ | ECC 180+, gstack 36, OMX 36, Superpowers 14, Core 1 | `~/.codex/skills/` |
 | config.toml | 1 | my-codex | `~/.codex/config.toml` |
 | AGENTS.md | 1 | my-codex | `~/.codex/AGENTS.md` |
 
@@ -167,7 +167,7 @@ agent-organizer, capability-assessor, conflict-resolver, context-manager, execut
 </details>
 
 <details>
-<summary>Skills (140) — Aus Everything Claude Code (125), Superpowers (14) und Core (1)</summary>
+<summary>Skills (200+) — Aus Everything Claude Code (180+), gstack (36), OMX (36), Superpowers (14) und Core (1)</summary>
 
 Wichtige Skills beinhalten:
 
@@ -216,11 +216,11 @@ Wichtige Skills beinhalten:
 │_agent│ │N       │ │input   │ │toml    │
 └──────┘ └────────┘ └────────┘ └────────┘
 ┌─────────────────────────────────────────────────────────┐
-│  Agent Layer (444 unique agents in native TOML)          │
+│  Agent Layer (400+ unique agents in native TOML)          │
 │    ├── Auto-loaded (80): final installed footprint       │
 │    └── Agent Packs (364): final installed footprint      │
 ├─────────────────────────────────────────────────────────┤
-│  Skills Layer (140 from ECC + superpowers + core)        │
+│  Skills Layer (200+ from ECC + gstack + OMX + superpowers + core) │
 │    ├── tdd-workflow, security-review, autopilot         │
 │    └── pdf, docx, pptx, xlsx, team                     │
 └─────────────────────────────────────────────────────────┘
@@ -337,11 +337,11 @@ Codex → spawn_agent("planner")
 
 ### 1. [Agency Agents](https://github.com/msitarzewski/agency-agents)
 
-Eine Bibliothek mit 134 Business-Spezialisten-Agent-Personas. Bietet Spezialisten-Perspektiven über 14 Kategorien — UX-Architekten, Datentechniker, Sicherheits-Auditoren und mehr. Konvertiert von Markdown zu nativem TOML über automatisierte `md-to-toml.sh` Pipeline.
+Eine Bibliothek mit 180+ Business-Spezialisten-Agent-Personas. Bietet Spezialisten-Perspektiven über 14 Kategorien — UX-Architekten, Datentechniker, Sicherheits-Auditoren und mehr. Konvertiert von Markdown zu nativem TOML über automatisierte `md-to-toml.sh` Pipeline.
 
 ### 2. [Everything Claude Code (ECC)](https://github.com/affaan-m/everything-claude-code)
 
-Ein Entwicklungs-Framework, ursprünglich für Claude Code entwickelt, das 125 Skills bereitstellt. 13 Claude Code-spezifische Skills wurden entfernt; die verbleibenden Skills enthalten generische Kodierungs-Anleitungen, die über jeden LLM-Agenten verwendbar sind. Das rules/ Verzeichnis ist im Repo als Referenzmaterial enthalten, wird aber von Codex CLI nicht gelesen.
+Ein Entwicklungs-Framework, ursprünglich für Claude Code entwickelt, das 180+ Skills bereitstellt. 13 Claude Code-spezifische Skills wurden entfernt; die verbleibenden Skills enthalten generische Kodierungs-Anleitungen, die über jeden LLM-Agenten verwendbar sind. Das rules/ Verzeichnis ist im Repo als Referenzmaterial enthalten, wird aber von Codex CLI nicht gelesen.
 
 ### 3. [Awesome Codex Subagents](https://github.com/VoltAgent/awesome-codex-subagents)
 
@@ -377,7 +377,7 @@ Issues und PRs sind willkommen. Wenn du einen neuen Agenten hinzufügst, füge e
 
 ## Gebündelte Upstream-Versionen
 
-Wöchentlich von CI Auto-Sync aktualisiert. Noch keine SOURCES.json — Versionen getrackt über sync-upstream.yml.
+Wöchentlich von CI Auto-Sync aktualisiert. Upstream-Quellen werden als Git-Submodule verwaltet. Metadaten in `upstream/SOURCES.json` erfasst.
 
 | Quelle | Sync |
 |--------|------|

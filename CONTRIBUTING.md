@@ -8,26 +8,33 @@ Thank you for contributing. This guide covers how to author agents for Codex CLI
 
 ```
 codex-agents/
-  core/                   # Core agents — always loaded
-  awesome/                # awesome-codex-subagents-sourced agents
-  agent-packs/
-    {category}/           # Domain agent packs — on-demand
-skills/                   # Skill workflows
-rules/                    # Coding and workflow rules
+  core/                   # Self-owned core agents (always loaded)
+  omo/                    # Self-owned OMO agents (always loaded)
+upstream/                 # Git submodules (upstream sources)
+  agency-agents/          # Domain agent specialists (MD → TOML at install)
+  awesome/                # awesome-codex-subagents (native TOML)
+  ecc/                    # everything-claude-code (skills)
+  gstack/                 # gstack (sprint-process skills)
+  omx/                    # oh-my-codex (CLI runtime)
+  superpowers/            # superpowers (agent + skills)
+skills/
+  core/                   # Self-owned skills
 ```
 
 ### Upstream Sources
 
-This repository aggregates agents from four upstream sources:
+This repository aggregates agents and skills from six upstream sources:
 
 | Source | Origin | Format |
 |--------|--------|--------|
-| `agency` | agency-agents (domain agents, MD converted to TOML) | TOML |
-| `ecc` | everything-claude-code (skills and rules) | MD |
-| `omx` | oh-my-codex (CLI runtime, skills, hooks, HUD — no agent files) | N/A |
-| `awesome` | awesome-codex-subagents (native TOML agents) | TOML |
+| `agency-agents` | [agency-agents](https://github.com/msitarzewski/agency-agents) — domain agents | MD → TOML |
+| `awesome` | [awesome-codex-subagents](https://github.com/VoltAgent/awesome-codex-subagents) — native TOML agents | TOML |
+| `ecc` | [everything-claude-code](https://github.com/affaan-m/everything-claude-code) — skills and rules | MD |
+| `gstack` | [gstack](https://github.com/garrytan/gstack) — sprint-process skills | MD |
+| `omx` | [oh-my-codex](https://github.com/Yeachan-Heo/oh-my-codex) — CLI runtime, skills, hooks | N/A |
+| `superpowers` | [superpowers](https://github.com/obra/superpowers) — agent + skills | MD → TOML |
 
-New contributions that originate from this repository go into `codex-agents/core/` (infrastructure) or `codex-agents/agent-packs/{category}/` (domain).
+New contributions that originate from this repository go into `codex-agents/core/` (infrastructure) or `codex-agents/omo/` (OMO agents).
 
 ---
 
@@ -71,7 +78,7 @@ developer_instructions = """
 ### File Location
 
 - Core/infrastructure agents: `codex-agents/core/{name}.toml`
-- Domain agents: `codex-agents/agent-packs/{category}/{name}.toml`
+- OMO agents: `codex-agents/omo/{name}.toml`
 - File name must match the `name` field: `security-reviewer.toml` for `name = "security-reviewer"`
 
 ### developer_instructions Structure
@@ -168,7 +175,7 @@ This is expected.
 - [ ] No generic roleplay language ("You are a helpful...")
 - [ ] `sandbox_mode` is appropriate for the agent's function (`read-only` for reviewers, `workspace-write` for implementers)
 - [ ] `model` and `model_reasoning_effort` are appropriate for the agent's workload
-- [ ] File is in the correct directory (`core/` vs `agent-packs/{category}/`)
+- [ ] File is in the correct directory (`codex-agents/core/` or `codex-agents/omo/`)
 - [ ] README category table updated if applicable
 - [ ] PR body describes the use case
 - [ ] If Codex authored the change, the PR notes whether commit attribution markers are expected

@@ -1,6 +1,6 @@
 ---
 name: knowledge-vault
-description: Initialize, manage, and search the per-project .knowledge/ vault. Obsidian-compatible persistent knowledge base with optional basic-memory RAG.
+description: Initialize, manage, and search the per-project .knowledge/ vault. Obsidian-compatible persistent knowledge base.
 ---
 
 # Knowledge Vault Skill
@@ -47,11 +47,6 @@ tags: [project, index]
 ```
 
 3. Add `.knowledge/` to `.gitignore`
-
-4. If `basic-memory` MCP is available, initialize:
-```bash
-basic-memory init <project-name> --path .knowledge
-```
 
 ## Note Templates
 
@@ -134,10 +129,8 @@ related: []
 
 ## Search Vault
 
-### With basic-memory MCP (semantic RAG):
-Use `search_notes` tool — finds semantically similar content.
+Use Grep to search `.knowledge/` by keyword:
 
-### Without MCP (keyword search):
 ```bash
 # Search by content
 grep -r "keyword" .knowledge/ --include="*.md"

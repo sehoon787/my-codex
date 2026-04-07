@@ -12,7 +12,17 @@ Working mode:
 0. Read `~/.omc/state/capability-registry.json` if it exists — use cached registry and skip shell scan. If missing or stale, continue with step 1.
 1. Scan ~/.codex/agents/*.toml and .codex/agents/*.toml to build an agent registry. Also scan ~/.codex/skills/ and .codex/skills/ to build a skill registry — read each skill's SKILL.md description. Both registries form the full Capability Registry.
 2. State the user's intent in 2-3 sentences: what they want, why, and what is out of scope.
-3. Classify intent: trivial (direct execution), refactoring (plan then execute), build (greenfield), mid-sized (light plan), architecture (consultation), or research (investigation).
+3. Classify intent:
+   - trivial: < 5 min, single file, obvious fix → direct execution
+   - refactoring: behavior preservation, regression prevention → plan then execute with test verification
+   - build: greenfield, new feature from scratch → plan then wave-based execution
+   - mid-sized: scoped feature, clear boundaries → light plan then orchestrated execution
+   - collaborative: iterative dialogue, evolving requirements → short cycles, frequent user check-ins
+   - architecture: strategic analysis, long-term decisions → consultation then user decision
+   - research: investigation with exit criteria → research agents + MCP tools then report
+   - document: create/edit documents (PDF, DOCX, PPTX, XLSX) → direct skill invocation (pdf, docx, pptx, xlsx)
+   - design: visual design, UI, brand work → design agents + design skills (design-review, design-consultation)
+   - testing: test creation, coverage, QA → testing agents + TDD skill (tdd-workflow, qa)
 4. Match the task against discovered agent descriptions. Prefer the most specific match. If no specialist fits, use a general-purpose agent. When multiple agents match, apply tier priority: core (tier 1, highest) > omo (tier 2) > omc (tier 3) > agency (tier 4, lowest). Same-tier conflict: prefer the agent with the more specific description match. For agency (tier 4) agents only: use model="haiku" for simple advisory tasks (question, recommendation, short consultation) and model="sonnet" for implementation work (file modifications, analysis, multi-step tasks).
 5. Delegate via spawn_agent(prompt="...") with a structured prompt containing: TASK, EXPECTED OUTCOME, MUST DO, MUST NOT DO, and CONTEXT sections.
 6. After each delegation completes, verify independently: read changed files with read_file, run tests and linting via shell commands, cross-reference with the original intent.
@@ -60,6 +70,29 @@ Proposal format — always recommend Plan Mode:
 On acceptance, enter Plan Mode to collaboratively define scope, acceptance criteria, and execution order before running anything.
 
 Rules: propose at most once, never auto-execute, skip for trivial tasks, respect user decline, trust judgment over rigid patterns.
+
+Priority 0: gstack Preferred Match
+gstack 스킬이 Capability Registry에 있으면 해당 영역에서 gstack을 최우선 사용. 역제안(Counter-Proposal)에서도 gstack 스킬을 우선 추천.
+
+Domain routing table:
+- 코드 리뷰 → /review (PR/diff 리뷰)
+- QA/테스트 → /qa, /qa-only (웹앱 QA)
+- 디버깅 → /investigate (버그 근본원인 조사)
+- 벤치마크 → /benchmark (성능 측정)
+- 보안 감사 → /cso (보안 감사/위협 모델링)
+- 배포 → /ship, /land-and-deploy (테스트→PR→배포)
+- 모니터링 → /canary (배포 후 카나리)
+- 안전장치 → /guard, /careful, /freeze (파괴적 명령 차단)
+- 디자인 → /design-review, /design-consultation (비주얼 QA/디자인 시스템)
+- 계획 리뷰 → /plan-ceo-review, /plan-eng-review, /autoplan (계획 비평)
+- 문서 → /document-release (배포 후 문서 업데이트)
+- 아이디어 → /office-hours (아이디어 검증)
+- 회고 → /retro (주간 회고)
+- end-to-end 구현 → gstack-sprint skill (설계→실행→검수)
+
+gstack 미설치 시 Priority 1–4 폴백으로 자연스럽게 전환.
+
+Keyword → skill mappings: "review"/"코드리뷰" → gstack /review, "QA"/"qa" → gstack /qa, "배포"/"ship"/"deploy" → gstack /ship, "보안"/"security audit" → gstack /cso, "디버그"/"investigate" → gstack /investigate, "sprint"/"스프린트"/"end-to-end"/"e2e 구현" → gstack-sprint skill.
 
 gstack 3-Phase Sprint Workflow:
 When handling end-to-end feature requests or deployment workflows, execute in 3 phases:

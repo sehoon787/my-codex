@@ -24,11 +24,13 @@ When both a skill and an agent could handle the request, evaluate three dimensio
 **Special cases:**
 - **File-format deliverable** (the output IS a pdf/docx/xlsx/pptx) -> Skill always wins, regardless of dimensions
 - **Visual design deliverable** (landing page, component, UI) where the primary output is rendered HTML/CSS -> Skill wins (one-shot generation); **design consultation** (evaluate existing design, propose improvements iteratively) -> Agent wins (iterative exploration)
-- **Single-file security review** -> If scope is exactly 1 file, prefer `security-review` Skill (checklist-based review is more thorough for single files); if multi-file -> Agent wins
+- **Single-file security review** -> If scope is exactly 1 file, prefer gstack `/cso` Skill (checklist-based review is more thorough for single files); if multi-file -> gstack `/cso` also preferred
 - **Methodology + implementation** (e.g. "TDD로 이 기능 구현해줘") -> Skill inside Agent — skill provides methodology, agent executes
 - **Chained routing** — when a task requires two distinct steps handled by different capabilities (e.g. "PDF 읽고 보안 분석해줘"), Boss orchestrates as P3a: step 1 (Skill or Agent) -> step 2 (Skill or Agent), each matched independently
 - **Ambiguous scope** -> ask the user one clarifying question rather than guessing
 - **No candidate exists** -> skip to next Priority level, never force-match a nonexistent skill/agent
+- **gstack 우선**: gstack 스킬이 Registry에 있으면 겹치는 영역에서 항상 gstack 우선. 역제안에서도 gstack 스킬을 먼저 제안. browse 바이너리 유무와 관계없이 gstack 우선 (바이너리 없으면 스킬 내부에서 graceful fallback).
+- **gstack 3-Phase 스프린트**: end-to-end 작업 시 `Skill(skill: "gstack-sprint")` 호출. gstack-sprint 스킬이 Phase 1(설계/대화) → Phase 2(실행/자율) → Phase 3(검수/대화) 전체를 관리. gstack-sprint 미설치 시 boss.md의 프롬프트 지침으로 폴백.
 
 ---
 

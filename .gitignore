@@ -1,5 +1,6 @@
 .omc/
 .omx/
+.knowledge/
 node_modules/
 .DS_Store
 *.log

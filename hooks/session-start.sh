@@ -16,6 +16,7 @@ if [ ! -f "$_kv_dir/INDEX.md" ]; then
 date: $(date +%Y-%m-%d)
 type: index
 tags: [project, index]
+language: en
 ---
 
 # ${_proj_name} Knowledge Base

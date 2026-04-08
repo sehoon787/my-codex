@@ -32,7 +32,7 @@
           },
           {
             "type": "command",
-            "command": "node -e \"if(require('fs').existsSync('.knowledge/INDEX.md')){console.log(JSON.stringify({hookSpecificOutput:{additionalContext:'[KnowledgeVault] MANDATORY: Write session summary to .knowledge/sessions/YYYY-MM-DD-topic.md if meaningful work was done.'}}))}\"",
+            "command": "node -e \"const fs=require('fs');const p='.knowledge/INDEX.md';if(fs.existsSync(p)){const c=fs.readFileSync(p,'utf8');const m=c.match(/^language:\\s*(\\w+)/m);const lang=m?m[1]:'en';const msgs={en:'[KnowledgeVault] MANDATORY: Write session summary to .knowledge/sessions/YYYY-MM-DD-topic.md in '+lang+'. Update INDEX.md if new decisions or learnings were added.',ko:'[KnowledgeVault] 필수: .knowledge/sessions/YYYY-MM-DD-topic.md에 세션 요약을 한국어로 작성하세요. INDEX.md도 업데이트하세요.',zh:'[KnowledgeVault] 必须：将会话摘要写入 .knowledge/sessions/YYYY-MM-DD-topic.md（中文）。请更新 INDEX.md。'};const msg=msgs[lang]||msgs.en.replace('in '+lang,'in '+lang);console.log(JSON.stringify({hookSpecificOutput:{additionalContext:msg}}))}\"",
             "timeout": 3000
           }
         ]

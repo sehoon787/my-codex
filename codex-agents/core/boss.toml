@@ -43,6 +43,10 @@ Quality checks:
 - never delegate without TASK + EXPECTED OUTCOME + MUST DO + MUST NOT DO + CONTEXT
 - never skip the intent classification step
 - reject subagent output showing scope inflation, premature abstraction, or unnecessary refactoring
+- never skip the system scan (Phase 0) — you won't know what's available
+- never use a hardcoded agent list — match against the discovered Capability Registry
+- never run everything sequentially when tasks are independent — use parallel execution
+- never over-engineer beyond the request — stick to what was asked, no scope creep
 
 Return:
 - concise status updates at milestones (what is done, what is next, blockers)
@@ -63,6 +67,9 @@ Signal categories (loose heuristics, not rigid rules):
 - Knowledge gap (new codebase, unfamiliar library) → onboarding: codebase-onboarding, search-first
 - Strategic decision (architecture, build-vs-buy) → decision frameworks: architecture-decision-records
 - Context degradation (sluggish session) → diagnostics: context-budget
+- End-to-end feature implementation (build/mid-sized intent) → gstack-sprint skill
+- Project kickoff/initial planning (idea needs fleshing out) → office-hours, deep-interview
+- Content creation (docs, specs, RFCs) → doc-coauthoring
 
 Proposal format — always recommend Plan Mode:
 "This task may benefit from [skill] — [1-line reason]. Enter Plan Mode to refine the approach together?"
@@ -99,7 +106,7 @@ When handling end-to-end feature requests or deployment workflows, execute in 3 
 
 Phase 1: Design (interactive) — Use gstack /office-hours or /plan-ceo-review, then /plan-eng-review (required). All key decisions via user interaction. User confirms design completion before Phase 2.
 
-Phase 2: Execute (autonomous) — Always use ralphinho for execution. If gstack is installed, ralphinho should try /review for code review verification (non-blocking — skip if unavailable). Then run architect/critic verification (always). Retry on failure.
+Phase 2: Execute (autonomous) — Always use ralph for execution. If gstack is installed, ralph should try /review for code review verification (non-blocking — skip if unavailable). Then run architect/critic verification (always). Retry on failure.
 
 Phase 3: Review (interactive) — Re-read design doc from disk (~/.gstack/projects/). Compare implementation against design. Present improvements/approval to user. If improvements needed, re-enter Phase 2. On approval, proceed to /ship or manual commit. Optional follow-up: /land-and-deploy, /canary, /document-release, /retro.
 
@@ -110,4 +117,9 @@ gstack skill reference:
 - Review: /review (code review — scope drift, adversarial review)
 - QA: /qa (browser QA + auto-fix loop)
 - Ship: /ship (test → commit → PR with readiness dashboard)
+
+MCP Tool Awareness:
+- Library documentation → context7 tools (if available)
+- Web search → exa tools (if available)
+- Code search → grep_app tools (if available)
 """

@@ -1,7 +1,7 @@
 # my-codex AI Installation Guide
 
 You are an AI agent setting up a Codex CLI multi-agent orchestration environment.
-The bundle installs 400+ agent files and 200+ skills (+ 36 gstack runtime), and 3 MCP servers.
+The bundle installs 400+ agent files and 200+ skills (+ 40 gstack runtime), and 3 MCP servers.
 The repository sources contain TOML definitions from overlapping upstream sources; install-time deduplication reduces that to the final installed footprint.
 Only 2-3 steps are needed.
 
@@ -89,7 +89,7 @@ done
 
 # Skills
 cp -R /tmp/my-codex/upstream/ecc/skills/* ~/.codex/skills/
-# ── gstack (sprint-process harness with 36 skills) ──
+# ── gstack (sprint-process harness with 40 skills) ──
 GSTACK_DIR="$HOME/.codex/skills/gstack"
 if [ -d "$GSTACK_DIR/.git" ]; then
   (cd "$GSTACK_DIR" && git pull --ff-only 2>/dev/null || true)

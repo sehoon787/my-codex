@@ -156,6 +156,13 @@ section{padding:80px 0}
 .inst pre{color:var(--text);font-size:.78rem;white-space:pre-wrap;word-break:break-all}
 .copy-btn{position:absolute;top:12px;right:12px;background:var(--card);border:1px solid var(--border);color:var(--text2);padding:4px 10px;border-radius:6px;font-size:.72rem;cursor:pointer;font-family:'JetBrains Mono',monospace}
 .copy-btn:hover{border-color:var(--primary);color:var(--text)}
+.inst-tabs{display:flex;justify-content:center;gap:6px;margin:16px auto 0;max-width:600px}
+.inst-tab{padding:6px 18px;border-radius:8px 8px 0 0;border:1px solid rgba(255,255,255,.08);border-bottom:none;background:transparent;color:var(--text2);font-size:.76rem;font-family:'JetBrains Mono',monospace;cursor:pointer;transition:all .2s}
+.inst-tab.active{background:#0c0e14;color:var(--text);border-color:rgba(255,255,255,.08)}
+.inst-tab:hover:not(.active){color:var(--text)}
+.inst-box{max-width:600px;margin:0 auto;background:#0c0e14;border:1px solid rgba(255,255,255,.08);border-radius:0 0 12px 12px;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;font-family:'JetBrains Mono',monospace;font-size:.78rem;color:var(--text);cursor:pointer;transition:border-color .2s}
+.inst-box:hover{border-color:var(--primary)}
+.inst-box .copy-hint{font-size:.7rem;color:var(--text2);font-family:'Inter',sans-serif;white-space:nowrap;flex-shrink:0;background:rgba(17,24,39,.7);border:1px solid rgba(16,185,129,.15);border-radius:6px;padding:4px 10px}
 
 /* Credits */
 .credits-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
@@ -218,7 +225,19 @@ footer{padding:40px 0;border-top:1px solid rgba(255,255,255,.06);text-align:cent
     <span class="badge"><span class="lang" data-en="Codex CLI Native" data-ko="Codex CLI 네이티브"></span></span>
     <span class="badge"><span class="lang" data-en="Weekly Auto-sync" data-ko="매주 자동 동기화"></span></span>
   </div>
-  <div style="margin:28px 0 16px"><img src="../assets/owl-codex-icon.svg" alt="The Maestro Owl" width="140" style="filter:drop-shadow(0 0 24px rgba(16,185,129,.25))"></div>
+  <div class="inst-tabs">
+    <button class="inst-tab active" onclick="switchInst(this,'human')">Human</button>
+    <button class="inst-tab" onclick="switchInst(this,'ai')">AI Agent</button>
+  </div>
+  <div class="inst-box" id="inst-human" onclick="copyInstBox(this)" role="button" tabindex="0">
+    <span class="copy-hint">click to copy</span>
+    <span style="color:var(--text2)">$</span> git clone https://github.com/sehoon787/my-codex.git /tmp/my-codex &amp;&amp; bash /tmp/my-codex/install.sh
+  </div>
+  <div class="inst-box" id="inst-ai" onclick="copyInstBox(this)" role="button" tabindex="0" style="display:none">
+    <span class="copy-hint">click to copy</span>
+    <span style="color:var(--text2)">$</span> curl -fsSL https://raw.githubusercontent.com/sehoon787/my-codex/main/install.sh | bash
+  </div>
+  <div style="margin:28px 0 16px"><img src="https://raw.githubusercontent.com/sehoon787/my-codex/main/assets/owl-codex-icon.svg" alt="The Maestro Owl" width="140" style="filter:drop-shadow(0 0 24px rgba(16,185,129,.25))"></div>
   <div class="cta-row">
     <a href="https://github.com/sehoon787/my-codex" class="cta"><span class="lang" data-en="View on GitHub" data-ko="GitHub에서 보기"></span></a>
     <a href="#install" class="cta secondary"><span class="lang" data-en="Quick Install" data-ko="빠른 설치"></span></a>
@@ -704,6 +723,18 @@ termObs.observe(document.getElementById('terminal'));
 function toggleFaq(btn){btn.closest('.faq-item').classList.toggle('open')}
 
 // Copy button
+function switchInst(btn,mode){
+  btn.parentElement.querySelectorAll('.inst-tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('inst-human').style.display=mode==='human'?'':'none';
+  document.getElementById('inst-ai').style.display=mode==='ai'?'':'none';
+}
+function copyInstBox(el){
+  const txt=el.textContent.replace('click to copy','').replace('$','').trim();
+  navigator.clipboard.writeText(txt);
+  el.querySelector('.copy-hint').textContent='copied!';
+  setTimeout(()=>el.querySelector('.copy-hint').textContent='click to copy',1500);
+}
 function copyInst(btn){const pre=btn.parentElement.querySelector('pre');navigator.clipboard.writeText(pre.textContent);btn.textContent='copied!';setTimeout(()=>btn.textContent='copy',1500)}
 </script>
 </body>

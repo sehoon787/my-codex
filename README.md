@@ -21,7 +21,7 @@
 Boss auto-discovers every agent and skill at runtime,<br>
 then routes your task to the right specialist via `spawn_agent`. No config. No boilerplate.
 
-<img src="./logo/owl-codex-icon.svg" alt="The Maestro Owl — my-codex" width="180">
+<img src="./assets/owl-codex-social.svg" alt="The Maestro Owl — my-codex" width="700">
 
 </div>
 

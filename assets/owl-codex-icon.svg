@@ -56,16 +56,16 @@
       <rect x="104" y="176" width="14" height="7" rx="3.5"/>
     </g>
 
-    <!-- Head: ellipse, teal #10b981 -->
-    <ellipse id="head" cx="100" cy="78" rx="56" ry="52" fill="#10b981"/>
+    <!-- Head: squircle (rounded rect) — teal #10b981 -->
+    <rect id="head" x="46" y="28" width="108" height="108" rx="42" ry="42" fill="#10b981"/>
 
     <!-- Facial disc: #059669 -->
     <ellipse id="facial-disc" cx="100" cy="82" rx="44" ry="38" fill="#059669" opacity="0.35"/>
 
     <!-- Brow tufts: #0d9668 -->
     <g id="brow-tufts" fill="#0d9668">
-      <polygon points="76,32 66,12 80,20 84,30"/>
-      <polygon points="124,32 134,12 120,20 116,30"/>
+      <polygon points="74,30 66,10 78,18 82,28"/>
+      <polygon points="126,30 134,10 122,18 118,28"/>
     </g>
 
     <!-- Eyes -->

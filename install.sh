@@ -346,7 +346,10 @@ fix_windows_gstack_skill_aliases() {
     connect_skill="$CODEX_ROOT/skills/connect-chrome/SKILL.md"
     if [ -f "$connect_skill" ]; then
       awk '
-        BEGIN { name_done = 0; desc_done = 0 }
+        NR == 1 {
+          sub(/^\xef\xbb\xbf/, "", $0)
+        }
+        BEGIN { name_done = 0; desc_done = 0; skipping_desc = 0 }
         /^name:[[:space:]]/ && name_done == 0 {
           print "name: connect-chrome"
           name_done = 1
@@ -355,8 +358,21 @@ fix_windows_gstack_skill_aliases() {
         /^description:[[:space:]]/ && desc_done == 0 {
           print "description: |"
           print "  Backward-compatible alias for open-gstack-browser."
+          print "  Launch GStack Browser ??AI-controlled Chromium with the sidebar extension baked in."
+          print "  Opens a visible browser window where you can watch every action in real time."
+          print "  The sidebar shows a live activity feed and chat. Anti-bot stealth built in."
+          print "  Use when asked to \"open gstack browser\", \"launch browser\", \"connect chrome\","
+          print "  \"open chrome\", \"real browser\", \"launch chrome\", \"side panel\", or \"control my browser\"."
+          print "  Voice triggers (speech-to-text aliases): \"show me the browser\"."
           desc_done = 1
+          skipping_desc = 1
           next
+        }
+        skipping_desc == 1 {
+          if ($0 ~ /^  / || $0 ~ /^$/) {
+            next
+          }
+          skipping_desc = 0
         }
         { print }
       ' "$connect_skill" > "$connect_skill.tmp" && mv "$connect_skill.tmp" "$connect_skill"
@@ -745,6 +761,19 @@ if [ ! -f "$CODEX_ROOT/AGENTS.md" ]; then
 else
   echo "  AGENTS.md already exists -- skipping (delete to regenerate)"
 fi
+
+echo "[3.5/7] Installing hooks..."
+mkdir -p "$CODEX_ROOT/hooks"
+if [ -f "$REPO_ROOT/hooks/hooks.json" ]; then
+  cp "$REPO_ROOT/hooks/hooks.json" "$CODEX_ROOT/hooks/hooks.json"
+  add_manifest_entry "hooks/hooks.json"
+fi
+if [ -f "$REPO_ROOT/hooks/session-start.sh" ]; then
+  cp "$REPO_ROOT/hooks/session-start.sh" "$CODEX_ROOT/hooks/session-start.sh"
+  chmod +x "$CODEX_ROOT/hooks/session-start.sh"
+  add_manifest_entry "hooks/session-start.sh"
+fi
+echo "  Hooks installed (vault enforcement)"
 
 echo "[4/7] Configuring config.toml..."
 CONFIG_FILE="$CODEX_ROOT/config.toml"

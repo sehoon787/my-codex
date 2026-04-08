@@ -49,21 +49,35 @@ jobs:
             git diff --cached --name-only >> "$GITHUB_STEP_SUMMARY"
           fi
 
-      - name: Create Pull Request
+      - name: Create and merge Pull Request
         if: steps.check.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           BRANCH="chore/update-upstream-$(date +%Y%m%d)"
           git checkout -b "$BRANCH"
-          git commit -m "chore: update upstream submodules"
+          git commit -m "chore: update upstream submodules [skip ci]"
           git push origin "$BRANCH"
-          gh pr create \
+          PR_URL=$(gh pr create \
             --title "chore: update upstream submodules $(date +%Y-%m-%d)" \
-            --body "Automated weekly upstream submodule update.
+            --body "Automated weekly upstream submodule update." \
+            --base main)
+          gh pr merge "$PR_URL" --squash --delete-branch --admin 2>/dev/null || \
+            gh pr merge "$PR_URL" --squash --delete-branch 2>/dev/null || \
+            echo "Auto-merge not available — PR created at $PR_URL"
 
-          Updated submodules:
-          $(git diff HEAD~1 --name-only)
-
-          Run CI to verify compatibility." \
-            --base main
+      - name: Cleanup stale update branches
+        if: always()
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh api repos/${{ github.repository }}/branches --paginate --jq '.[].name' 2>/dev/null | \
+            grep '^chore/update-upstream-' | while read -r branch; do
+              PR_STATE=$(gh pr list --head "$branch" --state all --json state --jq '.[0].state' 2>/dev/null || echo "")
+              case "$PR_STATE" in
+                MERGED|CLOSED)
+                  gh api -X DELETE "repos/${{ github.repository }}/git/refs/heads/$branch" 2>/dev/null || true
+                  echo "Deleted stale branch: $branch"
+                  ;;
+              esac
+            done

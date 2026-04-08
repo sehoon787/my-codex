@@ -1,11 +1,11 @@
 ---
 name: knowledge-vault
-description: Initialize, manage, and search the per-project .knowledge/ vault. Obsidian-compatible persistent knowledge base.
+description: Initialize, manage, and search the per-project .briefing/ vault. Obsidian-compatible persistent knowledge base.
 ---
 
 # Knowledge Vault Skill
 
-Manage the `.knowledge/` directory as a persistent, Obsidian-compatible knowledge base.
+Manage the `.briefing/` directory as a persistent, Obsidian-compatible knowledge base.
 
 ## Initialize Vault
 
@@ -13,7 +13,7 @@ When starting a new vault (first time in a project):
 
 1. Create directory structure:
 ```
-.knowledge/
+.briefing/
 ├── INDEX.md
 ├── sessions/
 ├── decisions/
@@ -22,7 +22,7 @@ When starting a new vault (first time in a project):
 └── agents/
 ```
 
-2. Create `.knowledge/INDEX.md`:
+2. Create `.briefing/INDEX.md`:
 ```markdown
 ---
 date: <today>
@@ -47,7 +47,7 @@ tags: [project, index]
 - [[learnings/]] — Patterns and solutions
 ```
 
-3. Add `.knowledge/` to `.gitignore`
+3. Add `.briefing/` to `.gitignore`
 
 ## Note Templates
 
@@ -156,22 +156,22 @@ related: []
 
 ## Search Vault
 
-Use Grep to search `.knowledge/` by keyword:
+Use Grep to search `.briefing/` by keyword:
 
 ```bash
 # Search by content
-grep -r "keyword" .knowledge/ --include="*.md"
+grep -r "keyword" .briefing/ --include="*.md"
 
 # Search by tag
-grep -r "tags:.*architecture" .knowledge/ --include="*.md"
+grep -r "tags:.*architecture" .briefing/ --include="*.md"
 
 # Search by type
-grep -r "type: decision" .knowledge/ --include="*.md"
+grep -r "type: decision" .briefing/ --include="*.md"
 ```
 
 ## Obsidian Tips
 
-- Open `.knowledge/` as an Obsidian vault
+- Open `.briefing/` as an Obsidian vault
 - Graph View shows note connections via `[[wiki-links]]`
 - Use tags for filtering (#decision, #learning, #session)
 - Install "Dataview" plugin for dynamic tables of decisions/learnings

@@ -16,7 +16,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node -e \"const fs=require('fs');const d='.knowledge/agents';if(fs.existsSync('.knowledge/INDEX.md')){fs.mkdirSync(d,{recursive:true});const j=JSON.parse(fs.readFileSync(0,'utf8'));const tool=j.tool_name||'unknown';if(tool==='Agent'){const e={ts:new Date().toISOString(),tool:tool,agent:j.tool_input?.name||'unknown'};fs.appendFileSync(d+'/agent-log.jsonl',JSON.stringify(e)+'\\n')}}\"",
+            "command": "node -e \"const fs=require('fs');const d='.briefing/agents';if(fs.existsSync('.briefing/INDEX.md')){fs.mkdirSync(d,{recursive:true});const j=JSON.parse(fs.readFileSync(0,'utf8'));const tool=j.tool_name||'unknown';if(tool==='Agent'){const e={ts:new Date().toISOString(),tool:tool,agent:j.tool_input?.name||'unknown'};fs.appendFileSync(d+'/agent-log.jsonl',JSON.stringify(e)+'\\n')}}\"",
             "timeout": 5000
           }
         ]
@@ -27,12 +27,12 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node -e \"const fs=require('fs');const p='.knowledge';if(!fs.existsSync(p+'/INDEX.md')){process.exit(0)}const today=new Date().toISOString().slice(0,10);const sDir=p+'/sessions';const hasLog=fs.existsSync(sDir)&&fs.readdirSync(sDir).some(f=>f.startsWith(today));const agentLog=p+'/agents/agent-log.jsonl';const hasWork=fs.existsSync(agentLog)&&fs.readFileSync(agentLog,'utf8').split('\\n').filter(l=>l.trim()).some(l=>{try{return JSON.parse(l).ts&&JSON.parse(l).ts.startsWith(today)}catch{return false}});if(hasWork&&!hasLog){console.log(JSON.stringify({decision:'block',reason:'Meaningful work detected but no session log in .knowledge/sessions/'+today+'-*.md. Write a session summary before ending.'}));process.exit(0)}console.log(JSON.stringify({decision:'allow'}))\"",
+            "command": "node -e \"const fs=require('fs');const p='.briefing';if(!fs.existsSync(p+'/INDEX.md')){process.exit(0)}const today=new Date().toISOString().slice(0,10);const sDir=p+'/sessions';const hasLog=fs.existsSync(sDir)&&fs.readdirSync(sDir).some(f=>f.startsWith(today));const agentLog=p+'/agents/agent-log.jsonl';const hasWork=fs.existsSync(agentLog)&&fs.readFileSync(agentLog,'utf8').split('\\n').filter(l=>l.trim()).some(l=>{try{return JSON.parse(l).ts&&JSON.parse(l).ts.startsWith(today)}catch{return false}});if(hasWork&&!hasLog){console.log(JSON.stringify({decision:'block',reason:'Meaningful work detected but no session log in .briefing/sessions/'+today+'-*.md. Write a session summary before ending.'}));process.exit(0)}console.log(JSON.stringify({decision:'allow'}))\"",
             "timeout": 5000
           },
           {
             "type": "command",
-            "command": "node -e \"const fs=require('fs');const p='.knowledge/INDEX.md';if(fs.existsSync(p)){const c=fs.readFileSync(p,'utf8');const m=c.match(/^language:\\s*(\\w+)/m);const lang=m?m[1]:'en';const msgs={en:'[KnowledgeVault] MANDATORY: Write session summary to .knowledge/sessions/YYYY-MM-DD-topic.md in '+lang+'. Update INDEX.md if new decisions or learnings were added.',ko:'[KnowledgeVault] 필수: .knowledge/sessions/YYYY-MM-DD-topic.md에 세션 요약을 한국어로 작성하세요. INDEX.md도 업데이트하세요.',zh:'[KnowledgeVault] 必须：将会话摘要写入 .knowledge/sessions/YYYY-MM-DD-topic.md（中文）。请更新 INDEX.md。'};const msg=msgs[lang]||msgs.en.replace('in '+lang,'in '+lang);console.log(JSON.stringify({hookSpecificOutput:{additionalContext:msg}}))}\"",
+            "command": "node -e \"const fs=require('fs');const p='.briefing/INDEX.md';if(fs.existsSync(p)){const c=fs.readFileSync(p,'utf8');const m=c.match(/^language:\\s*(\\w+)/m);const lang=m?m[1]:'en';const msgs={en:'[KnowledgeVault] MANDATORY: Write session summary to .briefing/sessions/YYYY-MM-DD-topic.md in '+lang+'. Update INDEX.md if new decisions or learnings were added.',ko:'[KnowledgeVault] 필수: .briefing/sessions/YYYY-MM-DD-topic.md에 세션 요약을 한국어로 작성하세요. INDEX.md도 업데이트하세요.',zh:'[KnowledgeVault] 必须：将会话摘要写入 .briefing/sessions/YYYY-MM-DD-topic.md（中文）。请更新 INDEX.md。'};const msg=msgs[lang]||msgs.en.replace('in '+lang,'in '+lang);console.log(JSON.stringify({hookSpecificOutput:{additionalContext:msg}}))}\"",
             "timeout": 3000
           }
         ]

@@ -321,10 +321,10 @@ bash /tmp/my-codex/install.sh --profile full
 
 ## <img src="https://obsidian.md/images/obsidian-logo-gradient.svg" width="24" height="24" align="center"/> Knowledge Vault
 
-my-codex includes an Obsidian-compatible knowledge management system. Every project maintains a `.knowledge/` directory as a persistent memory base.
+my-codex includes an Obsidian-compatible knowledge management system. Every project maintains a `.briefing/` directory as a persistent memory base.
 
 ```
-.knowledge/
+.briefing/
 ├── INDEX.md              ← Project context, recent decisions
 ├── sessions/             ← Session summaries (YYYY-MM-DD-topic.md)
 ├── decisions/            ← Architecture & design decisions
@@ -341,9 +341,9 @@ my-codex includes an Obsidian-compatible knowledge management system. Every proj
 
 ### Using with Obsidian
 
-Open your project's `.knowledge/` folder as an [Obsidian](https://obsidian.md) vault:
+Open your project's `.briefing/` folder as an [Obsidian](https://obsidian.md) vault:
 
-1. Open Obsidian → **Open folder as vault** → select `.knowledge/`
+1. Open Obsidian → **Open folder as vault** → select `.briefing/`
 2. Notes appear in the graph view, linked by `[[wiki-links]]`
 3. YAML frontmatter provides searchable tags and metadata
 4. Timeline of decisions and learnings builds automatically over sessions

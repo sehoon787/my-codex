@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 # my-codex SessionStart hook
-# Mechanism A: Auto-create .knowledge/ vault if missing
+# Mechanism A: Auto-create .briefing/ vault if missing
 # Mechanism: Read vault context into hook output
 set -euo pipefail
 
-_kv_dir=".knowledge"
+_kv_dir=".briefing"
 _kv_msg=""
 
 # ── 1. Knowledge Vault Auto-Create ──
@@ -38,14 +38,14 @@ Project knowledge base. Auto-created by SessionStart hook.
 - [[references/]] — Reference materials
 KVEOF
 
-  # Add .knowledge/ to .gitignore
-  if [ -f ".gitignore" ] && ! grep -q '\.knowledge/' ".gitignore" 2>/dev/null; then
-    echo '.knowledge/' >> ".gitignore"
+  # Add .briefing/ to .gitignore
+  if [ -f ".gitignore" ] && ! grep -q '\.briefing/' ".gitignore" 2>/dev/null; then
+    echo '.briefing/' >> ".gitignore"
   elif [ ! -f ".gitignore" ]; then
-    echo '.knowledge/' > ".gitignore"
+    echo '.briefing/' > ".gitignore"
   fi
 
-  _kv_msg="[KnowledgeVault] Auto-created .knowledge/ structure for ${_proj_name}. Read INDEX.md for project context."
+  _kv_msg="[KnowledgeVault] Auto-created .briefing/ structure for ${_proj_name}. Read INDEX.md for project context."
 else
   # ── 2. Read existing vault context ──
   _index_content=$(head -30 "$_kv_dir/INDEX.md" 2>/dev/null || true)

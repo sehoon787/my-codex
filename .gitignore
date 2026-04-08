@@ -1,6 +1,6 @@
 .omc/
 .omx/
-.knowledge/
+.briefing/
 node_modules/
 .DS_Store
 *.log

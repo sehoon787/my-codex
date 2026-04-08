@@ -21,7 +21,7 @@
 Boss auto-discovers every agent and skill at runtime,<br>
 then routes your task to the right specialist via `spawn_agent`. No config. No boilerplate.
 
-<img src="./logo/owl-codex.svg" alt="The Maestro Owl — my-codex" width="500">
+<img src="./logo/owl-codex-icon.svg" alt="The Maestro Owl — my-codex" width="180">
 
 </div>
 
@@ -167,7 +167,7 @@ Confirm "design done"   Architect verification  User: approve / improve
 | Category | Count | Source |
 |----------|------:|--------|
 | **Core agents** (always loaded) | 98 | Boss 1 + OMO 9 + OMX 33 + Awesome Core 54 + Superpowers 1 |
-| **Agent packs** (on-demand) | 230+ | 20 domain categories from agency-agents + awesome-codex-subagents |
+| **Agent packs** (on-demand) | 220+ | 20 domain categories from agency-agents + awesome-codex-subagents |
 | **Skills** | 200+ | ECC 180+ · gstack 40 · OMX 36 · Superpowers 14 · Core 3 |
 | **MCP Servers** | 3 | Context7, Exa, grep.app |
 | **config.toml** | 1 | my-codex |

@@ -1,99 +1,95 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
   <title>The Maestro Owl — my-codex</title>
 
+  <defs>
+    <filter id="glow-purple-cx" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="1.5" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
   <g id="owl-codex">
 
-    <!-- Constellation dots (varied sizes, behind owl) -->
-    <g id="constellation" fill="#10a37f" opacity="0.5">
-      <circle cx="22" cy="52" r="3"/>
-      <circle cx="14" cy="76" r="1.8"/>
-      <circle cx="32" cy="90" r="2.4"/>
-      <circle cx="178" cy="50" r="3"/>
-      <circle cx="186" cy="74" r="1.8"/>
-      <circle cx="168" cy="88" r="2.4"/>
-      <circle cx="100" cy="10" r="2"/>
-      <circle cx="42" cy="30" r="1.4"/>
-      <circle cx="158" cy="28" r="1.4"/>
+    <!-- Obsidian orbital graph — purple stays the same in both variants -->
+    <g id="orbitals" opacity="0.55">
+      <path d="M 38,40 Q 18,78 34,118" stroke="#7c3aed" stroke-width="0.8" fill="none" opacity="0.5"/>
+      <path d="M 162,40 Q 182,78 166,118" stroke="#7c3aed" stroke-width="0.8" fill="none" opacity="0.5"/>
+      <path d="M 55,20 Q 100,8 145,20" stroke="#a78bfa" stroke-width="0.7" fill="none" opacity="0.45"/>
+      <line x1="28" y1="55" x2="18" y2="80" stroke="#7c3aed" stroke-width="0.6" opacity="0.4"/>
+      <line x1="18" y1="80" x2="30" y2="105" stroke="#7c3aed" stroke-width="0.6" opacity="0.4"/>
+      <line x1="172" y1="55" x2="182" y2="80" stroke="#7c3aed" stroke-width="0.6" opacity="0.4"/>
+      <line x1="182" y1="80" x2="170" y2="105" stroke="#7c3aed" stroke-width="0.6" opacity="0.4"/>
+      <line x1="62" y1="16" x2="28" y2="55" stroke="#a78bfa" stroke-width="0.5" opacity="0.35"/>
+      <line x1="138" y1="16" x2="172" y2="55" stroke="#a78bfa" stroke-width="0.5" opacity="0.35"/>
+      <line x1="100" y1="10" x2="62" y2="16" stroke="#a78bfa" stroke-width="0.5" opacity="0.35"/>
+      <line x1="100" y1="10" x2="138" y2="16" stroke="#a78bfa" stroke-width="0.5" opacity="0.35"/>
     </g>
-    <!-- Constellation connecting lines -->
-    <g stroke="#10a37f" stroke-width="0.7" opacity="0.25" fill="none">
-      <line x1="22" y1="52" x2="14" y2="76"/>
-      <line x1="14" y1="76" x2="32" y2="90"/>
-      <line x1="178" y1="50" x2="186" y2="74"/>
-      <line x1="186" y1="74" x2="168" y2="88"/>
-      <line x1="100" y1="10" x2="42" y2="30"/>
-      <line x1="100" y1="10" x2="158" y2="28"/>
+    <g id="orbital-nodes" filter="url(#glow-purple-cx)">
+      <circle cx="28" cy="55" r="3" fill="#7c3aed" opacity="0.7"/>
+      <circle cx="18" cy="80" r="2" fill="#a78bfa" opacity="0.6"/>
+      <circle cx="30" cy="105" r="2.5" fill="#7c3aed" opacity="0.65"/>
+      <circle cx="172" cy="55" r="3" fill="#7c3aed" opacity="0.7"/>
+      <circle cx="182" cy="80" r="2" fill="#a78bfa" opacity="0.6"/>
+      <circle cx="170" cy="105" r="2.5" fill="#7c3aed" opacity="0.65"/>
+      <circle cx="100" cy="10" r="2.5" fill="#a78bfa" opacity="0.6"/>
+      <circle cx="62" cy="16" r="1.8" fill="#6d28d9" opacity="0.55"/>
+      <circle cx="138" cy="16" r="1.8" fill="#6d28d9" opacity="0.55"/>
     </g>
 
-    <!-- Body: compact stubby rounded shape -->
-    <path id="body" d="M72 132 Q62 150 66 174 Q100 184 134 174 Q138 150 128 132 Z" fill="#10a37f"/>
+    <!-- Body: teal #10b981 -->
+    <path id="body" d="M72 132 Q62 150 66 174 Q100 184 134 174 Q138 150 128 132 Z" fill="#10b981"/>
 
-    <!-- Left wing: geometric angles -->
-    <path id="wing-left" d="M72 132 L60 128 L42 148 L48 158 L66 150 L72 138 Z" fill="#0b7a5e"/>
+    <!-- Wings: darker teal #0d9668 -->
+    <path id="wing-left" d="M72 132 L60 128 L42 148 L48 158 L66 150 L72 138 Z" fill="#0d9668"/>
+    <path id="wing-right" d="M128 132 L140 126 L158 136 L156 148 L138 146 L128 138 Z" fill="#0d9668"/>
 
-    <!-- Right wing: raised, holds baton -->
-    <path id="wing-right" d="M128 132 L140 126 L158 136 L156 148 L138 146 L128 138 Z" fill="#0b7a5e"/>
-
-    <!-- Baton: integrated with right wing tip -->
+    <!-- Baton -->
     <g id="baton">
-      <line x1="155" y1="132" x2="178" y2="110" stroke="#0b7a5e" stroke-width="3" stroke-linecap="round"/>
-      <!-- Baton handle cap -->
-      <circle cx="178" cy="110" r="4.5" fill="#0b7a5e"/>
-      <circle cx="178" cy="110" r="2.5" fill="#6ec6a7"/>
+      <line x1="155" y1="132" x2="178" y2="110" stroke="#0d9668" stroke-width="3" stroke-linecap="round"/>
+      <circle cx="178" cy="110" r="4.5" fill="#0d9668"/>
+      <circle cx="178" cy="110" r="2.5" fill="#6ee7b7"/>
     </g>
 
-    <!-- Feet: two small geometric shapes -->
-    <g id="feet" fill="#0b7a5e">
+    <!-- Feet -->
+    <g id="feet" fill="#0d9668">
       <rect x="82" y="176" width="14" height="7" rx="3.5"/>
       <rect x="104" y="176" width="14" height="7" rx="3.5"/>
     </g>
 
-    <!-- Head: larger squircle -->
-    <rect id="head" x="46" y="28" width="108" height="108" rx="34" ry="34" fill="#10a37f"/>
+    <!-- Head: ellipse, teal #10b981 -->
+    <ellipse id="head" cx="100" cy="78" rx="56" ry="52" fill="#10b981"/>
 
-    <!-- Facial disc: slightly darker oval -->
-    <ellipse id="facial-disc" cx="100" cy="82" rx="44" ry="38" fill="#0b7a5e" opacity="0.3"/>
+    <!-- Facial disc: #059669 -->
+    <ellipse id="facial-disc" cx="100" cy="82" rx="44" ry="38" fill="#059669" opacity="0.35"/>
 
-    <!-- Brow tufts: sharper crown-like pentagons -->
-    <g id="brow-tufts" fill="#0b7a5e">
-      <polygon points="74,30 66,10 78,18 82,28"/>
-      <polygon points="126,30 134,10 122,18 118,28"/>
+    <!-- Brow tufts: #0d9668 -->
+    <g id="brow-tufts" fill="#0d9668">
+      <polygon points="76,32 66,12 80,20 84,30"/>
+      <polygon points="124,32 134,12 120,20 116,30"/>
     </g>
 
-    <!-- Eyes: dominant, large -->
+    <!-- Eyes -->
     <g id="eyes">
-      <!-- Left eye sclera -->
       <circle cx="80" cy="82" r="24" fill="#f4faf7"/>
-      <!-- Left eye iris -->
-      <circle cx="80" cy="82" r="16" fill="#6ec6a7"/>
-      <!-- Left eye inner iris ring -->
-      <circle cx="80" cy="82" r="12" fill="#10a37f" opacity="0.4"/>
-      <!-- Left eye pupil -->
-      <circle cx="80" cy="82" r="8" fill="#0d2118"/>
-      <!-- Left eye highlight primary -->
+      <circle cx="80" cy="82" r="16" fill="#6ee7b7"/>
+      <circle cx="80" cy="82" r="12" fill="#10b981" opacity="0.4"/>
+      <circle cx="80" cy="82" r="8" fill="#064e3b"/>
       <circle cx="85" cy="77" r="3.5" fill="#f4faf7" opacity="0.85"/>
-      <!-- Left eye highlight secondary -->
       <circle cx="77" cy="87" r="1.5" fill="#f4faf7" opacity="0.4"/>
 
-      <!-- Right eye sclera -->
       <circle cx="120" cy="82" r="24" fill="#f4faf7"/>
-      <!-- Right eye iris -->
-      <circle cx="120" cy="82" r="16" fill="#6ec6a7"/>
-      <!-- Right eye inner iris ring -->
-      <circle cx="120" cy="82" r="12" fill="#10a37f" opacity="0.4"/>
-      <!-- Right eye pupil -->
-      <circle cx="120" cy="82" r="8" fill="#0d2118"/>
-      <!-- Right eye highlight primary -->
+      <circle cx="120" cy="82" r="16" fill="#6ee7b7"/>
+      <circle cx="120" cy="82" r="12" fill="#10b981" opacity="0.4"/>
+      <circle cx="120" cy="82" r="8" fill="#064e3b"/>
       <circle cx="125" cy="77" r="3.5" fill="#f4faf7" opacity="0.85"/>
-      <!-- Right eye highlight secondary -->
       <circle cx="117" cy="87" r="1.5" fill="#f4faf7" opacity="0.4"/>
     </g>
 
-    <!-- Beak: small cute downward triangle -->
-    <polygon id="beak" points="100,100 94,109 106,109" fill="#0b7a5e"/>
+    <!-- Beak: #0d9668 -->
+    <polygon id="beak" points="100,100 94,109 106,109" fill="#0d9668"/>
 
-    <!-- Chest crystal chevrons: precise V-shapes -->
-    <g id="chest-chevrons" fill="none" stroke="#6ec6a7" stroke-linecap="square" stroke-linejoin="miter">
+    <!-- Chest chevrons: #6ee7b7 -->
+    <g id="chest-chevrons" fill="none" stroke="#6ee7b7" stroke-linecap="square" stroke-linejoin="miter">
       <polyline points="90,143 100,135 110,143" stroke-width="3"/>
       <polyline points="86,152 100,142 114,152" stroke-width="2.5"/>
       <polyline points="82,161 100,149 118,161" stroke-width="2"/>

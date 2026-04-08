@@ -248,6 +248,25 @@ copy_toml_dir() {
   done
 }
 
+# Like copy_toml_dir but skips files whose basename already exists in agents/
+copy_toml_dir_dedup() {
+  local src_dir="$1"
+  local dest_dir="$2"
+  local file_name bname dest_file rel_path
+  [ -d "$src_dir" ] || return 0
+
+  mkdir -p "$dest_dir"
+  for file_name in "$src_dir"/*.toml; do
+    [ -f "$file_name" ] || continue
+    bname="$(basename "$file_name")"
+    [ -f "$CODEX_ROOT/agents/$bname" ] && continue
+    dest_file="$dest_dir/$bname"
+    cp "$file_name" "$dest_file"
+    rel_path="${dest_file#"$CODEX_ROOT"/}"
+    add_manifest_entry "$rel_path"
+  done
+}
+
 copy_skill_dirs() {
   local skill_src="$1"
   local skill_dir dest_dir rel_path
@@ -444,9 +463,24 @@ if [ "$SKIP_OMX" = "0" ]; then
       for md_file in "$UPSTREAM_DIR/prompts/"*.md; do
         [ -f "$md_file" ] || continue
         bname="$(basename "$md_file")"
+        fname="${bname%.md}"
+        # Check if file has YAML frontmatter at all
+        first_line="$(head -1 "$md_file" | tr -d '\r')"
+        if [ "$first_line" != "---" ]; then
+          # No frontmatter: generate a minimal TOML directly and skip md-to-toml conversion
+          {
+            printf 'name = "%s"\n' "$fname"
+            printf 'description = "Team orchestration specialist"\n'
+            printf 'model = "o3"\n'
+            printf 'model_reasoning_effort = "medium"\n'
+            printf 'developer_instructions = """\n'
+            tr -d '\r' < "$md_file"
+            printf '\n"""\n'
+          } > "$omc_staging/omc/${fname}.toml"
+          continue
+        fi
         # Add name: field from filename if missing
         if ! grep -q '^name:' "$md_file" 2>/dev/null; then
-          fname="${bname%.md}"
           cp "$md_file" "$omc_staging/omc/$bname"
           # Insert name: after first ---
           sed -i "1,/^---$/{/^---$/a\\
@@ -465,6 +499,8 @@ name: $fname
       if [ -d "$omc_toml_out/omc" ]; then
         copy_toml_dir "$omc_toml_out/omc" "$CODEX_ROOT/agents"
       fi
+      # Also copy any pre-generated TOMLs (from files without frontmatter)
+      copy_toml_dir "$omc_staging/omc" "$CODEX_ROOT/agents"
     fi
   fi
 fi
@@ -484,7 +520,7 @@ if [ "$SKIP_AWESOME" = "0" ]; then
             copy_toml_dir "$cat_dir" "$CODEX_ROOT/agents"
             ;;
           *)
-            copy_toml_dir "$cat_dir" "$CODEX_ROOT/agent-packs/$cat_name"
+            copy_toml_dir_dedup "$cat_dir" "$CODEX_ROOT/agent-packs/$cat_name"
             ;;
         esac
       done

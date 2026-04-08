@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <title>The Maestro Owl — my-codex (favicon)</title>
+
+  <!-- Simplified face only: head + eyes + tufts, readable at 32px -->
+  <g id="owl-codex-favicon">
+
+    <!-- Head -->
+    <rect x="3" y="5" width="26" height="25" rx="7" ry="7" fill="#10a37f"/>
+
+    <!-- Facial disc -->
+    <ellipse cx="16" cy="17" rx="10" ry="9" fill="#0b7a5e" opacity="0.3"/>
+
+    <!-- Brow tufts -->
+    <polygon points="10,6 8,1 13,4" fill="#0b7a5e"/>
+    <polygon points="22,6 24,1 19,4" fill="#0b7a5e"/>
+
+    <!-- Left eye sclera -->
+    <circle cx="11" cy="16" r="5.5" fill="#f4faf7"/>
+    <!-- Left eye iris -->
+    <circle cx="11" cy="16" r="3.8" fill="#6ec6a7"/>
+    <!-- Left eye pupil -->
+    <circle cx="11" cy="16" r="2" fill="#0d2118"/>
+    <!-- Left eye highlight -->
+    <circle cx="12.2" cy="14.8" r="0.9" fill="#f4faf7" opacity="0.9"/>
+
+    <!-- Right eye sclera -->
+    <circle cx="21" cy="16" r="5.5" fill="#f4faf7"/>
+    <!-- Right eye iris -->
+    <circle cx="21" cy="16" r="3.8" fill="#6ec6a7"/>
+    <!-- Right eye pupil -->
+    <circle cx="21" cy="16" r="2" fill="#0d2118"/>
+    <!-- Right eye highlight -->
+    <circle cx="22.2" cy="14.8" r="0.9" fill="#f4faf7" opacity="0.9"/>
+
+    <!-- Beak -->
+    <polygon points="16,22 14,25 18,25" fill="#0b7a5e"/>
+
+  </g>
+</svg>

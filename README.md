@@ -21,6 +21,8 @@
 Boss auto-discovers every agent and skill at runtime,<br>
 then routes your task to the right specialist via `spawn_agent`. No config. No boilerplate.
 
+<img src="./logo/owl-codex.svg" alt="The Maestro Owl — my-codex" width="500">
+
 </div>
 
 ---
@@ -315,7 +317,7 @@ bash /tmp/my-codex/install.sh --profile full
 
 ---
 
-## Knowledge Vault
+## <img src="https://obsidian.md/images/obsidian-logo-gradient.svg" width="24" height="24" align="center"/> Knowledge Vault
 
 my-codex includes an Obsidian-compatible knowledge management system. Every project maintains a `.knowledge/` directory as a persistent memory base.
 
@@ -354,14 +356,14 @@ my-codex bundles content from 8 upstream repositories:
 
 | # | Source | What It Provides |
 |---|--------|-----------------|
-| 1 | **[agency-agents](https://github.com/msitarzewski/agency-agents)** — msitarzewski | 180+ business specialist agent personas across 14 categories. Converted from Markdown to native TOML via automated pipeline. |
-| 2 | **[everything-claude-code](https://github.com/affaan-m/everything-claude-code)** — affaan-m | 180+ skills across development workflows. Claude Code-specific content stripped; generic coding skills retained. |
-| 3 | **[awesome-codex-subagents](https://github.com/VoltAgent/awesome-codex-subagents)** — VoltAgent | 136 production-grade agents in native TOML format. Already Codex-compatible, no conversion needed. 54 core agents auto-loaded. |
-| 4 | **[oh-my-codex](https://github.com/Yeachan-Heo/oh-my-codex)** — Yeachan Heo | 36 skills, hooks, HUD, and team pipelines for Codex CLI. Referenced as architectural inspiration. |
-| 5 | **[oh-my-openagent](https://github.com/code-yeongyu/oh-my-openagent)** — code-yeongyu | 9 OMO agents (Sisyphus, Atlas, Oracle, etc.). Adapted to Codex-native TOML format. |
-| 6 | **[gstack](https://github.com/garrytan/gstack)** — garrytan | 40 skills for code review, QA, security audit, deployment. Includes Playwright browser daemon. |
-| 7 | **[superpowers](https://github.com/obra/superpowers)** — Jesse Vincent | 14 skills + 1 agent covering brainstorming, TDD, parallel agents, and code review. |
-| 8 | **[openai/skills](https://github.com/openai/skills)** — OpenAI | Official Skills Catalog for Codex. Specialist skills for document processing, code generation, and dev workflows. |
+| 1 | <img src="https://github.com/msitarzewski.png?size=32" width="20" height="20" align="center"/> **[agency-agents](https://github.com/msitarzewski/agency-agents)** — msitarzewski | 180+ business specialist agent personas across 14 categories. Converted from Markdown to native TOML via automated pipeline. |
+| 2 | <img src="https://github.com/affaan-m.png?size=32" width="20" height="20" align="center"/> **[everything-claude-code](https://github.com/affaan-m/everything-claude-code)** — affaan-m | 180+ skills across development workflows. Claude Code-specific content stripped; generic coding skills retained. |
+| 3 | <img src="https://github.com/VoltAgent.png?size=32" width="20" height="20" align="center"/> **[awesome-codex-subagents](https://github.com/VoltAgent/awesome-codex-subagents)** — VoltAgent | 136 production-grade agents in native TOML format. Already Codex-compatible, no conversion needed. 54 core agents auto-loaded. |
+| 4 | <img src="https://github.com/Yeachan-Heo.png?size=32" width="20" height="20" align="center"/> **[oh-my-codex](https://github.com/Yeachan-Heo/oh-my-codex)** — Yeachan Heo | 36 skills, hooks, HUD, and team pipelines for Codex CLI. Referenced as architectural inspiration. |
+| 5 | <img src="https://github.com/code-yeongyu.png?size=32" width="20" height="20" align="center"/> **[oh-my-openagent](https://github.com/code-yeongyu/oh-my-openagent)** — code-yeongyu | 9 OMO agents (Sisyphus, Atlas, Oracle, etc.). Adapted to Codex-native TOML format. |
+| 6 | <img src="https://github.com/garrytan.png?size=32" width="20" height="20" align="center"/> **[gstack](https://github.com/garrytan/gstack)** — garrytan | 40 skills for code review, QA, security audit, deployment. Includes Playwright browser daemon. |
+| 7 | <img src="https://github.com/obra.png?size=32" width="20" height="20" align="center"/> **[superpowers](https://github.com/obra/superpowers)** — Jesse Vincent | 14 skills + 1 agent covering brainstorming, TDD, parallel agents, and code review. |
+| 8 | <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/OpenAI_Logo.svg/200px-OpenAI_Logo.svg.png" width="20" height="20" align="center"/> **[openai/skills](https://github.com/openai/skills)** — OpenAI | Official Skills Catalog for Codex. Specialist skills for document processing, code generation, and dev workflows. |
 
 ---
 

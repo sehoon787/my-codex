@@ -3,37 +3,35 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>my-codex — All-in-one Codex CLI Multi-Agent Orchestration</title>
-<meta name="description" content="All-in-one Codex CLI multi-agent orchestration toolkit. 330+ installed agent files, 200+ skills, 3 MCP servers. From 6 curated upstream sources.">
-<meta property="og:title" content="my-codex — All-in-one Codex CLI Multi-Agent Orchestration">
-<meta property="og:description" content="330+ installed agent files, 200+ skills, 3 MCP servers from 6 curated upstream sources. Native TOML agents for OpenAI Codex CLI. One install gets everything.">
+<title>my-codex — All-in-one agent harness for OpenAI Codex CLI</title>
+<meta name="description" content="All-in-one Codex CLI multi-agent orchestration. 330+ agents, 200+ skills, 3 MCP servers. Boss orchestrator with runtime discovery.">
+<meta property="og:title" content="my-codex — All-in-one agent harness for OpenAI Codex CLI">
+<meta property="og:description" content="Boss orchestrates 330+ agents, 200+ skills, 3 MCP servers. Dynamic runtime discovery. One install.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://sehoon787.github.io/my-codex/">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="my-codex — Codex CLI Multi-Agent Orchestration Toolkit">
-<meta name="twitter:description" content="330+ installed agent files, 200+ skills. Native TOML format for OpenAI Codex CLI.">
+<meta name="twitter:title" content="my-codex — All-in-one agent harness for OpenAI Codex CLI">
 <link rel="canonical" href="https://sehoon787.github.io/my-codex/">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-:root{--bg:#030712;--bg2:#111827;--bg3:#1e293b;--text:#e2e8f0;--text2:#94a3b8;--primary:#10b981;--accent:#22d3ee;--green:#34d399;--pink:#f472b6;--card:rgba(17,24,39,.7);--border:rgba(16,185,129,.15);--glow:rgba(16,185,129,.12)}
+:root{--bg:#030712;--bg2:#111827;--bg3:#1e293b;--text:#e2e8f0;--text2:#94a3b8;--primary:#10b981;--accent:#22d3ee;--green:#34d399;--pink:#f472b6;--violet:#a78bfa;--card:rgba(17,24,39,.7);--border:rgba(16,185,129,.15);--glow:rgba(16,185,129,.12)}
 html{scroll-behavior:smooth;font-size:16px}
 body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;overflow-x:hidden}
 a{color:var(--accent);text-decoration:none;transition:opacity .2s}a:hover{opacity:.8}
 code,pre,.mono{font-family:'JetBrains Mono',monospace}
 .container{max-width:1100px;margin:0 auto;padding:0 24px}
 section{padding:80px 0}
-
 @media(max-width:768px){section{padding:56px 0}.container{padding:0 16px}}
 
-/* Sticky Nav */
+/* Nav */
 .nav{position:fixed;top:0;left:0;right:0;z-index:1000;padding:0 24px;transform:translateY(-100%);transition:transform .3s}
 .nav.visible{transform:translateY(0)}
-.nav-inner{max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:56px;background:rgba(3,7,18,.75);backdrop-filter:blur(16px);border:1px solid var(--border);border-top:0;border-radius:0 0 14px 14px;padding:0 24px}
+.nav-inner{max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:56px;background:rgba(3,7,18,.82);backdrop-filter:blur(16px);border:1px solid var(--border);border-top:0;border-radius:0 0 14px 14px;padding:0 24px}
 .nav-logo{font-weight:800;font-size:1rem;color:#fff;letter-spacing:-.02em}
-.nav-links{display:flex;gap:20px;font-size:.82rem;font-weight:500}
+.nav-links{display:flex;gap:18px;font-size:.8rem;font-weight:500}
 .nav-links a{color:var(--text2);transition:color .2s}.nav-links a:hover,.nav-links a.active{color:var(--accent);opacity:1}
 .nav-lang{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:4px 12px;font-size:.78rem;font-weight:600;cursor:pointer;color:var(--text);transition:border-color .2s}
 .nav-lang:hover{border-color:var(--primary)}
@@ -47,141 +45,161 @@ section{padding:80px 0}
 /* Hero */
 .hero{min-height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;position:relative;overflow:hidden}
 .hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 60% 40% at 50% 35%,var(--glow),transparent);pointer-events:none}
-.hero-dots{position:absolute;inset:0;background-image:radial-gradient(rgba(16,185,129,.15) 1px,transparent 1px);background-size:32px 32px;pointer-events:none;opacity:.5}
-.hero h1{font-size:clamp(2.6rem,7vw,4.5rem);font-weight:800;letter-spacing:-.04em;background:linear-gradient(135deg,#fff 20%,var(--green) 80%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1.1;margin-bottom:8px}
-.hero .tagline{font-size:clamp(.95rem,2.2vw,1.15rem);color:var(--text2);margin:12px auto 24px;max-width:560px}
-.hero .stat-tagline{font-size:clamp(.82rem,1.8vw,.95rem);color:var(--text2);font-family:'JetBrains Mono',monospace;margin-bottom:28px;letter-spacing:-.01em}
-.hero .stat-tagline em{font-style:normal;color:var(--green)}
+.hero-dots{position:absolute;inset:0;background-image:radial-gradient(rgba(16,185,129,.12) 1px,transparent 1px);background-size:32px 32px;pointer-events:none;opacity:.4}
+.hero h1{font-size:clamp(2.8rem,7vw,4.8rem);font-weight:800;letter-spacing:-.04em;background:linear-gradient(135deg,var(--primary) 0%,#fff 40%,var(--accent) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1.1;margin-bottom:8px}
+.hero .tagline{font-size:clamp(.95rem,2.2vw,1.18rem);color:var(--text2);margin:12px auto 24px;max-width:560px}
 .badges{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:28px}
 .badge{display:inline-flex;align-items:center;gap:6px;padding:6px 16px;border-radius:20px;font-size:.8rem;font-weight:600;border:1px solid var(--border);background:var(--card);backdrop-filter:blur(12px)}
-.badge em{font-style:normal;color:var(--green);font-family:'JetBrains Mono',monospace;font-size:.9rem}
-.cta-row{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.badge em{font-style:normal;color:var(--accent);font-family:'JetBrains Mono',monospace}
+.cta-row{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:8px}
 .cta{display:inline-block;padding:14px 36px;border-radius:12px;background:linear-gradient(135deg,var(--primary),#059669);color:#fff;font-weight:600;font-size:1rem;transition:transform .2s,box-shadow .2s}
 .cta:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(16,185,129,.3);opacity:1}
-.cta.secondary{background:transparent;border:1px solid var(--border);color:var(--text)}
-.cta.secondary:hover{border-color:var(--primary)}
-.hero-sub{font-size:.82rem;color:var(--text2);margin-top:20px}
+.cta.secondary{background:transparent;border:1px solid var(--border);color:var(--text)}.cta.secondary:hover{border-color:var(--primary)}
+
+/* Install block */
+.inst-box{max-width:600px;margin:20px auto 0;background:#0c0e14;border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;font-family:'JetBrains Mono',monospace;font-size:.78rem;color:var(--text);cursor:pointer;transition:border-color .2s}
+.inst-box:hover{border-color:var(--primary)}
+.inst-box .copy-hint{font-size:.7rem;color:var(--text2);font-family:'Inter',sans-serif;white-space:nowrap;flex-shrink:0;background:var(--card);border:1px solid var(--border);border-radius:6px;padding:4px 10px;transition:border-color .2s}
+.inst-box:hover .copy-hint{border-color:var(--primary)}
+.inst-tabs{display:flex;justify-content:center;gap:6px;margin:16px auto 0;max-width:600px}
+.inst-tab{padding:6px 18px;border-radius:8px 8px 0 0;border:1px solid rgba(255,255,255,.08);border-bottom:none;background:transparent;color:var(--text2);font-size:.76rem;font-family:'JetBrains Mono',monospace;cursor:pointer;transition:all .2s}
+.inst-tab.active{background:#0c0e14;color:var(--text);border-color:rgba(255,255,255,.08)}
+.inst-tab:hover:not(.active){color:var(--text)}
+.project-switch{display:flex;justify-content:center;gap:8px;margin-bottom:12px}
+.ps-item{padding:6px 16px;border-radius:20px;font-size:.82rem;font-weight:600;color:var(--text2);cursor:pointer;transition:all .2s}
+.ps-item.active{background:var(--primary);color:#fff}
+.ps-item:hover:not(.active){color:var(--text);background:var(--card)}
 
 /* Section headings */
 .st{font-size:clamp(1.6rem,4vw,2.2rem);font-weight:700;text-align:center;margin-bottom:12px}
 .ss{text-align:center;color:var(--text2);max-width:620px;margin:0 auto 48px;font-size:.95rem}
 
-/* Cards */
-.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px}
-.card{background:var(--card);backdrop-filter:blur(16px);border:1px solid var(--border);border-radius:16px;padding:32px 28px;transition:transform .25s,border-color .25s}
-.card:hover{transform:translateY(-4px);border-color:var(--primary)}
-.card-icon{font-size:2rem;margin-bottom:12px;display:block}
-.card h3{font-size:1.15rem;margin-bottom:8px;color:#fff}
-.card p{color:var(--text2);font-size:.9rem}
+/* Phase flow cards */
+.phase-flow{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:40px;position:relative}
+.phase-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 12px;text-align:center;transition:border-color .2s}
+.phase-card:hover{border-color:var(--primary)}
+.phase-card .ph-icon{font-size:1.6rem;display:block;margin-bottom:8px}
+.phase-card .ph-num{font-size:.7rem;color:var(--primary);font-weight:700;font-family:'JetBrains Mono',monospace;display:block;margin-bottom:4px}
+.phase-card h4{font-size:.88rem;color:#fff;margin-bottom:4px}
+.phase-card p{font-size:.72rem;color:var(--text2)}
+@media(max-width:700px){.phase-flow{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:420px){.phase-flow{grid-template-columns:1fr 1fr}}
 
-/* Terminal with tabs */
-.term-wrap{max-width:740px;margin:0 auto}
-.term-tabs{display:flex;gap:4px;margin-bottom:-1px;padding-left:12px}
-.term-tab{padding:8px 18px;font-size:.8rem;font-weight:600;border:1px solid transparent;border-bottom:0;border-radius:10px 10px 0 0;cursor:pointer;color:var(--text2);background:transparent;transition:all .2s;font-family:'Inter',sans-serif}
-.term-tab.active{background:rgba(12,14,20,.95);color:var(--accent);border-color:rgba(255,255,255,.08)}
-.term{background:#0c0e14;border:1px solid rgba(255,255,255,.08);border-radius:0 14px 14px 14px;overflow:hidden}
-.term-bar{background:rgba(255,255,255,.04);padding:8px 14px;display:flex;gap:6px;align-items:center}
-.term-dot{width:10px;height:10px;border-radius:50%}
-.term-body{padding:18px 22px;font-family:'JetBrains Mono',monospace;font-size:.76rem;line-height:1.85;min-height:260px;overflow:hidden}
-.term-line{opacity:0;transform:translateX(-4px);white-space:pre-wrap;word-break:break-all}
-.term-line.show{opacity:1;transform:translateX(0);transition:opacity .3s,transform .3s}
-.term-scene{display:none}.term-scene.active{display:block}
-.t-src{color:#a78bfa}.t-conv{color:var(--primary)}.t-exec{color:var(--green)}.t-rev{color:var(--pink)}.t-dim{color:#64748b}.t-acc{color:var(--accent)}.t-phase{color:var(--accent);font-size:.7rem}.t-ok{color:var(--green)}
+/* Priority + Model routing */
+.route-grid{display:grid;grid-template-columns:1fr 1fr;gap:32px;margin-top:40px}
+@media(max-width:700px){.route-grid{grid-template-columns:1fr}}
+.route-table{width:100%}
+.route-table th{text-align:left;font-size:.78rem;color:var(--text2);padding:8px 12px;border-bottom:1px solid rgba(255,255,255,.06)}
+.route-table td{padding:8px 12px;font-size:.84rem;border-bottom:1px solid rgba(255,255,255,.04)}
+.route-table td:first-child{font-family:'JetBrains Mono',monospace;font-weight:600;white-space:nowrap}
 
-/* Pipeline diagram */
-.pipe-flow{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:32px}
-.pipe-card{border-radius:12px;padding:18px 14px;text-align:center;border:1px solid;font-size:.82rem}
-.pipe-card h4{font-size:.88rem;margin-bottom:4px}
-.pipe-card p{font-size:.78rem;opacity:.85}
-.pipe-card .ex{margin-top:8px;font-size:.75rem;font-style:italic;opacity:.7}
-@media(max-width:700px){.pipe-flow{grid-template-columns:1fr 1fr}}
+/* Sprint cards */
+.sprint-row{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:40px}
+@media(max-width:600px){.sprint-row{grid-template-columns:1fr}}
+.sprint-card{border-radius:12px;padding:20px 16px;text-align:center;border:1px solid}
+.sprint-card h4{font-size:.92rem;margin-bottom:4px}
+.sprint-card p{font-size:.78rem;opacity:.85}
+.sprint-card .sp-tag{display:inline-block;font-size:.68rem;padding:2px 8px;border-radius:8px;margin-top:6px;font-weight:600}
 
 /* Architecture */
 .arch{display:flex;flex-direction:column;align-items:center;gap:0;max-width:800px;margin:0 auto}
-.arch-layer{width:100%;border:1px solid var(--border);border-radius:14px;padding:18px 22px;background:var(--card);backdrop-filter:blur(12px);text-align:center;position:relative;transition:box-shadow .4s}
-.arch-layer.src-glow{box-shadow:0 0 30px rgba(16,185,129,.12),0 0 60px rgba(16,185,129,.06)}
-.arch-layer h4{font-size:.92rem;margin-bottom:4px}
+.arch-layer{width:100%;border:1px solid var(--border);border-radius:14px;padding:16px 20px;background:var(--card);backdrop-filter:blur(12px);text-align:center;transition:box-shadow .4s}
+.arch-layer h4{font-size:.9rem;margin-bottom:4px}
 .arch-layer h4 .cnt{font-size:.75rem;color:var(--text2);font-weight:400;margin-left:6px}
-.arch-layer p{font-size:.82rem;color:var(--text2)}
-.arch-conn{width:2px;height:20px;background:linear-gradient(to bottom,var(--primary),transparent)}
-.arch-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;width:100%}
-@media(max-width:600px){.arch-row{grid-template-columns:1fr}}
+.arch-layer p{font-size:.8rem;color:var(--text2)}
+.arch-conn{width:2px;height:18px;background:linear-gradient(to bottom,var(--primary),transparent)}
+.arch-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;width:100%}
+@media(max-width:600px){.arch-row{grid-template-columns:1fr 1fr}}
+@keyframes pulseGlow{0%,100%{box-shadow:0 0 20px rgba(16,185,129,.08)}50%{box-shadow:0 0 35px rgba(16,185,129,.16)}}
+.boss-glow{animation:pulseGlow 3s ease-in-out infinite}
+
+/* Inside grid */
+.inside-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+@media(max-width:700px){.inside-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:420px){.inside-grid{grid-template-columns:1fr}}
+.inside-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px 16px;text-align:center;transition:border-color .2s}
+.inside-card:hover{border-color:var(--primary)}
+.inside-num{font-size:2rem;font-weight:800;font-family:'JetBrains Mono',monospace;color:var(--accent);display:block;line-height:1.1;margin-bottom:4px}
+.inside-label{font-size:.92rem;font-weight:600;color:#fff;display:block;margin-bottom:4px}
+.inside-desc{font-size:.76rem;color:var(--text2)}
 
 /* Catalog */
-.catalog details{margin-bottom:12px}
-.catalog summary{cursor:pointer;padding:14px 20px;background:var(--card);border:1px solid var(--border);border-radius:12px;font-weight:600;font-size:.95rem;list-style:none;display:flex;align-items:center;gap:10px;transition:border-color .2s}
+.catalog details{margin-bottom:10px}
+.catalog summary{cursor:pointer;padding:14px 18px;background:var(--card);border:1px solid var(--border);border-radius:12px;font-weight:600;font-size:.92rem;list-style:none;display:flex;align-items:center;gap:10px;transition:border-color .2s}
 .catalog summary:hover{border-color:var(--primary)}
 .catalog summary::before{content:'>';font-family:'JetBrains Mono',monospace;color:var(--primary);font-size:.85rem;transition:transform .2s}
 .catalog details[open] summary::before{transform:rotate(90deg)}
 .catalog summary::-webkit-details-marker{display:none}
-.cat-count{margin-left:auto;font-size:.78rem;color:var(--text2);font-weight:400}
-.cat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;padding:16px 12px}
-.cat-item{background:rgba(15,23,42,.5);border:1px solid rgba(255,255,255,.04);border-radius:8px;padding:10px 14px;font-size:.82rem}
-.cat-item strong{color:#fff;font-size:.84rem}
-.cat-item .role{font-size:.72rem;color:var(--text2);margin-top:2px;display:block}
-.cat-body{padding:16px 20px;font-size:.88rem;color:var(--text2);line-height:1.7}
+.cat-count{margin-left:auto;font-size:.76rem;color:var(--text2);font-weight:400}
+.cat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;padding:14px 12px}
+.cat-item{background:rgba(15,23,42,.5);border:1px solid rgba(255,255,255,.04);border-radius:8px;padding:8px 12px;font-size:.8rem}
+.cat-item strong{color:#fff;font-size:.82rem}
+.cat-item .role{font-size:.7rem;color:var(--text2);margin-top:2px;display:block}
+.cat-body{padding:14px 18px;font-size:.84rem;color:var(--text2);line-height:1.7}
+.cat-skills{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;padding:14px 12px}
+.cat-skills .sk{background:rgba(15,23,42,.5);border:1px solid rgba(255,255,255,.04);border-radius:8px;padding:8px 12px;font-size:.78rem}
+.cat-skills .sk strong{color:#fff}
+.cat-skills .sk span{color:var(--text2);font-size:.7rem;display:block;margin-top:2px}
 
-/* Why my-codex — feature cards */
-.feat-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-bottom:48px}
-.feat-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:28px 24px;transition:border-color .25s}
-.feat-card:hover{border-color:var(--primary)}
-.feat-card .fc-icon{font-size:1.8rem;margin-bottom:12px;display:block}
-.feat-card h4{font-size:1rem;color:#fff;margin-bottom:8px}
-.feat-card p{font-size:.85rem;color:var(--text2);margin-bottom:12px}
-.feat-card pre{background:rgba(3,7,18,.6);border:1px solid rgba(255,255,255,.06);border-radius:8px;padding:10px 14px;font-size:.72rem;color:var(--text2);line-height:1.7;overflow-x:auto}
-.feat-card pre em{font-style:normal;color:var(--green)}
-@media(max-width:768px){.feat-cards{grid-template-columns:1fr}}
+/* Knowledge Vault */
+.vault-grid{display:grid;grid-template-columns:1fr 1fr;gap:32px;align-items:start}
+@media(max-width:700px){.vault-grid{grid-template-columns:1fr}}
+.vault-tree{background:#0c0e14;border:1px solid rgba(167,139,250,.2);border-radius:14px;padding:18px 20px;font-family:'JetBrains Mono',monospace;font-size:.76rem;line-height:2}
+.vault-tree .vt-dir{color:var(--violet);font-weight:600}
+.vault-tree .vt-file{color:var(--text2);padding-left:20px;display:block}
+.vault-steps{display:flex;flex-direction:column;gap:14px}
+.vault-step{display:flex;gap:12px;align-items:flex-start}
+.vault-step-icon{width:32px;height:32px;border-radius:8px;background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.25);display:flex;align-items:center;justify-content:center;font-size:.9rem;flex-shrink:0}
+.vault-step h4{font-size:.88rem;color:#fff;margin-bottom:2px}
+.vault-step p{font-size:.8rem;color:var(--text2)}
+.obsidian-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.3);border-radius:20px;padding:6px 16px;font-size:.8rem;font-weight:600;color:var(--violet);margin-bottom:24px}
 
-/* Comparison */
-.cmp-tbl{width:100%;border-collapse:collapse;font-size:.84rem;max-width:740px;margin:0 auto}
-.cmp-tbl th,.cmp-tbl td{padding:10px 16px;text-align:center;border-bottom:1px solid rgba(255,255,255,.06)}
-.cmp-tbl th{color:var(--accent);font-weight:600;font-size:.78rem;text-transform:uppercase}
-.cmp-tbl td:first-child{text-align:left;font-weight:500;color:var(--text)}
-.cmp-tbl .y{color:var(--green)}.cmp-tbl .n{color:#ef4444;opacity:.6}
+/* Credits grid */
+.credits-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.credit{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px;transition:border-color .2s;display:block}
+.credit:hover{border-color:var(--accent)}
+.credit h4{font-size:.88rem;margin-bottom:4px;color:#fff}
+.credit p{font-size:.78rem;color:var(--text2)}
 
-/* FAQ Accordion */
+/* Actions grid */
+.actions-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media(max-width:700px){.actions-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:420px){.actions-grid{grid-template-columns:1fr}}
+.action-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px 16px}
+.action-card .ac-name{font-size:.86rem;font-weight:600;color:#fff;margin-bottom:4px}
+.action-card .ac-trigger{font-size:.72rem;color:var(--accent);font-family:'JetBrains Mono',monospace;margin-bottom:4px}
+.action-card .ac-desc{font-size:.76rem;color:var(--text2)}
+
+/* Originals */
+.orig-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+@media(max-width:700px){.orig-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:420px){.orig-grid{grid-template-columns:1fr}}
+.orig-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 14px;transition:border-color .2s}
+.orig-card:hover{border-color:var(--primary)}
+.orig-card h4{font-size:.86rem;color:#fff;margin-bottom:4px}
+.orig-card p{font-size:.76rem;color:var(--text2)}
+
+/* Install section */
+.inst-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:820px;margin:0 auto}
+@media(max-width:600px){.inst-row{grid-template-columns:1fr}}
+.inst{background:#0c0e14;border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:18px;position:relative}
+.inst h4{font-size:.85rem;color:var(--accent);margin-bottom:10px}
+.inst pre{color:var(--text);font-size:.74rem;white-space:pre-wrap;word-break:break-all;line-height:1.7}
+.copy-btn{position:absolute;top:12px;right:12px;background:var(--card);border:1px solid var(--border);color:var(--text2);padding:4px 10px;border-radius:6px;font-size:.7rem;cursor:pointer;font-family:'JetBrains Mono',monospace}
+.copy-btn:hover{border-color:var(--primary);color:var(--text)}
+
+/* FAQ */
 .faq{max-width:720px;margin:0 auto}
 .faq-item{border-bottom:1px solid rgba(255,255,255,.06)}
-.faq-q{width:100%;background:none;border:none;color:var(--text);font-family:'Inter',sans-serif;font-size:.95rem;font-weight:600;padding:20px 0;cursor:pointer;display:flex;justify-content:space-between;align-items:center;text-align:left}
+.faq-q{width:100%;background:none;border:none;color:var(--text);font-family:'Inter',sans-serif;font-size:.92rem;font-weight:600;padding:18px 0;cursor:pointer;display:flex;justify-content:space-between;align-items:center;text-align:left}
 .faq-q::after{content:'+';font-family:'JetBrains Mono',monospace;font-size:1.2rem;color:var(--primary);transition:transform .25s}
 .faq-item.open .faq-q::after{transform:rotate(45deg)}
-.faq-a{max-height:0;overflow:hidden;transition:max-height .35s ease;color:var(--text2);font-size:.88rem;line-height:1.7}
-.faq-a-inner{padding:0 0 20px}
-.faq-item.open .faq-a{max-height:200px}
-
-/* Install */
-.inst-row{display:grid;grid-template-columns:1fr;gap:16px;max-width:740px;margin:0 auto}
-.inst{background:rgba(12,14,20,.8);border:1px solid var(--border);border-radius:14px;padding:20px;position:relative}
-.inst h4{font-size:.85rem;color:var(--accent);margin-bottom:10px}
-.inst pre{color:var(--text);font-size:.78rem;white-space:pre-wrap;word-break:break-all}
-.copy-btn{position:absolute;top:12px;right:12px;background:var(--card);border:1px solid var(--border);color:var(--text2);padding:4px 10px;border-radius:6px;font-size:.72rem;cursor:pointer;font-family:'JetBrains Mono',monospace}
-.copy-btn:hover{border-color:var(--primary);color:var(--text)}
-.inst-tabs{display:flex;justify-content:center;gap:6px;margin:16px auto 0;max-width:600px}
-.inst-tab{padding:6px 18px;border-radius:8px 8px 0 0;border:1px solid rgba(255,255,255,.08);border-bottom:none;background:transparent;color:var(--text2);font-size:.76rem;font-family:'JetBrains Mono',monospace;cursor:pointer;transition:all .2s}
-.inst-tab.active{background:#0c0e14;color:var(--text);border-color:rgba(255,255,255,.08)}
-.inst-tab:hover:not(.active){color:var(--text)}
-.inst-box{max-width:600px;margin:0 auto;background:#0c0e14;border:1px solid rgba(255,255,255,.08);border-radius:0 0 12px 12px;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;font-family:'JetBrains Mono',monospace;font-size:.78rem;color:var(--text);cursor:pointer;transition:border-color .2s}
-.inst-box:hover{border-color:var(--primary)}
-.inst-box .copy-hint{font-size:.7rem;color:var(--text2);font-family:'Inter',sans-serif;white-space:nowrap;flex-shrink:0;background:rgba(17,24,39,.7);border:1px solid rgba(16,185,129,.15);border-radius:6px;padding:4px 10px}
-
-/* Credits */
-.credits-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
-.credit{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px 20px;transition:border-color .2s;display:block}
-.credit:hover{border-color:var(--accent)}
-.credit h4{font-size:.92rem;margin-bottom:4px}.credit p{font-size:.8rem;color:var(--text2)}
-
-/* Footer */
-footer{padding:40px 0;border-top:1px solid rgba(255,255,255,.06);text-align:center;color:var(--text2);font-size:.82rem}
+.faq-a{max-height:0;overflow:hidden;transition:max-height .35s ease;color:var(--text2);font-size:.86rem;line-height:1.7}
+.faq-a-inner{padding:0 0 18px}
+.faq-item.open .faq-a{max-height:250px}
 
 /* Animations */
 .fade-in{opacity:0;transform:translateY(20px);transition:opacity .6s,transform .6s}.fade-in.visible{opacity:1;transform:translateY(0)}
-@keyframes pulseGlow{0%,100%{box-shadow:0 0 20px rgba(16,185,129,.08),0 0 40px rgba(16,185,129,.04)}50%{box-shadow:0 0 35px rgba(16,185,129,.16),0 0 70px rgba(16,185,129,.08)}}
-.src-glow{animation:pulseGlow 3s ease-in-out infinite}
-.project-switch{display:flex;gap:4px;justify-content:center;margin-bottom:20px;background:var(--card);border:1px solid var(--border);border-radius:24px;padding:4px;width:fit-content;margin-left:auto;margin-right:auto}
-.ps-item{padding:8px 20px;border-radius:20px;font-size:.85rem;font-weight:600;color:var(--text2);transition:all .2s;text-decoration:none}
-.ps-item:hover{color:#d97757;opacity:1}
-.ps-item.active{background:var(--primary);color:#fff}
-.ps-item.active:hover{opacity:1;color:#fff}
 </style>
 </head>
 <body>
@@ -189,16 +207,16 @@ footer{padding:40px 0;border-top:1px solid rgba(255,255,255,.06);text-align:cent
   <span id="flt-en" class="active">EN</span> | <span id="flt-ko">KO</span>
 </button>
 
-<!-- Sticky Nav -->
 <nav class="nav" id="navbar">
 <div class="nav-inner">
   <span class="nav-logo">my-codex</span>
   <div class="nav-links">
-    <a href="#principles"><span class="lang" data-en="Principles" data-ko="원칙"></span></a>
     <a href="#how"><span class="lang" data-en="How It Works" data-ko="작동 방식"></span></a>
     <a href="#architecture"><span class="lang" data-en="Architecture" data-ko="아키텍처"></span></a>
-    <a href="#catalog"><span class="lang" data-en="Agents" data-ko="에이전트"></span></a>
+    <a href="#inside"><span class="lang" data-en="Inside" data-ko="구성"></span></a>
+    <a href="#vault"><span class="lang" data-en="Knowledge" data-ko="지식"></span></a>
     <a href="#install"><span class="lang" data-en="Install" data-ko="설치"></span></a>
+    <a href="#faq">FAQ</a>
   </div>
   <button class="nav-lang" onclick="toggleLang()" aria-label="Toggle language">
     <span id="lt-en" class="active">EN</span> | <span id="lt-ko">KO</span>
@@ -206,536 +224,425 @@ footer{padding:40px 0;border-top:1px solid rgba(255,255,255,.06);text-align:cent
 </div>
 </nav>
 
-<!-- Hero -->
+<!-- 1. Hero -->
 <section class="hero" id="hero">
 <div class="hero-dots"></div>
 <div class="container" style="position:relative;z-index:1">
 <div class="project-switch">
   <a href="https://sehoon787.github.io/my-claude/" class="ps-item" style="border:1px solid rgba(217,119,87,.25)">Claude Code</a>
-  <span class="ps-item active" data-ko="Codex CLI">Codex CLI</span>
+  <span class="ps-item active">Codex CLI</span>
 </div>
-  <h1><span class="lang" data-en="One install,<br>your smartest AI team." data-ko="한 번의 설치,<br>가장 똑똑한 AI팀."></span></h1>
-  <p class="tagline">
-    <span class="lang" data-en="330+ installed native TOML agent files for OpenAI Codex CLI — curated from 6 upstream sources, auto-synced weekly. No conversion headaches." data-ko="OpenAI Codex CLI를 위한 330+개 설치 네이티브 TOML 에이전트 파일 — 6개 업스트림 소스에서 큐레이션, 매주 자동 동기화. 변환 걱정 없음."></span>
-  </p>
-  <p class="stat-tagline"><em data-count="330">0</em> agents · <em data-count="200">0</em> skills · <em>3</em> MCP</p>
+  <h1>my-codex</h1>
+  <p class="tagline"><span class="lang" data-en="All-in-one agent harness for OpenAI Codex CLI" data-ko="OpenAI Codex CLI를 위한 올인원 에이전트 하네스"></span></p>
+  <p style="font-size:.88rem;color:var(--text2);margin-bottom:20px"><span class="lang" data-en="Install once, 330+ agents ready." data-ko="한 번 설치, 330+ 에이전트 준비 완료."></span></p>
   <div class="badges">
-    <span class="badge"><span class="lang" data-en="Native TOML" data-ko="네이티브 TOML"></span></span>
-    <span class="badge"><span class="lang" data-en="6 Upstream Sources" data-ko="6개 업스트림 소스"></span></span>
-    <span class="badge"><span class="lang" data-en="Codex CLI Native" data-ko="Codex CLI 네이티브"></span></span>
-    <span class="badge"><span class="lang" data-en="Weekly Auto-sync" data-ko="매주 자동 동기화"></span></span>
+    <span class="badge"><em>330+</em>&nbsp;agents</span>
+    <span class="badge"><em>200+</em>&nbsp;skills</span>
+    <span class="badge"><em>3</em>&nbsp;MCP</span>
   </div>
   <div class="inst-tabs">
     <button class="inst-tab active" onclick="switchInst(this,'human')">Human</button>
     <button class="inst-tab" onclick="switchInst(this,'ai')">AI Agent</button>
   </div>
-  <div class="inst-box" id="inst-human" onclick="copyInstBox(this)" role="button" tabindex="0">
-    <span class="copy-hint">click to copy</span>
+  <div class="inst-box" id="inst-human" onclick="copyHero(this)" role="button" tabindex="0">
+    <span class="copy-hint"><span class="lang" data-en="click to copy" data-ko="클릭하여 복사"></span></span>
     <span style="color:var(--text2)">$</span> git clone https://github.com/sehoon787/my-codex.git /tmp/my-codex &amp;&amp; bash /tmp/my-codex/install.sh
   </div>
-  <div class="inst-box" id="inst-ai" onclick="copyInstBox(this)" role="button" tabindex="0" style="display:none">
-    <span class="copy-hint">click to copy</span>
+  <div class="inst-box" id="inst-ai" onclick="copyHero(this)" role="button" tabindex="0" style="display:none">
+    <span class="copy-hint"><span class="lang" data-en="click to copy" data-ko="클릭하여 복사"></span></span>
     <span style="color:var(--text2)">$</span> curl -fsSL https://raw.githubusercontent.com/sehoon787/my-codex/main/install.sh | bash
   </div>
-  <div style="margin:28px 0 16px"><img src="https://raw.githubusercontent.com/sehoon787/my-codex/main/assets/owl-codex-icon.svg" alt="The Maestro Owl" width="140" style="filter:drop-shadow(0 0 24px rgba(16,185,129,.25))"></div>
+  <div style="margin:28px 0 16px"><img src="https://raw.githubusercontent.com/sehoon787/my-codex/main/assets/owl-codex-icon.svg" alt="The Codex Owl" width="140" style="filter:drop-shadow(0 0 24px rgba(16,185,129,.25))"></div>
   <div class="cta-row">
     <a href="https://github.com/sehoon787/my-codex" class="cta"><span class="lang" data-en="View on GitHub" data-ko="GitHub에서 보기"></span></a>
-    <a href="#install" class="cta secondary"><span class="lang" data-en="Quick Install" data-ko="빠른 설치"></span></a>
-  </div>
-  <p class="hero-sub"><span class="lang" data-en="Sister project of" data-ko="자매 프로젝트:"></span> <a href="https://github.com/sehoon787/my-claude">my-claude</a> · MIT · <span class="lang" data-en="Weekly Auto-sync" data-ko="매주 자동 동기화"></span></p>
-</div>
-</section>
-
-<!-- Core Principles -->
-<section id="principles">
-<div class="container">
-  <h2 class="st"><span class="lang" data-en="Core Principles" data-ko="핵심 원칙"></span></h2>
-  <p class="ss"><span class="lang" data-en="Three ideas that make Codex CLI multi-agent work reliable at scale." data-ko="Codex CLI 멀티에이전트를 대규모에서 안정적으로 만드는 세 가지 원칙."></span></p>
-  <div class="cards">
-    <div class="card fade-in">
-      <span class="card-icon">&#x1f4e6;</span>
-      <h3><span class="lang" data-en="Native TOML" data-ko="네이티브 TOML"></span></h3>
-      <p><span class="lang" data-en="All 330+ installed agent files are in Codex CLI's native .toml format. No runtime conversion, no compatibility shims, no surprises. What you install is what runs." data-ko="설치되는 330+개 에이전트 파일 모두 Codex CLI 네이티브 .toml 형식입니다. 런타임 변환 없음, 호환성 심 없음, 예상치 못한 문제 없음. 설치한 것이 그대로 실행됩니다."></span></p>
-    </div>
-    <div class="card fade-in">
-      <span class="card-icon">&#x1f504;</span>
-      <h3><span class="lang" data-en="Multi-Source Curation" data-ko="멀티소스 큐레이션"></span></h3>
-      <p><span class="lang" data-en="6 upstream repos, one collection. GitHub Actions converts and merges every Monday — you get the best agents from the whole ecosystem, automatically." data-ko="6개 업스트림 레포, 하나의 컬렉션. GitHub Actions가 매주 월요일 변환 및 병합 — 생태계 전체의 최고 에이전트를 자동으로 받습니다."></span></p>
-    </div>
-    <div class="card fade-in">
-      <span class="card-icon">&#x26a1;</span>
-      <h3><span class="lang" data-en="Zero Config" data-ko="무설정"></span></h3>
-      <p><span class="lang" data-en="Run the install script. Codex CLI auto-discovers everything in ~/.codex/agents/. No YAML, no DAGs, no registration steps — agents appear instantly." data-ko="설치 스크립트를 실행하세요. Codex CLI가 ~/.codex/agents/의 모든 것을 자동 탐색합니다. YAML도, DAG도, 등록 단계도 없음 — 에이전트가 즉시 나타납니다."></span></p>
-    </div>
+    <a href="#install" class="cta secondary"><span class="lang" data-en="Install Guide" data-ko="설치 가이드"></span></a>
   </div>
 </div>
 </section>
 
-<!-- How It Works — Terminal with Tabs -->
+<!-- 2. How Boss Works -->
 <section id="how" style="background:var(--bg2)">
 <div class="container">
-  <h2 class="st"><span class="lang" data-en="How It Works" data-ko="작동 방식"></span></h2>
-  <p class="ss"><span class="lang" data-en="From install to multi-agent workflow — watch it in action." data-ko="설치부터 멀티에이전트 워크플로까지 — 실제 동작을 확인하세요."></span></p>
-  <div class="term-wrap fade-in">
-    <div class="term-tabs">
-      <button class="term-tab active" onclick="switchTab(0)"><span class="lang" data-en="Install Flow" data-ko="설치 흐름"></span></button>
-      <button class="term-tab" onclick="switchTab(1)"><span class="lang" data-en="spawn_agent Usage" data-ko="spawn_agent 사용"></span></button>
-      <button class="term-tab" onclick="switchTab(2)"><span class="lang" data-en="Agent Packs" data-ko="에이전트 팩"></span></button>
+  <h2 class="st"><span class="lang" data-en="How Boss Works" data-ko="Boss 작동 방식"></span></h2>
+  <p class="ss"><span class="lang" data-en="Five phases from user request to verified result. Boss never writes code — it orchestrates." data-ko="사용자 요청부터 검증된 결과까지 5단계. Boss는 코드를 작성하지 않고 오케스트레이션합니다."></span></p>
+  <div class="phase-flow fade-in">
+    <div class="phase-card"><span class="ph-icon">&#128269;</span><span class="ph-num">Phase 0</span><h4><span class="lang" data-en="Discovery" data-ko="탐색"></span></h4><p><span class="lang" data-en="Scan agents, skills, MCP servers" data-ko="에이전트, 스킬, MCP 서버 스캔"></span></p></div>
+    <div class="phase-card"><span class="ph-icon">&#127919;</span><span class="ph-num">Phase 1</span><h4><span class="lang" data-en="Intent Gate" data-ko="의도 게이트"></span></h4><p><span class="lang" data-en="Classify scope and risk level" data-ko="범위 및 리스크 수준 분류"></span></p></div>
+    <div class="phase-card"><span class="ph-icon">&#129520;</span><span class="ph-num">Phase 2</span><h4><span class="lang" data-en="Capability Match" data-ko="능력 매칭"></span></h4><p><span class="lang" data-en="Score skills vs agents" data-ko="스킬 vs 에이전트 점수 비교"></span></p></div>
+    <div class="phase-card"><span class="ph-icon">&#128640;</span><span class="ph-num">Phase 3</span><h4><span class="lang" data-en="Delegation" data-ko="위임"></span></h4><p><span class="lang" data-en="spawn_agent with structured prompt" data-ko="구조화된 프롬프트로 spawn_agent"></span></p></div>
+    <div class="phase-card"><span class="ph-icon">&#9989;</span><span class="ph-num">Phase 4</span><h4><span class="lang" data-en="Verification" data-ko="검증"></span></h4><p><span class="lang" data-en="Read files, run tests, verify independently" data-ko="파일 읽기, 테스트 실행, 독립 검증"></span></p></div>
+  </div>
+  <div class="route-grid fade-in">
+    <div>
+      <h3 style="font-size:1rem;margin-bottom:12px;color:var(--primary)"><span class="lang" data-en="Priority Routing" data-ko="우선순위 라우팅"></span></h3>
+      <table class="route-table">
+        <tr><th><span class="lang" data-en="Priority" data-ko="우선순위"></span></th><th><span class="lang" data-en="Source" data-ko="소스"></span></th><th><span class="lang" data-en="Example" data-ko="예시"></span></th></tr>
+        <tr><td style="color:var(--accent)">P1 Skills</td><td><span class="lang" data-en="Skill match" data-ko="스킬 매칭"></span></td><td>tdd-workflow, autopilot</td></tr>
+        <tr><td style="color:var(--primary)">P2 Specialist</td><td><span class="lang" data-en="Agent match" data-ko="에이전트 매칭"></span></td><td>architect, executor</td></tr>
+        <tr><td style="color:var(--violet)">P3 Multi-Agent</td><td><span class="lang" data-en="Complex task" data-ko="복잡한 작업"></span></td><td>atlas, sisyphus</td></tr>
+        <tr><td style="color:var(--text2)">P4 Fallback</td><td><span class="lang" data-en="General purpose" data-ko="범용"></span></td><td>analyst, explore</td></tr>
+      </table>
     </div>
-    <div class="term" id="terminal">
-      <div class="term-bar"><div class="term-dot" style="background:#ef4444"></div><div class="term-dot" style="background:#eab308"></div><div class="term-dot" style="background:var(--green)"></div></div>
-      <div class="term-body">
-        <div class="term-scene active" data-scene="0">
-          <div class="term-line t-dim">$ git clone --depth 1 https://github.com/sehoon787/my-codex.git /tmp/my-codex && bash /tmp/my-codex/install.sh</div>
-          <div class="term-line"></div>
-          <div class="term-line t-phase">── <span class="lang" data-en="Syncing upstream sources" data-ko="업스트림 소스 동기화 중"></span> ──</div>
-          <div class="term-line t-src">[sync] <span class="lang" data-en="oh-my-codex → skills, HUD, runtime" data-ko="oh-my-codex → 스킬, HUD, 런타임"></span></div>
-          <div class="term-line t-src">[sync] <span class="lang" data-en="agency-agents → 180+ agents (MD→TOML)" data-ko="agency-agents → 180+개 에이전트 (MD→TOML)"></span></div>
-          <div class="term-line t-src">[sync] <span class="lang" data-en="awesome-codex-subagents → 136 agents (native TOML)" data-ko="awesome-codex-subagents → 136개 에이전트 (네이티브 TOML)"></span></div>
-          <div class="term-line t-src">[sync] <span class="lang" data-en="superpowers → 14 skills" data-ko="superpowers → 14개 스킬"></span></div>
-          <div class="term-line t-phase">── <span class="lang" data-en="Installing" data-ko="설치 중"></span> ──</div>
-          <div class="term-line t-ok">&#x2713; <span class="lang" data-en="37 core agents + 54 awesome core agents → ~/.codex/agents/" data-ko="37개 코어 에이전트 + 54개 어썸 코어 에이전트 → ~/.codex/agents/"></span></div>
-          <div class="term-line t-ok">&#x2713; <span class="lang" data-en="agent-packs → ~/.codex/agent-packs/" data-ko="에이전트팩 → ~/.codex/agent-packs/"></span></div>
-          <div class="term-line t-ok">&#x2713; <span class="lang" data-en="200+ skills installed" data-ko="200+개 스킬 설치 완료"></span></div>
-          <div class="term-line t-ok">&#x2713; <span class="lang" data-en="AGENTS.md + config.toml configured" data-ko="AGENTS.md + config.toml 설정 완료"></span></div>
-          <div class="term-line t-acc"><span class="lang" data-en="Done. 330+ installed agent files ready." data-ko="완료. 330+개 설치 에이전트 파일 준비됨."></span></div>
-        </div>
-        <div class="term-scene" data-scene="1">
-          <div class="term-line t-dim">$ codex "<span class="lang" data-en="refactor auth module and review it" data-ko="auth 모듈 리팩토링하고 리뷰해줘"></span>"</div>
-          <div class="term-line"></div>
-          <div class="term-line t-phase">── <span class="lang" data-en="Planning" data-ko="계획 수립"></span> ──</div>
-          <div class="term-line t-acc">[codex] <span class="lang" data-en="Intent: Refactor + Review — spawning agents in sequence" data-ko="의도: 리팩토링 + 리뷰 — 순차적으로 에이전트 생성"></span></div>
-          <div class="term-line t-phase">── <span class="lang" data-en="Execution" data-ko="실행"></span> ──</div>
-          <div class="term-line t-exec">[codex] spawn_agent(agent_type='executor', model='o3', reasoning_effort='medium')</div>
-          <div class="term-line t-exec">[executor] <span class="lang" data-en="Refactoring auth module... 3 files changed." data-ko="auth 모듈 리팩토링 중... 3개 파일 변경."></span></div>
-          <div class="term-line t-phase">── <span class="lang" data-en="Review" data-ko="리뷰"></span> ──</div>
-          <div class="term-line t-rev">[codex] spawn_agent(agent_type='code-reviewer', model='o3', reasoning_effort='high')</div>
-          <div class="term-line t-rev">[code-reviewer] <span class="lang" data-en="LGTM. 0 critical, 1 medium issue found." data-ko="LGTM. 0 critical, 1 medium 이슈 발견."></span></div>
-          <div class="term-line t-acc">[codex] <span class="lang" data-en="All tasks completed and verified." data-ko="모든 작업 완료 및 검증됨."></span></div>
-        </div>
-        <div class="term-scene" data-scene="2">
-          <div class="term-line t-dim">$ codex "<span class="lang" data-en="create Unity game prototype with monetization plan" data-ko="Unity 게임 프로토타입 제작 및 수익화 계획"></span>"</div>
-          <div class="term-line"></div>
-          <div class="term-line t-phase">── <span class="lang" data-en="Loading agent-packs" data-ko="에이전트팩 로드 중"></span> ──</div>
-          <div class="term-line t-src">[codex] <span class="lang" data-en="agent-packs/game-dev/ → 12 agents available" data-ko="agent-packs/game-dev/ → 12개 에이전트 사용 가능"></span></div>
-          <div class="term-line t-src">[codex] <span class="lang" data-en="agent-packs/business/ → 18 agents available" data-ko="agent-packs/business/ → 18개 에이전트 사용 가능"></span></div>
-          <div class="term-line t-phase">── <span class="lang" data-en="Multi-agent workflow" data-ko="멀티에이전트 워크플로"></span> ──</div>
-          <div class="term-line t-exec">[codex] spawn_agent(agent_type='unity-developer')</div>
-          <div class="term-line t-exec">[unity-developer] <span class="lang" data-en="Creating prototype... PlayerController, GameManager done." data-ko="프로토타입 제작 중... PlayerController, GameManager 완료."></span></div>
-          <div class="term-line t-rev">[codex] spawn_agent(agent_type='monetization-strategist')</div>
-          <div class="term-line t-rev">[monetization-strategist] <span class="lang" data-en="IAP + ads strategy ready. Revenue projection attached." data-ko="IAP + 광고 전략 준비. 수익 전망 첨부."></span></div>
-          <div class="term-line t-acc">[codex] <span class="lang" data-en="Done. Prototype + business plan delivered." data-ko="완료. 프로토타입 + 사업 계획 전달됨."></span></div>
-        </div>
-      </div>
+    <div>
+      <h3 style="font-size:1rem;margin-bottom:12px;color:var(--accent)"><span class="lang" data-en="Model Routing" data-ko="모델 라우팅"></span></h3>
+      <table class="route-table">
+        <tr><th><span class="lang" data-en="Complexity" data-ko="복잡도"></span></th><th><span class="lang" data-en="Model" data-ko="모델"></span></th></tr>
+        <tr><td style="color:var(--primary)"><span class="lang" data-en="Architecture, deep analysis" data-ko="아키텍처, 심층 분석"></span></td><td>opus</td></tr>
+        <tr><td style="color:var(--accent)"><span class="lang" data-en="Standard implementation" data-ko="표준 구현"></span></td><td>sonnet</td></tr>
+        <tr><td style="color:var(--green)"><span class="lang" data-en="Quick lookup, exploration" data-ko="빠른 조회, 탐색"></span></td><td>haiku</td></tr>
+      </table>
+    </div>
+  </div>
+  <h3 style="font-size:1rem;text-align:center;margin-top:48px;margin-bottom:4px;color:var(--primary)"><span class="lang" data-en="3-Phase Sprint" data-ko="3단계 스프린트"></span></h3>
+  <p style="text-align:center;font-size:.84rem;color:var(--text2);margin-bottom:16px"><span class="lang" data-en="Every complex task follows this cycle." data-ko="모든 복잡한 작업은 이 사이클을 따릅니다."></span></p>
+  <div class="sprint-row fade-in">
+    <div class="sprint-card" style="border-color:var(--accent);background:rgba(34,211,238,.04)">
+      <h4 style="color:var(--accent)"><span class="lang" data-en="Design" data-ko="설계"></span></h4>
+      <p><span class="lang" data-en="User decisions — Plan review, requirement analysis" data-ko="사용자 결정 — 계획 검토, 요구사항 분석"></span></p>
+      <span class="sp-tag" style="background:rgba(34,211,238,.12);color:var(--accent)"><span class="lang" data-en="interactive" data-ko="대화형"></span></span>
+    </div>
+    <div class="sprint-card" style="border-color:var(--green);background:rgba(52,211,153,.04)">
+      <h4 style="color:var(--green)"><span class="lang" data-en="Execute" data-ko="실행"></span></h4>
+      <p><span class="lang" data-en="Self-driving — ralph, parallel agents, code review" data-ko="자율 주행 — ralph, 병렬 에이전트, 코드 리뷰"></span></p>
+      <span class="sp-tag" style="background:rgba(52,211,153,.12);color:var(--green)"><span class="lang" data-en="autonomous" data-ko="자율형"></span></span>
+    </div>
+    <div class="sprint-card" style="border-color:var(--pink);background:rgba(244,114,182,.04)">
+      <h4 style="color:var(--pink)"><span class="lang" data-en="Review" data-ko="리뷰"></span></h4>
+      <p><span class="lang" data-en="User approval — Design doc comparison, QA, ship" data-ko="사용자 승인 — 설계 문서 비교, QA, 출시"></span></p>
+      <span class="sp-tag" style="background:rgba(244,114,182,.12);color:var(--pink)"><span class="lang" data-en="interactive" data-ko="대화형"></span></span>
     </div>
   </div>
 </div>
 </section>
 
-<!-- Curation Pipeline -->
-<section id="pipeline">
-<div class="container">
-  <h2 class="st"><span class="lang" data-en="Curation Pipeline" data-ko="큐레이션 파이프라인"></span></h2>
-  <p class="ss"><span class="lang" data-en="6 upstream sources flow through conversion and into your Codex CLI, refreshed every Monday." data-ko="6개 업스트림 소스가 변환 과정을 거쳐 매주 월요일 Codex CLI에 전달됩니다."></span></p>
-  <div class="pipe-flow fade-in">
-    <div class="pipe-card" style="border-color:var(--primary);background:rgba(16,185,129,.06)">
-      <h4 style="color:var(--primary)"><span class="lang" data-en="Fetch" data-ko="수집"></span></h4>
-      <p><span class="lang" data-en="6 upstream repos pulled by GitHub Actions" data-ko="GitHub Actions가 6개 업스트림 레포 풀"></span></p>
-      <div class="ex">OMX · Agency · Awesome · ECC · SP</div>
-    </div>
-    <div class="pipe-card" style="border-color:var(--accent);background:rgba(34,211,238,.06)">
-      <h4 style="color:var(--accent)">MD→TOML</h4>
-      <p><span class="lang" data-en="Model mapping + API ref substitution" data-ko="모델 매핑 + API 참조 치환"></span></p>
-      <div class="ex">opus→o3/high · sonnet→o3/med · haiku→o4-mini/low</div>
-    </div>
-    <div class="pipe-card" style="border-color:#a855f7;background:rgba(168,85,247,.06)">
-      <h4 style="color:#a855f7"><span class="lang" data-en="Package" data-ko="패키징"></span></h4>
-      <p><span class="lang" data-en="auto-loaded + agent-packs + skills" data-ko="자동 로드 + 에이전트팩 + 스킬"></span></p>
-      <div class="ex">80 + 364 + 200+</div>
-    </div>
-    <div class="pipe-card" style="border-color:var(--green);background:rgba(52,211,153,.06)">
-      <h4 style="color:var(--green)"><span class="lang" data-en="Deliver" data-ko="배포"></span></h4>
-      <p><span class="lang" data-en="PR with changelog → merge → ready" data-ko="변경사항 PR → 병합 → 준비 완료"></span></p>
-      <div class="ex"><span class="lang" data-en="Every Monday 09:00 UTC" data-ko="매주 월요일 09:00 UTC"></span></div>
-    </div>
-  </div>
-</div>
-</section>
-
-<!-- Architecture -->
-<section id="architecture" style="background:var(--bg2)">
+<!-- 3. Architecture -->
+<section id="architecture">
 <div class="container">
   <h2 class="st"><span class="lang" data-en="Architecture" data-ko="아키텍처"></span></h2>
-  <p class="ss"><span class="lang" data-en="From upstream sources to your Codex CLI — every layer has a clear role." data-ko="업스트림 소스에서 Codex CLI까지 — 모든 레이어에 명확한 역할이 있습니다."></span></p>
+  <p class="ss"><span class="lang" data-en="Layered system from user request to MCP infrastructure." data-ko="사용자 요청부터 MCP 인프라까지 계층화된 시스템."></span></p>
   <div class="arch fade-in">
-    <div class="arch-layer src-glow" style="border-color:var(--primary)">
-      <h4 style="color:var(--primary)"><span class="lang" data-en="6 Upstream Sources" data-ko="6개 업스트림 소스"></span></h4>
-      <p>agency-agents · awesome-codex-subagents · everything-claude-code · oh-my-codex · superpowers</p>
-    </div>
+    <div class="arch-layer" style="border-color:var(--accent)"><h4 style="color:var(--accent)"><span class="lang" data-en="User Request" data-ko="사용자 요청"></span></h4></div>
     <div class="arch-conn"></div>
-    <div class="arch-layer" style="border-color:var(--accent)">
-      <h4 style="color:var(--accent)">MD→TOML <span class="lang" data-en="Converter" data-ko="변환기"></span></h4>
-      <p><span class="lang" data-en="scripts/md-to-toml.sh — model mapping, API ref substitution, field normalization" data-ko="scripts/md-to-toml.sh — 모델 매핑, API 참조 치환, 필드 정규화"></span></p>
+    <div class="arch-layer boss-glow" style="border-color:var(--primary)">
+      <h4 style="color:var(--primary)">Boss Meta-Orchestrator<span class="cnt"><span class="lang" data-en="spawn_agent routing" data-ko="spawn_agent 라우팅"></span></span></h4>
+      <p><span class="lang" data-en="Discovery → Intent Gate → Capability Match → Delegation → Verification" data-ko="탐색 → 의도 게이트 → 능력 매칭 → 위임 → 검증"></span></p>
     </div>
     <div class="arch-conn"></div>
     <div class="arch-row">
-      <div class="arch-layer">
-        <h4 style="color:var(--green)"><span class="lang" data-en="Core Agents" data-ko="코어 에이전트"></span><span class="cnt">37</span></h4>
-        <p>~/.codex/agents/</p>
-      </div>
-      <div class="arch-layer">
-        <h4 style="color:var(--pink)"><span class="lang" data-en="Agent Packs" data-ko="에이전트 팩"></span><span class="cnt">364</span></h4>
-        <p>~/.codex/agent-packs/</p>
-      </div>
-      <div class="arch-layer">
-        <h4 style="color:var(--accent)"><span class="lang" data-en="Skills" data-ko="스킬"></span><span class="cnt">200+</span></h4>
-        <p>SKILL.md</p>
-      </div>
+      <div class="arch-layer"><h4 style="color:var(--green)">P3a<span class="cnt"><span class="lang" data-en="Direct Spawn" data-ko="직접 생성"></span></span></h4><p><span class="lang" data-en="Parallel dispatch" data-ko="병렬 디스패치"></span></p></div>
+      <div class="arch-layer"><h4 style="color:var(--violet)">P3b<span class="cnt"><span class="lang" data-en="Sub-orch" data-ko="서브오케"></span></span></h4><p>Sisyphus / Atlas</p></div>
+      <div class="arch-layer"><h4 style="color:var(--pink)">P3c<span class="cnt"><span class="lang" data-en="Agent Teams" data-ko="에이전트 팀"></span></span></h4><p><span class="lang" data-en="P2P comms" data-ko="P2P 통신"></span></p></div>
+      <div class="arch-layer"><h4 style="color:var(--accent)">P1-P2<span class="cnt"><span class="lang" data-en="Skill+Agent" data-ko="스킬+에이전트"></span></span></h4><p><span class="lang" data-en="Direct match" data-ko="직접 매칭"></span></p></div>
     </div>
     <div class="arch-conn"></div>
-    <div class="arch-layer" style="border-color:var(--accent)"><h4 style="color:var(--accent)">MCP Servers<span class="cnt">3</span></h4><p>Context7 · Exa · grep.app</p></div>
+    <div class="arch-layer"><h4><span class="lang" data-en="Behavioral Layer" data-ko="행동 규칙 레이어"></span></h4><p>Rules &middot; Hooks &middot; Knowledge Vault</p></div>
     <div class="arch-conn"></div>
-    <div class="arch-layer">
-      <h4><span class="lang" data-en="Codex CLI Runtime" data-ko="Codex CLI 런타임"></span></h4>
-      <p><span class="lang" data-en="spawn_agent · send_input · multi_agent · AGENTS.md · config.toml · MCP" data-ko="spawn_agent · send_input · multi_agent · AGENTS.md · config.toml · MCP"></span></p>
-    </div>
-    <div class="arch-conn"></div>
-    <div class="arch-layer" style="border-color:var(--accent)">
-      <h4 style="color:var(--accent)"><span class="lang" data-en="Weekly Auto-sync" data-ko="매주 자동 동기화"></span></h4>
-      <p><span class="lang" data-en="GitHub Actions syncs all 6 upstream sources → PR with changelog every Monday" data-ko="GitHub Actions가 6개 업스트림 소스 동기화 → 매주 월요일 변경사항 PR 생성"></span></p>
+    <div class="arch-row" style="grid-template-columns:repeat(3,1fr)">
+      <div class="arch-layer"><h4><span class="lang" data-en="Agents" data-ko="에이전트"></span><span class="cnt">330+</span></h4></div>
+      <div class="arch-layer"><h4><span class="lang" data-en="Skills" data-ko="스킬"></span><span class="cnt">200+</span></h4></div>
+      <div class="arch-layer" style="border-color:var(--accent)"><h4 style="color:var(--accent)">MCP<span class="cnt">3</span></h4></div>
     </div>
   </div>
 </div>
 </section>
 
-<!-- Agent Catalog -->
-<section id="catalog">
+<!-- 4. What's Inside -->
+<section id="inside" style="background:var(--bg2)">
 <div class="container">
-  <h2 class="st"><span class="lang" data-en="Agent Catalog" data-ko="에이전트 목록"></span></h2>
-  <p class="ss"><span class="lang" data-en="330+ installed agent files organized into auto-loaded (daily use) and agent-packs (domain specialists), all in native TOML." data-ko="330+개 설치 에이전트 파일을 자동 로드(일상 사용)와 에이전트팩(도메인 전문가)으로 구성, 모두 네이티브 TOML."></span></p>
+  <h2 class="st"><span class="lang" data-en="What's Inside" data-ko="구성 요소"></span></h2>
+  <p class="ss"><span class="lang" data-en="Everything bundled with a single install." data-ko="단 한 번의 설치로 함께 제공되는 모든 것."></span></p>
+  <div class="inside-grid fade-in" style="margin-bottom:40px">
+    <div class="inside-card"><span class="inside-num">330+</span><span class="inside-label">Agents</span><span class="inside-desc">Core, OMO, OMC, Agency domain packs</span></div>
+    <div class="inside-card"><span class="inside-num">200+</span><span class="inside-label">Skills</span><span class="inside-desc"><span class="lang" data-en="Task-specific workflows and patterns" data-ko="작업별 워크플로우 및 패턴"></span></span></div>
+    <div class="inside-card"><span class="inside-num">87</span><span class="inside-label">Rules</span><span class="inside-desc"><span class="lang" data-en="Cross-language coding standards" data-ko="크로스 언어 코딩 표준"></span></span></div>
+    <div class="inside-card"><span class="inside-num">3</span><span class="inside-label">MCP</span><span class="inside-desc">context7, exa, grep_app</span></div>
+    <div class="inside-card"><span class="inside-num">7</span><span class="inside-label">Hooks</span><span class="inside-desc">SessionStart, PreToolUse, PostToolUse, SubagentStop, TeammateIdle, TaskCompleted, Stop</span></div>
+    <div class="inside-card"><span class="inside-num">6</span><span class="inside-label">Upstreams</span><span class="inside-desc"><span class="lang" data-en="Curated from 6 open-source repos" data-ko="6개 오픈소스 저장소에서 큐레이션"></span></span></div>
+  </div>
   <div class="catalog fade-in">
     <details>
-      <summary><span class="lang" data-en="Core (1)" data-ko="코어 (1)"></span></summary>
+      <summary>Boss Meta-Orchestrator <span class="cat-count">1 agent</span></summary>
+      <div class="cat-body"><strong>Boss</strong> — <span class="lang" data-en="Dynamic meta-orchestrator. Auto-discovers all agents, skills, and MCP at runtime. Routes via priority chain. Never writes code." data-ko="동적 메타 오케스트레이터. 런타임에 모든 에이전트, 스킬, MCP를 자동 탐색. 우선순위 체인으로 라우팅. 직접 코드를 작성하지 않음."></span></div>
+    </details>
+    <details>
+      <summary>OMO Agents <span class="cat-count">9 agents</span></summary>
       <div class="cat-grid">
-        <div class="cat-item"><strong>boss</strong> <span class="role">o3 · high · Meta-orchestrator</span></div>
+        <div class="cat-item"><strong>Atlas</strong><span class="role">Orchestrator</span></div>
+        <div class="cat-item"><strong>Sisyphus</strong><span class="role">Orchestrator</span></div>
+        <div class="cat-item"><strong>Oracle</strong><span class="role">Read-only</span></div>
+        <div class="cat-item"><strong>Hephaestus</strong><span class="role">Autonomous</span></div>
+        <div class="cat-item"><strong>Prometheus</strong><span class="role">Analyst</span></div>
+        <div class="cat-item"><strong>Metis</strong><span class="role">Analyst</span></div>
+        <div class="cat-item"><strong>Momus</strong><span class="role">Analyst</span></div>
+        <div class="cat-item"><strong>Multimodal-Looker</strong><span class="role">Worker</span></div>
+        <div class="cat-item"><strong>Librarian</strong><span class="role">Worker</span></div>
       </div>
     </details>
     <details>
-      <summary><span class="lang" data-en="OMO — Oh My OpenAgent (9)" data-ko="OMO — Oh My OpenAgent (9)"></span></summary>
+      <summary>OMC Agents <span class="cat-count">18 agents</span></summary>
       <div class="cat-grid">
-        <div class="cat-item"><strong>atlas</strong> <span class="role">o3 · high · Multi-agent coordinator</span></div>
-        <div class="cat-item"><strong>hephaestus</strong> <span class="role">o3 · medium · Build orchestrator</span></div>
-        <div class="cat-item"><strong>librarian</strong> <span class="role">o4-mini · low · Knowledge retrieval</span></div>
-        <div class="cat-item"><strong>metis</strong> <span class="role">o3 · high · Strategic advisor</span></div>
-        <div class="cat-item"><strong>momus</strong> <span class="role">o3 · high · Critical advisor</span></div>
-        <div class="cat-item"><strong>multimodal-looker</strong> <span class="role">o3 · medium · Visual analysis</span></div>
-        <div class="cat-item"><strong>oracle</strong> <span class="role">o3 · high · Knowledge advisor</span></div>
-        <div class="cat-item"><strong>prometheus</strong> <span class="role">o3 · high · Planning orchestrator</span></div>
-        <div class="cat-item"><strong>sisyphus</strong> <span class="role">o3 · high · Persistent task runner</span></div>
+        <div class="cat-item"><strong>executor</strong><span class="role">Sonnet</span></div>
+        <div class="cat-item"><strong>architect</strong><span class="role">Opus</span></div>
+        <div class="cat-item"><strong>planner</strong><span class="role">Opus</span></div>
+        <div class="cat-item"><strong>code-reviewer</strong><span class="role">Opus</span></div>
+        <div class="cat-item"><strong>analyst</strong><span class="role">Opus</span></div>
+        <div class="cat-item"><strong>critic</strong><span class="role">Opus</span></div>
+        <div class="cat-item"><strong>debugger</strong><span class="role">Sonnet</span></div>
+        <div class="cat-item"><strong>designer</strong><span class="role">Sonnet</span></div>
+        <div class="cat-item"><strong>document-specialist</strong><span class="role">Sonnet</span></div>
+        <div class="cat-item"><strong>explore</strong><span class="role">Haiku</span></div>
+        <div class="cat-item"><strong>git-master</strong><span class="role">Sonnet</span></div>
+        <div class="cat-item"><strong>qa-tester</strong><span class="role">Sonnet</span></div>
+        <div class="cat-item"><strong>scientist</strong><span class="role">Sonnet</span></div>
+        <div class="cat-item"><strong>security-reviewer</strong><span class="role">Sonnet</span></div>
+        <div class="cat-item"><strong>test-engineer</strong><span class="role">Sonnet</span></div>
+        <div class="cat-item"><strong>tracer</strong><span class="role">Sonnet</span></div>
+        <div class="cat-item"><strong>verifier</strong><span class="role">Sonnet</span></div>
+        <div class="cat-item"><strong>writer</strong><span class="role">Haiku</span></div>
       </div>
     </details>
     <details>
-      <summary><span class="lang" data-en="OMC — Oh My Claude Code (18)" data-ko="OMC — Oh My Claude Code (18)"></span></summary>
-      <div class="cat-grid">
-        <div class="cat-item"><strong>analyst</strong> <span class="role">o3 · high · Deep analysis</span></div>
-        <div class="cat-item"><strong>architect</strong> <span class="role">o3 · high · System design</span></div>
-        <div class="cat-item"><strong>code-reviewer</strong> <span class="role">o3 · high · Code review</span></div>
-        <div class="cat-item"><strong>code-simplifier</strong> <span class="role">o3 · high · Complexity reduction</span></div>
-        <div class="cat-item"><strong>critic</strong> <span class="role">o3 · high · Critical review</span></div>
-        <div class="cat-item"><strong>debugger</strong> <span class="role">o3 · medium · Bug investigation</span></div>
-        <div class="cat-item"><strong>document-specialist</strong> <span class="role">o3 · medium · Doc research</span></div>
-        <div class="cat-item"><strong>executor</strong> <span class="role">o3 · medium · Task executor</span></div>
-        <div class="cat-item"><strong>explorer</strong> <span class="role">o4-mini · low · Codebase scan</span></div>
-        <div class="cat-item"><strong>git-master</strong> <span class="role">o3 · medium · Git workflows</span></div>
-        <div class="cat-item"><strong>planner</strong> <span class="role">o3 · high · Implementation planning</span></div>
-        <div class="cat-item"><strong>qa-tester</strong> <span class="role">o3 · medium · Quality assurance</span></div>
-        <div class="cat-item"><strong>scientist</strong> <span class="role">o3 · medium · Research</span></div>
-        <div class="cat-item"><strong>security-reviewer</strong> <span class="role">o3 · high · Security analysis</span></div>
-        <div class="cat-item"><strong>test-engineer</strong> <span class="role">o3 · medium · TDD specialist</span></div>
-        <div class="cat-item"><strong>tracer</strong> <span class="role">o3 · medium · Evidence tracing</span></div>
-        <div class="cat-item"><strong>verifier</strong> <span class="role">o3 · medium · Outcome verification</span></div>
-        <div class="cat-item"><strong>writer</strong> <span class="role">o4-mini · low · Documentation</span></div>
-      </div>
+      <summary>Agency Packs <span class="cat-count"><span class="lang" data-en="engineering, design, marketing, testing, etc." data-ko="엔지니어링, 디자인, 마케팅, 테스트 등"></span></span></summary>
+      <div class="cat-body"><span class="lang" data-en="Domain specialist agents organized by business function: Engineering, Design, Marketing, Testing, Sales, Support, Game Dev, Academic, Product, Project Management, and more. Activate packs on demand." data-ko="비즈니스 기능별로 조직된 도메인 전문 에이전트: 엔지니어링, 디자인, 마케팅, 테스트, 영업, 지원, 게임개발, 학술, 프로덕트, PM 등. 팩을 온디맨드로 활성화."></span></div>
     </details>
     <details>
-      <summary><span class="lang" data-en="Awesome Core (9)" data-ko="어썸 코어 (9)"></span></summary>
-      <div class="cat-grid">
-        <div class="cat-item"><strong>agent-installer</strong> <span class="role">o3 · medium · Agent setup</span></div>
-        <div class="cat-item"><strong>agent-organizer</strong> <span class="role">o3 · medium · Agent registry</span></div>
-        <div class="cat-item"><strong>code-mapper</strong> <span class="role">o3 · medium · Codebase mapping</span></div>
-        <div class="cat-item"><strong>context-manager</strong> <span class="role">o3 · medium · Context handling</span></div>
-        <div class="cat-item"><strong>error-coordinator</strong> <span class="role">o3 · medium · Error handling</span></div>
-        <div class="cat-item"><strong>knowledge-synthesizer</strong> <span class="role">o3 · high · Knowledge synthesis</span></div>
-        <div class="cat-item"><strong>multi-agent-coordinator</strong> <span class="role">o3 · high · Agent coordination</span></div>
-        <div class="cat-item"><strong>task-distributor</strong> <span class="role">o3 · medium · Task routing</span></div>
-        <div class="cat-item"><strong>workflow-orchestrator</strong> <span class="role">o3 · high · Workflow management</span></div>
-      </div>
+      <summary>Skills <span class="cat-count">200+</span></summary>
+      <div class="cat-body"><span class="lang" data-en="Task-specific workflows organized by category: development patterns, testing workflows, deployment automation, code review, security scanning, documentation generation, and more. Native TOML format for Codex CLI." data-ko="카테고리별로 조직된 작업별 워크플로우: 개발 패턴, 테스트 워크플로우, 배포 자동화, 코드 리뷰, 보안 스캔, 문서 생성 등. Codex CLI용 네이티브 TOML 형식."></span></div>
     </details>
     <details>
-      <summary><span class="lang" data-en="Superpowers (1)" data-ko="슈퍼파워 (1)"></span></summary>
-      <div class="cat-body"><span class="lang" data-en="superpowers-code-reviewer (o3 · high) — Thorough code review covering correctness, error handling, performance, security, testing, readability, and maintainability. From obra/superpowers." data-ko="superpowers-code-reviewer (o3 · high) — 정확성, 에러 처리, 성능, 보안, 테스트, 가독성, 유지보수성을 다루는 꼼꼼한 코드 리뷰. obra/superpowers 출처."></span></div>
-    </details>
-    <details>
-      <summary><span class="lang" data-en="Agent Packs (364)" data-ko="에이전트 팩 (364)"></span></summary>
-      <div class="cat-body"><span class="lang" data-en="364 on-demand domain specialist agents across 21 categories in ~/.codex/agent-packs/. Includes agency-agents (180+ across 14 categories: marketing, business, data, AI, design, and more), awesome-codex-subagents non-core packs (game dev, spatial computing, etc.), and other domain specialists. Activate with: my-codex-packs enable &lt;pack&gt;" data-ko="~/.codex/agent-packs/에 있는 21개 카테고리 364개 온디맨드 도메인 전문 에이전트. agency-agents (14개 카테고리 180+개: 마케팅, 비즈니스, 데이터, AI, 디자인 등), awesome-codex-subagents 비코어 팩 (게임 개발, 공간 컴퓨팅 등), 기타 도메인 전문가 포함. 활성화: my-codex-packs enable &lt;pack&gt;"></span></div>
+      <summary>MCP + Hooks <span class="cat-count">3 MCP &middot; 7 hooks</span></summary>
+      <div class="cat-body"><strong>MCP:</strong> Context7 (docs), Exa (web search), grep.app (GitHub code search)<br><strong>Hooks:</strong> SessionStart, PreToolUse, PostToolUse, SubagentStop, TeammateIdle, TaskCompleted, Stop</div>
     </details>
   </div>
 </div>
 </section>
 
-<!-- my-codex Originals -->
-<section id="originals">
+<!-- 5. Knowledge Vault -->
+<section id="vault">
 <div class="container">
-  <h2 class="st"><span class="lang" data-en="🎯 my-codex Originals" data-ko="🎯 my-codex 오리지널"></span></h2>
-  <p class="ss"><span class="lang" data-en="Features built on top of upstream sources — unique to my-codex." data-ko="업스트림 소스를 기반으로 구축된 my-codex 고유 기능."></span></p>
-  <div class="fade-in" style="overflow-x:auto">
-    <table class="score-tbl" style="text-align:left">
-      <tr>
-        <th style="text-align:left"><span class="lang" data-en="Feature" data-ko="기능"></span></th>
-        <th style="text-align:left"><span class="lang" data-en="Description" data-ko="설명"></span></th>
-      </tr>
-      <tr>
-        <td style="white-space:nowrap"><strong style="color:#fff">Boss Meta-Orchestrator</strong></td>
-        <td style="color:var(--text2)"><span class="lang" data-en="Dynamic capability discovery + intent-based routing to 330+ agents" data-ko="동적 능력 탐색 + 의도 기반 330+ 에이전트 라우팅"></span></td>
-      </tr>
-      <tr>
-        <td style="white-space:nowrap"><strong style="color:#fff">3-Phase Sprint</strong></td>
-        <td style="color:var(--text2)"><span class="lang" data-en="Design (interactive) → Execute (autonomous) → Review (interactive) workflow" data-ko="설계(대화형) → 실행(자율) → 검토(대화형) 워크플로우"></span></td>
-      </tr>
-      <tr>
-        <td style="white-space:nowrap"><strong style="color:#fff">Agent Tier Priority</strong></td>
-        <td style="color:var(--text2)"><span class="lang" data-en="core > omo > omc > superpowers > agency dedup resolution" data-ko="core > omo > omc > superpowers > agency 중복 해결 우선순위"></span></td>
-      </tr>
-      <tr>
-        <td style="white-space:nowrap"><strong style="color:#fff">Agency Cost Optimization</strong></td>
-        <td style="color:var(--text2)"><span class="lang" data-en="Auto-routes simple advisory to lighter models, implementation to stronger models" data-ko="단순 자문은 경량 모델, 구현은 고성능 모델로 자동 라우팅"></span></td>
-      </tr>
-      <tr>
-        <td style="white-space:nowrap"><strong style="color:#fff">Agent Telemetry</strong></td>
-        <td style="color:var(--text2)"><span class="lang" data-en="PostToolUse hook logs agent usage to analytics" data-ko="PostToolUse 훅으로 에이전트 사용 내역 분석 기록"></span></td>
-      </tr>
-      <tr>
-        <td style="white-space:nowrap"><strong style="color:#fff">Smart Packs</strong></td>
-        <td style="color:var(--text2)"><span class="lang" data-en="Project-type detection recommends relevant agent packs at session start" data-ko="프로젝트 유형 감지 후 세션 시작 시 관련 에이전트 팩 추천"></span></td>
-      </tr>
-      <tr>
-        <td style="white-space:nowrap"><strong style="color:#fff">Agent Pack System</strong></td>
-        <td style="color:var(--text2)"><span class="lang" data-en="On-demand domain specialist activation via --with-packs" data-ko="--with-packs로 도메인 전문가 온디맨드 활성화"></span></td>
-      </tr>
-      <tr>
-        <td style="white-space:nowrap"><strong style="color:#fff">CI Dedup Detection</strong></td>
-        <td style="color:var(--text2)"><span class="lang" data-en="Automated duplicate agent detection across upstream syncs" data-ko="CI 동기화 시 업스트림 간 중복 에이전트 자동 감지"></span></td>
-      </tr>
-    </table>
+  <div style="text-align:center;margin-bottom:32px">
+    <div class="obsidian-badge">
+      <svg width="16" height="16" viewBox="0 0 256 256" fill="none" aria-hidden="true"><path fill="#a78bfa" d="M94.82 149.44c6.53-1.94 17.13-4.9 29.26-5.71a102.97 102.97 0 0 1-7.64-48.84c1.63-16.51 7.54-30.38 13.25-42.1l3.47-7.14 4.48-9.18c2.35-5 4.08-9.38 4.9-13.56.81-4.07.81-7.64-.2-11.11-1.03-3.47-3.07-7.14-7.15-11.21a17.02 17.02 0 0 0-15.8 3.77l-52.81 47.5a17.12 17.12 0 0 0-5.5 10.2l-4.5 30.18a149.26 149.26 0 0 1 38.24 57.2ZM54.45 106l-1.02 3.06-27.94 62.2a17.33 17.33 0 0 0 3.27 18.96l43.94 45.16a88.7 88.7 0 0 0 8.97-88.5A139.47 139.47 0 0 0 54.45 106Z"/><path fill="#a78bfa" d="m82.9 240.79 2.34.2c8.26.2 22.33 1.02 33.64 3.06 9.28 1.73 27.73 6.83 42.82 11.21 11.52 3.47 23.45-5.8 25.08-17.73 1.23-8.67 3.57-18.46 7.75-27.53a94.81 94.81 0 0 0-25.9-40.99 56.48 56.48 0 0 0-29.56-13.35 96.55 96.55 0 0 0-40.99 4.79 98.89 98.89 0 0 1-15.29 80.34h.1Z"/><path fill="#a78bfa" d="M201.87 197.76a574.87 574.87 0 0 0 19.78-31.6 8.67 8.67 0 0 0-.61-9.48 185.58 185.58 0 0 1-21.82-35.9c-5.91-14.16-6.73-36.08-6.83-46.69 0-4.07-1.22-8.05-3.77-11.21l-34.16-43.33c0 1.94-.4 3.87-.81 5.81a76.42 76.42 0 0 1-5.71 15.9l-4.7 9.8-3.36 6.72a111.95 111.95 0 0 0-12.03 38.23 93.9 93.9 0 0 0 8.67 47.92 67.9 67.9 0 0 1 39.56 16.52 99.4 99.4 0 0 1 25.8 37.31Z"/></svg>
+      <span class="lang" data-en="Obsidian Compatible" data-ko="Obsidian 호환"></span>
+    </div>
+    <h2 class="st" style="color:var(--violet)"><span class="lang" data-en="Knowledge Vault" data-ko="지식 금고"></span></h2>
+    <p class="ss"><span class="lang" data-en="Persistent project memory with Obsidian-compatible wiki-links and graph view." data-ko="Obsidian 호환 위키링크와 그래프 뷰를 갖춘 지속적 프로젝트 메모리."></span></p>
   </div>
-</div>
-</section>
-
-<!-- Why my-codex -->
-<section id="why" style="background:var(--bg2)">
-<div class="container">
-  <h2 class="st"><span class="lang" data-en="Why my-codex?" data-ko="왜 my-codex인가?"></span></h2>
-  <p class="ss"><span class="lang" data-en="Three things that make this the definitive Codex CLI agent collection." data-ko="이것이 최고의 Codex CLI 에이전트 컬렉션인 세 가지 이유."></span></p>
-  <div class="feat-cards fade-in">
-    <div class="feat-card">
-      <span class="fc-icon">&#x1f4e6;</span>
-      <h4><span class="lang" data-en="Native TOML Format" data-ko="네이티브 TOML 형식"></span></h4>
-      <p><span class="lang" data-en="All agents in Codex CLI's native .toml format. No runtime conversion, no compatibility issues." data-ko="모든 에이전트가 Codex CLI의 네이티브 .toml 형식. 런타임 변환 없음, 호환성 문제 없음."></span></p>
-      <pre><em>name</em> = "executor"
-<em>description</em> = "Task executor"
-<em>model</em> = "o3"
-<em>model_reasoning_effort</em> = "medium"</pre>
+  <div class="vault-grid fade-in">
+    <div>
+      <div class="vault-tree">
+        <span class="vt-dir">.knowledge/</span>
+        <span class="vt-file">INDEX.md</span>
+        <span class="vt-dir" style="padding-left:12px;display:block">sessions/</span>
+        <span class="vt-file" style="padding-left:32px">2026-04-08-auth-refactor.md</span>
+        <span class="vt-dir" style="padding-left:12px;display:block">decisions/</span>
+        <span class="vt-file" style="padding-left:32px">use-postgres-over-redis.md</span>
+        <span class="vt-dir" style="padding-left:12px;display:block">learnings/</span>
+        <span class="vt-file" style="padding-left:32px">jwt-refresh-token-gotcha.md</span>
+        <span class="vt-dir" style="padding-left:12px;display:block">references/</span>
+        <span class="vt-file" style="padding-left:32px">oauth2-flow-diagram.md</span>
+        <span class="vt-dir" style="padding-left:12px;display:block">agents/</span>
+        <span class="vt-file" style="padding-left:32px">2026-04-08-security-reviewer.md</span>
+      </div>
     </div>
-    <div class="feat-card">
-      <span class="fc-icon">&#x1f504;</span>
-      <h4><span class="lang" data-en="6-Source Auto-sync" data-ko="6개 소스 자동 동기화"></span></h4>
-      <p><span class="lang" data-en="GitHub Actions syncs from 6 upstream repos weekly. Always up to date, zero manual effort." data-ko="GitHub Actions가 매주 6개 업스트림 레포에서 동기화. 항상 최신, 수작업 제로."></span></p>
-      <pre><em>sync</em>: every Monday 09:00 UTC
-<em>sources</em>: 6 upstream repos
-<em>convert</em>: MD → TOML auto
-<em>output</em>: PR with changelog</pre>
-    </div>
-    <div class="feat-card">
-      <span class="fc-icon">&#x1f91d;</span>
-      <h4><span class="lang" data-en="my-claude Sister Project" data-ko="my-claude 자매 프로젝트"></span></h4>
-      <p><span class="lang" data-en="Same agents and skills as my-claude — converted for Codex CLI. Switch between tools seamlessly." data-ko="my-claude와 동일한 에이전트, 스킬 — Codex CLI용으로 변환. 도구 간 원활한 전환."></span></p>
-      <pre><em>my-claude</em>: Claude Code (.md)
-<em>my-codex</em>: Codex CLI (.toml)
-<em>shared</em>: skills, sources
-<em>sync</em>: weekly upstream</pre>
-    </div>
-  </div>
-  <table class="cmp-tbl fade-in">
-    <tr><th><span class="lang" data-en="Feature" data-ko="기능"></span></th><th>my-codex</th><th><span class="lang" data-en="Manual Setup" data-ko="수동 설정"></span></th><th><span class="lang" data-en="Other Collections" data-ko="다른 컬렉션"></span></th></tr>
-    <tr><td><span class="lang" data-en="Native TOML Agents" data-ko="네이티브 TOML 에이전트"></span></td><td class="y">&#x2705; 330+</td><td class="n">&#x2717;</td><td>Custom</td></tr>
-    <tr><td><span class="lang" data-en="Multi-source Curation" data-ko="멀티소스 큐레이션"></span></td><td class="y">&#x2705; 5 sources</td><td class="n">&#x2717;</td><td class="n">&#x2717;</td></tr>
-    <tr><td><span class="lang" data-en="Weekly Auto-sync" data-ko="매주 자동 동기화"></span></td><td class="y">&#x2705;</td><td class="n">&#x2717;</td><td class="n">&#x2717;</td></tr>
-    <tr><td><span class="lang" data-en="Skills included" data-ko="스킬 포함"></span></td><td class="y">&#x2705; 200+</td><td>Custom</td><td class="n">&#x2717;</td></tr>
-    <tr><td><span class="lang" data-en="One-command Install" data-ko="원커맨드 설치"></span></td><td class="y">&#x2705;</td><td class="n">&#x2717;</td><td class="n">&#x2717;</td></tr>
-    <tr><td><span class="lang" data-en="Model Mapping (opus/sonnet/haiku)" data-ko="모델 매핑 (opus/sonnet/haiku)"></span></td><td class="y">&#x2705; o3-high/med · o4-mini</td><td class="n">&#x2717;</td><td class="n">&#x2717;</td></tr>
-  </table>
-</div>
-</section>
-
-<!-- FAQ -->
-<section id="faq">
-<div class="container">
-  <h2 class="st"><span class="lang" data-en="FAQ" data-ko="자주 묻는 질문"></span></h2>
-  <div class="faq fade-in">
-    <div class="faq-item">
-      <button class="faq-q" onclick="toggleFaq(this)"><span class="lang" data-en="What is my-codex?" data-ko="my-codex란?"></span><span></span></button>
-      <div class="faq-a"><div class="faq-a-inner"><span class="lang" data-en="my-codex is the definitive agent collection for OpenAI Codex CLI. It aggregates 6 curated upstream sources into 330+ installed agent files and 200+ skills, all in native TOML format. It's the sister project of my-claude (for Claude Code)." data-ko="my-codex는 OpenAI Codex CLI를 위한 최고의 에이전트 컬렉션입니다. 6개 큐레이션된 업스트림 소스를 네이티브 TOML 형식의 330+개 설치 에이전트 파일과 200+개 스킬로 통합합니다. my-claude(Claude Code용)의 자매 프로젝트입니다."></span></div></div>
-    </div>
-    <div class="faq-item">
-      <button class="faq-q" onclick="toggleFaq(this)"><span class="lang" data-en="How does auto-sync work?" data-ko="자동 동기화는 어떻게 동작하나요?"></span><span></span></button>
-      <div class="faq-a"><div class="faq-a-inner"><span class="lang" data-en="Every Monday at 09:00 UTC, a GitHub Action pulls from all 6 upstream repos, runs the MD→TOML converter for sources that use .md format, and creates a PR with a changelog. Native TOML sources (like awesome-codex-subagents) are copied directly." data-ko="매주 월요일 09:00 UTC에 GitHub Action이 6개 업스트림 레포에서 풀하고, .md 형식을 사용하는 소스에 MD→TOML 변환기를 실행하여 변경 사항이 담긴 PR을 생성합니다. 네이티브 TOML 소스(awesome-codex-subagents 등)는 직접 복사됩니다."></span></div></div>
-    </div>
-    <div class="faq-item">
-      <button class="faq-q" onclick="toggleFaq(this)"><span class="lang" data-en="What's the difference from my-claude?" data-ko="my-claude와의 차이점은?"></span><span></span></button>
-      <div class="faq-a"><div class="faq-a-inner"><span class="lang" data-en="my-claude is for Claude Code (agents in .md format). my-codex is for Codex CLI (agents in .toml format). They share the same upstream sources, skills, and rules — but the agent format and model mappings are different." data-ko="my-claude는 Claude Code용 (.md 형식 에이전트). my-codex는 Codex CLI용 (.toml 형식 에이전트). 같은 업스트림 소스, 스킬, 규칙을 공유하지만, 에이전트 형식과 모델 매핑이 다릅니다."></span></div></div>
-    </div>
-    <div class="faq-item">
-      <button class="faq-q" onclick="toggleFaq(this)"><span class="lang" data-en="Can I add my own agents?" data-ko="나만의 에이전트를 추가할 수 있나요?"></span><span></span></button>
-      <div class="faq-a"><div class="faq-a-inner"><span class="lang" data-en="Yes. Create a .toml file in ~/.codex/agents/ with name, description, and developer_instructions fields. Codex CLI auto-discovers agents in that directory on every session start." data-ko="네. ~/.codex/agents/에 name, description, developer_instructions 필드가 포함된 .toml 파일을 만들면 됩니다. Codex CLI가 매 세션 시작 시 해당 디렉토리의 에이전트를 자동 탐색합니다."></span></div></div>
-    </div>
-    <div class="faq-item">
-      <button class="faq-q" onclick="toggleFaq(this)"><span class="lang" data-en="What models are used?" data-ko="어떤 모델이 사용되나요?"></span><span></span></button>
-      <div class="faq-a"><div class="faq-a-inner"><span class="lang" data-en="Agents use OpenAI models with reasoning effort levels: o3 + high (deep reasoning, complex tasks), o3 + medium (standard work), and o4-mini + low (lightweight, fast tasks). Model mapping from Claude equivalents: opus→o3/high, sonnet→o3/medium, haiku→o4-mini/low." data-ko="에이전트는 OpenAI 모델과 추론 노력 수준을 사용합니다: o3 + high (깊은 추론, 복잡한 작업), o3 + medium (표준 작업), o4-mini + low (경량, 빠른 작업). Claude 모델 매핑: opus→o3/high, sonnet→o3/medium, haiku→o4-mini/low."></span></div></div>
-    </div>
-    <div class="faq-item">
-      <button class="faq-q" onclick="toggleFaq(this)"><span class="lang" data-en="Is it free?" data-ko="무료인가요?"></span><span></span></button>
-      <div class="faq-a"><div class="faq-a-inner"><span class="lang" data-en="Yes, my-codex is fully open source under the MIT license. You need a Codex CLI setup with OpenAI API access to use the agents, but the collection itself is free." data-ko="네, my-codex는 MIT 라이선스 하에 완전히 오픈소스입니다. 에이전트를 사용하려면 OpenAI API 접근이 가능한 Codex CLI 설정이 필요하지만, 컬렉션 자체는 무료입니다."></span></div></div>
+    <div class="vault-steps">
+      <div class="vault-step">
+        <div class="vault-step-icon">1</div>
+        <div><h4><span class="lang" data-en="Session Start" data-ko="세션 시작"></span></h4><p><span class="lang" data-en="Boss reads INDEX.md to pick up context from previous sessions." data-ko="Boss가 INDEX.md를 읽어 이전 세션의 컨텍스트를 이어받습니다."></span></p></div>
+      </div>
+      <div class="vault-step">
+        <div class="vault-step-icon">2</div>
+        <div><h4><span class="lang" data-en="During Work" data-ko="작업 중"></span></h4><p><span class="lang" data-en="Agents auto-write decisions, learnings, and references as they work." data-ko="에이전트가 작업하며 결정, 학습, 참조를 자동으로 기록합니다."></span></p></div>
+      </div>
+      <div class="vault-step">
+        <div class="vault-step-icon">3</div>
+        <div><h4><span class="lang" data-en="Session End" data-ko="세션 종료"></span></h4><p><span class="lang" data-en="Summary written, INDEX.md updated, [[wiki-links]] connect everything." data-ko="요약 작성, INDEX.md 갱신, [[위키링크]]로 모든 것을 연결합니다."></span></p></div>
+      </div>
     </div>
   </div>
 </div>
 </section>
 
-<!-- Quick Install -->
-<section id="install" style="background:var(--bg2)">
+<!-- 6. Upstream Sources -->
+<section id="credits" style="background:var(--bg2)">
 <div class="container">
-  <h2 class="st"><span class="lang" data-en="Quick Install" data-ko="빠른 설치"></span></h2>
-  <p class="ss"><span class="lang" data-en="Full install: 330+ installed agent files and 200+ Codex skills. Skills-only path: 200+ cross-tool skills via npx." data-ko="전체 설치: 330+개 설치 에이전트 파일과 200+개 Codex 스킬. 스킬 전용 경로: npx로 200+개 크로스툴 스킬."></span></p>
+  <h2 class="st"><span class="lang" data-en="Upstream Open-Source Sources" data-ko="업스트림 오픈소스 소스"></span></h2>
+  <p class="ss"><span class="lang" data-en="Built on the shoulders of open-source projects. Weekly auto-sync keeps everything current." data-ko="오픈소스 프로젝트의 기반 위에 구축됩니다. 매주 자동 동기화로 최신 상태를 유지합니다."></span></p>
+  <div class="credits-grid fade-in">
+    <a class="credit" href="https://sehoon787.github.io/my-claude/"><h4>my-claude</h4><p><span class="lang" data-en="Sister project — Claude Code orchestration" data-ko="자매 프로젝트 — Claude Code 오케스트레이션"></span></p></a>
+    <a class="credit" href="https://github.com/VoltAgent/awesome-codex-subagents"><h4>awesome-codex-subagents</h4><p>VoltAgent — Native TOML categories</p></a>
+    <a class="credit" href="https://github.com/Yeachan-Heo/oh-my-claudecode"><h4>oh-my-codex</h4><p>Yeachan Heo — Multi-agent orchestration</p></a>
+    <a class="credit" href="https://github.com/msitarzewski/agency-agents"><h4>agency-agents</h4><p>msitarzewski — 172 business specialist personas</p></a>
+    <a class="credit" href="https://github.com/affaan-m/everything-claude-code"><h4>everything-claude-code</h4><p>affaan-m — Skills, agents, commands</p></a>
+    <a class="credit" href="https://github.com/obra/superpowers"><h4>superpowers</h4><p>obra — Advanced agent skills</p></a>
+    <a class="credit" href="https://github.com/garrytan/gstack"><h4>gstack</h4><p>garrytan — QA, review, deployment skills</p></a>
+    <a class="credit" href="https://github.com/openai/codex"><h4>OpenAI Codex CLI</h4><p><span class="lang" data-en="Official Codex CLI platform" data-ko="공식 Codex CLI 플랫폼"></span></p></a>
+  </div>
+</div>
+</section>
+
+<!-- 7. GitHub Actions -->
+<section id="ci">
+<div class="container">
+  <h2 class="st">GitHub Actions</h2>
+  <p class="ss"><span class="lang" data-en="6 workflows keep my-codex tested, synced, and deployed." data-ko="6개 워크플로우가 my-codex를 테스트, 동기화, 배포합니다."></span></p>
+  <div class="actions-grid fade-in">
+    <div class="action-card"><div class="ac-name">CI Validation</div><div class="ac-trigger">push, pull_request</div><div class="ac-desc"><span class="lang" data-en="Lint, test, agent count verification" data-ko="린트, 테스트, 에이전트 수 검증"></span></div></div>
+    <div class="action-card"><div class="ac-name">Sync Upstream</div><div class="ac-trigger">schedule (Monday)</div><div class="ac-desc"><span class="lang" data-en="Weekly auto-sync from 6 upstream sources" data-ko="6개 업스트림 소스에서 매주 자동 동기화"></span></div></div>
+    <div class="action-card"><div class="ac-name">Auto Tag</div><div class="ac-trigger">push (main)</div><div class="ac-desc"><span class="lang" data-en="Semantic versioning on main push" data-ko="메인 푸시 시 시맨틱 버전"></span></div></div>
+    <div class="action-card"><div class="ac-name">GitHub Pages</div><div class="ac-trigger">push (main)</div><div class="ac-desc"><span class="lang" data-en="Deploy docs site automatically" data-ko="문서 사이트 자동 배포"></span></div></div>
+    <div class="action-card"><div class="ac-name">MD→TOML Convert</div><div class="ac-trigger">on sync</div><div class="ac-desc"><span class="lang" data-en="Convert upstream .md agents to native .toml" data-ko="업스트림 .md 에이전트를 네이티브 .toml로 변환"></span></div></div>
+    <div class="action-card"><div class="ac-name">Validate Counts</div><div class="ac-trigger">pull_request</div><div class="ac-desc"><span class="lang" data-en="Verify installed agent/skill counts match" data-ko="설치된 에이전트/스킬 수 일치 검증"></span></div></div>
+  </div>
+</div>
+</section>
+
+<!-- 8. my-codex Originals -->
+<section id="originals" style="background:var(--bg2)">
+<div class="container">
+  <h2 class="st"><span class="lang" data-en="my-codex Originals" data-ko="my-codex 오리지널"></span></h2>
+  <p class="ss"><span class="lang" data-en="Features unique to this project — not found in any upstream." data-ko="이 프로젝트에만 있는 고유 기능 — 어떤 업스트림에도 없습니다."></span></p>
+  <div class="orig-grid fade-in">
+    <div class="orig-card"><h4>Boss Meta-Orchestrator</h4><p><span class="lang" data-en="Runtime discovery, 5-phase delegation" data-ko="런타임 탐색, 5단계 위임"></span></p></div>
+    <div class="orig-card"><h4>MD→TOML Pipeline</h4><p><span class="lang" data-en="Automated format conversion from upstream" data-ko="업스트림에서 자동 형식 변환"></span></p></div>
+    <div class="orig-card"><h4><span class="lang" data-en="Agent Tier Priority" data-ko="에이전트 계층 우선순위"></span></h4><p><span class="lang" data-en="Core > OMO > OMC > Agency dedup resolution" data-ko="Core > OMO > OMC > Agency 중복 해결"></span></p></div>
+    <div class="orig-card"><h4><span class="lang" data-en="Cost-Optimized Routing" data-ko="비용 최적화 라우팅"></span></h4><p><span class="lang" data-en="Haiku/Sonnet/Opus model selection" data-ko="Haiku/Sonnet/Opus 모델 선택"></span></p></div>
+    <div class="orig-card"><h4><span class="lang" data-en="Knowledge Vault" data-ko="지식 금고"></span></h4><p><span class="lang" data-en="Obsidian-compatible project memory" data-ko="Obsidian 호환 프로젝트 메모리"></span></p></div>
+    <div class="orig-card"><h4><span class="lang" data-en="Agent Packs" data-ko="에이전트 팩"></span></h4><p><span class="lang" data-en="Domain specialist auto-activation profiles" data-ko="도메인 전문가 자동 활성화 프로파일"></span></p></div>
+    <div class="orig-card"><h4><span class="lang" data-en="Weekly Auto-Sync" data-ko="주간 자동 동기화"></span></h4><p><span class="lang" data-en="GitHub Actions upstream curation" data-ko="GitHub Actions 업스트림 큐레이션"></span></p></div>
+    <div class="orig-card"><h4>Native TOML</h4><p><span class="lang" data-en="Zero-conversion agent format" data-ko="무변환 에이전트 형식"></span></p></div>
+    <div class="orig-card"><h4>Dedup Guard</h4><p><span class="lang" data-en="Cross-source agent deduplication" data-ko="크로스 소스 에이전트 중복 제거"></span></p></div>
+  </div>
+</div>
+</section>
+
+<!-- 9. Installation -->
+<section id="install">
+<div class="container">
+  <h2 class="st"><span class="lang" data-en="Installation" data-ko="설치"></span></h2>
+  <p class="ss"><span class="lang" data-en="Two ways to get everything in under a minute." data-ko="1분 안에 모든 것을 설치하는 두 가지 방법."></span></p>
   <div class="inst-row fade-in">
     <div class="inst">
-      <h4><span class="lang" data-en="Script Install" data-ko="스크립트 설치"></span></h4>
+      <h4><span class="lang" data-en="For Humans" data-ko="사람용"></span></h4>
       <button class="copy-btn" onclick="copyInst(this)">copy</button>
       <pre>git clone --depth 1 https://github.com/sehoon787/my-codex.git /tmp/my-codex && bash /tmp/my-codex/install.sh && rm -rf /tmp/my-codex</pre>
     </div>
     <div class="inst">
-      <h4><span class="lang" data-en="Skills Only" data-ko="스킬 전용"></span></h4>
+      <h4><span class="lang" data-en="For AI Agents" data-ko="AI 에이전트용"></span></h4>
       <button class="copy-btn" onclick="copyInst(this)">copy</button>
-      <pre>npx skills add sehoon787/my-codex -y -g</pre>
+      <pre>curl -fsSL https://raw.githubusercontent.com/sehoon787/my-codex/main/install.sh | bash</pre>
     </div>
   </div>
 </div>
 </section>
 
-<!-- Credits -->
-<section id="credits">
+<!-- 10. FAQ -->
+<section id="faq" style="background:var(--bg2)">
 <div class="container">
-  <h2 class="st"><span class="lang" data-en="Open Source Credits" data-ko="오픈소스 크레딧"></span></h2>
-  <p class="ss"><span class="lang" data-en="Built on the shoulders of these projects." data-ko="이 프로젝트들의 기반 위에 구축되었습니다."></span></p>
-  <div class="credits-grid fade-in">
-    <a class="credit" href="https://github.com/sehoon787/my-claude"><h4>my-claude</h4><p><span class="lang" data-en="Sister project — Claude Code multi-agent orchestration" data-ko="자매 프로젝트 — Claude Code 멀티에이전트 오케스트레이션"></span></p></a>
-    <a class="credit" href="https://github.com/VoltAgent/awesome-codex-subagents"><h4>awesome-codex-subagents</h4><p><span class="lang" data-en="VoltAgent — native TOML categories for Codex specialists" data-ko="VoltAgent — Codex 전문가용 네이티브 TOML 카테고리"></span></p></a>
-    <a class="credit" href="https://github.com/Yeachan-Heo/oh-my-codex"><h4>oh-my-codex</h4><p><span class="lang" data-en="Yeachan Heo — Multi-agent orchestration for Codex CLI" data-ko="Yeachan Heo — Codex CLI 멀티에이전트 오케스트레이션"></span></p></a>
-    <a class="credit" href="https://github.com/msitarzewski/agency-agents"><h4>agency-agents</h4><p><span class="lang" data-en="msitarzewski — 172 business specialist personas" data-ko="msitarzewski — 172개 비즈니스 전문가 페르소나"></span></p></a>
-    <a class="credit" href="https://github.com/affaan-m/everything-claude-code"><h4>everything-claude-code</h4><p><span class="lang" data-en="affaan-m — Skills, agents, commands" data-ko="affaan-m — 스킬, 에이전트, 커맨드"></span></p></a>
-    <a class="credit" href="https://github.com/openai/codex"><h4>OpenAI Codex</h4><p><span class="lang" data-en="OpenAI — CLI pair programming and commit attribution inspiration" data-ko="OpenAI — CLI 페어 프로그래밍 및 커밋 attribution 영감"></span></p></a>
-    <a class="credit" href="https://github.com/code-yeongyu/oh-my-openagent"><h4>oh-my-openagent</h4><p><span class="lang" data-en="code-yeongyu — Multi-platform agent harness" data-ko="code-yeongyu — 멀티플랫폼 에이전트 하네스"></span></p></a>
-    <a class="credit" href="https://github.com/openai/skills"><h4>openai/skills</h4><p><span class="lang" data-en="OpenAI — Official Skills Catalog for Codex" data-ko="OpenAI — Codex 공식 Skills 카탈로그"></span></p></a>
-    <a class="credit" href="https://github.com/garrytan/gstack"><h4>gstack</h4><p><span class="lang" data-en="garrytan — Sprint-process harness with 36 skills" data-ko="garrytan — 36개 스킬의 스프린트 프로세스 하네스"></span></p></a>
-    <a class="credit" href="https://github.com/superpowers/superpowers"><h4>superpowers</h4><p><span class="lang" data-en="superpowers — Codex skill extensions" data-ko="superpowers — Codex 스킬 확장"></span></p></a>
+  <h2 class="st">FAQ</h2>
+  <div class="faq fade-in">
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)"><span class="lang" data-en="What is Boss?" data-ko="Boss가 무엇인가요?"></span><span></span></button>
+      <div class="faq-a"><div class="faq-a-inner"><span class="lang" data-en="Boss is the meta-orchestrator that discovers and routes all tasks. It scans available agents, skills, and MCP servers, classifies your request, matches capabilities, delegates to the best specialist, and verifies the result — all automatically." data-ko="Boss는 모든 작업을 탐색하고 라우팅하는 메타 오케스트레이터입니다. 사용 가능한 에이전트, 스킬, MCP 서버를 스캔하고, 요청을 분류하고, 능력을 매칭하고, 최적의 전문가에게 위임하고, 결과를 검증합니다 — 모두 자동으로."></span></div></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)"><span class="lang" data-en="How does Boss discover agents?" data-ko="Boss는 어떻게 에이전트를 탐색하나요?"></span><span></span></button>
+      <div class="faq-a"><div class="faq-a-inner"><span class="lang" data-en="Boss scans ~/.codex/agents/ at runtime. Any .toml file placed there is automatically discovered and available for delegation in the next session." data-ko="Boss는 런타임에 ~/.codex/agents/를 스캔합니다. 거기에 놓인 모든 .toml 파일은 자동으로 탐색되어 다음 세션에서 위임에 사용 가능합니다."></span></div></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)"><span class="lang" data-en="Can I add my own agents?" data-ko="나만의 에이전트를 추가할 수 있나요?"></span><span></span></button>
+      <div class="faq-a"><div class="faq-a-inner"><span class="lang" data-en="Yes. Drop a .toml file into ~/.codex/agents/ following the agent template format. Boss discovers it automatically at the next session." data-ko="네. 에이전트 템플릿 형식에 맞춰 ~/.codex/agents/에 .toml 파일을 넣으면 Boss가 다음 세션에서 자동으로 탐색합니다."></span></div></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)"><span class="lang" data-en="How is this different from my-claude?" data-ko="my-claude와 어떻게 다른가요?"></span><span></span></button>
+      <div class="faq-a"><div class="faq-a-inner"><span class="lang" data-en="Same Boss orchestration architecture, but my-codex uses native TOML format for OpenAI Codex CLI instead of markdown. Agents are auto-converted from upstream .md sources via the MD→TOML pipeline." data-ko="같은 Boss 오케스트레이션 아키텍처이지만, my-codex는 마크다운 대신 OpenAI Codex CLI용 네이티브 TOML 형식을 사용합니다. 에이전트는 MD→TOML 파이프라인을 통해 업스트림 .md 소스에서 자동 변환됩니다."></span></div></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)"><span class="lang" data-en="How often are upstream sources synced?" data-ko="업스트림 소스는 얼마나 자주 동기화되나요?"></span><span></span></button>
+      <div class="faq-a"><div class="faq-a-inner"><span class="lang" data-en="Weekly via GitHub Actions every Monday. The sync workflow pulls from all 6 upstream sources, converts formats, deduplicates agents, and creates a PR for review." data-ko="매주 월요일 GitHub Actions를 통해 동기화됩니다. 동기화 워크플로우는 6개 업스트림 소스에서 가져와 형식을 변환하고, 에이전트를 중복 제거하고, 리뷰를 위한 PR을 생성합니다."></span></div></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)"><span class="lang" data-en="Does it work offline?" data-ko="오프라인에서 작동하나요?"></span><span></span></button>
+      <div class="faq-a"><div class="faq-a-inner"><span class="lang" data-en="Yes, all agents are installed locally as .toml files. MCP servers (Context7, Exa, grep.app) require internet connectivity, but the core orchestration works offline." data-ko="네, 모든 에이전트가 .toml 파일로 로컬에 설치됩니다. MCP 서버(Context7, Exa, grep.app)는 인터넷 연결이 필요하지만 핵심 오케스트레이션은 오프라인에서 작동합니다."></span></div></div>
+    </div>
   </div>
 </div>
 </section>
 
-<!-- Footer -->
-<footer>
+<!-- 11. Credits -->
+<section id="credits-footer">
+<div class="container" style="text-align:center">
+  <h2 class="st"><span class="lang" data-en="Credits" data-ko="크레딧"></span></h2>
+  <p style="color:var(--text2);font-size:.88rem;max-width:600px;margin:0 auto 16px"><span class="lang" data-en="Built on open-source contributions from:" data-ko="다음 오픈소스 기여를 기반으로 구축:"></span></p>
+  <p style="font-size:.84rem;color:var(--text2);line-height:2">
+    <a href="https://sehoon787.github.io/my-claude/">my-claude</a> &middot;
+    <a href="https://github.com/VoltAgent/awesome-codex-subagents">awesome-codex-subagents</a> &middot;
+    <a href="https://github.com/Yeachan-Heo/oh-my-claudecode">oh-my-codex</a> &middot;
+    <a href="https://github.com/msitarzewski/agency-agents">agency-agents</a> &middot;
+    <a href="https://github.com/affaan-m/everything-claude-code">everything-claude-code</a> &middot;
+    <a href="https://github.com/obra/superpowers">superpowers</a> &middot;
+    <a href="https://github.com/garrytan/gstack">gstack</a> &middot;
+    <a href="https://github.com/openai/codex">OpenAI Codex CLI</a>
+  </p>
+</div>
+</section>
+
+<!-- 12. Footer -->
+<footer style="padding:40px 0;border-top:1px solid rgba(255,255,255,.06);text-align:center;color:var(--text2);font-size:.82rem">
   <div class="container">
-    <p>MIT License · <a href="https://github.com/sehoon787/my-codex">github.com/sehoon787/my-codex</a> · <a href="https://github.com/sehoon787/my-claude">my-claude</a></p>
-    <p style="margin-top:6px;font-size:.75rem"><span class="lang" data-en="Every agent. One install." data-ko="모든 에이전트. 한 번의 설치."></span></p>
+    <p><a href="https://github.com/sehoon787/my-codex/blob/main/LICENSE" style="color:var(--text2)">MIT License</a> &middot; <a href="https://github.com/sehoon787/my-codex">GitHub</a> &middot; <a href="https://sehoon787.github.io/my-claude/">my-claude</a> &middot; Every agent. One install.</p>
   </div>
 </footer>
 
 <script>
-// Language toggle
 let lang=localStorage.getItem('lang')||'en';
 function setLang(l){
   lang=l;localStorage.setItem('lang',l);
-  document.querySelectorAll('.lang').forEach(el=>{el.innerHTML=el.dataset[l]||''});
+  document.querySelectorAll('.lang').forEach(el=>{el.innerHTML=el.dataset[l]||'';});
   document.getElementById('lt-en').className=l==='en'?'active':'';
   document.getElementById('lt-ko').className=l==='ko'?'active':'';
   document.getElementById('flt-en').className=l==='en'?'active':'';
   document.getElementById('flt-ko').className=l==='ko'?'active':'';
 }
-function toggleLang(){setLang(lang==='en'?'ko':'en')}
+function toggleLang(){setLang(lang==='en'?'ko':'en');}
 setLang(lang);
 
-// Animated counters
-document.querySelectorAll('[data-count]').forEach(el=>{
-  const t=+el.dataset.count,d=1400,s=performance.now();
-  (function step(now){const p=Math.min((now-s)/d,1);el.textContent=Math.floor(p*t);p<1?requestAnimationFrame(step):el.textContent=t})(s);
-});
-
-// Scroll fade-in + active nav tracking
 const sections=document.querySelectorAll('section[id]');
 const navLinks=document.querySelectorAll('.nav-links a');
 const nav=document.getElementById('navbar');
 const heroH=document.querySelector('.hero').offsetHeight;
-const io=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');io.unobserve(e.target)}})},{threshold:.15});
-document.querySelectorAll('.fade-in').forEach(el=>io.observe(el));
-
 window.addEventListener('scroll',()=>{
   const y=window.scrollY;
   nav.classList.toggle('visible',y>heroH*0.6);
   document.getElementById('floatLang').classList.toggle('hidden',y>heroH*0.6);
   let current='';
-  sections.forEach(s=>{if(y>=s.offsetTop-120)current=s.id});
-  navLinks.forEach(a=>{a.classList.toggle('active',a.getAttribute('href')==='#'+current)});
+  sections.forEach(s=>{if(y>=s.offsetTop-120)current=s.id;});
+  navLinks.forEach(a=>{a.classList.toggle('active',a.getAttribute('href')==='#'+current);});
 },{passive:true});
 
-// Terminal tab switching + animation
-let activeTab=0;
-function switchTab(i){
-  if(i===activeTab)return;
-  activeTab=i;
-  document.querySelectorAll('.term-tab').forEach((t,j)=>t.classList.toggle('active',j===i));
-  document.querySelectorAll('.term-scene').forEach(s=>{
-    s.classList.remove('active');
-    s.querySelectorAll('.term-line').forEach(l=>l.classList.remove('show'));
-  });
-  const scene=document.querySelector('[data-scene="'+i+'"]');
-  scene.classList.add('active');
-  animateScene(scene);
-}
-function animateScene(scene){
-  const lines=scene.querySelectorAll('.term-line');
-  lines.forEach((l,j)=>setTimeout(()=>l.classList.add('show'),j*500));
-}
-const termObs=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){
-  animateScene(document.querySelector('.term-scene.active'));
-  termObs.unobserve(e.target);
-}})},{threshold:.3});
-termObs.observe(document.getElementById('terminal'));
+const io=new IntersectionObserver(es=>{
+  es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');io.unobserve(e.target);}});
+},{threshold:.12});
+document.querySelectorAll('.fade-in').forEach(el=>io.observe(el));
 
-// FAQ accordion
-function toggleFaq(btn){btn.closest('.faq-item').classList.toggle('open')}
-
-// Copy button
+function toggleFaq(btn){btn.closest('.faq-item').classList.toggle('open');}
+function copyInst(btn){
+  const pre=btn.parentElement.querySelector('pre');
+  navigator.clipboard.writeText(pre.textContent.trim());
+  btn.textContent='copied!';setTimeout(()=>btn.textContent='copy',1500);
+}
 function switchInst(btn,mode){
   btn.parentElement.querySelectorAll('.inst-tab').forEach(t=>t.classList.remove('active'));
   btn.classList.add('active');
   document.getElementById('inst-human').style.display=mode==='human'?'':'none';
   document.getElementById('inst-ai').style.display=mode==='ai'?'':'none';
 }
-function copyInstBox(el){
-  const txt=el.textContent.replace('click to copy','').replace('$','').trim();
+function copyHero(el){
+  const txt=el.textContent.replace('click to copy','').replace('클릭하여 복사','').replace('$','').trim();
   navigator.clipboard.writeText(txt);
-  el.querySelector('.copy-hint').textContent='copied!';
-  setTimeout(()=>el.querySelector('.copy-hint').textContent='click to copy',1500);
+  el.querySelector('.copy-hint span').innerHTML=lang==='ko'?'복사됨!':'copied!';
+  setTimeout(()=>setLang(lang),1500);
 }
-function copyInst(btn){const pre=btn.parentElement.querySelector('pre');navigator.clipboard.writeText(pre.textContent);btn.textContent='copied!';setTimeout(()=>btn.textContent='copy',1500)}
 </script>
 </body>
 </html>

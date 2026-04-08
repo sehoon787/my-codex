@@ -85,6 +85,21 @@ case "$(uname -s)" in
     grep -q '^name: connect-chrome$' "$TEST_HOME/.codex/skills/connect-chrome/SKILL.md"
     grep -q '^description: |$' "$TEST_HOME/.codex/skills/connect-chrome/SKILL.md"
     grep -q 'open gstack browser' "$TEST_HOME/.codex/skills/connect-chrome/SKILL.md"
+    python - <<'PY' "$TEST_HOME/.codex/skills/connect-chrome/SKILL.md"
+import sys
+from pathlib import Path
+
+raw = Path(sys.argv[1]).read_bytes()
+assert not raw.startswith(b"\xef\xbb\xbf"), "skill file still starts with a UTF-8 BOM"
+skill = raw.decode("utf-8")
+parts = skill.split("---", 2)
+assert len(parts) >= 3, "missing frontmatter delimiters"
+frontmatter = parts[1]
+assert skill.startswith("---\n") or skill.startswith("---\r\n"), "frontmatter must start at byte 0"
+assert 'description: "' not in frontmatter, "description was rewritten as a quoted scalar"
+assert 'description: |' in frontmatter, "description block scalar missing"
+assert "allowed-tools:" in frontmatter, "frontmatter truncated before allowed-tools"
+PY
     ;;
 esac
 test "$(HOME="$TEST_HOME" git config --global --get core.hooksPath)" = "$TEST_HOME/.codex/git-hooks"

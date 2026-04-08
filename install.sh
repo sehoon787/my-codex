@@ -353,7 +353,8 @@ fix_windows_gstack_skill_aliases() {
           next
         }
         /^description:[[:space:]]/ && desc_done == 0 {
-          print "description: \"Backward-compatible alias for open-gstack-browser.\""
+          print "description: |"
+          print "  Backward-compatible alias for open-gstack-browser."
           desc_done = 1
           next
         }

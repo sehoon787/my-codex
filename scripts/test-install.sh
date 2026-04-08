@@ -79,6 +79,14 @@ test -x "$TEST_HOME/.codex/git-hooks/post-commit"
 grep -q 'multi_agent = true' "$TEST_HOME/.codex/config.toml"
 grep -q 'child_agents_md = true' "$TEST_HOME/.codex/config.toml"
 grep -q 'max_threads = 8' "$TEST_HOME/.codex/config.toml"
+case "$(uname -s)" in
+  MINGW*|MSYS*|CYGWIN*)
+    test -f "$TEST_HOME/.codex/skills/connect-chrome/SKILL.md"
+    grep -q '^name: connect-chrome$' "$TEST_HOME/.codex/skills/connect-chrome/SKILL.md"
+    grep -q '^description: |$' "$TEST_HOME/.codex/skills/connect-chrome/SKILL.md"
+    grep -q 'open gstack browser' "$TEST_HOME/.codex/skills/connect-chrome/SKILL.md"
+    ;;
+esac
 test "$(HOME="$TEST_HOME" git config --global --get core.hooksPath)" = "$TEST_HOME/.codex/git-hooks"
 test "$(HOME="$TEST_HOME" git config --global --get my-codex.codexAttribution)" = "true"
 test -f "$TEST_HOME/.codex/.my-codex-manifest.txt"

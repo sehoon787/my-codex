@@ -120,9 +120,10 @@ for (var i = 0; i < patternTypes.length; i++) {
   var count = pattern7d[agentType];
   if (count < 3) continue;
 
-  // Check cooldown
+  // Check cooldown, pending, or already accepted
   var hasCooldown = false;
   var hasPending = false;
+  var hasAccepted = false;
   for (var j = 0; j < existingSuggestions.length; j++) {
     var s = existingSuggestions[j];
     if (s.agent_type !== agentType) continue;
@@ -138,9 +139,13 @@ for (var i = 0; i < patternTypes.length; i++) {
       hasPending = true;
       break;
     }
+    if (s.type === 'accepted') {
+      hasAccepted = true;
+      break;
+    }
   }
 
-  if (hasCooldown || hasPending) continue;
+  if (hasCooldown || hasPending || hasAccepted) continue;
 
   newSuggestions.push({
     type: 'pending',
@@ -257,6 +262,37 @@ try {
 } catch (e) {
   process.stderr.write('stop-profile-update: failed to write profile.md: ' + e.message + '\n');
   process.exit(0);
+}
+
+// Write daily agent execution summary
+var todayEntries = [];
+for (var i = 0; i < logEntries.length; i++) {
+  if (logEntries[i].ts && logEntries[i].ts.slice(0, 10) === todayStr) todayEntries.push(logEntries[i]);
+}
+if (todayEntries.length > 0) {
+  var dayCounts = {}, dayTotal = 0, dayMostActive = '', dayMostCount = 0;
+  for (var i = 0; i < todayEntries.length; i++) {
+    var at = todayEntries[i].agent_type || todayEntries[i].agent;
+    if (!at) continue;
+    dayCounts[at] = (dayCounts[at] || 0) + 1;
+  }
+  var dayTypes = Object.keys(dayCounts);
+  var agentLines = '';
+  for (var i = 0; i < dayTypes.length; i++) {
+    dayTotal += dayCounts[dayTypes[i]];
+    if (dayCounts[dayTypes[i]] > dayMostCount) { dayMostCount = dayCounts[dayTypes[i]]; dayMostActive = dayTypes[i]; }
+    agentLines += '- ' + dayTypes[i] + ': ' + dayCounts[dayTypes[i]] + ' calls\n';
+  }
+  var summaryContent = '---\ndate: ' + todayStr + '\ntype: agent-log\nsession_count: ' + sessionCount +
+    '\ntotal_calls: ' + dayTotal + '\n---\n# Agent Execution Summary — ' + todayStr + '\n\n## Agents Used\n' +
+    agentLines + '\n## Session Stats\n- Total calls today: ' + dayTotal + '\n- Most active: ' + dayMostActive + '\n';
+  try {
+    var agentsDir = path.join(BRIEFING_DIR, 'agents');
+    fs.mkdirSync(agentsDir, { recursive: true });
+    fs.writeFileSync(path.join(agentsDir, todayStr + '-summary.md'), summaryContent);
+  } catch (e) {
+    process.stderr.write('stop-profile-update: failed to write agent summary: ' + e.message + '\n');
+  }
 }
 
 process.exit(0);

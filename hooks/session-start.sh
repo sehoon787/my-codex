@@ -7,7 +7,7 @@ set -euo pipefail
 _kv_dir=".briefing"
 _kv_msg=""
 
-# ── 1. Knowledge Vault Auto-Create ──
+# ── 1. Briefing Vault Auto-Create ──
 if [ ! -f "$_kv_dir/INDEX.md" ]; then
   mkdir -p "$_kv_dir/sessions" "$_kv_dir/decisions" "$_kv_dir/learnings" "$_kv_dir/agents" "$_kv_dir/references" "$_kv_dir/persona/rules" "$_kv_dir/persona/skills"
   _proj_name=$(basename "$(pwd)")
@@ -45,7 +45,7 @@ KVEOF
     echo '.briefing/' > ".gitignore"
   fi
 
-  _kv_msg="[KnowledgeVault] Auto-created .briefing/ structure for ${_proj_name}. Read INDEX.md for project context."
+  _kv_msg="[BriefingVault] Auto-created .briefing/ structure for ${_proj_name}. Read INDEX.md for project context."
 else
   # ── 2. Read existing vault context ──
   _index_content=$(head -30 "$_kv_dir/INDEX.md" 2>/dev/null || true)
@@ -53,7 +53,7 @@ else
   if [ -d "$_kv_dir/sessions" ]; then
     _recent_sessions=$(ls -t "$_kv_dir/sessions/"*.md 2>/dev/null | head -3 | xargs -I{} basename {} 2>/dev/null || true)
   fi
-  _kv_msg="[KnowledgeVault] Project vault loaded. Recent sessions: ${_recent_sessions:-none}"
+  _kv_msg="[BriefingVault] Project vault loaded. Recent sessions: ${_recent_sessions:-none}"
 fi
 
 # ── 3. Output context ──

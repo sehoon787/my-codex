@@ -319,7 +319,7 @@ bash /tmp/my-codex/install.sh --profile full
 
 ---
 
-## <img src="https://obsidian.md/images/obsidian-logo-gradient.svg" width="24" height="24" align="center"/> Knowledge Vault
+## <img src="https://obsidian.md/images/obsidian-logo-gradient.svg" width="24" height="24" align="center"/> Briefing Vault
 
 my-codex includes an Obsidian-compatible knowledge management system. Every project maintains a `.briefing/` directory as a persistent memory base.
 
@@ -358,7 +358,7 @@ my-codex bundles content from 8 upstream repositories:
 
 | # | Source | What It Provides |
 |---|--------|-----------------|
-| 1 | <img src="https://github.com/sehoon787.png?size=32" width="20" height="20" align="center"/> **[my-claude](https://github.com/sehoon787/my-claude)** — sehoon787 | Sister project. Same Boss orchestration in native Claude `.md` agent format. Skills, rules, and knowledge vault shared across both projects. |
+| 1 | <img src="https://github.com/sehoon787.png?size=32" width="20" height="20" align="center"/> **[my-claude](https://github.com/sehoon787/my-claude)** — sehoon787 | Sister project. Same Boss orchestration in native Claude `.md` agent format. Skills, rules, and briefing vault shared across both projects. |
 | 2 | <img src="https://github.com/VoltAgent.png?size=32" width="20" height="20" align="center"/> **[awesome-codex-subagents](https://github.com/VoltAgent/awesome-codex-subagents)** — VoltAgent | 136 production-grade agents in native TOML format. Already Codex-compatible, no conversion needed. 54 core agents auto-loaded. |
 | 3 | <img src="https://github.com/Yeachan-Heo.png?size=32" width="20" height="20" align="center"/> **[oh-my-codex](https://github.com/Yeachan-Heo/oh-my-codex)** — Yeachan Heo | 36 skills, hooks, HUD, and team pipelines for Codex CLI. Referenced as architectural inspiration. |
 | 4 | <img src="https://github.com/msitarzewski.png?size=32" width="20" height="20" align="center"/> **[agency-agents](https://github.com/msitarzewski/agency-agents)** — msitarzewski | 180+ business specialist agent personas across 14 categories. Converted from Markdown to native TOML via automated pipeline. |

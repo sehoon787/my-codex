@@ -1,9 +1,9 @@
 ---
-name: knowledge-vault
+name: briefing-vault
 description: Initialize, manage, and search the per-project .briefing/ vault. Obsidian-compatible persistent knowledge base.
 ---
 
-# Knowledge Vault Skill
+# Briefing Vault Skill
 
 Manage the `.briefing/` directory as a persistent, Obsidian-compatible knowledge base.
 

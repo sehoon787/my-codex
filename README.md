@@ -330,7 +330,12 @@ my-codex includes an Obsidian-compatible knowledge management system. Every proj
 ├── decisions/            ← Architecture & design decisions
 ├── learnings/            ← Non-obvious solutions, gotchas
 ├── references/           ← Web findings, factual data
-└── agents/               ← Important agent execution logs
+├── agents/               ← Agent execution logs + daily summaries
+└── persona/              ← User Philosophy Vault
+    ├── profile.md        ← Agent affinity stats (auto-updated)
+    ├── suggestions.jsonl ← Pending/accepted/rejected suggestions
+    ├── rules/            ← Auto-generated routing preferences
+    └── skills/           ← Auto-generated persona skills
 ```
 
 ### How It Works
@@ -338,6 +343,7 @@ my-codex includes an Obsidian-compatible knowledge management system. Every proj
 1. **Session start** — Boss reads `INDEX.md` to load project context
 2. **During work** — Decisions, learnings, and references are captured as notes
 3. **Session end** — Summary written, `INDEX.md` updated, notes linked with `[[wiki-links]]`
+4. **Persona learning** — Usage patterns are detected; after repeated agent use, routing preferences are suggested and can be accepted or rejected via `persona-rule.js`
 
 ### Using with Obsidian
 

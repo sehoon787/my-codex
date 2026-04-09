@@ -9,7 +9,7 @@ _kv_msg=""
 
 # ── 1. Knowledge Vault Auto-Create ──
 if [ ! -f "$_kv_dir/INDEX.md" ]; then
-  mkdir -p "$_kv_dir/sessions" "$_kv_dir/decisions" "$_kv_dir/learnings" "$_kv_dir/agents" "$_kv_dir/references"
+  mkdir -p "$_kv_dir/sessions" "$_kv_dir/decisions" "$_kv_dir/learnings" "$_kv_dir/agents" "$_kv_dir/references" "$_kv_dir/persona/rules" "$_kv_dir/persona/skills"
   _proj_name=$(basename "$(pwd)")
   cat > "$_kv_dir/INDEX.md" <<KVEOF
 ---

@@ -27,6 +27,11 @@
         "hooks": [
           {
             "type": "command",
+            "command": "node hooks/stop-profile-update.js",
+            "timeout": 10000
+          },
+          {
+            "type": "command",
             "command": "node -e \"const fs=require('fs');const p='.briefing';if(!fs.existsSync(p+'/INDEX.md')){process.exit(0)}const today=new Date().toISOString().slice(0,10);const sDir=p+'/sessions';const hasLog=fs.existsSync(sDir)&&fs.readdirSync(sDir).some(f=>f.startsWith(today));const agentLog=p+'/agents/agent-log.jsonl';const hasWork=fs.existsSync(agentLog)&&fs.readFileSync(agentLog,'utf8').split('\\n').filter(l=>l.trim()).some(l=>{try{return JSON.parse(l).ts&&JSON.parse(l).ts.startsWith(today)}catch{return false}});if(hasWork&&!hasLog){console.log(JSON.stringify({decision:'block',reason:'Meaningful work detected but no session log in .briefing/sessions/'+today+'-*.md. Write a session summary before ending.'}));process.exit(0)}console.log(JSON.stringify({decision:'allow'}))\"",
             "timeout": 5000
           },

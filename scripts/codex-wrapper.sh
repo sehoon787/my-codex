@@ -82,6 +82,12 @@ if [ -z "$REAL_CODEX" ]; then
   exit 127
 fi
 
+# Run my-codex SessionStart hook (side effects only; Codex CLI has no native hook support)
+# Output discarded because nothing in Codex consumes hookSpecificOutput. Failures non-blocking.
+if [ -x "$HOME/.codex/hooks/session-start.sh" ]; then
+  bash "$HOME/.codex/hooks/session-start.sh" >/dev/null 2>&1 || true
+fi
+
 if ! command -v git >/dev/null 2>&1 || ! command -v date >/dev/null 2>&1 || ! command -v mktemp >/dev/null 2>&1; then
   exec "$REAL_CODEX" "$@"
 fi

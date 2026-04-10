@@ -5,12 +5,21 @@
 # Run SessionStart hook via bash if available (Git Bash / WSL / MSYS).
 # Failures are swallowed; hook output is discarded.
 $bash = Get-Command bash -ErrorAction SilentlyContinue
+$hookPath = Join-Path $env:USERPROFILE ".codex\hooks\session-start.sh"
 if ($bash) {
-    $hookPath = Join-Path $env:USERPROFILE ".codex\hooks\session-start.sh"
     if (Test-Path $hookPath) {
         & bash $hookPath *> $null
     }
 }
+
+# Diagnostic log
+try {
+    $logPath = Join-Path $env:USERPROFILE ".codex\last-invocation.log"
+    $ts = Get-Date -UFormat '%Y-%m-%dT%H:%M:%SZ'
+    $cwd = (Get-Location).Path
+    $hookInstalled = if (Test-Path $hookPath) { 'yes' } else { 'no' }
+    "$ts`twrapper=codex.ps1`tcwd=$cwd`thook_installed=$hookInstalled" | Out-File -FilePath $logPath -Append -Encoding utf8
+} catch {}
 
 # Find the real codex.ps1 - skip our own wrapper directory to avoid recursion.
 $selfDir = $PSScriptRoot

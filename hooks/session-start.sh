@@ -4,6 +4,13 @@
 # Mechanism: Read vault context into hook output
 set -euo pipefail
 
+# Diagnostic log: record that session-start.sh was reached and its CWD
+{
+  printf '%s\thook=session-start.sh\tcwd=%s\n' \
+    "$(date -u +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || echo unknown)" \
+    "$(pwd 2>/dev/null || echo unknown)"
+} >> "$HOME/.codex/last-invocation.log" 2>/dev/null || true
+
 _kv_dir=".briefing"
 _kv_msg=""
 

@@ -84,9 +84,19 @@ fi
 
 # Run my-codex SessionStart hook (side effects only; Codex CLI has no native hook support)
 # Output discarded because nothing in Codex consumes hookSpecificOutput. Failures non-blocking.
+_hook_installed="no"
+[ -x "$HOME/.codex/hooks/session-start.sh" ] && _hook_installed="yes"
 if [ -x "$HOME/.codex/hooks/session-start.sh" ]; then
   bash "$HOME/.codex/hooks/session-start.sh" >/dev/null 2>&1 || true
 fi
+
+# Diagnostic log
+{
+  printf '%s\twrapper=codex.sh\tcwd=%s\thook_installed=%s\n' \
+    "$(date -u +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || echo unknown)" \
+    "$(pwd 2>/dev/null || echo unknown)" \
+    "$_hook_installed"
+} >> "$HOME/.codex/last-invocation.log" 2>/dev/null || true
 
 if ! command -v git >/dev/null 2>&1 || ! command -v date >/dev/null 2>&1 || ! command -v mktemp >/dev/null 2>&1; then
   exec "$REAL_CODEX" "$@"

@@ -5,12 +5,19 @@ SETLOCAL EnableDelayedExpansion
 
 REM Run SessionStart hook via bash if available (Git Bash / WSL / MSYS).
 REM Failures are swallowed; hook output is discarded (nothing in Codex consumes it).
+SET "HOOK_OK=no"
+IF EXIST "%USERPROFILE%\.codex\hooks\session-start.sh" SET "HOOK_OK=yes"
 WHERE bash >NUL 2>NUL
 IF !ERRORLEVEL! EQU 0 (
   IF EXIST "%USERPROFILE%\.codex\hooks\session-start.sh" (
     bash "%USERPROFILE%\.codex\hooks\session-start.sh" >NUL 2>NUL
   )
 )
+
+REM Diagnostic log
+FOR /F "tokens=*" %%T IN ('powershell -NoProfile -Command "Get-Date -UFormat '%%Y-%%m-%%dT%%H:%%M:%%SZ'" 2^>NUL') DO SET "TS=%%T"
+IF NOT DEFINED TS SET "TS=unknown"
+>> "%USERPROFILE%\.codex\last-invocation.log" ECHO !TS!	wrapper=codex.cmd	cwd=!CD!	hook_installed=!HOOK_OK!
 
 REM Find the real codex.cmd - skip our own wrapper directory to avoid recursion.
 SET "SELF_DIR=%~dp0"

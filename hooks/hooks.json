@@ -5,7 +5,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash hooks/session-start.sh",
+            "command": "bash \"$HOME/.codex/hooks/session-start.sh\"",
             "timeout": 15000
           }
         ]
@@ -27,7 +27,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node hooks/stop-profile-update.js",
+            "command": "node \"$HOME/.codex/hooks/stop-profile-update.js\"",
             "timeout": 10000
           },
           {

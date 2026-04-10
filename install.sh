@@ -773,7 +773,15 @@ if [ -f "$REPO_ROOT/hooks/session-start.sh" ]; then
   chmod +x "$CODEX_ROOT/hooks/session-start.sh"
   add_manifest_entry "hooks/session-start.sh"
 fi
-echo "  Hooks installed (vault enforcement)"
+if [ -f "$REPO_ROOT/hooks/stop-profile-update.js" ]; then
+  cp "$REPO_ROOT/hooks/stop-profile-update.js" "$CODEX_ROOT/hooks/stop-profile-update.js"
+  add_manifest_entry "hooks/stop-profile-update.js"
+fi
+if [ -f "$REPO_ROOT/hooks/persona-rule.js" ]; then
+  cp "$REPO_ROOT/hooks/persona-rule.js" "$CODEX_ROOT/hooks/persona-rule.js"
+  add_manifest_entry "hooks/persona-rule.js"
+fi
+echo "  Hooks installed (vault enforcement + persona)"
 
 echo "[4/7] Configuring config.toml..."
 CONFIG_FILE="$CODEX_ROOT/config.toml"

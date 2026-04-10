@@ -7,6 +7,38 @@ set -euo pipefail
 _kv_dir=".briefing"
 _kv_msg=""
 
+# ── 0. .knowledge → .briefing migration (one-time) ──
+if [ -d ".knowledge" ]; then
+  if [ ! -d ".briefing" ]; then
+    mv ".knowledge" ".briefing"
+    mkdir -p ".briefing/persona/rules" ".briefing/persona/skills"
+    if [ -f ".briefing/INDEX.md" ] && ! grep -q '^language:' ".briefing/INDEX.md"; then
+      sed -i '/^type:/a language: en' ".briefing/INDEX.md" 2>/dev/null || true
+    fi
+    if [ -f ".gitignore" ]; then
+      sed -i '/^\.knowledge\//d' ".gitignore" 2>/dev/null || true
+      grep -q '\.briefing/' ".gitignore" 2>/dev/null || echo '.briefing/' >> ".gitignore"
+    fi
+  else
+    for _subdir in sessions decisions learnings agents references; do
+      if [ -d ".knowledge/$_subdir" ]; then
+        mkdir -p ".briefing/$_subdir"
+        for _file in ".knowledge/$_subdir"/*; do
+          [ -f "$_file" ] || continue
+          _bname=$(basename "$_file")
+          [ ! -f ".briefing/$_subdir/$_bname" ] && cp "$_file" ".briefing/$_subdir/$_bname"
+        done
+      fi
+    done
+    rm -rf ".knowledge"
+    mkdir -p ".briefing/persona/rules" ".briefing/persona/skills"
+    if [ -f ".gitignore" ]; then
+      sed -i '/^\.knowledge\//d' ".gitignore" 2>/dev/null || true
+      grep -q '\.briefing/' ".gitignore" 2>/dev/null || echo '.briefing/' >> ".gitignore"
+    fi
+  fi
+fi
+
 # ── 1. Briefing Vault Auto-Create ──
 if [ ! -f "$_kv_dir/INDEX.md" ]; then
   mkdir -p "$_kv_dir/sessions" "$_kv_dir/decisions" "$_kv_dir/learnings" "$_kv_dir/agents" "$_kv_dir/references" "$_kv_dir/persona/rules" "$_kv_dir/persona/skills"
@@ -104,7 +136,26 @@ if [ -d "$_skills_dir" ]; then
   fi
 fi
 
-# ── 3. Output context ──
+# ── 3a. Version Freshness Check (once per day, non-blocking) ──
+_update_msg=""
+_vc_stamp="$HOME/.codex/.my-codex-update-check"
+_vc_today=$(date +%Y-%m-%d)
+_vc_last=""
+[ -f "$_vc_stamp" ] && _vc_last=$(head -1 "$_vc_stamp" 2>/dev/null || true)
+if [ "$_vc_today" != "$_vc_last" ]; then
+  _vc_installed=""
+  [ -f "$HOME/.codex/.my-codex-version" ] && _vc_installed=$(cat "$HOME/.codex/.my-codex-version" 2>/dev/null || true)
+  if [ -n "$_vc_installed" ] && [ "$_vc_installed" != "unknown" ]; then
+    _vc_remote_sha=$(git ls-remote https://github.com/sehoon787/my-codex.git HEAD 2>/dev/null | cut -f1 | head -c 12 || true)
+    if [ -n "$_vc_remote_sha" ] && [ "${_vc_installed}" != "${_vc_remote_sha}" ]; then
+      _update_msg="[UpdateCheck] my-codex update available (installed: ${_vc_installed}). Run: curl -fsSL https://raw.githubusercontent.com/sehoon787/my-codex/main/install.sh | bash"
+    fi
+    echo "$_vc_today" > "$_vc_stamp" 2>/dev/null || true
+  fi
+fi
+
+# ── 4. Output context ──
+[ -n "$_update_msg" ] && _kv_msg="${_kv_msg} ${_update_msg}"
 if [ -n "$_kv_msg" ]; then
   node -e "console.log(JSON.stringify({hookSpecificOutput:{additionalContext:'$_kv_msg'}}))" 2>/dev/null || true
 fi

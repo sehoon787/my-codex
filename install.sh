@@ -422,6 +422,159 @@ cleanup_cross_tool_skills() {
   done
 }
 
+patch_npm_shims() {
+  # Patch npm shims (codex.cmd, codex.ps1, extensionless codex) so they run
+  # the SessionStart hook before delegating to the original npm shim.
+  # Only runs on Windows (MSYS/Cygwin environments used by Git Bash).
+  # Safe to re-run: checks for sentinel marker before patching.
+  # Never aborts the install if npm shims are absent or patching fails.
+
+  if [[ "${OSTYPE:-}" != msys* && "${OSTYPE:-}" != cygwin* ]]; then
+    return 0
+  fi
+
+  local npm_dir
+  npm_dir="$(cygpath -u "${APPDATA:-}" 2>/dev/null)/npm"
+  if [ ! -d "$npm_dir" ]; then
+    echo "  npm shim patching: $npm_dir not found, skipping"
+    return 0
+  fi
+
+  # --- codex.cmd ---
+  local cmd_shim="$npm_dir/codex.cmd"
+  if [ -f "$cmd_shim" ]; then
+    if grep -q 'my-codex wrapper' "$cmd_shim" 2>/dev/null; then
+      echo "  npm codex.cmd: already patched, skipping"
+    else
+      local backup="$npm_dir/codex.real.cmd"
+      if [ ! -f "$backup" ]; then
+        cp "$cmd_shim" "$backup"
+        echo "  npm codex.cmd: backed up to codex.real.cmd"
+      fi
+      cat > "$cmd_shim" <<'CMDEOF'
+@ECHO off
+REM my-codex wrapper - runs SessionStart hook via Git Bash, logs invocation, delegates to codex.real.cmd
+SETLOCAL EnableDelayedExpansion
+
+IF DEFINED CODEX_WRAPPER_INVOKED GOTO :delegate
+SET "CODEX_WRAPPER_INVOKED=1"
+
+SET "GIT_BASH="
+IF EXIST "%ProgramFiles%\Git\bin\bash.exe" SET "GIT_BASH=%ProgramFiles%\Git\bin\bash.exe"
+IF NOT DEFINED GIT_BASH IF EXIST "%ProgramFiles%\Git\usr\bin\bash.exe" SET "GIT_BASH=%ProgramFiles%\Git\usr\bin\bash.exe"
+IF NOT DEFINED GIT_BASH IF EXIST "%ProgramFiles(x86)%\Git\bin\bash.exe" SET "GIT_BASH=%ProgramFiles(x86)%\Git\bin\bash.exe"
+
+SET "HOOK_OK=no"
+IF EXIST "%USERPROFILE%\.codex\hooks\session-start.sh" SET "HOOK_OK=yes"
+
+IF NOT DEFINED GIT_BASH GOTO :afterhook
+IF NOT "!HOOK_OK!"=="yes" GOTO :afterhook
+"!GIT_BASH!" "%USERPROFILE%\.codex\hooks\session-start.sh" 1>NUL 2>NUL
+:afterhook
+
+FOR /F "tokens=*" %%T IN ('powershell -NoProfile -Command "Get-Date -UFormat '%%Y-%%m-%%dT%%H:%%M:%%SZ'" 2^>NUL') DO SET "TS=%%T"
+IF NOT DEFINED TS SET "TS=unknown"
+>> "%USERPROFILE%\.codex\last-invocation.log" ECHO !TS!	wrapper=npm\codex.cmd	cwd=!CD!	hook_installed=!HOOK_OK!	git_bash=!GIT_BASH!
+
+:delegate
+CALL "%~dp0codex.real.cmd" %*
+EXIT /B !ERRORLEVEL!
+CMDEOF
+      echo "  npm codex.cmd: patched"
+    fi
+  else
+    echo "  npm codex.cmd: not found, skipping"
+  fi
+
+  # --- codex.ps1 ---
+  local ps1_shim="$npm_dir/codex.ps1"
+  if [ -f "$ps1_shim" ]; then
+    if grep -q 'my-codex' "$ps1_shim" 2>/dev/null; then
+      echo "  npm codex.ps1: already patched, skipping"
+    else
+      local ps1_backup="$npm_dir/codex.real.ps1"
+      if [ ! -f "$ps1_backup" ]; then
+        cp "$ps1_shim" "$ps1_backup"
+        echo "  npm codex.ps1: backed up to codex.real.ps1"
+      fi
+      cat > "$ps1_shim" <<'PS1EOF'
+#!/usr/bin/env pwsh
+# my-codex in-place patch of npm codex.ps1
+# Runs SessionStart hook via Git Bash, logs invocation, delegates to codex.real.ps1.
+
+if (-not $env:CODEX_WRAPPER_INVOKED) {
+    $env:CODEX_WRAPPER_INVOKED = "1"
+
+    $gitBash = @(
+        (Join-Path $env:ProgramFiles "Git\bin\bash.exe"),
+        (Join-Path $env:ProgramFiles "Git\usr\bin\bash.exe"),
+        (Join-Path ${env:ProgramFiles(x86)} "Git\bin\bash.exe")
+    ) | Where-Object { $_ -and (Test-Path $_) } | Select-Object -First 1
+
+    $hookPath = Join-Path $env:USERPROFILE ".codex\hooks\session-start.sh"
+    $hookOk = if (Test-Path $hookPath) { "yes" } else { "no" }
+
+    if ($gitBash -and ($hookOk -eq "yes")) {
+        try { & $gitBash $hookPath *> $null } catch {}
+    }
+
+    try {
+        $ts = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
+        $logPath = Join-Path $env:USERPROFILE ".codex\last-invocation.log"
+        $line = "$ts`twrapper=npm\codex.ps1`tcwd=$($PWD.Path)`thook_installed=$hookOk`tgit_bash=$gitBash"
+        Add-Content -Path $logPath -Value $line -Encoding UTF8
+    } catch {}
+}
+
+& "$PSScriptRoot\codex.real.ps1" @args
+exit $LASTEXITCODE
+PS1EOF
+      echo "  npm codex.ps1: patched"
+    fi
+  else
+    echo "  npm codex.ps1: not found, skipping"
+  fi
+
+  # --- extensionless bash shim ---
+  local bash_shim="$npm_dir/codex"
+  if [ -f "$bash_shim" ]; then
+    if grep -q 'my-codex' "$bash_shim" 2>/dev/null; then
+      echo "  npm codex (bash shim): already patched, skipping"
+    else
+      local bash_backup="$npm_dir/codex.real"
+      if [ ! -f "$bash_backup" ]; then
+        cp "$bash_shim" "$bash_backup"
+        echo "  npm codex (bash shim): backed up to codex.real"
+      fi
+      cat > "$bash_shim" <<'BASHEOF'
+#!/bin/sh
+# my-codex in-place patch of npm codex (bash shim)
+# Runs SessionStart hook, logs invocation, then delegates to codex.real.
+
+basedir=$(dirname "$(echo "$0" | sed -e 's,\,/,g')")
+
+if [ -z "${CODEX_WRAPPER_INVOKED:-}" ]; then
+  export CODEX_WRAPPER_INVOKED=1
+  hook_path="$HOME/.codex/hooks/session-start.sh"
+  hook_ok="no"
+  if [ -f "$hook_path" ]; then
+    hook_ok="yes"
+    bash "$hook_path" >/dev/null 2>&1 || true
+  fi
+  ts=$(date -u +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || echo unknown)
+  printf '%s\twrapper=npm/codex\tcwd=%s\thook_installed=%s\n' "$ts" "$PWD" "$hook_ok" \
+    >> "$HOME/.codex/last-invocation.log" 2>/dev/null || true
+fi
+
+exec "$basedir/codex.real" "$@"
+BASHEOF
+      echo "  npm codex (bash shim): patched"
+    fi
+  else
+    echo "  npm codex (bash shim): not found, skipping"
+  fi
+}
+
 INSTALLING_VERSION="$(current_install_version)"
 INSTALLED_VERSION="none"
 if [ -f "$VERSION_FILE" ]; then
@@ -808,6 +961,7 @@ cp "$REPO_ROOT/scripts/codex-attribution-lib.sh" "$CODEX_ROOT/lib/codex-attribut
 cp "$REPO_ROOT/scripts/codex-wrapper.sh" "$CODEX_ROOT/bin/codex"
 cp "$REPO_ROOT/bin/codex.cmd" "$CODEX_ROOT/bin/codex.cmd"
 cp "$REPO_ROOT/bin/codex.ps1" "$CODEX_ROOT/bin/codex.ps1"
+patch_npm_shims
 cp "$REPO_ROOT/scripts/codex-mark-used.sh" "$CODEX_ROOT/bin/codex-mark-used"
 cp "$REPO_ROOT/scripts/agent-pack-manager.sh" "$CODEX_ROOT/bin/my-codex-packs"
 cp "$REPO_ROOT/templates/git-hooks/prepare-commit-msg" "$CODEX_ROOT/git-hooks/prepare-commit-msg"

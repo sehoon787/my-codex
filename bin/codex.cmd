@@ -36,4 +36,10 @@ IF NOT DEFINED REAL_CMD (
 
 SET "CODEX_WRAPPER_INVOKED=1"
 CALL "!REAL_CMD!" %*
-EXIT /B !ERRORLEVEL!
+SET "CODEX_EXIT=!ERRORLEVEL!"
+IF DEFINED GIT_BASH (
+  IF EXIST "%USERPROFILE%\.codex\hooks\stop-profile-update.js" (
+    "!GIT_BASH!" -c "echo '{\"agent_id\":\"codex-wrapper-stop\",\"agent_type\":\"stop\"}' | node ~/.codex/hooks/stop-profile-update.js" 1>NUL 2>NUL
+  )
+)
+EXIT /B !CODEX_EXIT!

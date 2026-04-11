@@ -71,6 +71,7 @@ CODEX_ROOT="$HOME/.codex"
 MANIFEST_FILE="$CODEX_ROOT/.my-codex-manifest.txt"
 VERSION_FILE="$CODEX_ROOT/.my-codex-version"
 TMP_MANIFEST="$(mktemp)"
+NODEJS_SHIM_DIR=""
 AGENTS_SKILLS_ROOT="$HOME/.agents/skills"
 CLAUDE_SKILLS_ROOT="$HOME/.claude/skills"
 
@@ -81,7 +82,7 @@ trap cleanup EXIT
 
 # ── Upstream helper ──
 CLONE_TMPDIR=$(mktemp -d)
-cleanup_clone() { rm -rf "$CLONE_TMPDIR"; rm -f "$TMP_MANIFEST"; }
+cleanup_clone() { rm -rf "$CLONE_TMPDIR"; rm -f "$TMP_MANIFEST"; if [ -n "$NODEJS_SHIM_DIR" ] && [ -d "$NODEJS_SHIM_DIR" ]; then rm -rf "$NODEJS_SHIM_DIR"; fi; }
 trap cleanup_clone EXIT
 
 UPSTREAM_DIR=""
@@ -99,6 +100,82 @@ init_upstream() {
   echo "  WARNING: submodule init failed for $name, falling back to git clone..."
   UPSTREAM_DIR="$CLONE_TMPDIR/$name"
   git clone --depth 1 "$url" "$UPSTREAM_DIR" 2>/dev/null || return 1
+}
+
+append_path_once() {
+  local candidate="$1"
+  [ -n "$candidate" ] || return 1
+  [ -d "$candidate" ] || return 1
+
+  case ":$PATH:" in
+    *":$candidate:"*) return 0 ;;
+  esac
+
+  PATH="$PATH:$candidate"
+  export PATH
+}
+
+link_windows_node_shims() {
+  local candidate="$1"
+
+  [ -f "$candidate/node.exe" ] || return 1
+
+  if [ -z "$NODEJS_SHIM_DIR" ]; then
+    NODEJS_SHIM_DIR="$(mktemp -d)"
+  fi
+
+  ln -sf "$candidate/node.exe" "$NODEJS_SHIM_DIR/node"
+  [ -f "$candidate/npm" ] && ln -sf "$candidate/npm" "$NODEJS_SHIM_DIR/npm"
+  [ -f "$candidate/npx" ] && ln -sf "$candidate/npx" "$NODEJS_SHIM_DIR/npx"
+  append_path_once "$NODEJS_SHIM_DIR"
+}
+
+ensure_nodejs_on_path() {
+  local candidate raw_path unix_path
+
+  if command -v node >/dev/null 2>&1 && command -v npm >/dev/null 2>&1; then
+    return 0
+  fi
+
+  for candidate in \
+    "/c/Program Files/nodejs" \
+    "/c/Program Files (x86)/nodejs" \
+    "/c/nodejs" \
+    "/mnt/c/Program Files/nodejs" \
+    "/mnt/c/Program Files (x86)/nodejs" \
+    "/mnt/c/nodejs"
+  do
+    [ -d "$candidate" ] || continue
+    append_path_once "$candidate"
+    if command -v node >/dev/null 2>&1 && command -v npm >/dev/null 2>&1; then
+      return 0
+    fi
+    link_windows_node_shims "$candidate" || true
+    if command -v node >/dev/null 2>&1 && command -v npm >/dev/null 2>&1; then
+      return 0
+    fi
+  done
+
+  if command -v powershell.exe >/dev/null 2>&1 && command -v cygpath >/dev/null 2>&1; then
+    while IFS= read -r raw_path; do
+      raw_path="${raw_path%$'\r'}"
+      [ -n "$raw_path" ] || continue
+
+      unix_path="$(cygpath -u "$raw_path" 2>/dev/null || true)"
+      [ -d "$unix_path" ] || continue
+
+      append_path_once "$unix_path"
+      if command -v node >/dev/null 2>&1 && command -v npm >/dev/null 2>&1; then
+        return 0
+      fi
+      link_windows_node_shims "$unix_path" || true
+      if command -v node >/dev/null 2>&1 && command -v npm >/dev/null 2>&1; then
+        return 0
+      fi
+    done <<EOF
+$(powershell.exe -NoProfile -Command "$paths=@(); $machine=[Environment]::GetEnvironmentVariable('Path','Machine'); if($machine){$paths += $machine -split ';'}; $user=[Environment]::GetEnvironmentVariable('Path','User'); if($user){$paths += $user -split ';'}; $paths | Where-Object { $_ } | Select-Object -Unique" 2>/dev/null)
+EOF
+  fi
 }
 
 PACK_MANAGER="$SCRIPT_DIR/scripts/agent-pack-manager.sh"
@@ -594,6 +671,7 @@ fi
 echo ""
 
 echo "[0/7] Checking prerequisites..."
+ensure_nodejs_on_path
 command -v node >/dev/null 2>&1 || { echo "ERROR: node not found. Install Node.js v20+"; exit 1; }
 command -v npm  >/dev/null 2>&1 || { echo "ERROR: npm not found"; exit 1; }
 command -v git  >/dev/null 2>&1 || { echo "ERROR: git not found"; exit 1; }

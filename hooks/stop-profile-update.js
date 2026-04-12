@@ -269,30 +269,29 @@ var todayEntries = [];
 for (var i = 0; i < logEntries.length; i++) {
   if (logEntries[i].ts && logEntries[i].ts.slice(0, 10) === todayStr) todayEntries.push(logEntries[i]);
 }
-if (todayEntries.length > 0) {
-  var dayCounts = {}, dayTotal = 0, dayMostActive = '', dayMostCount = 0;
-  for (var i = 0; i < todayEntries.length; i++) {
-    var at = todayEntries[i].agent_type || todayEntries[i].agent;
-    if (!at) continue;
-    dayCounts[at] = (dayCounts[at] || 0) + 1;
-  }
-  var dayTypes = Object.keys(dayCounts);
-  var agentLines = '';
-  for (var i = 0; i < dayTypes.length; i++) {
-    dayTotal += dayCounts[dayTypes[i]];
-    if (dayCounts[dayTypes[i]] > dayMostCount) { dayMostCount = dayCounts[dayTypes[i]]; dayMostActive = dayTypes[i]; }
-    agentLines += '- ' + dayTypes[i] + ': ' + dayCounts[dayTypes[i]] + ' calls\n';
-  }
-  var summaryContent = '---\ndate: ' + todayStr + '\ntype: agent-log\nsession_count: ' + sessionCount +
-    '\ntotal_calls: ' + dayTotal + '\n---\n# Agent Execution Summary — ' + todayStr + '\n\n## Agents Used\n' +
-    agentLines + '\n## Session Stats\n- Total calls today: ' + dayTotal + '\n- Most active: ' + dayMostActive + '\n';
-  try {
-    var agentsDir = path.join(BRIEFING_DIR, 'agents');
-    fs.mkdirSync(agentsDir, { recursive: true });
-    fs.writeFileSync(path.join(agentsDir, todayStr + '-summary.md'), summaryContent);
-  } catch (e) {
-    process.stderr.write('stop-profile-update: failed to write agent summary: ' + e.message + '\n');
-  }
+var dayCounts = {}, dayTotal = 0, dayMostActive = 'none', dayMostCount = 0;
+for (var i = 0; i < todayEntries.length; i++) {
+  var at = todayEntries[i].agent_type || todayEntries[i].agent;
+  if (!at) continue;
+  dayCounts[at] = (dayCounts[at] || 0) + 1;
+}
+var dayTypes = Object.keys(dayCounts);
+var agentLines = '';
+for (var i = 0; i < dayTypes.length; i++) {
+  dayTotal += dayCounts[dayTypes[i]];
+  if (dayCounts[dayTypes[i]] > dayMostCount) { dayMostCount = dayCounts[dayTypes[i]]; dayMostActive = dayTypes[i]; }
+  agentLines += '- ' + dayTypes[i] + ': ' + dayCounts[dayTypes[i]] + ' calls\n';
+}
+if (!agentLines) agentLines = '(no agents used)\n';
+var summaryContent = '---\ndate: ' + todayStr + '\ntype: agent-log\nsession_count: ' + sessionCount +
+  '\ntotal_calls: ' + dayTotal + '\n---\n# Agent Execution Summary \u2014 ' + todayStr + '\n\n## Agents Used\n' +
+  agentLines + '\n## Session Stats\n- Total calls today: ' + dayTotal + '\n- Most active: ' + dayMostActive + '\n';
+try {
+  var agentsDir = path.join(BRIEFING_DIR, 'agents');
+  fs.mkdirSync(agentsDir, { recursive: true });
+  fs.writeFileSync(path.join(agentsDir, todayStr + '-summary.md'), summaryContent);
+} catch (e) {
+  process.stderr.write('stop-profile-update: failed to write agent summary: ' + e.message + '\n');
 }
 
 // === Auto-generate session summary ===
@@ -454,6 +453,83 @@ try {
   }
 } catch (e) {
   process.stderr.write('stop-profile-update: failed to write learning draft: ' + e.message + '\n');
+}
+
+// === Auto-generate decision draft ===
+try {
+  var decDir = path.join(BRIEFING_DIR, 'decisions');
+  fs.mkdirSync(decDir, { recursive: true });
+
+  // Skip if any decision file was modified today
+  var decFiles = fs.readdirSync(decDir);
+  var decExistsToday = false;
+  for (var i = 0; i < decFiles.length; i++) {
+    try {
+      var dStat = fs.statSync(path.join(decDir, decFiles[i]));
+      if (dStat.mtime.toISOString().slice(0, 10) === todayStr) {
+        decExistsToday = true;
+        break;
+      }
+    } catch (e) {}
+  }
+
+  if (!decExistsToday) {
+    // Read work counter — skip if no meaningful work
+    var dwc = 0;
+    try {
+      var dwcPath = path.join(BRIEFING_DIR, '.work-counter');
+      if (fs.existsSync(dwcPath)) {
+        dwc = parseInt(fs.readFileSync(dwcPath, 'utf8').trim(), 10) || 0;
+      }
+    } catch (e) {}
+
+    if (dwc > 0) {
+      // Run git log --oneline --since="midnight"
+      var gitCommits = '(no commits today)';
+      try {
+        var spawnSync3 = require('child_process').spawnSync;
+        var gitLog = spawnSync3('git', ['log', '--oneline', '--since=midnight'], { timeout: 5000 });
+        if (gitLog.status === 0 && gitLog.stdout) {
+          var gitLogOut = gitLog.stdout.toString().trim();
+          if (gitLogOut) gitCommits = gitLogOut;
+        }
+      } catch (e) {}
+
+      // Run git diff --name-only HEAD
+      var decChangedFiles = '(no files detected)';
+      try {
+        var spawnSync4 = require('child_process').spawnSync;
+        var decGitFiles = spawnSync4('git', ['diff', '--name-only', 'HEAD'], { timeout: 5000 });
+        if (decGitFiles.status === 0 && decGitFiles.stdout) {
+          var decGitFilesOut = decGitFiles.stdout.toString().trim();
+          if (decGitFilesOut) {
+            var decFileList = decGitFilesOut.split('\n');
+            decChangedFiles = decFileList.map(function(f) { return '- ' + f; }).join('\n');
+          }
+        }
+      } catch (e) {}
+
+      var decisionMd = '---\n' +
+        'date: ' + todayStr + '\n' +
+        'type: decision\n' +
+        'auto-generated: true\n' +
+        'tags: [auto-session-capture]\n' +
+        '---\n' +
+        '# Session Decisions (Auto-generated)\n' +
+        '\n' +
+        '## Commits Today\n' +
+        gitCommits + '\n' +
+        '\n' +
+        '## Files Changed\n' +
+        decChangedFiles + '\n' +
+        '\n' +
+        '> This entry was auto-generated. Enrich with actual decision rationale or delete if not needed.\n';
+
+      fs.writeFileSync(path.join(decDir, todayStr + '-auto.md'), decisionMd);
+    }
+  }
+} catch (e) {
+  process.stderr.write('stop-profile-update: failed to write decision draft: ' + e.message + '\n');
 }
 
 process.exit(0);

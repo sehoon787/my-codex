@@ -1014,6 +1014,34 @@ if [ -f "$REPO_ROOT/hooks/persona-rule.js" ]; then
 fi
 echo "  Hooks installed (vault enforcement + persona)"
 
+echo "[3.6/7] Registering Codex plugin..."
+MARKETPLACE_DIR="$HOME/.agents/plugins"
+PLUGINS_DIR="$MARKETPLACE_DIR/plugins"
+mkdir -p "$PLUGINS_DIR"
+MARKETPLACE_FILE="$MARKETPLACE_DIR/marketplace.json"
+
+# Symlink plugin into marketplace root so source.path stays relative
+ln -sfn "$REPO_ROOT" "$PLUGINS_DIR/my-codex"
+echo "  Symlinked $PLUGINS_DIR/my-codex -> $REPO_ROOT"
+
+node -e "
+  var fs=require('fs');
+  var p=process.argv[1];
+  var m={name:'local',plugins:[]};
+  try{m=JSON.parse(fs.readFileSync(p,'utf8'))}catch(e){}
+  if(!m.name) m.name='local';
+  if(!Array.isArray(m.plugins)) m.plugins=[];
+  m.plugins=m.plugins.filter(function(x){return x.name!=='my-codex'});
+  m.plugins.push({
+    name:'my-codex',
+    source:{source:'local',path:'./plugins/my-codex'},
+    policy:{installation:'INSTALLED_BY_DEFAULT',authentication:'ON_INSTALL'},
+    category:'Productivity'
+  });
+  fs.writeFileSync(p,JSON.stringify(m,null,2));
+" "$MARKETPLACE_FILE"
+echo "  Plugin registered at $MARKETPLACE_FILE"
+
 echo "[4/7] Configuring config.toml..."
 CONFIG_FILE="$CODEX_ROOT/config.toml"
 touch "$CONFIG_FILE"

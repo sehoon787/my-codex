@@ -295,4 +295,165 @@ if (todayEntries.length > 0) {
   }
 }
 
+// === Auto-generate session summary ===
+try {
+  var SESSIONS_DIR = path.join(BRIEFING_DIR, 'sessions');
+  fs.mkdirSync(SESSIONS_DIR, { recursive: true });
+
+  // Skip if a session file for today already exists (AI wrote one)
+  var sessionFiles = fs.readdirSync(SESSIONS_DIR);
+  var sessionExistsToday = false;
+  for (var i = 0; i < sessionFiles.length; i++) {
+    if (sessionFiles[i].slice(0, 10) === todayStr) {
+      sessionExistsToday = true;
+      break;
+    }
+  }
+
+  if (!sessionExistsToday) {
+    // Read work counter
+    var workCounter = 0;
+    try {
+      var wcPath = path.join(BRIEFING_DIR, '.work-counter');
+      if (fs.existsSync(wcPath)) {
+        workCounter = parseInt(fs.readFileSync(wcPath, 'utf8').trim(), 10) || 0;
+      }
+    } catch (e) {}
+
+    // Run git diff --stat HEAD
+    var gitDiffStat = '(no git changes detected)';
+    try {
+      var spawnSync = require('child_process').spawnSync;
+      var gitResult = spawnSync('git', ['diff', '--stat', 'HEAD'], { timeout: 5000 });
+      if (gitResult.status === 0 && gitResult.stdout) {
+        var gitOut = gitResult.stdout.toString().trim();
+        if (gitOut) gitDiffStat = gitOut;
+      }
+    } catch (e) {}
+
+    // Build agent lines for session summary
+    var sessionAgentLines = '(no agents used)';
+    var sessionDayTotal = 0;
+    if (todayEntries.length > 0) {
+      var sdc = {}, sdLines = '';
+      for (var i = 0; i < todayEntries.length; i++) {
+        var sat = todayEntries[i].agent_type || todayEntries[i].agent;
+        if (!sat) continue;
+        sdc[sat] = (sdc[sat] || 0) + 1;
+      }
+      var sdTypes = Object.keys(sdc);
+      for (var i = 0; i < sdTypes.length; i++) {
+        sessionDayTotal += sdc[sdTypes[i]];
+        sdLines += '- ' + sdTypes[i] + ': ' + sdc[sdTypes[i]] + ' calls\n';
+      }
+      if (sdLines) sessionAgentLines = sdLines.trimRight();
+    }
+
+    var sessionMd = '---\n' +
+      'date: ' + todayStr + '\n' +
+      'type: session\n' +
+      'auto-generated: true\n' +
+      'session_count: ' + sessionCount + '\n' +
+      '---\n' +
+      '# Session Summary \u2014 ' + todayStr + ' (Auto-generated)\n' +
+      '\n' +
+      '## Agent Usage\n' +
+      sessionAgentLines + '\n' +
+      'Total: ' + sessionDayTotal + ' calls\n' +
+      '\n' +
+      '## Work Stats\n' +
+      '- File edits: ' + workCounter + '\n' +
+      '- Session number: ' + sessionCount + '\n' +
+      '\n' +
+      '## Files Changed\n' +
+      gitDiffStat + '\n';
+
+    fs.writeFileSync(path.join(SESSIONS_DIR, todayStr + '-auto.md'), sessionMd);
+  }
+} catch (e) {
+  process.stderr.write('stop-profile-update: failed to write session summary: ' + e.message + '\n');
+}
+
+// === Auto-generate learning draft ===
+try {
+  var LEARNINGS_DIR = path.join(BRIEFING_DIR, 'learnings');
+  fs.mkdirSync(LEARNINGS_DIR, { recursive: true });
+
+  // Skip if any learning file was modified today
+  var learningFiles = fs.readdirSync(LEARNINGS_DIR);
+  var learningExistsToday = false;
+  for (var i = 0; i < learningFiles.length; i++) {
+    try {
+      var lStat = fs.statSync(path.join(LEARNINGS_DIR, learningFiles[i]));
+      if (lStat.mtime.toISOString().slice(0, 10) === todayStr) {
+        learningExistsToday = true;
+        break;
+      }
+    } catch (e) {}
+  }
+
+  if (!learningExistsToday) {
+    // Read work counter — skip if no meaningful work
+    var lwc = 0;
+    try {
+      var lwcPath = path.join(BRIEFING_DIR, '.work-counter');
+      if (fs.existsSync(lwcPath)) {
+        lwc = parseInt(fs.readFileSync(lwcPath, 'utf8').trim(), 10) || 0;
+      }
+    } catch (e) {}
+
+    if (lwc > 0) {
+      // Run git diff --name-only HEAD
+      var changedFiles = '(no files detected)';
+      try {
+        var spawnSync2 = require('child_process').spawnSync;
+        var gitFiles = spawnSync2('git', ['diff', '--name-only', 'HEAD'], { timeout: 5000 });
+        if (gitFiles.status === 0 && gitFiles.stdout) {
+          var gitFilesOut = gitFiles.stdout.toString().trim();
+          if (gitFilesOut) {
+            var fileList = gitFilesOut.split('\n');
+            changedFiles = fileList.map(function(f) { return '- ' + f; }).join('\n');
+          }
+        }
+      } catch (e) {}
+
+      // Build agent lines for learning draft
+      var learnAgentLines = '(no agents used)';
+      if (todayEntries.length > 0) {
+        var lac = {}, laLines = '';
+        for (var i = 0; i < todayEntries.length; i++) {
+          var lat = todayEntries[i].agent_type || todayEntries[i].agent;
+          if (!lat) continue;
+          lac[lat] = (lac[lat] || 0) + 1;
+        }
+        var laTypes = Object.keys(lac);
+        for (var i = 0; i < laTypes.length; i++) {
+          laLines += '- ' + laTypes[i] + ': ' + lac[laTypes[i]] + ' calls\n';
+        }
+        if (laLines) learnAgentLines = laLines.trimRight();
+      }
+
+      var learningMd = '---\n' +
+        'date: ' + todayStr + '\n' +
+        'type: learning\n' +
+        'auto-generated: true\n' +
+        'tags: [auto-session-capture]\n' +
+        '---\n' +
+        '# Session Work Log (Auto-generated)\n' +
+        '\n' +
+        '## Agents Used\n' +
+        learnAgentLines + '\n' +
+        '\n' +
+        '## Files Modified\n' +
+        changedFiles + '\n' +
+        '\n' +
+        '> This entry was auto-generated at session end. Enrich with specific learnings or delete if not needed.\n';
+
+      fs.writeFileSync(path.join(LEARNINGS_DIR, todayStr + '-auto-session.md'), learningMd);
+    }
+  }
+} catch (e) {
+  process.stderr.write('stop-profile-update: failed to write learning draft: ' + e.message + '\n');
+}
+
 process.exit(0);

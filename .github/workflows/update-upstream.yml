@@ -56,7 +56,7 @@ jobs:
         run: |
           BRANCH="chore/update-upstream-$(date +%Y%m%d)"
           git checkout -b "$BRANCH"
-          git commit -m "chore: update upstream submodules [skip ci]"
+          git commit -m "chore: update upstream submodules"
           git push origin "$BRANCH"
           PR_URL=$(gh pr create \
             --title "chore: update upstream submodules $(date +%Y-%m-%d)" \

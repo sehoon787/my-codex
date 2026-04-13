@@ -1,42 +1,34 @@
 [English](../../README.md) | [한국어](./README.ko.md) | [日本語](./README.ja.md) | [中文](./README.zh.md) | [Deutsch](./README.de.md) | [Français](./README.fr.md)
 
-> [![Claude Code](https://img.shields.io/badge/Claude_Code-my--claude-d97757?style=flat-square&logo=anthropic&logoColor=white)](https://github.com/sehoon787/my-claude) Suchst du nach Claude Code? → **my-claude** — die gleichen Agenten wie das Claude Code Plugin mit Boss Meta-Orchestrator
-
-> **Wenn du ein KI-Agent bist**, hole dir und befolge die Installationsanleitung:
-> ```bash
-> curl -fsSL https://raw.githubusercontent.com/sehoon787/my-codex/main/install.sh | bash
-> ```
-> Lese die VOLLSTÄNDIGE Ausgabe, dann führe jeden Schritt in der Reihenfolge aus. Nutze `curl`, NICHT `WebFetch` (Zusammenfassungen verlieren kritische Konfigurationswerte).
+> [![Claude Code](https://img.shields.io/badge/Claude_Code-my--claude-d97757?style=flat-square&logo=anthropic&logoColor=white)](https://github.com/sehoon787/my-claude) Suchen Sie nach Claude Code? → **my-claude** — dieselbe Boss-Orchestrierung im nativen Claude `.md`-Agentenformat
 
 ---
+
+<div align="center">
 
 # my-codex
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
-![Agents](https://img.shields.io/badge/agents-400%2B-blue)
+![Agents](https://img.shields.io/badge/agents-330%2B-blue)
 ![Skills](https://img.shields.io/badge/skills-200%2B-purple)
 ![MCP](https://img.shields.io/badge/MCP-3-green)
 ![Auto Sync](https://img.shields.io/badge/upstream_sync-weekly-brightgreen)
 
-All-in-One Multi-Agent-Orchestrierung für OpenAI Codex CLI — einmalige Installation, alles inklusive.
+**All-in-one Agent-Harness für OpenAI Codex CLI.**
+**Einmal installieren, 330+ Agenten bereit.**
 
-Bündelt **400+ installierte Agent-Dateien** und **200+ Skills** aus 6 vorgelagerten Quellen im nativen TOML-Format. Codex CLI entdeckt Agenten automatisch über `spawn_agent` und leitet Aufgaben zum optimalen Spezialisten weiter. GitHub Actions CI synchronisiert vorgelagerte Änderungen wöchentlich.
+Boss entdeckt automatisch zur Laufzeit jeden Agenten und jede Skill,
+und leitet Ihre Aufgabe über `spawn_agent` an den richtigen Spezialisten weiter. Keine Konfiguration. Kein Boilerplate.
 
-Basierend auf der offiziellen [Codex Subagents](https://developers.openai.com/codex/subagents) Spezifikation.
+<img src="./assets/owl-codex-social.svg" alt="The Maestro Owl — my-codex" width="700">
+
+</div>
 
 ---
 
-## Kernprinzipien
+## Installation
 
-| Prinzip | Beschreibung |
-|---------|-------------|
-| **Native TOML** | Alle Agenten im nativen `.toml`-Format der Codex CLI — keine Laufzeit-Konvertierung, keine Kompatibilitätsprobleme |
-| **Multi-Source Kurierung** | 6 vorgelagerte Quellen aggregiert, dedupliziert und qualitätskontrolliert in einer Sammlung |
-| **Null-Konfiguration** | Einmalige Installation, 400+ Agenten und 200+ Skills. `config.toml` wird automatisch mit `multi_agent = true` konfiguriert |
-
-## Schnelleinstieg
-
-### Wenn du eine Person bist
+### Für Menschen
 
 ```bash
 git clone --depth 1 https://github.com/sehoon787/my-codex.git /tmp/my-codex
@@ -44,113 +36,196 @@ bash /tmp/my-codex/install.sh
 rm -rf /tmp/my-codex
 ```
 
-> **Agent-Pakete**: Domänen-Spezialisten-Agenten (Marketing, Verkauf, Spieleentwicklung, etc.) werden in `~/.codex/agent-packs/` installiert und können durch Symlinks zu `~/.codex/agents/` aktiviert werden, wenn sie benötigt werden.
-
-### Wenn du ein KI-Agent bist
-
-Hole dir die KI-Installationsanleitung und führe jeden Schritt aus:
+### Für KI-Agenten
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/sehoon787/my-codex/main/install.sh | bash
 ```
 
-Lese die vollständige Ausgabe und führe jeden Schritt in der Reihenfolge aus. Nutze `curl`, nicht `WebFetch`.
-
 ---
 
-## Hauptmerkmale
+## Wie Boss funktioniert
 
-### Multi-Agent-Orchestrierung
-- **spawn_agent**: Codex CLI entdeckt Agenten automatisch aus `~/.codex/agents/` und startet sie parallel für komplexe Aufgaben
-- **send_input**: Parent-zu-Child-Agent-Kommunikation für iterative Workflows
-- **Agent-Pakete**: Aktiviere Domänen-Spezialisten bei Bedarf über Symlinks — kein Neustart erforderlich
+Boss ist der Meta-Orchestrator im Kern von my-codex. Er schreibt niemals Code — er entdeckt, klassifiziert, ordnet zu, delegiert und verifiziert.
 
-### Modell-optimiertes Routing
-- **o3 (hohe Begründung)**: Komplexe Architektur, tiefe Analyse — aus Claude Opus Äquivalenten zugeordnet
-- **o3 (mittel)**: Standard-Implementierung, Code-Review — aus Claude Sonnet Äquivalenten zugeordnet
-- **o4-mini (niedrig)**: Schnelle Lookups, Exploration — aus Claude Haiku Äquivalenten zugeordnet
-
-### All-in-One Bundle
-- Installation bietet **400+ installierte Agent-Dateien und 200+ Skills** sofort
-- Bündelt 6 vorgelagerte Quellen (agency-agents, everything-claude-code, oh-my-codex, awesome-codex-subagents, gstack, superpowers)
-- Wöchentliche CI Auto-Sync hält gebündelte Inhalte mit vorgelagerten Quellen aktuell
-- MD-zu-TOML-Konvertierung wird automatisch für Nicht-Native-Quellen durchgeführt
-
----
-
-## Core Agenten
-
-38 Core-Agenten aus 4 Quell-Repositories plus 54 Awesome Core Agenten werden in `~/.codex/agents/` installiert. Dateinamenkollisionen zwischen Quellen reduzieren die finale automatisch geladene Menge auf 80 installierte Dateien. Domänen-Spezialisten befinden sich in Agent-Paketen.
-
-### my-codex Core (1) — Boss Meta-Orchestrator
-boss
-
-### Oh My OpenAgent / OMO (9) — Sub-Orchestratoren und Spezialisten
-atlas, hephaestus, librarian, metis, momus, multimodal-looker, oracle, prometheus, sisyphus
-
-### Oh My Claude Code / OMC (18) — Spezialisten-Agenten
-analyst, architect, code-reviewer, code-simplifier, critic, debugger, document-specialist, executor, explore, git-master, planner, qa-tester, scientist, security-reviewer, test-engineer, tracer, verifier, writer
-
-### Awesome Core (9) — Orchestrierungs-Unterstützung von awesome-codex-subagents
-agent-installer, agent-organizer, code-mapper, context-manager, error-coordinator, knowledge-synthesizer, multi-agent-coordinator, task-distributor, workflow-orchestrator
-
-### Superpowers (1) — Code-Reviewer von obra/superpowers
-superpowers-code-reviewer
-
----
-
-## Agent-Pakete (Domänen-Spezialisten)
-
-364 installierte Paketdateien über 21 Kategorien werden in `~/.codex/agent-packs/` geschrieben — sie werden **nicht** standardmäßig geladen. Aktiviere ein Paket per Symlink:
-
-```bash
-# Aktiviere ein einzelnes Paket
-ln -s ~/.codex/agent-packs/marketing/*.toml ~/.codex/agents/
-
-# Deaktiviere
-rm ~/.codex/agents/<agent-name>.toml
+```
+User Request
+     │
+     ▼
+┌─────────────────────────────────────────────┐
+│  Phase 0 · DISCOVERY                        │
+│  Scan ~/.codex/agents/*.toml at runtime     │
+│  → Build live capability registry           │
+└──────────────────────┬──────────────────────┘
+                       ▼
+┌─────────────────────────────────────────────┐
+│  Phase 1 · INTENT GATE                      │
+│  Classify: trivial | build | refactor |     │
+│  mid-sized | architecture | research | ...  │
+│  → Counter-propose skill if better fit      │
+└──────────────────────┬──────────────────────┘
+                       ▼
+┌─────────────────────────────────────────────┐
+│  Phase 2 · CAPABILITY MATCHING              │
+│  P1: Exact skill match                      │
+│  P2: Specialist agent via spawn_agent       │
+│  P3: Multi-agent orchestration              │
+│  P4: General-purpose fallback               │
+└──────────────────────┬──────────────────────┘
+                       ▼
+┌─────────────────────────────────────────────┐
+│  Phase 3 · DELEGATION                       │
+│  spawn_agent with structured instructions   │
+│  TASK / OUTCOME / TOOLS / DO / DON'T / CTX  │
+└──────────────────────┬──────────────────────┘
+                       ▼
+┌─────────────────────────────────────────────┐
+│  Phase 4 · VERIFICATION                     │
+│  Read changed files independently           │
+│  Run tests, lint, build                     │
+│  Cross-reference with original intent       │
+│  → Retry up to 3× on failure               │
+└─────────────────────────────────────────────┘
 ```
 
-| Paket | Anzahl | Beispiele |
-|-------|--------|---------|
-| engineering | 32 | Backend, Frontend, Mobile, DevOps, KI, Data |
-| marketing | 27 | Douyin, Xiaohongshu, WeChat OA, TikTok, SEO |
-| language-specialists | 27 | Python, Go, Rust, Swift, Kotlin, Java |
-| specialized | 31 | Legal, Finance, Gesundheitswesen, Workflow |
-| game-development | 20 | Unity, Unreal, Godot, Roblox, Blender |
-| infrastructure | 19 | Cloud, K8s, Terraform, Docker, SRE |
-| developer-experience | 13 | MCP Builder, LSP, Terminal, Rapid Prototyper |
-| data-ai | 13 | Data Engineer, ML, Database, ClickHouse |
-| specialized-domains | 12 | Supply Chain, Logistik, E-Commerce |
-| design | 11 | Brand, UI, UX, Visual Storytelling |
-| business-product | 11 | Product Manager, Growth, Analytics |
-| testing | 11 | API, Accessibility, Performance, E2E, QA |
-| sales | 8 | Deal-Strategie, Pipeline, Outbound |
-| paid-media | 7 | Google Ads, Meta Ads, Programmatic |
-| research-analysis | 7 | Trend, Markt, Wettbewerbsanalyse |
-| project-management | 6 | Agile, Jira, Workflows |
-| spatial-computing | 6 | XR, WebXR, AR/VR, visionOS |
-| support | 6 | Kundensupport, Developer Advocacy |
-| academic | 5 | Auslandsstudium, Unternehmensschulung |
-| product | 5 | Produktmanagement, UX-Forschung |
-| security | 5 | Penetrationstests, Compliance, Audit |
+### Prioritäts-Routing
+
+Boss leitet jede Anfrage durch eine Prioritätskette, bis die beste Übereinstimmung gefunden wird:
+
+| Priorität | Übereinstimmungstyp | Wann | Beispiel |
+|:---------:|---------------------|------|----------|
+| **P1** | Skill-Treffer | Aufgabe entspricht einer eigenständigen Skill | `"merge PDFs"` → pdf skill |
+| **P2** | Spezialist-Agent | Domänenspezifischer Agent vorhanden | `"security audit"` → security-reviewer |
+| **P3a** | Boss direkt | 2–4 unabhängige Agenten | `"fix 3 bugs"` → parallel spawn |
+| **P3b** | Sub-Orchestrator | Komplexer mehrstufiger Workflow | `"refactor + test"` → Sisyphus |
+| **P4** | Fallback | Kein Spezialist gefunden | `"explain this"` → general agent |
+
+### Modell-Routing
+
+| Komplexität | Modell | Verwendet für |
+|-------------|--------|---------------|
+| Tiefgehende Analyse, Architektur | o3 (high reasoning) | Boss, Oracle, Sisyphus, Atlas |
+| Standardimplementierung | o3 (medium) | executor, debugger, security-reviewer |
+| Schnelle Suche, Erkundung | o4-mini (low) | explore, einfache Beratung |
+
+### 3-Phasen-Sprint-Workflow
+
+Für die Ende-zu-Ende-Funktionsimplementierung orchestriert Boss einen strukturierten Sprint:
+
+```
+Phase 1: DESIGN         Phase 2: EXECUTE        Phase 3: REVIEW
+(interactive)            (autonomous)             (interactive)
+─────────────────────   ─────────────────────   ─────────────────────
+User decides scope      executor runs tasks     Compare vs design doc
+Engineering review      Auto code review        Present comparison table
+Confirm "design done"   Architect verification  User: approve / improve
+```
 
 ---
 
-## Installierte Komponenten
+## Architektur
 
-| Kategorie | Anzahl | Quelle | Ort |
-|------|--------|--------|-----|
-| Automatisch geladene Agenten | 80 installierte Dateien | `core/`, `omo/`, `omc/`, `awesome-core/`, `superpowers/`, Awesome Core Kategorien | `~/.codex/agents/` |
-| Agent-Pakete | 364 installierte Dateien | `agent-packs/`, `agency/`, Awesome-Nicht-Core-Kategorien | `~/.codex/agent-packs/` |
-| Skills | 200+ | ECC 180+, gstack 36, OMX 36, Superpowers 14, Core 1 | `~/.codex/skills/` |
-| config.toml | 1 | my-codex | `~/.codex/config.toml` |
-| AGENTS.md | 1 | my-codex | `~/.codex/AGENTS.md` |
+```
+┌─────────────────────────────────────────────────────┐
+│                    User Request                       │
+└───────────────────────┬─────────────────────────────┘
+                        ▼
+┌─────────────────────────────────────────────────────┐
+│  Boss · Meta-Orchestrator (o3 high)                   │
+│  Discovery → Classification → Matching → Delegation  │
+└──┬──────────┬──────────┬──────────┬─────────────────┘
+   │          │          │          │
+   ▼          ▼          ▼          ▼
+┌──────┐ ┌────────┐ ┌────────┐ ┌────────┐
+│ P3a  │ │  P3b   │ │  P1/P2 │ │Config  │
+│Direct│ │Sub-orch│ │ Skill/ │ │Control │
+│2-4   │ │Sisyphus│ │ Agent  │ │config. │
+│spawn │ │Atlas   │ │ Direct │ │toml    │
+└──────┘ └────────┘ └────────┘ └────────┘
+┌─────────────────────────────────────────────────────┐
+│  Agent Layer (330+ installed TOML files)              │
+│  OMO 9 · OMX 33 · Awesome Core 54 · Superpowers 1   │
+│  + 20 domain agent-packs (on-demand)                  │
+├─────────────────────────────────────────────────────┤
+│  Skills Layer (200+ from ECC + gstack + OMX + more)  │
+│  tdd-workflow · security-review · autopilot           │
+│  pdf · docx · pptx · xlsx · team                     │
+├─────────────────────────────────────────────────────┤
+│  MCP Layer                                            │
+│  Context7 · Exa · grep.app                            │
+└─────────────────────────────────────────────────────┘
+```
+
+---
+
+## Was enthalten ist
+
+| Kategorie | Anzahl | Quelle |
+|-----------|-------:|--------|
+| **Kern-Agenten** (immer geladen) | 98 | Boss 1 + OMO 9 + OMX 33 + Awesome Core 54 + Superpowers 1 |
+| **Agenten-Packs** (on-demand) | 220+ | 20 Domänenkategorien aus agency-agents + awesome-codex-subagents |
+| **Skills** | 200+ | ECC 180+ · gstack 40 · OMX 36 · Superpowers 14 · Core 1 |
+| **MCP-Server** | 3 | Context7, Exa, grep.app |
+| **config.toml** | 1 | my-codex |
+| **AGENTS.md** | 1 | my-codex |
 
 <details>
-<summary>Awesome Core Agenten (54) — Aus awesome-codex-subagents</summary>
+<summary><strong>Kern-Agent — Boss Meta-Orchestrator (1)</strong></summary>
 
-4 Core-Kategorien installiert in `~/.codex/agents/`:
+| Agent | Modell | Rolle | Quelle |
+|-------|--------|-------|--------|
+| Boss | o3 high | Dynamische Laufzeitentdeckung → Fähigkeitsabgleich → optimales Routing. Schreibt niemals Code. | my-codex |
+
+</details>
+
+<details>
+<summary><strong>OMO-Agenten — Sub-Orchestratoren und Spezialisten (9)</strong></summary>
+
+| Agent | Modell | Rolle | Quelle |
+|-------|--------|-------|--------|
+| Sisyphus | o3 high | Absichtsklassifizierung → Spezialistendelegation → Verifikation | [oh-my-openagent](https://github.com/code-yeongyu/oh-my-openagent) |
+| Hephaestus | o3 high | Autonom erkunden → planen → ausführen → verifizieren | oh-my-openagent |
+| Atlas | o3 high | Aufgabenzerlegung + 4-stufige QA-Verifikation | oh-my-openagent |
+| Oracle | o3 high | Strategische technische Beratung (nur lesend) | oh-my-openagent |
+| Metis | o3 high | Absichtsanalyse, Mehrdeutigkeitserkennung | oh-my-openagent |
+| Momus | o3 high | Überprüfung der Planumsetzbarkeit | oh-my-openagent |
+| Prometheus | o3 high | Interviewbasierte detaillierte Planung | oh-my-openagent |
+| Librarian | o3 medium | Open-Source-Dokumentationssuche über MCP | oh-my-openagent |
+| Multimodal-Looker | o3 medium | Bild-/Screenshot-/Diagrammanalyse | oh-my-openagent |
+
+</details>
+
+<details>
+<summary><strong>OMC-Agenten — Spezialistenmitarbeiter (19)</strong></summary>
+
+| Agent | Rolle | Quelle |
+|-------|-------|--------|
+| analyst | Voranalyse vor der Planung | [oh-my-claudecode](https://github.com/Yeachan-Heo/oh-my-claudecode) |
+| architect | Systemdesign und Architektur | oh-my-claudecode |
+| code-reviewer | Fokussierter Code-Review | oh-my-claudecode |
+| code-simplifier | Code-Vereinfachung und -Bereinigung | oh-my-claudecode |
+| critic | Kritische Analyse, alternative Vorschläge | oh-my-claudecode |
+| debugger | Fokussiertes Debugging | oh-my-claudecode |
+| designer | UI/UX-Design-Anleitung | oh-my-claudecode |
+| document-specialist | Dokumentationserstellung | oh-my-claudecode |
+| executor | Aufgabenausführung | oh-my-claudecode |
+| explore | Codebasis-Erkundung | oh-my-claudecode |
+| git-master | Git-Workflow-Verwaltung | oh-my-claudecode |
+| planner | Schnelle Planung | oh-my-claudecode |
+| qa-tester | Qualitätssicherungstests | oh-my-claudecode |
+| scientist | Forschung und Experimente | oh-my-claudecode |
+| security-reviewer | Sicherheitsüberprüfung | oh-my-claudecode |
+| test-engineer | Test-Erstellung und -Pflege | oh-my-claudecode |
+| tracer | Ausführungs-Tracing und Analyse | oh-my-claudecode |
+| verifier | Abschließende Verifikation | oh-my-claudecode |
+| writer | Inhalte und Dokumentation | oh-my-claudecode |
+
+</details>
+
+<details>
+<summary><strong>Awesome Core Agents (54) — Aus awesome-codex-subagents</strong></summary>
+
+4 Kategorien installiert in `~/.codex/agents/`:
 
 **01-core-development (12)**
 accessibility-tester, ad-security-reviewer, agent-installer, api-designer, code-documenter, code-reviewer, dependency-manager, full-stack-developer, monorepo-specialist, performance-optimizer, refactoring-specialist, tech-debt-analyzer
@@ -167,107 +242,252 @@ agent-organizer, capability-assessor, conflict-resolver, context-manager, execut
 </details>
 
 <details>
-<summary>Skills (200+) — Aus Everything Claude Code (180+), gstack (36), OMX (36), Superpowers (14) und Core (1)</summary>
+<summary><strong>Superpowers Agent (1) — Aus obra/superpowers</strong></summary>
 
-Wichtige Skills beinhalten:
+| Agent | Rolle | Quelle |
+|-------|-------|--------|
+| superpowers-code-reviewer | Umfassender Code-Review mit Brainstorming und TDD-Verifikation | [superpowers](https://github.com/obra/superpowers) |
 
-| Skill | Beschreibung |
-|-------|-------------|
-| autopilot | Autonomer Ausführungsmodus |
-| tdd-workflow | Test-Driven-Development Erzwingung |
-| security-review | Sicherheits-Checkliste und Analyse |
-| trace | Evidenz-gesteuerte Fehlersuche |
-| pdf | PDF-Lesen, Zusammenführen, Teilen, OCR |
-| docx | Word-Dokument-Erstellung und -Bearbeitung |
-| pptx | PowerPoint-Erstellung und -Bearbeitung |
-| xlsx | Excel-Datei-Erstellung und -Bearbeitung |
-| team | Multi-Agent-Team-Orchestrierung |
-| backend-patterns | Backend-Architektur-Muster |
-| frontend-patterns | React/Next.js-Muster |
-| postgres-patterns | PostgreSQL-Optimierung |
-| coding-standards | TypeScript/React-Kodierungsstandards |
-| eval-harness | Evaluierungs-gesteuerte Entwicklung |
-| strategic-compact | Strategische Kontext-Komprimierung |
-| iterative-retrieval | Inkrementelle Kontext-Abrufung |
-| continuous-learning | Automatische Mustererkennung aus Sessions |
+</details>
+
+<details>
+<summary><strong>Agenten-Packs — On-demand-Domänenspezialisten (21 Kategorien)</strong></summary>
+
+Installiert in `~/.codex/agent-packs/`. Verwaltung über:
+
+```bash
+# Aktuellen Status anzeigen
+~/.codex/bin/my-codex-packs status
+
+# Ein Pack sofort aktivieren
+~/.codex/bin/my-codex-packs enable marketing
+
+# Profile bei der Installation wechseln
+bash /tmp/my-codex/install.sh --profile minimal
+bash /tmp/my-codex/install.sh --profile full
+```
+
+| Pack | Anzahl | Beispiele |
+|------|-------:|-----------|
+| engineering | 32 | Backend, Frontend, Mobile, DevOps, AI, Data |
+| marketing | 27 | Douyin, Xiaohongshu, WeChat OA, TikTok, SEO |
+| language-specialists | 27 | Python, Go, Rust, Swift, Kotlin, Java |
+| specialized | 31 | Legal, Finance, Healthcare, Workflow |
+| game-development | 20 | Unity, Unreal, Godot, Roblox, Blender |
+| infrastructure | 19 | Cloud, K8s, Terraform, Docker, SRE |
+| developer-experience | 13 | MCP Builder, LSP, Terminal, Rapid Prototyper |
+| data-ai | 13 | Data Engineer, ML, Database, ClickHouse |
+| specialized-domains | 12 | Supply Chain, Logistics, E-Commerce |
+| design | 11 | Brand, UI, UX, Visual Storytelling |
+| business-product | 11 | Product Manager, Growth, Analytics |
+| testing | 11 | API, Accessibility, Performance, E2E, QA |
+| sales | 8 | Deal strategy, pipeline, outbound |
+| paid-media | 7 | Google Ads, Meta Ads, Programmatic |
+| research-analysis | 7 | Trend, Market, Competitive Analysis |
+| project-management | 6 | Agile, Jira, workflows |
+| spatial-computing | 6 | XR, WebXR, AR/VR, visionOS |
+| support | 6 | Customer support, developer advocacy |
+| academic | 5 | Study abroad, corporate training |
+| product | 5 | Product management, UX research |
+| security | 5 | Penetration testing, compliance, audit |
+
+</details>
+
+<details>
+<summary><strong>Skills — 200+ aus 5 Quellen</strong></summary>
+
+| Quelle | Anzahl | Wichtige Skills |
+|--------|-------:|-----------------|
+| [everything-claude-code](https://github.com/affaan-m/everything-claude-code) | 180+ | tdd-workflow, autopilot, security-review, coding-standards |
+| [oh-my-codex](https://github.com/Yeachan-Heo/oh-my-codex) | 36 | plan, team, trace, deep-dive, blueprint, ultrawork |
+| [gstack](https://github.com/garrytan/gstack) | 40 | /qa, /review, /ship, /cso, /investigate, /office-hours |
+| [superpowers](https://github.com/obra/superpowers) | 14 | brainstorming, systematic-debugging, TDD, parallel-agents |
+| [my-codex Core](https://github.com/sehoon787/my-codex) | 1 | boss-advanced |
+
+</details>
+
+<details>
+<summary><strong>MCP-Server (3)</strong></summary>
+
+| Server | Zweck | Kosten |
+|--------|-------|--------|
+| <img src="https://context7.com/favicon.ico" width="16" height="16" align="center"/> [Context7](https://mcp.context7.com) | Echtzeit-Bibliotheksdokumentation | Kostenlos |
+| <img src="https://exa.ai/images/favicon-32x32.png" width="16" height="16" align="center"/> [Exa](https://mcp.exa.ai) | Semantische Websuche | Kostenlos 1k Anfragen/Monat |
+| <img src="https://www.google.com/s2/favicons?domain=grep.app&sz=32" width="16" height="16" align="center"/> [grep.app](https://mcp.grep.app) | GitHub-Code-Suche | Kostenlos |
 
 </details>
 
 ---
 
-## Vollständige Architektur
+## <img src="https://obsidian.md/images/obsidian-logo-gradient.svg" width="24" height="24" align="center"/> Briefing Vault
+
+Obsidian-kompatibler persistenter Speicher. Jedes Projekt pflegt ein `.briefing/`-Verzeichnis, das sich über Sitzungen hinweg automatisch befüllt.
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│                    User Request                          │
-└─────────────────────┬───────────────────────────────────┘
-                      ↓
-┌─────────────────────────────────────────────────────────┐
-│  Codex CLI (spawn_agent / send_input / wait_agent)      │
-│  Auto-discovers ~/.codex/agents/*.toml at runtime       │
-│  Routes to optimal specialist based on task description │
-└──┬──────────┬──────────┬──────────┬─────────────────────┘
-   ↓          ↓          ↓          ↓
-┌──────┐ ┌────────┐ ┌────────┐ ┌────────┐
-│Single│ │Parallel│ │Parent- │ │Config  │
-│Agent │ │Spawn   │ │Child   │ │Control │
-│      │ │(multi) │ │Comms   │ │        │
-│spawn │ │spawn × │ │send_   │ │config. │
-│_agent│ │N       │ │input   │ │toml    │
-└──────┘ └────────┘ └────────┘ └────────┘
-┌─────────────────────────────────────────────────────────┐
-│  Agent Layer (400+ unique agents in native TOML)          │
-│    ├── Auto-loaded (80): final installed footprint       │
-│    └── Agent Packs (364): final installed footprint      │
-├─────────────────────────────────────────────────────────┤
-│  Skills Layer (200+ from ECC + gstack + OMX + superpowers + core) │
-│    ├── tdd-workflow, security-review, autopilot         │
-│    └── pdf, docx, pptx, xlsx, team                     │
-└─────────────────────────────────────────────────────────┘
+.briefing/
+├── INDEX.md                          ← Project context (auto-created once)
+├── sessions/
+│   ├── YYYY-MM-DD-<topic>.md        ← AI-written session summary (enforced)
+│   └── YYYY-MM-DD-auto.md           ← Auto-generated scaffold (git diff, agent stats)
+├── decisions/
+│   ├── YYYY-MM-DD-<decision>.md     ← AI-written decision record
+│   └── YYYY-MM-DD-auto.md           ← Auto-generated scaffold (commits, files)
+├── learnings/
+│   ├── YYYY-MM-DD-<pattern>.md      ← AI-written learning note
+│   └── YYYY-MM-DD-auto-session.md   ← Auto-generated scaffold (agents, files)
+├── references/
+│   └── auto-links.md                ← Auto-collected URLs from web searches
+├── agents/
+│   ├── agent-log.jsonl              ← Subagent execution telemetry
+│   └── YYYY-MM-DD-summary.md        ← Daily agent usage breakdown
+└── persona/
+    ├── profile.md                   ← Agent affinity stats (auto-updated)
+    ├── suggestions.jsonl            ← Routing suggestions (auto-generated)
+    ├── rules/                       ← Accepted routing preferences
+    └── skills/                      ← Accepted persona skills
 ```
+
+### Automatisierungs-Lebenszyklus
+
+| Phase | Hook-Ereignis | Was passiert |
+|-------|--------------|--------------|
+| **Sitzungsstart** | `SessionStart` | Erstellt `.briefing/`-Struktur, speichert git-HEAD-Hash für sitzungsspezifische Diffs |
+| **Während der Arbeit** | `PostToolUse` Edit/Write | Verfolgt die Anzahl der Dateibearbeitungen; warnt bei 5, sperrt bei 15, wenn keine Entscheidungen/Lernnotizen geschrieben wurden |
+| **Während der Arbeit** | `PostToolUse` WebSearch/WebFetch | Sammelt URLs automatisch in `references/auto-links.md` |
+| **Während der Arbeit** | `SubagentStop` | Protokolliert Agentenausführung in `agents/agent-log.jsonl` |
+| **Während der Arbeit** | `UserPromptSubmit` (every 5th) | Gedrosseltes Persona-Profil-Update |
+| **Sitzungsende** | `Stop` (1. Hook) | Generiert automatisch Gerüste: `sessions/auto.md`, `learnings/auto-session.md`, `decisions/auto.md`, `persona/profile.md` |
+| **Sitzungsende** | `Stop` (2. Hook) | **Erzwingt** KI-erstellte Sitzungszusammenfassung bei ≥ 3 Dateibearbeitungen — blockiert Sitzungsende mit Vorlage |
+
+### Automatisch generiert vs. KI-erstellt
+
+| Typ | Dateimuster | Erstellt von | Inhalt |
+|-----|-------------|-------------|--------|
+| **Auto-Gerüst** | `*-auto.md`, `*-auto-session.md` | Stop hook (Node.js) | Git-Diff-Statistiken, Agentennutzung, Commit-Liste — nur Daten |
+| **KI-Zusammenfassung** | `YYYY-MM-DD-<topic>.md` | KI während der Sitzung | Aussagekräftige Analyse mit Kontext, Code-Referenzen, Begründung |
+| **Telemetrie** | `agent-log.jsonl`, `auto-links.md` | Hook-Skripte | Nur-Anhänge-strukturierte Protokolle |
+| **Persona** | `profile.md`, `suggestions.jsonl` | Stop hook | Nutzungsbasierte Agenten-Affinität und Routing-Vorschläge |
+
+Auto-Gerüste dienen als **Referenzdaten** für die KI zum Verfassen angemessener Zusammenfassungen. Der Durchsetzungs-Hook stellt den Gerüstinhalt + eine strukturierte Vorlage bereit, wenn das Sitzungsende blockiert wird.
+
+### Sitzungsspezifische Diffs
+
+Beim Sitzungsstart wird der aktuelle git-HEAD in `.briefing/.session-start-head` gespeichert. Am Sitzungsende werden Diffs relativ zu diesem gespeicherten Punkt berechnet — es werden nur Änderungen aus der aktuellen Sitzung angezeigt, keine angesammelten nicht committeten Änderungen aus vorherigen Sitzungen.
+
+### Verwendung mit Obsidian
+
+1. Öffnen Sie Obsidian → **Ordner als Vault öffnen** → `.briefing/` auswählen
+2. Notizen erscheinen in der Graphansicht, verknüpft durch `[[wiki-links]]`
+3. YAML-Frontmatter (`date`, `type`, `tags`) ermöglicht strukturierte Suche
+4. Eine Zeitleiste von Entscheidungen und Lernnotizen entsteht automatisch über Sitzungen hinweg
 
 ---
 
-## Wie Codex Multi-Agent funktioniert
+## Upstream Open-Source-Quellen
 
-### Codex Subagents Spezifikation
+my-codex bündelt Inhalte aus 8 Upstream-Repositories:
 
-Codex CLI bietet ein natives Multi-Agent-Protokoll basierend auf der [Codex Subagents](https://developers.openai.com/codex/subagents) Spezifikation. Das Protokoll definiert fünf Kern-Operationen:
+| # | Quelle | Was bereitgestellt wird |
+|---|--------|------------------------|
+| 1 | <img src="https://github.com/sehoon787.png?size=32" width="20" height="20" align="center"/> **[my-claude](https://github.com/sehoon787/my-claude)** — sehoon787 | Schwesterprojekt. Dieselbe Boss-Orchestrierung im nativen Claude `.md`-Agentenformat. Skills, Regeln und Briefing Vault werden zwischen beiden Projekten geteilt. |
+| 2 | <img src="https://github.com/VoltAgent.png?size=32" width="20" height="20" align="center"/> **[awesome-codex-subagents](https://github.com/VoltAgent/awesome-codex-subagents)** — VoltAgent | 136 produktionsreife Agenten im nativen TOML-Format. Bereits Codex-kompatibel, keine Konvertierung erforderlich. 54 Kern-Agenten werden automatisch geladen. |
+| 3 | <img src="https://github.com/Yeachan-Heo.png?size=32" width="20" height="20" align="center"/> **[oh-my-codex](https://github.com/Yeachan-Heo/oh-my-codex)** — Yeachan Heo | 36 Skills, Hooks, HUD und Team-Pipelines für Codex CLI. Als architektonische Inspiration referenziert. |
+| 4 | <img src="https://github.com/msitarzewski.png?size=32" width="20" height="20" align="center"/> **[agency-agents](https://github.com/msitarzewski/agency-agents)** — msitarzewski | 180+ Business-Spezialistenagenten-Personas in 14 Kategorien. Über automatisierte Pipeline von Markdown in natives TOML konvertiert. |
+| 5 | <img src="https://github.com/affaan-m.png?size=32" width="20" height="20" align="center"/> **[everything-claude-code](https://github.com/affaan-m/everything-claude-code)** — affaan-m | 180+ Skills für Entwicklungsworkflows. Claude Code-spezifische Inhalte entfernt; generische Coding-Skills beibehalten. |
+| 6 | <img src="https://github.com/obra.png?size=32" width="20" height="20" align="center"/> **[superpowers](https://github.com/obra/superpowers)** — Jesse Vincent | 14 Skills + 1 Agent zu Brainstorming, TDD, parallelen Agenten und Code-Review. |
+| 7 | <img src="https://github.com/code-yeongyu.png?size=32" width="20" height="20" align="center"/> **[oh-my-openagent](https://github.com/code-yeongyu/oh-my-openagent)** — code-yeongyu | 9 OMO-Agenten (Sisyphus, Atlas, Oracle usw.). Für das native Codex-TOML-Format angepasst. |
+| 8 | <img src="https://github.com/garrytan.png?size=32" width="20" height="20" align="center"/> **[gstack](https://github.com/garrytan/gstack)** — garrytan | 40 Skills für Code-Review, QA, Sicherheits-Audit und Deployment. Enthält Playwright-Browser-Daemon. |
 
-| Operation | Beschreibung |
-|-----------|-------------|
-| **spawn_agent** | Erstelle einen Sub-Agenten mit spezifischer Rolle, Modell und Anweisungen |
-| **send_input** | Sende eine Nachricht an einen laufenden Sub-Agenten für iterative Kommunikation |
-| **wait_agent** | Warte bis ein Sub-Agent seine Arbeit abschließt und Ergebnisse zurückgibt |
-| **close_agent** | Beende einen laufenden Sub-Agenten |
-| **resume_agent** | Setze einen unterbrochenen Sub-Agenten fort |
+---
 
-Codex CLI entdeckt automatisch alle `.toml` Dateien in `~/.codex/agents/` zur Laufzeit. Wenn eine Aufgabe Spezialisten-Expertise erfordert, spawnt die CLI den zugehörigen Agenten nach Name und übergibt ihm den relevanten Kontext.
+## GitHub Actions
 
-### Agent TOML Format
+| Workflow | Auslöser | Zweck |
+|----------|----------|-------|
+| **CI** | push, PR | Validiert TOML-Agentendateien, Skill-Existenz und Upstream-Dateianzahlen |
+| **Update Upstream** | wöchentlich (Montag) / manuell | Führt `git submodule update --remote` aus und erstellt einen Auto-Merge-PR |
+| **Auto Tag** | push to main | Liest die Version aus `config.toml` und erstellt ein git-Tag, wenn neu |
+| **Pages** | push to main | Deployt `docs/index.html` auf GitHub Pages |
+| **CLA** | PR | Prüfung des Contributor License Agreement |
+| **Lint Workflows** | push, PR | Validiert die YAML-Syntax der GitHub Actions-Workflows |
 
-Jeder Agent ist als native TOML-Datei definiert:
+---
+
+## my-codex Originals
+
+Funktionen, die speziell für dieses Projekt entwickelt wurden und über das hinausgehen, was Upstream-Quellen bieten:
+
+| Funktion | Beschreibung |
+|----------|-------------|
+| **Boss Meta-Orchestrator** | Dynamische Fähigkeitsentdeckung → Absichtsklassifizierung → 4-Prioritäten-Routing → Delegation → Verifikation |
+| **3-Phasen-Sprint** | Design (interaktiv) → Ausführung (autonom über executor) → Review (interaktiv vs. Design-Dokument) |
+| **Agenten-Tier-Priorität** | core > omo > omc > awesome-core-Deduplizierung. Der speziellste Agent gewinnt. |
+| **Kostenoptimierung** | o4-mini für Beratung, o3 für Implementierung — automatisches Modell-Routing für 330+ Agenten |
+| **Agenten-Telemetrie** | PostToolUse-Hook protokolliert Agentennutzung in `agent-usage.jsonl` |
+| **Smart Packs** | Projekttypenerkennung empfiehlt relevante Agenten-Packs beim Sitzungsstart |
+| **Agenten-Pack-System** | On-demand-Domänenspezialisten-Aktivierung über `--profile` und `my-codex-packs`-Hilfsprogramm |
+| **Codex Attribution** | git hooks zeichnen von Codex berührte Dateien auf und hängen `AI-Contributed-By: Codex` an Commit-Nachrichten an |
+| **CI Dedup Detection** | Automatische Erkennung doppelter TOML-Agenten über Upstream-Syncs hinweg |
+
+---
+
+## Installationsoptionen
+
+### Schnellinstallation
+
+```bash
+git clone --depth 1 https://github.com/sehoon787/my-codex.git /tmp/my-codex
+bash /tmp/my-codex/install.sh
+rm -rf /tmp/my-codex
+```
+
+Wenn Sie denselben Befehl erneut ausführen, wird auf den neuesten `main`-Build aktualisiert, es werden nur von my-codex verwaltete Dateien in `~/.codex/` ersetzt, und veraltete Skill-Kopien aus `~/.agents/skills/` werden entfernt.
+
+### Agenten-Pack-Profile
+
+Bei der Erstinstallation aktiviert my-codex automatisch ein empfohlenes `dev`-Set (`engineering`, `design`, `testing`, `marketing`, `support`) und speichert es in `~/.codex/enabled-agent-packs.txt`.
+
+```bash
+# Minimales Profil (nur Kern-Agenten, keine Packs)
+bash /tmp/my-codex/install.sh --profile minimal
+
+# Vollständiges Profil (alle 21 Pack-Kategorien aktiviert)
+bash /tmp/my-codex/install.sh --profile full
+```
+
+### Codex Attribution System
+
+`install.sh` installiert einen `codex`-Wrapper sowie globale git-Hooks in `~/.codex/git-hooks/`:
+
+- **`prepare-commit-msg`** — Zeichnet Dateien auf, die während einer echten Codex-Sitzung geändert wurden
+- **`commit-msg`** — Hängt `Generated with Codex CLI: https://github.com/openai/codex` an, wenn gestage Dateien die aufgezeichneten Änderungen schneiden
+- **`post-commit`** — Fügt den Trailer `AI-Contributed-By: Codex` zu qualifizierenden Commits hinzu
+
+Opt-in `Co-authored-by`-Trailer: Setzen Sie sowohl `git config --global my-codex.codexContributorName '<label>'` als auch `my-codex.codexContributorEmail '<github-linked-email>'`. Vollständig deaktivieren: `git config --global my-codex.codexAttribution false`. my-codex ändert **nicht** `git user.name`, `git user.email` oder die Commit-Autorenidentität.
+
+### Agenten-TOML-Format
+
+Jeder Agent ist eine native TOML-Datei in `~/.codex/agents/`:
 
 ```toml
 name = "debugger"
-description = "Focused debugging specialist"
+description = "Focused debugging specialist — traces failures to root cause"
 model = "o3"
 model_reasoning_effort = "medium"
 
 [developer_instructions]
-content = "You are a debugging specialist..."
+content = """
+You are a debugging specialist. Analyze failures systematically:
+1. Reproduce the issue
+2. Isolate the root cause
+3. Propose a minimal fix
+4. Verify the fix does not break adjacent behavior
+"""
 ```
 
-Wichtige Felder:
-- `name` — Agent-Identifier, der von `spawn_agent` verwendet wird
-- `description` — Wird für Capability-Matching verwendet
-- `model` — OpenAI-Modell zu verwenden (`o3`, `o4-mini`)
-- `model_reasoning_effort` — Begründungs-Level (`high`, `medium`, `low`)
-- `[developer_instructions].content` — System-Prompt des Agenten
+### config.toml
 
-### Konfiguration (config.toml)
-
-Globale Multi-Agent-Einstellungen sind in `~/.codex/config.toml` definiert:
+Globale Codex-Einstellungen in `~/.codex/config.toml`:
 
 ```toml
 [agents]
@@ -276,136 +496,88 @@ max_depth = 1
 ```
 
 - `max_threads` — Maximale Anzahl gleichzeitiger Sub-Agenten
-- `max_depth` — Maximale Verschachtelungs-Tiefe für Agent-spawns-Agent-Ketten
-
----
-
-## Multi-Agent Anwendungsbeispiele
-
-### Einzelne Agent-Delegation
-
-```
-> Analyze the auth module for security vulnerabilities
-
-Codex → spawn_agent("security-reviewer")
-→ Agent analyzes src/auth/
-→ Returns: 2 critical, 1 medium vulnerability
-```
-
-### Paralleles Spawning
-
-```
-> Run a multi-agent pass: refactor auth, add tests, review security
-
-Codex → spawn_agent("executor") × refactoring
-      → spawn_agent("test-engineer") × test writing
-      → spawn_agent("security-reviewer") × security audit
-→ All 3 run in parallel (max_threads = 8)
-→ Results collected and merged
-```
-
-### Parent-Child Kommunikation
-
-```
-> Implement payment module, then have it reviewed
-
-Codex → spawn_agent("executor")
-      → executor completes implementation
-      → send_input(executor, "review needed")
-      → spawn_agent("code-reviewer")
-      → code-reviewer reviews executor's changes
-```
-
-### Komplexe Orchestrierung
-
-```
-> Plan the migration, execute it, then verify
-
-Codex → spawn_agent("planner")
-      → planner produces migration plan
-      → wait_agent(planner)
-      → spawn_agent("executor") with plan as context
-      → executor performs migration
-      → wait_agent(executor)
-      → spawn_agent("verifier")
-      → verifier checks all migrations applied correctly
-```
-
----
-
-## Verwendete Open-Source Tools
-
-### 1. [Agency Agents](https://github.com/msitarzewski/agency-agents)
-
-Eine Bibliothek mit 180+ Business-Spezialisten-Agent-Personas. Bietet Spezialisten-Perspektiven über 14 Kategorien — UX-Architekten, Datentechniker, Sicherheits-Auditoren und mehr. Konvertiert von Markdown zu nativem TOML über automatisierte `md-to-toml.sh` Pipeline.
-
-### 2. [Everything Claude Code (ECC)](https://github.com/affaan-m/everything-claude-code)
-
-Ein Entwicklungs-Framework, ursprünglich für Claude Code entwickelt, das 180+ Skills bereitstellt. 13 Claude Code-spezifische Skills wurden entfernt; die verbleibenden Skills enthalten generische Kodierungs-Anleitungen, die über jeden LLM-Agenten verwendbar sind. Das rules/ Verzeichnis ist im Repo als Referenzmaterial enthalten, wird aber von Codex CLI nicht gelesen.
-
-### 3. [Awesome Codex Subagents](https://github.com/VoltAgent/awesome-codex-subagents)
-
-Eine upstream-basierte Sammlung nativer TOML-Agenten nach Kategorien. Dieses Repo übernimmt mehrere awesome-Kategorien von Kern-Entwicklung bis Meta-Orchestrierung und bereinigt beim Installieren überschneidende Dateinamen mit anderen Quellen, sodass die finale Installationsmenge korrekt abgebildet wird.
-
-### 4. [Oh My Codex (OMX)](https://github.com/Yeachan-Heo/oh-my-codex)
-
-Codex CLI Multi-Agent-Orchestrierungs-Framework von Yeachan Heo. Eine Rust/TypeScript-Runtime mit 36 Skills, Hooks, HUD und Team-Pipelines für Codex CLI. Referenziert als architektonische Inspiration für my-codex's Orchestrierungs-Muster. Bietet keine Agent TOML-Dateien direkt.
-
-### 5. [Oh My OpenAgent (omo)](https://github.com/code-yeongyu/oh-my-openagent)
-
-Ein Multi-Platform-Agent-Harness von code-yeongyu. Die 9 Orchestrierungs-Agenten in diesem Repository (atlas, hephaestus, metis, momus, oracle, prometheus, sisyphus, librarian, multimodal-looker) sind von omo-Agenten adaptiert, konvertiert zum Codex-nativen TOML-Format.
-
-### 6. [OpenAI Official Skills](https://github.com/openai/skills)
-
-Der offizielle Skills-Katalog für Codex von OpenAI. Umfasst Spezialisten-Skills für Dokument-Verarbeitung, Code-Generierung und Entwicklungs-Workflows. Kann über `$skill-installer` in Codex CLI installiert werden.
-
-### 7. [gstack](https://github.com/garrytan/gstack)
-
-garrytan's Sprint-Prozess-Harness mit 27 Skills. Code-Review, QA, Debugging, Benchmarking, Sicherheits-Audit, Deployment-Workflows. Eingebauter Headless-Chromium-Browser-Daemon für echte Browser-Tests.
-
-### 8. [superpowers](https://github.com/obra/superpowers)
-
-Zero-Dependency kompositionsfähiges KI-Coding-Workflow-Toolkit von Jesse Vincent. Stellt 14 Skills bereit, die den gesamten Entwicklungs-Lebenszyklus abdecken: Brainstorming, Pläne schreiben, Pläne ausführen, TDD, systematisches Debugging, Code-Review (anfordern und empfangen), parallele Agenten verteilen, git Worktrees verwenden, Überprüfung vor dem Abschluss, Entwicklungszweige abschließen, subagenten-gesteuertes Development und eigene Skills schreiben.
-
----
-
-## Beitragen
-
-Issues und PRs sind willkommen. Wenn du einen neuen Agenten hinzufügst, füge eine `.toml` Datei zum `agents/` Verzeichnis hinzu und aktualisiere die Agent-Liste in `SETUP.md`.
+- `max_depth` — Maximale Verschachtelungstiefe für Agent-spawnt-Agent-Ketten
 
 ---
 
 ## Gebündelte Upstream-Versionen
 
-Wöchentlich von CI Auto-Sync aktualisiert. Upstream-Quellen werden als Git-Submodule verwaltet. Metadaten in `upstream/SOURCES.json` erfasst.
+Upstream-Quellen werden als git-Submodule verwaltet. Festgelegte Commits werden in `.gitmodules` verfolgt.
 
 | Quelle | Sync |
 |--------|------|
-| [agency-agents](https://github.com/msitarzewski/agency-agents) | Wöchentliche CI |
-| [everything-claude-code](https://github.com/affaan-m/everything-claude-code) | Wöchentliche CI |
-| [oh-my-codex](https://github.com/Yeachan-Heo/oh-my-codex) | Wöchentliche CI |
-| [awesome-codex-subagents](https://github.com/VoltAgent/awesome-codex-subagents) | Wöchentliche CI |
-| [gstack](https://github.com/garrytan/gstack) | Wöchentliche CI |
-| [superpowers](https://github.com/obra/superpowers) | Wöchentliche CI |
+| [agency-agents](https://github.com/msitarzewski/agency-agents) | submodule |
+| [everything-claude-code](https://github.com/affaan-m/everything-claude-code) | submodule |
+| [oh-my-codex](https://github.com/Yeachan-Heo/oh-my-codex) | submodule |
+| [awesome-codex-subagents](https://github.com/VoltAgent/awesome-codex-subagents) | submodule |
+| [gstack](https://github.com/garrytan/gstack) | submodule |
+| [superpowers](https://github.com/obra/superpowers) | submodule |
 
 ---
 
-## Anerkennung
+## Häufig gestellte Fragen
 
-Dieses Repository baut auf der Arbeit der folgenden Open-Source-Projekte auf:
+<details>
+<summary><strong>Wie unterscheidet sich my-codex von my-claude?</strong></summary>
 
-- [agency-agents](https://github.com/msitarzewski/agency-agents) — msitarzewski
-- [everything-claude-code](https://github.com/affaan-m/everything-claude-code) — affaan-m
-- [oh-my-codex](https://github.com/Yeachan-Heo/oh-my-codex) — Yeachan Heo
-- [oh-my-openagent](https://github.com/code-yeongyu/oh-my-openagent) — code-yeongyu
-- [awesome-codex-subagents](https://github.com/VoltAgent/awesome-codex-subagents) — VoltAgent
-- [openai/skills](https://github.com/openai/skills) — OpenAI
-- [gstack](https://github.com/garrytan/gstack) — garrytan
-- [superpowers](https://github.com/obra/superpowers) — Jesse Vincent
-- [Codex Subagents Spec](https://developers.openai.com/codex/subagents) — OpenAI
+my-codex und my-claude teilen dieselbe Boss-Orchestrierungsarchitektur und dieselben Upstream-Skill-Quellen. Der wesentliche Unterschied liegt in der Laufzeitumgebung: my-codex richtet sich an OpenAI Codex CLI mit nativem `.toml`-Agentenformat und `spawn_agent`-Delegation, während my-claude auf Claude Code mit `.md`-Agentenformat und dem Agent-Tool abzielt.
+
+</details>
+
+<details>
+<summary><strong>Kann ich sowohl my-codex als auch my-claude verwenden?</strong></summary>
+
+Ja. Sie installieren sich in separate Verzeichnisse (`~/.codex/` und `~/.claude/`) und verursachen keine Konflikte. Skills aus gemeinsamen Upstream-Quellen sind für jede Plattform angepasst.
+
+</details>
+
+<details>
+<summary><strong>Wie funktionieren Agenten-Packs?</strong></summary>
+
+Agenten-Packs sind domänenspezifische Agentensammlungen, die in `~/.codex/agent-packs/` installiert werden. Bei der Erstinstallation wird automatisch ein `dev`-Profil aktiviert. Verwenden Sie `my-codex-packs enable <pack>`, um zusätzliche Packs zu aktivieren, oder installieren Sie mit `--profile full` neu, um alle 21 Kategorien zu aktivieren.
+
+</details>
+
+<details>
+<summary><strong>Wie funktioniert der Upstream-Sync?</strong></summary>
+
+Ein GitHub Actions-Workflow läuft jeden Montag, zieht die neuesten Commits aus allen Upstream-Submodulen und erstellt einen Auto-Merge-PR. Sie können ihn auch manuell über den Actions-Tab auslösen.
+
+</details>
+
+<details>
+<summary><strong>Welche Modelle verwendet my-codex?</strong></summary>
+
+Boss und Sub-Orchestratoren (Sisyphus, Atlas, Oracle) verwenden o3 mit hohem Reasoning-Aufwand. Standard-Worker verwenden o3 mit mittlerem Reasoning. Leichtgewichtige Beratungsagenten verwenden o4-mini.
+
+</details>
 
 ---
+
+## Fehlerbehebung
+
+### Nur-Skills-Wiederherstellung
+
+Wenn ein Tool ungültige `SKILL.md`-Dateien unter `~/.agents/skills/` meldet, ist die häufigste Ursache eine veraltete lokale Kopie oder ein veraltetes Symlink-Ziel aus einer älteren Installation.
+
+Entfernen Sie die betroffenen Verzeichnisse aus `~/.agents/skills/` und die entsprechenden Einträge unter `~/.claude/skills/`, dann installieren Sie neu:
+
+```bash
+npx skills add sehoon787/my-codex -y -g
+```
+
+Wenn Sie das vollständige Codex-Bundle verwenden, führen Sie auch `install.sh` einmal erneut aus. Das vollständige Installationsprogramm aktualisiert `~/.codex/skills/` und entfernt veraltete, von my-codex verwaltete Kopien unter `~/.agents/skills/`.
+
+---
+
+## Mitwirken
+
+Issues und PRs sind willkommen. Wenn Sie einen neuen Agenten hinzufügen, fügen Sie eine `.toml`-Datei zu `codex-agents/core/` oder `codex-agents/omo/` hinzu und aktualisieren Sie die Agentenliste in `SETUP.md`. Weitere Informationen zu PR-Validierungsschritten und zum Codex-Commit-Attributionsverhalten finden Sie in [CONTRIBUTING.md](./CONTRIBUTING.md).
+
+## Danksagungen
+
+Aufgebaut auf der Arbeit von: [my-claude](https://github.com/sehoon787/my-claude) (sehoon787), [awesome-codex-subagents](https://github.com/VoltAgent/awesome-codex-subagents) (VoltAgent), [oh-my-codex](https://github.com/Yeachan-Heo/oh-my-codex) (Yeachan Heo), [agency-agents](https://github.com/msitarzewski/agency-agents) (msitarzewski), [everything-claude-code](https://github.com/affaan-m/everything-claude-code) (affaan-m), [oh-my-openagent](https://github.com/code-yeongyu/oh-my-openagent) (code-yeongyu), [gstack](https://github.com/garrytan/gstack) (garrytan), [superpowers](https://github.com/obra/superpowers) (Jesse Vincent), [openai/skills](https://github.com/openai/skills) (OpenAI).
 
 ## Lizenz
 
-MIT Lizenz. Siehe die [LICENSE](./LICENSE) Datei für Details.
+MIT-Lizenz. Weitere Informationen finden Sie in der Datei [LICENSE](./LICENSE).

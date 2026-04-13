@@ -303,7 +303,7 @@ try {
   var sessionFiles = fs.readdirSync(SESSIONS_DIR);
   var sessionExistsToday = false;
   for (var i = 0; i < sessionFiles.length; i++) {
-    if (sessionFiles[i].slice(0, 10) === todayStr) {
+    if (sessionFiles[i].slice(0, 10) === todayStr && sessionFiles[i].indexOf('-auto') === -1) {
       sessionExistsToday = true;
       break;
     }
@@ -382,6 +382,7 @@ try {
   var learningFiles = fs.readdirSync(LEARNINGS_DIR);
   var learningExistsToday = false;
   for (var i = 0; i < learningFiles.length; i++) {
+    if (learningFiles[i].indexOf('-auto-session') !== -1) continue;
     try {
       var lStat = fs.statSync(path.join(LEARNINGS_DIR, learningFiles[i]));
       if (lStat.mtime.toISOString().slice(0, 10) === todayStr) {
@@ -464,6 +465,7 @@ try {
   var decFiles = fs.readdirSync(decDir);
   var decExistsToday = false;
   for (var i = 0; i < decFiles.length; i++) {
+    if (decFiles[i].indexOf('-auto.md') !== -1) continue;
     try {
       var dStat = fs.statSync(path.join(decDir, decFiles[i]));
       if (dStat.mtime.toISOString().slice(0, 10) === todayStr) {

@@ -321,40 +321,65 @@ bash /tmp/my-codex/install.sh --profile full
 
 ## <img src="https://obsidian.md/images/obsidian-logo-gradient.svg" width="24" height="24" align="center"/> Briefing Vault
 
-my-codex includes an Obsidian-compatible knowledge management system. Every project maintains a `.briefing/` directory as a persistent memory base.
+Obsidian-compatible persistent memory. Every project maintains a `.briefing/` directory that auto-populates across sessions.
 
 ```
 .briefing/
-├── INDEX.md              ← Project context, recent decisions
-├── sessions/             ← Session summaries (YYYY-MM-DD-topic.md)
-├── decisions/            ← Architecture & design decisions
-├── learnings/            ← Non-obvious solutions, gotchas
-├── references/           ← Web findings, factual data
-├── agents/               ← Agent execution logs + daily summaries
-└── persona/              ← User Philosophy Vault
-    ├── profile.md        ← Agent affinity stats (auto-updated)
-    ├── suggestions.jsonl ← Pending/accepted/rejected suggestions
-    ├── rules/            ← Auto-generated routing preferences
-    └── skills/           ← Auto-generated persona skills
+├── INDEX.md                          ← Project context (auto-created once)
+├── sessions/
+│   ├── YYYY-MM-DD-<topic>.md        ← AI-written session summary (enforced)
+│   └── YYYY-MM-DD-auto.md           ← Auto-generated scaffold (git diff, agent stats)
+├── decisions/
+│   ├── YYYY-MM-DD-<decision>.md     ← AI-written decision record
+│   └── YYYY-MM-DD-auto.md           ← Auto-generated scaffold (commits, files)
+├── learnings/
+│   ├── YYYY-MM-DD-<pattern>.md      ← AI-written learning note
+│   └── YYYY-MM-DD-auto-session.md   ← Auto-generated scaffold (agents, files)
+├── references/
+│   └── auto-links.md                ← Auto-collected URLs from web searches
+├── agents/
+│   ├── agent-log.jsonl              ← Subagent execution telemetry
+│   └── YYYY-MM-DD-summary.md        ← Daily agent usage breakdown
+└── persona/
+    ├── profile.md                   ← Agent affinity stats (auto-updated)
+    ├── suggestions.jsonl            ← Routing suggestions (auto-generated)
+    ├── rules/                       ← Accepted routing preferences
+    └── skills/                      ← Accepted persona skills
 ```
 
-### How It Works
+### Automation Lifecycle
 
-1. **Session start** — Boss reads `INDEX.md` to load project context
-2. **During work** — Decisions, learnings, and references are captured as notes
-3. **Session end** — Summary written, `INDEX.md` updated, notes linked with `[[wiki-links]]`
-4. **Persona learning** — Usage patterns are detected; after repeated agent use, routing preferences are suggested and can be accepted or rejected via `persona-rule.js`
+| Phase | Hook Event | What Happens |
+|-------|-----------|-------------|
+| **Session Start** | `SessionStart` | Creates `.briefing/` structure, saves git HEAD hash for session-specific diffs |
+| **During Work** | `PostToolUse` Edit/Write | Tracks file edit count; warns at 5, blocks at 15 if no decisions/learnings written |
+| **During Work** | `PostToolUse` WebSearch/WebFetch | Auto-collects URLs to `references/auto-links.md` |
+| **During Work** | `SubagentStop` | Logs agent execution to `agents/agent-log.jsonl` |
+| **During Work** | `UserPromptSubmit` (every 5th) | Throttled persona profile update |
+| **Session End** | `Stop` (1st hook) | Auto-generates scaffolds: `sessions/auto.md`, `learnings/auto-session.md`, `decisions/auto.md`, `persona/profile.md` |
+| **Session End** | `Stop` (2nd hook) | **Enforces** AI-written session summary if ≥ 3 file edits — blocks session end with template |
+
+### Auto-Generated vs AI-Written
+
+| Type | File Pattern | Created By | Content |
+|------|-------------|-----------|---------|
+| **Auto scaffold** | `*-auto.md`, `*-auto-session.md` | Stop hook (Node.js) | Git diff stats, agent usage, commit list — data only |
+| **AI summary** | `YYYY-MM-DD-<topic>.md` | AI during session | Meaningful analysis with context, code refs, rationale |
+| **Telemetry** | `agent-log.jsonl`, `auto-links.md` | Hook scripts | Append-only structured logs |
+| **Persona** | `profile.md`, `suggestions.jsonl` | Stop hook | Usage-based agent affinity and routing suggestions |
+
+Auto scaffolds serve as **reference data** for the AI to write proper summaries. The enforcement hook provides the scaffold content + a structured template when blocking session end.
+
+### Session-Specific Diffs
+
+At session start, the current git HEAD is saved to `.briefing/.session-start-head`. At session end, diffs are calculated relative to this saved point — showing only changes from the current session, not accumulated uncommitted changes from previous sessions.
 
 ### Using with Obsidian
 
-Open your project's `.briefing/` folder as an [Obsidian](https://obsidian.md) vault:
-
 1. Open Obsidian → **Open folder as vault** → select `.briefing/`
-2. Notes appear in the graph view, linked by `[[wiki-links]]`
-3. YAML frontmatter provides searchable tags and metadata
+2. Notes appear in graph view, linked by `[[wiki-links]]`
+3. YAML frontmatter (`date`, `type`, `tags`) enables structured search
 4. Timeline of decisions and learnings builds automatically over sessions
-
-All notes use YAML frontmatter with `date`, `type`, `tags`, and `related` fields for structured search.
 
 ---
 

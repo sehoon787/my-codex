@@ -39,8 +39,10 @@ rm -rf /tmp/my-codex
 ### For AI Agents
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/sehoon787/my-codex/main/install.sh | bash
+curl -s https://raw.githubusercontent.com/sehoon787/my-codex/main/AI-INSTALL.md
 ```
+
+Read the FULL output, then execute each step in order. Use `curl`, NOT `WebFetch`.
 
 ---
 

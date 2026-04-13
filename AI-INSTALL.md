@@ -5,24 +5,11 @@ The bundle installs 400+ agent files and 200+ skills (+ 40 gstack runtime), and 
 The repository sources contain TOML definitions from overlapping upstream sources; install-time deduplication reduces that to the final installed footprint.
 Only 2-3 steps are needed.
 
-Important:
-- Fetching this markdown file by itself does not install anything.
-- `install.sh` is the only installer entrypoint. It can now bootstrap the rest of the repository when run standalone.
+Read the FULL output, then execute each step in order.
 
 ---
 
 ## Step 1: Install agents and assets
-
-This repository uses a single root installer entrypoint: `install.sh`.
-Use a POSIX shell. On Windows, run it from Git Bash or WSL.
-
-Fast path:
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/sehoon787/my-codex/main/install.sh | bash
-```
-
-Clone-based path:
 
 ```bash
 git clone --depth 1 https://github.com/sehoon787/my-codex.git /tmp/my-codex

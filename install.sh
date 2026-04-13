@@ -12,6 +12,10 @@ MANIFEST_FILE="$CODEX_ROOT/.my-codex-manifest.txt"
 VERSION_FILE="$CODEX_ROOT/.my-codex-version"
 TMP_MANIFEST="$(mktemp)"
 NODEJS_SHIM_DIR=""
+BUN_SHIM_DIR=""
+NODE_PLATFORM_CACHE=""
+POWERSHELL_CMD=""
+WINGET_CMD=""
 AGENTS_SKILLS_ROOT="$HOME/.agents/skills"
 CLAUDE_SKILLS_ROOT="$HOME/.claude/skills"
 
@@ -22,7 +26,7 @@ trap cleanup EXIT
 
 # ── Upstream helper ──
 CLONE_TMPDIR=$(mktemp -d)
-cleanup_clone() { rm -rf "$CLONE_TMPDIR"; rm -f "$TMP_MANIFEST"; if [ -n "$NODEJS_SHIM_DIR" ] && [ -d "$NODEJS_SHIM_DIR" ]; then rm -rf "$NODEJS_SHIM_DIR"; fi; }
+cleanup_clone() { rm -rf "$CLONE_TMPDIR"; rm -f "$TMP_MANIFEST"; if [ -n "$NODEJS_SHIM_DIR" ] && [ -d "$NODEJS_SHIM_DIR" ]; then rm -rf "$NODEJS_SHIM_DIR"; fi; if [ -n "$BUN_SHIM_DIR" ] && [ -d "$BUN_SHIM_DIR" ]; then rm -rf "$BUN_SHIM_DIR"; fi; }
 trap cleanup_clone EXIT
 
 UPSTREAM_DIR=""
@@ -70,8 +74,21 @@ link_windows_node_shims() {
   append_path_once "$NODEJS_SHIM_DIR"
 }
 
+link_windows_bun_shims() {
+  local candidate="$1"
+
+  [ -f "$candidate/bun.exe" ] || return 1
+
+  if [ -z "$BUN_SHIM_DIR" ]; then
+    BUN_SHIM_DIR="$(mktemp -d)"
+  fi
+
+  ln -sf "$candidate/bun.exe" "$BUN_SHIM_DIR/bun"
+  append_path_once "$BUN_SHIM_DIR"
+}
+
 ensure_nodejs_on_path() {
-  local candidate raw_path unix_path
+  local candidate raw_path unix_path ps_cmd
 
   if command -v node >/dev/null 2>&1 && command -v npm >/dev/null 2>&1; then
     return 0
@@ -96,7 +113,8 @@ ensure_nodejs_on_path() {
     fi
   done
 
-  if command -v powershell.exe >/dev/null 2>&1 && command -v cygpath >/dev/null 2>&1; then
+  ps_cmd="$(find_powershell)"
+  if [ -n "$ps_cmd" ] && command -v cygpath >/dev/null 2>&1; then
     while IFS= read -r raw_path; do
       raw_path="${raw_path%$'\r'}"
       [ -n "$raw_path" ] || continue
@@ -113,9 +131,201 @@ ensure_nodejs_on_path() {
         return 0
       fi
     done <<EOF
-$(powershell.exe -NoProfile -Command "$paths=@(); $machine=[Environment]::GetEnvironmentVariable('Path','Machine'); if($machine){$paths += $machine -split ';'}; $user=[Environment]::GetEnvironmentVariable('Path','User'); if($user){$paths += $user -split ';'}; $paths | Where-Object { $_ } | Select-Object -Unique" 2>/dev/null)
+$( "$ps_cmd" -NoProfile -Command "\$paths=@(); \$machine=[Environment]::GetEnvironmentVariable('Path','Machine'); if(\$machine){\$paths += \$machine -split ';'}; \$user=[Environment]::GetEnvironmentVariable('Path','User'); if(\$user){\$paths += \$user -split ';'}; \$paths | Where-Object { \$_ } | Select-Object -Unique" 2>/dev/null)
 EOF
   fi
+}
+
+find_powershell() {
+  local candidate
+
+  if [ -n "$POWERSHELL_CMD" ]; then
+    printf '%s' "$POWERSHELL_CMD"
+    return 0
+  fi
+
+  for candidate in \
+    "$(command -v powershell.exe 2>/dev/null || true)" \
+    "$(command -v powershell 2>/dev/null || true)" \
+    "/c/Windows/System32/WindowsPowerShell/v1.0/powershell.exe" \
+    "/mnt/c/Windows/System32/WindowsPowerShell/v1.0/powershell.exe" \
+    "/c/Program Files/PowerShell/7/pwsh.exe" \
+    "/mnt/c/Program Files/PowerShell/7/pwsh.exe"
+  do
+    [ -n "$candidate" ] || continue
+    if [ -x "$candidate" ] || [ -f "$candidate" ]; then
+      POWERSHELL_CMD="$candidate"
+      break
+    fi
+  done
+
+  printf '%s' "$POWERSHELL_CMD"
+}
+
+find_winget() {
+  local candidate
+
+  if [ -n "$WINGET_CMD" ]; then
+    printf '%s' "$WINGET_CMD"
+    return 0
+  fi
+
+  for candidate in \
+    "$(command -v winget 2>/dev/null || true)" \
+    "/mnt/c/Users/$(whoami 2>/dev/null || printf '%s' unknown)/AppData/Local/Microsoft/WindowsApps/winget.exe" \
+    "/c/Users/$(whoami 2>/dev/null || printf '%s' unknown)/AppData/Local/Microsoft/WindowsApps/winget.exe" \
+    /mnt/c/Users/*/AppData/Local/Microsoft/WindowsApps/winget.exe \
+    /c/Users/*/AppData/Local/Microsoft/WindowsApps/winget.exe
+  do
+    [ -n "$candidate" ] || continue
+    if [ -x "$candidate" ] || [ -f "$candidate" ]; then
+      WINGET_CMD="$candidate"
+      break
+    fi
+  done
+
+  printf '%s' "$WINGET_CMD"
+}
+
+get_node_platform() {
+  if [ -n "$NODE_PLATFORM_CACHE" ]; then
+    printf '%s' "$NODE_PLATFORM_CACHE"
+    return 0
+  fi
+
+  if command -v node >/dev/null 2>&1; then
+    NODE_PLATFORM_CACHE="$(node -p "process.platform" 2>/dev/null || printf 'unknown')"
+  else
+    NODE_PLATFORM_CACHE="missing"
+  fi
+
+  printf '%s' "$NODE_PLATFORM_CACHE"
+}
+
+path_for_node() {
+  local raw_path="$1" drive tail_path
+
+  if [ "$(get_node_platform)" = "win32" ]; then
+    case "$raw_path" in
+      /mnt/[A-Za-z]/*)
+        drive="${raw_path#/mnt/}"
+        drive="${drive%%/*}"
+        tail_path="${raw_path#/mnt/$drive/}"
+        printf '%s:\\%s' "$(printf '%s' "$drive" | tr '[:lower:]' '[:upper:]')" "$(printf '%s' "$tail_path" | sed 's#/#\\\\#g')"
+        return 0
+        ;;
+      /[A-Za-z]/*)
+        drive="${raw_path#/}"
+        drive="${drive%%/*}"
+        tail_path="${raw_path#/$drive/}"
+        printf '%s:\\%s' "$(printf '%s' "$drive" | tr '[:lower:]' '[:upper:]')" "$(printf '%s' "$tail_path" | sed 's#/#\\\\#g')"
+        return 0
+        ;;
+    esac
+  fi
+
+  if [ "$(get_node_platform)" = "win32" ] && command -v cygpath >/dev/null 2>&1; then
+    cygpath -aw "$raw_path" 2>/dev/null || cygpath -w "$raw_path" 2>/dev/null || printf '%s' "$raw_path"
+    return 0
+  fi
+
+  printf '%s' "$raw_path"
+}
+
+is_windows_host() {
+  case "$(uname -s)" in
+    MINGW*|MSYS*|CYGWIN*) return 0 ;;
+  esac
+
+  [ "$(get_node_platform)" = "win32" ]
+}
+
+ensure_bun_on_path() {
+  local candidate raw_path unix_path ps_cmd
+
+  if command -v bun >/dev/null 2>&1; then
+    return 0
+  fi
+
+  if [ -n "${BUN_INSTALL:-}" ] && [ -d "$BUN_INSTALL/bin" ]; then
+    append_path_once "$BUN_INSTALL/bin"
+    link_windows_bun_shims "$BUN_INSTALL/bin" || true
+  fi
+
+  if [ -n "${USERPROFILE:-}" ] && command -v cygpath >/dev/null 2>&1; then
+    candidate="$(cygpath -u "$USERPROFILE" 2>/dev/null || true)"
+    if [ -n "$candidate" ] && [ -d "$candidate/.bun/bin" ]; then
+      append_path_once "$candidate/.bun/bin"
+      link_windows_bun_shims "$candidate/.bun/bin" || true
+    fi
+  fi
+
+  for candidate in \
+    /mnt/c/Users/*/.bun/bin \
+    /c/Users/*/.bun/bin \
+    /mnt/c/Users/*/AppData/Local/Microsoft/WinGet/Packages/Oven-sh.Bun*/bun-windows-* \
+    /c/Users/*/AppData/Local/Microsoft/WinGet/Packages/Oven-sh.Bun*/bun-windows-*
+  do
+    [ -d "$candidate" ] || continue
+    if [ -f "$candidate/bun.exe" ] || [ -f "$candidate/bun" ]; then
+      append_path_once "$candidate"
+      link_windows_bun_shims "$candidate" || true
+      command -v bun >/dev/null 2>&1 && return 0
+    fi
+  done
+
+  if command -v bun >/dev/null 2>&1; then
+    return 0
+  fi
+
+  ps_cmd="$(find_powershell)"
+  if [ -n "$ps_cmd" ] && command -v cygpath >/dev/null 2>&1; then
+    while IFS= read -r raw_path; do
+      raw_path="${raw_path%$'\r'}"
+      [ -n "$raw_path" ] || continue
+      unix_path="$(cygpath -u "$raw_path" 2>/dev/null || true)"
+      [ -d "$unix_path" ] || continue
+      append_path_once "$unix_path"
+      link_windows_bun_shims "$unix_path" || true
+      if command -v bun >/dev/null 2>&1; then
+        return 0
+      fi
+    done <<EOF
+$( "$ps_cmd" -NoProfile -Command "\$candidates=@(); if(\$env:USERPROFILE){\$candidates += (Join-Path \$env:USERPROFILE '.bun\\bin')}; if(\$env:LOCALAPPDATA){\$pkgRoot = Join-Path \$env:LOCALAPPDATA 'Microsoft\\WinGet\\Packages'; if(Test-Path \$pkgRoot){\$pkg = Get-ChildItem \$pkgRoot -Filter 'Oven-sh.Bun*' -Directory -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending | Select-Object -First 1; if(\$pkg){\$bun = Get-ChildItem \$pkg.FullName -Filter 'bun.exe' -Recurse -File -ErrorAction SilentlyContinue | Select-Object -First 1; if(\$bun){\$candidates += \$bun.DirectoryName}}}}; \$candidates | Where-Object { \$_ -and (Test-Path \$_) } | Select-Object -Unique" 2>/dev/null)
+EOF
+  fi
+
+  command -v bun >/dev/null 2>&1
+}
+
+install_bun_if_missing() {
+  local ps_cmd winget_cmd
+
+  ensure_bun_on_path && return 0
+
+  winget_cmd="$(find_winget)"
+  if is_windows_host && [ -n "$winget_cmd" ]; then
+    echo "  [gstack] Installing bun via winget..."
+    "$winget_cmd" install --id Oven-sh.Bun -e --accept-package-agreements --accept-source-agreements --silent --disable-interactivity >/dev/null 2>&1 || true
+    ensure_bun_on_path && return 0
+  fi
+
+  ps_cmd="$(find_powershell)"
+  if is_windows_host && [ -n "$ps_cmd" ]; then
+    echo "  [gstack] Installing bun via winget..."
+    "$ps_cmd" -NoProfile -Command "\$ProgressPreference='SilentlyContinue'; winget install --id Oven-sh.Bun -e --accept-package-agreements --accept-source-agreements --silent --disable-interactivity" >/dev/null 2>&1 || true
+    ensure_bun_on_path && return 0
+  fi
+
+  if command -v curl >/dev/null 2>&1; then
+    echo "  [gstack] Installing bun via bun.sh..."
+    curl -fsSL --connect-timeout 15 --max-time 90 https://bun.sh/install | bash 2>/dev/null || true
+    export BUN_INSTALL="$HOME/.bun"
+    export PATH="$BUN_INSTALL/bin:$PATH"
+    ensure_bun_on_path && return 0
+  fi
+
+  return 1
 }
 
 PACK_MANAGER="$SCRIPT_DIR/scripts/agent-pack-manager.sh"
@@ -847,11 +1057,8 @@ if [ "$SKIP_GSTACK" = "0" ]; then
     fi
 
     # Install bun if missing (required for gstack browser)
-    if ! command -v bun >/dev/null 2>&1; then
-      echo "  [gstack] Installing bun..."
-      curl -fsSL https://bun.sh/install | bash 2>/dev/null || true
-      export BUN_INSTALL="$HOME/.bun"
-      export PATH="$BUN_INSTALL/bin:$PATH"
+    if ! install_bun_if_missing; then
+      echo "  [gstack] WARNING: bun is unavailable; skipping bun-backed gstack setup"
     fi
 
     # Remove superseded ECC skills replaced by gstack (preserve gstack symlinks)
@@ -970,7 +1177,8 @@ rm -rf "$PLUGINS_DIR/my-codex" 2>/dev/null || true
 ln -sfn "$REPO_ROOT" "$PLUGINS_DIR/my-codex"
 echo "  Symlinked $PLUGINS_DIR/my-codex -> $REPO_ROOT"
 
-node -e "
+NODE_MARKETPLACE_FILE="$(path_for_node "$MARKETPLACE_FILE")"
+if ! node -e "
   var fs=require('fs');
   var p=process.argv[1];
   var m={name:'local',plugins:[]};
@@ -985,8 +1193,11 @@ node -e "
     category:'Productivity'
   });
   fs.writeFileSync(p,JSON.stringify(m,null,2));
-" "$MARKETPLACE_FILE"
-echo "  Plugin registered at $MARKETPLACE_FILE"
+" "$NODE_MARKETPLACE_FILE"; then
+  echo "  WARNING: failed to update $MARKETPLACE_FILE"
+else
+  echo "  Plugin registered at $MARKETPLACE_FILE"
+fi
 
 echo "[4/7] Configuring config.toml..."
 CONFIG_FILE="$CODEX_ROOT/config.toml"

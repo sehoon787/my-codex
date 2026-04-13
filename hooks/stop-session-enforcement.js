@@ -16,6 +16,8 @@ if (!fs.existsSync(INDEX_FILE)) {
   process.exit(0);
 }
 
+var todayStr = new Date().toISOString().slice(0, 10);
+
 // Check session activity — enforce if ANY meaningful activity happened
 var workCounter = 0;
 try {
@@ -49,12 +51,22 @@ try {
   }
 } catch (e) {}
 
+// Check session message count (incremented by UserPromptSubmit hook)
+var hasMessageCount = false;
+try {
+  var smcPath = path.join(BRIEFING_DIR, '.session-message-count');
+  if (fs.existsSync(smcPath)) {
+    var smcVal = parseInt(fs.readFileSync(smcPath, 'utf8').trim(), 10) || 0;
+    if (smcVal > 0) {
+      hasMessageCount = true;
+    }
+  }
+} catch (e) {}
+
 // Skip only if NO activity at all (empty session)
-if (workCounter === 0 && !hasAgentActivity && !hasUserMessages) {
+if (workCounter === 0 && !hasAgentActivity && !hasUserMessages && !hasMessageCount) {
   process.exit(0);
 }
-
-var todayStr = new Date().toISOString().slice(0, 10);
 
 // Check for proper (non-auto) session summary for today
 var hasProperSummary = false;

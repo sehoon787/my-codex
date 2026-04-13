@@ -346,46 +346,17 @@ Obsidian-compatible persistent memory. Every project maintains a `.briefing/` di
     └── skills/                      ← Accepted persona skills
 ```
 
-### Automation Lifecycle
+### Sub-Vaults
 
-| Phase | Hook Event | What Happens |
-|-------|-----------|-------------|
-| **Session Start** | `SessionStart` | Creates `.briefing/` structure, resets counters, saves git HEAD to `.session-start-head` |
-| **1st Message** | `UserPromptSubmit` (smc=0) | Triggers full vault initialization — generates all auto files immediately |
-| **During Work** | `PostToolUse` Edit/Write | Tracks file edits; warns at 3, blocks at 10 if no decisions/learnings written |
-| **During Work** | `PostToolUse` WebSearch/WebFetch | Auto-collects URLs to `references/auto-links.md` |
-| **During Work** | `PostToolUse` Agent / `SubagentStop` | Logs agent execution to `agents/agent-log.jsonl` |
-| **During Work** | `UserPromptSubmit` (every msg) | Counts messages; warns at 3 msgs, blocks at 6 msgs if no vault entries; checks `sessions/` separately |
-| **Every 5th msg** | `UserPromptSubmit` (throttled) | Refreshes `persona/profile.md`, `agents/summary`, `sessions/auto.md`, `INDEX.md` |
-| **Session End** | `Stop` (1st hook) | Final refresh of all auto-generated files |
-| **Session End** | `Stop` (2nd hook) | **Enforces** session summary + learning entries — blocks until written |
-
-### Vault File Reference
-
-| Path | Content | Created | Updated |
-|------|---------|---------|---------|
-| `INDEX.md` | Project overview, recent decisions/learnings links | SessionStart | 1st msg, every 5th msg, Stop |
-| `sessions/YYYY-MM-DD-auto.md` | Git diff stats, agent usage counts, file change summary | 1st msg | Every 5th msg, Stop |
-| `sessions/YYYY-MM-DD-<topic>.md` | Session summary — request, work done, changes, verification | AI-written | Enforced: 3 msgs warn, 6 msgs block, Stop block |
-| `decisions/<topic>.md` | Architecture/design decision record with rationale | AI-written | Enforced: 3 edits warn, 10 edits block |
-| `learnings/YYYY-MM-DD-auto-session.md` | Agent list, modified files scaffold | 1st msg (if no manual entry) | Every 5th msg, Stop |
-| `learnings/YYYY-MM-DD-<topic>.md` | Patterns, solutions, gotchas discovered | AI-written | Enforced: 3 edits warn, 10 edits block, Stop block (≥5 edits) |
-| `agents/agent-log.jsonl` | `{ts, agent_id, agent_type}` per agent call | 1st agent use | Every agent completion |
-| `agents/YYYY-MM-DD-summary.md` | Daily agent usage breakdown, top agents, 30d trend | 1st msg | Every 5th msg, Stop |
-| `persona/profile.md` | Workflow style, tool affinity %, philosophy | 1st msg | Every 5th msg, Stop |
-| `persona/suggestions.jsonl` | `{date, type, suggestion}` routing recommendations | 1st msg | Every 5th msg, Stop |
-| `references/auto-links.md` | `- YYYY-MM-DD <URL>` collected URLs | 1st web search | Every WebSearch/WebFetch |
-
-### Auto-Generated vs AI-Written
-
-| Type | File Pattern | Created By | Content |
-|------|-------------|-----------|---------|
-| **Auto scaffold** | `*-auto.md`, `*-auto-session.md` | Hook scripts (Node.js) | Git diff stats, agent usage — data only |
-| **AI-written** | `YYYY-MM-DD-<topic>.md` | AI (enforced by hooks) | Meaningful analysis with context, code refs, rationale |
-| **Telemetry** | `agent-log.jsonl`, `auto-links.md` | Hook scripts | Append-only structured logs |
-| **Persona** | `profile.md`, `suggestions.jsonl` | Hook scripts | Usage-based agent affinity and routing suggestions |
-
-Auto scaffolds serve as **reference data** for the AI to write proper summaries. Enforcement hooks provide the scaffold content + a structured template when blocking.
+| Path | Description |
+|------|-------------|
+| `INDEX.md` | Project overview with links to recent decisions and learnings. Auto-created on first session, refreshed periodically. |
+| `sessions/` | **Session summaries.** `*-auto.md` — scaffold with git diff stats and agent counts. `<topic>.md` — AI-written summary enforced by hooks. |
+| `decisions/` | **Architecture and design decisions** with rationale. AI-written, enforced during active work. |
+| `learnings/` | **Patterns, gotchas, non-obvious solutions.** `*-auto-session.md` — scaffold with file lists. `<topic>.md` — AI-written. |
+| `references/` | **Web research URLs.** `auto-links.md` — auto-collected from WebSearch/WebFetch calls. |
+| `agents/` | **Agent telemetry.** `agent-log.jsonl` — per-call log. `YYYY-MM-DD-summary.md` — daily usage breakdown. |
+| `persona/` | **User work style profile.** `profile.md` — tool affinity stats. `suggestions.jsonl` — routing recommendations. `rules/`, `skills/` — accepted preferences. |
 
 ### Session-Specific Diffs
 

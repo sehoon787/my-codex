@@ -150,8 +150,11 @@ test "$(cat "$TEST_HOME/.codex/.my-codex-version")" = "$expected_version"
 
 PIPE_HOME="$TMP_ROOT/pipe-home"
 mkdir -p "$PIPE_HOME" "$PIPE_HOME/.agents/skills" "$PIPE_HOME/.claude/skills"
-HOME="$PIPE_HOME" PATH="$BIN_DIR:$PATH" MY_CODEX_TEST_LOG="$LOG_FILE" MY_CODEX_BOOTSTRAP_REPO="$REPO_ROOT" \
-  bash < "$REPO_ROOT/install.sh" > "$TMP_ROOT/install-pipe.out"
+(
+  cd "$TMP_ROOT"
+  HOME="$PIPE_HOME" PATH="$BIN_DIR:$PATH" MY_CODEX_TEST_LOG="$LOG_FILE" MY_CODEX_BOOTSTRAP_REPO="$REPO_ROOT" \
+    bash < "$REPO_ROOT/install.sh" > "$TMP_ROOT/install-pipe.out"
+)
 test -f "$PIPE_HOME/.codex/.my-codex-version"
 test "$(cat "$PIPE_HOME/.codex/.my-codex-version")" = "$expected_version"
 test -L "$PIPE_HOME/.agents/plugins/plugins/my-codex"

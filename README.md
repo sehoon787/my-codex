@@ -31,9 +31,7 @@ then routes your task to the right specialist via `spawn_agent`. No config. No b
 ### For Humans
 
 ```bash
-git clone --depth 1 https://github.com/sehoon787/my-codex.git /tmp/my-codex
-bash /tmp/my-codex/install.sh
-rm -rf /tmp/my-codex
+curl -fsSL https://raw.githubusercontent.com/sehoon787/my-codex/main/install.sh | bash
 ```
 
 ### For AI Agents
@@ -42,7 +40,21 @@ rm -rf /tmp/my-codex
 curl -s https://raw.githubusercontent.com/sehoon787/my-codex/main/AI-INSTALL.md
 ```
 
-Read the FULL output, then execute each step in order. Use `curl`, NOT `WebFetch`.
+That command prints the installation guide for an AI agent to follow. It does not install by itself.
+
+If you want the AI to install immediately, use:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/sehoon787/my-codex/main/install.sh | bash
+```
+
+Clone-based install still works too:
+
+```bash
+git clone --depth 1 https://github.com/sehoon787/my-codex.git /tmp/my-codex
+bash /tmp/my-codex/install.sh
+rm -rf /tmp/my-codex
+```
 
 ---
 

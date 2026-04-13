@@ -39,6 +39,12 @@ codex --version
 ## 2. Install my-codex
 
 ```bash
+curl -fsSL https://raw.githubusercontent.com/sehoon787/my-codex/main/install.sh | bash
+```
+
+Clone-based install also works:
+
+```bash
 git clone --depth 1 https://github.com/sehoon787/my-codex.git /tmp/my-codex
 bash /tmp/my-codex/install.sh
 rm -rf /tmp/my-codex

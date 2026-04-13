@@ -9,6 +9,18 @@ Read the FULL output, then execute each step in order.
 
 ---
 
+## Fast path
+
+If you want to install immediately instead of reading the manual steps first:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/sehoon787/my-codex/main/install.sh | bash
+```
+
+This document is the guide an AI agent should read before running commands. Fetching `AI-INSTALL.md` only prints instructions, it does not perform the install.
+
+---
+
 ## Step 1: Install agents and assets
 
 ```bash

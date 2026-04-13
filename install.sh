@@ -7,9 +7,35 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$SCRIPT_DIR"
 
+bootstrap_into_real_repo() {
+  local bootstrap_source="${MY_CODEX_BOOTSTRAP_REPO:-https://github.com/sehoon787/my-codex.git}"
+  local bootstrap_root
+  bootstrap_root="$(mktemp -d)"
+
+  echo "[bootstrap] Installer was not launched from a my-codex checkout."
+  echo "[bootstrap] Fetching a real repository checkout from: $bootstrap_source"
+
+  if [ -d "$bootstrap_source" ] && [ -f "$bootstrap_source/install.sh" ]; then
+    cp -R "$bootstrap_source"/. "$bootstrap_root"/
+    rm -rf "$bootstrap_root/.tmp-install-tests" 2>/dev/null || true
+  else
+    git clone --depth 1 "$bootstrap_source" "$bootstrap_root"
+  fi
+  export MY_CODEX_BOOTSTRAP_SOURCE="${MY_CODEX_BOOTSTRAP_SOURCE:-bootstrap-reexec}"
+  bash "$bootstrap_root/install.sh" "$@"
+  local status=$?
+  rm -rf "$bootstrap_root"
+  exit "$status"
+}
+
+if [ ! -f "$REPO_ROOT/scripts/agent-pack-manager.sh" ] || [ ! -f "$REPO_ROOT/templates/codex-AGENTS.md" ]; then
+  bootstrap_into_real_repo "$@"
+fi
+
 CODEX_ROOT="$HOME/.codex"
 MANIFEST_FILE="$CODEX_ROOT/.my-codex-manifest.txt"
 VERSION_FILE="$CODEX_ROOT/.my-codex-version"
+VENDOR_REPO_ROOT="$CODEX_ROOT/vendor/my-codex"
 TMP_MANIFEST="$(mktemp)"
 NODEJS_SHIM_DIR=""
 BUN_SHIM_DIR=""
@@ -511,6 +537,34 @@ copy_skill_dirs() {
     rel_path="${dest_dir#"$CODEX_ROOT"/}"
     add_manifest_entry "$rel_path"
   done
+}
+
+copy_repo_snapshot() {
+  local src_dir="$1"
+  local dest_dir="$2"
+
+  rm -rf "$dest_dir" 2>/dev/null || true
+  mkdir -p "$dest_dir"
+
+  if command -v rsync >/dev/null 2>&1; then
+    rsync -a --delete \
+      --exclude '.git' \
+      --exclude '.tmp-install-tests' \
+      --exclude 'node_modules' \
+      "$src_dir"/ "$dest_dir"/
+  else
+    (
+      cd "$src_dir"
+      tar \
+        --exclude '.git' \
+        --exclude '.tmp-install-tests' \
+        --exclude 'node_modules' \
+        -cf - .
+    ) | (
+      cd "$dest_dir"
+      tar -xf -
+    )
+  fi
 }
 
 patch_yaml_scalar_line() {
@@ -1174,11 +1228,15 @@ PLUGINS_DIR="$MARKETPLACE_DIR/plugins"
 mkdir -p "$PLUGINS_DIR"
 MARKETPLACE_FILE="$MARKETPLACE_DIR/marketplace.json"
 
-# Symlink plugin into marketplace root so source.path stays relative
-# Remove existing target first (ln -sfn can't replace a directory on Windows/Git Bash)
+mkdir -p "$(dirname "$VENDOR_REPO_ROOT")"
+copy_repo_snapshot "$REPO_ROOT" "$VENDOR_REPO_ROOT"
+add_manifest_entry "vendor/my-codex"
+
+# Symlink plugin into marketplace root so source.path stays relative.
+# Always point at a stable vendor path so /tmp bootstrap clones can be deleted safely.
 rm -rf "$PLUGINS_DIR/my-codex" 2>/dev/null || true
-ln -sfn "$REPO_ROOT" "$PLUGINS_DIR/my-codex"
-echo "  Symlinked $PLUGINS_DIR/my-codex -> $REPO_ROOT"
+ln -sfn "$VENDOR_REPO_ROOT" "$PLUGINS_DIR/my-codex"
+echo "  Symlinked $PLUGINS_DIR/my-codex -> $VENDOR_REPO_ROOT"
 
 NODE_MARKETPLACE_FILE="$(path_for_node "$MARKETPLACE_FILE")"
 if ! node -e "

@@ -159,7 +159,7 @@ if (hasProperSummary) {
     reason: learningLang === 'ko' || learningLang === 'kr'
       ? '학습 기록 미작성 (' + workCounter + '개 파일 수정됨). .briefing/learnings/' + todayStr + '-<topic>.md를 작성하세요.'
       : 'No learning entry written (' + workCounter + ' files edited). Write .briefing/learnings/' + todayStr + '-<topic>.md.',
-    systemMessage: learningTemplate
+    hookSpecificOutput: { additionalContext: learningTemplate }
   };
 
   process.stdout.write(JSON.stringify(learningOutput) + '\n');
@@ -218,7 +218,7 @@ var output = {
   reason: lang === 'ko' || lang === 'kr'
     ? '세션 요약 미작성 (' + workCounter + '개 파일 수정됨). .briefing/sessions/' + todayStr + '-<topic>.md를 작성하세요.'
     : 'No session summary written (' + workCounter + ' files edited). Write .briefing/sessions/' + todayStr + '-<topic>.md.',
-  systemMessage: template
+  hookSpecificOutput: { additionalContext: template }
 };
 
 process.stdout.write(JSON.stringify(output) + '\n');

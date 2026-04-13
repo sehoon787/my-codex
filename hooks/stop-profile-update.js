@@ -72,11 +72,14 @@ var entries7d = logEntries.filter(function(e) {
 // Compute Agent Affinity (30-day rolling)
 var affinityCounts = {};
 for (var i = 0; i < entries30d.length; i++) {
-  var agentType = entries30d[i].agent_type || entries30d[i].agent;
-  if (!agentType) continue;
+  var agentType = entries30d[i].agent_type || entries30d[i].agent || 'unknown';
+  if (agentType === 'unknown') {
+    agentType = entries30d[i].name || entries30d[i].description || 'unknown';
+  }
+  if (!agentType || agentType === 'unknown') continue;
   affinityCounts[agentType] = (affinityCounts[agentType] || 0) + 1;
 }
-var total30d = entries30d.filter(function(e) { return !!(e.agent_type || e.agent); }).length;
+var total30d = Object.keys(affinityCounts).reduce(function(sum, k) { return sum + affinityCounts[k]; }, 0);
 
 var affinityList = Object.keys(affinityCounts).map(function(t) {
   return { type: t, count: affinityCounts[t] };
@@ -87,8 +90,11 @@ affinityList = affinityList.slice(0, 10);
 // Detect Patterns (7-day rolling)
 var pattern7d = {};
 for (var i = 0; i < entries7d.length; i++) {
-  var agentType = entries7d[i].agent_type || entries7d[i].agent;
-  if (!agentType) continue;
+  var agentType = entries7d[i].agent_type || entries7d[i].agent || 'unknown';
+  if (agentType === 'unknown') {
+    agentType = entries7d[i].name || entries7d[i].description || 'unknown';
+  }
+  if (!agentType || agentType === 'unknown') continue;
   pattern7d[agentType] = (pattern7d[agentType] || 0) + 1;
 }
 
@@ -119,6 +125,7 @@ for (var i = 0; i < patternTypes.length; i++) {
   var agentType = patternTypes[i];
   var count = pattern7d[agentType];
   if (count < 3) continue;
+  if (agentType === 'unknown' || agentType === 'stop' || agentType === 'throttled-update') continue;
 
   // Check cooldown, pending, or already accepted
   var hasCooldown = false;
@@ -187,8 +194,28 @@ try {
   process.stderr.write('stop-profile-update: failed to read profile: ' + e.message + '\n');
 }
 
-// Increment session_count
-sessionCount += 1;
+// Increment session_count (idempotent: only once per session)
+var shouldIncrement = true;
+try {
+  var sessionIdFile = path.join(BRIEFING_DIR, '.session-start-head');
+  var lastCountedFile = path.join(BRIEFING_DIR, '.last-counted-session');
+  if (fs.existsSync(sessionIdFile)) {
+    var currentSessionId = fs.readFileSync(sessionIdFile, 'utf8').trim();
+    if (fs.existsSync(lastCountedFile)) {
+      var lastCounted = fs.readFileSync(lastCountedFile, 'utf8').trim();
+      if (lastCounted === currentSessionId) {
+        shouldIncrement = false;
+      }
+    }
+    if (shouldIncrement) {
+      fs.writeFileSync(lastCountedFile, currentSessionId);
+    }
+  }
+} catch (e) {}
+
+if (shouldIncrement) {
+  sessionCount += 1;
+}
 
 // Philosophy Diff (every 5 sessions)
 var newHistoryEntry = '';
@@ -231,6 +258,18 @@ var mostActive = affinityList.length > 0 ? affinityList[0].type : 'none';
 // Date string
 var todayStr = now.toISOString().slice(0, 10);
 
+// Build Philosophy string from actual affinity data
+var philosophyContent = '(insufficient data)';
+if (affinityList.length >= 2 && total30d >= 10) {
+  var topAgent = affinityList[0].type;
+  var topPct = Math.round(affinityList[0].count / total30d * 100);
+  var style = topPct > 40 ? 'heavily ' + topAgent + '-driven' :
+              topPct > 25 ? topAgent + '-preferred with balanced delegation' :
+              'balanced multi-agent orchestration';
+  philosophyContent = 'Workflow style: ' + style + ' (' + total30d + ' calls over 30d).\n' +
+    'Primary tools: ' + affinityList.slice(0, 3).map(function(a) { return a.type; }).join(', ') + '.';
+}
+
 // Build profile.md content
 var profileContent = '---\n' +
   'date: ' + todayStr + '\n' +
@@ -241,7 +280,7 @@ var profileContent = '---\n' +
   '# User Profile\n' +
   '\n' +
   '## Philosophy\n' +
-  '(auto-populated after pattern analysis)\n' +
+  philosophyContent + '\n' +
   '\n' +
   '## Workflow Patterns\n' +
   '- Total agent calls (30d): ' + total30d + '\n' +
@@ -299,17 +338,9 @@ try {
   var SESSIONS_DIR = path.join(BRIEFING_DIR, 'sessions');
   fs.mkdirSync(SESSIONS_DIR, { recursive: true });
 
-  // Skip if a session file for today already exists (AI wrote one)
-  var sessionFiles = fs.readdirSync(SESSIONS_DIR);
-  var sessionExistsToday = false;
-  for (var i = 0; i < sessionFiles.length; i++) {
-    if (sessionFiles[i].slice(0, 10) === todayStr && sessionFiles[i].indexOf('-auto') === -1) {
-      sessionExistsToday = true;
-      break;
-    }
-  }
-
-  if (!sessionExistsToday) {
+  // Always refresh the auto session file with current data.
+  // Manual session files (without '-auto') coexist as the primary record.
+  {
     // Read work counter
     var workCounter = 0;
     try {
@@ -502,102 +533,48 @@ try {
   process.stderr.write('stop-profile-update: failed to write learning draft: ' + e.message + '\n');
 }
 
-// === Auto-generate decision draft ===
+// decisions/ — no auto-generation. Decisions require semantic context (what was chosen
+// and why) that hooks cannot provide. Written by Claude via enforcement only.
+
+// --- INDEX.md auto-update ---
 try {
-  var decDir = path.join(BRIEFING_DIR, 'decisions');
-  fs.mkdirSync(decDir, { recursive: true });
+  var indexPath = path.join(BRIEFING_DIR, 'INDEX.md');
+  if (fs.existsSync(indexPath)) {
+    var indexContent = fs.readFileSync(indexPath, 'utf8');
 
-  // Skip if any decision file was modified today
-  var decFiles = fs.readdirSync(decDir);
-  var decExistsToday = false;
-  for (var i = 0; i < decFiles.length; i++) {
-    if (decFiles[i].indexOf('-auto.md') !== -1) continue;
-    try {
-      var dStat = fs.statSync(path.join(decDir, decFiles[i]));
-      if (dStat.mtime.toISOString().slice(0, 10) === todayStr) {
-        decExistsToday = true;
-        break;
-      }
-    } catch (e) {}
-  }
-
-  if (!decExistsToday) {
-    // Read work counter — skip if no meaningful work
-    var dwc = 0;
-    try {
-      var dwcPath = path.join(BRIEFING_DIR, '.work-counter');
-      if (fs.existsSync(dwcPath)) {
-        dwc = parseInt(fs.readFileSync(dwcPath, 'utf8').trim(), 10) || 0;
-      }
-    } catch (e) {}
-
-    if (dwc > 0) {
-      // Run git log --oneline --since="midnight"
-      var gitCommits = '(no commits today)';
-      try {
-        var spawnSync3 = require('child_process').spawnSync;
-        var gitLog = spawnSync3('git', ['log', '--oneline', '--since=midnight'], { timeout: 5000 });
-        if (gitLog.status === 0 && gitLog.stdout) {
-          var gitLogOut = gitLog.stdout.toString().trim();
-          if (gitLogOut) gitCommits = gitLogOut;
-        }
-      } catch (e) {}
-
-      // Run session-specific git diff --name-only
-      var decChangedFiles = '(no files detected)';
-      try {
-        var spawnSync4 = require('child_process').spawnSync;
-        var sessionHead4 = '';
-        var headFile4 = path.join(BRIEFING_DIR, '.session-start-head');
-        if (fs.existsSync(headFile4)) {
-          sessionHead4 = fs.readFileSync(headFile4, 'utf8').trim();
-        }
-
-        var decFileSet = {};
-        if (sessionHead4) {
-          // Committed files since session start
-          var dcf = spawnSync4('git', ['diff', '--name-only', sessionHead4 + '..HEAD'], { timeout: 5000 });
-          if (dcf.status === 0 && dcf.stdout) {
-            dcf.stdout.toString().trim().split('\n').forEach(function(f) { if (f) decFileSet[f] = true; });
-          }
-        }
-        // Uncommitted files
-        var duf = spawnSync4('git', ['diff', '--name-only'], { timeout: 5000 });
-        if (duf.status === 0 && duf.stdout) {
-          duf.stdout.toString().trim().split('\n').forEach(function(f) { if (f) decFileSet[f] = true; });
-        }
-        // Staged files
-        var dsf = spawnSync4('git', ['diff', '--name-only', '--cached'], { timeout: 5000 });
-        if (dsf.status === 0 && dsf.stdout) {
-          dsf.stdout.toString().trim().split('\n').forEach(function(f) { if (f) decFileSet[f] = true; });
-        }
-        var decAllFiles = Object.keys(decFileSet);
-        if (decAllFiles.length > 0) {
-          decChangedFiles = decAllFiles.map(function(f) { return '- ' + f; }).join('\n');
-        }
-      } catch (e) {}
-
-      var decisionMd = '---\n' +
-        'date: ' + todayStr + '\n' +
-        'type: decision\n' +
-        'auto-generated: true\n' +
-        'tags: [auto-session-capture]\n' +
-        '---\n' +
-        '# Session Decisions (Auto-generated)\n' +
-        '\n' +
-        '## Commits Today\n' +
-        gitCommits + '\n' +
-        '\n' +
-        '## Files Changed\n' +
-        decChangedFiles + '\n' +
-        '\n' +
-        '> This entry was auto-generated. Enrich with actual decision rationale or delete if not needed.\n';
-
-      fs.writeFileSync(path.join(decDir, todayStr + '-auto.md'), decisionMd);
+    // Helper: list recent files from a subdir (date-prefixed first, newest on top)
+    function recentFiles(subdir, limit) {
+      var dir = path.join(BRIEFING_DIR, subdir);
+      if (!fs.existsSync(dir)) return [];
+      var files = fs.readdirSync(dir)
+        .filter(function(f) { return f.endsWith('.md') && f !== '.gitkeep'; });
+      var dated = files.filter(function(f) { return /^\d{4}-\d{2}-\d{2}/.test(f); }).sort().reverse();
+      var undated = files.filter(function(f) { return !/^\d{4}-\d{2}-\d{2}/.test(f); }).sort();
+      return dated.concat(undated)
+        .slice(0, limit)
+        .map(function(f) { return '- [[' + subdir + '/' + f.replace('.md', '') + ']]'; });
     }
+
+    var sections = {
+      'Recent Sessions': recentFiles('sessions', 5),
+      'Recent Decisions': recentFiles('decisions', 5),
+      'Recent Learnings': recentFiles('learnings', 3)
+    };
+
+    Object.keys(sections).forEach(function(heading) {
+      var lines = sections[heading];
+      if (lines.length === 0) return;
+      var pattern = new RegExp('(## ' + heading + '\\n)([\\s\\S]*?)(?=\\n## |$)');
+      var replacement = '$1' + lines.join('\n') + '\n\n';
+      if (pattern.test(indexContent)) {
+        indexContent = indexContent.replace(pattern, replacement);
+      }
+    });
+
+    fs.writeFileSync(indexPath, indexContent);
   }
 } catch (e) {
-  process.stderr.write('stop-profile-update: failed to write decision draft: ' + e.message + '\n');
+  process.stderr.write('INDEX.md update failed: ' + e.message + '\n');
 }
 
 process.exit(0);

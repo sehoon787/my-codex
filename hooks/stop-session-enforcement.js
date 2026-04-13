@@ -16,7 +16,7 @@ if (!fs.existsSync(INDEX_FILE)) {
   process.exit(0);
 }
 
-// Check work counter — only enforce if meaningful work was done
+// Check session activity — enforce if ANY meaningful activity happened
 var workCounter = 0;
 try {
   var wcPath = path.join(BRIEFING_DIR, '.work-counter');
@@ -25,8 +25,32 @@ try {
   }
 } catch (e) {}
 
-// Threshold: only enforce if >= 3 file edits
-if (workCounter < 3) {
+// Check agent-log for today's entries
+var hasAgentActivity = false;
+try {
+  var agentLogPath = path.join(BRIEFING_DIR, 'agents', 'agent-log.jsonl');
+  if (fs.existsSync(agentLogPath)) {
+    var logStat = fs.statSync(agentLogPath);
+    if (logStat.mtime.toISOString().slice(0, 10) === todayStr) {
+      hasAgentActivity = true;
+    }
+  }
+} catch (e) {}
+
+// Check if user sent messages (profile-update-counter exists and modified today)
+var hasUserMessages = false;
+try {
+  var pucPath = path.join(BRIEFING_DIR, '.profile-update-counter');
+  if (fs.existsSync(pucPath)) {
+    var pucStat = fs.statSync(pucPath);
+    if (pucStat.mtime.toISOString().slice(0, 10) === todayStr) {
+      hasUserMessages = true;
+    }
+  }
+} catch (e) {}
+
+// Skip only if NO activity at all (empty session)
+if (workCounter === 0 && !hasAgentActivity && !hasUserMessages) {
   process.exit(0);
 }
 
@@ -46,8 +70,87 @@ try {
   }
 } catch (e) {}
 
+var LEARNINGS_DIR = path.join(BRIEFING_DIR, 'learnings');
+
+// Check for proper (non-auto) learning file modified today
+var hasProperLearning = false;
+try {
+  if (fs.existsSync(LEARNINGS_DIR)) {
+    var learningFiles = fs.readdirSync(LEARNINGS_DIR);
+    for (var j = 0; j < learningFiles.length; j++) {
+      var lf = learningFiles[j];
+      // Must start with today's date and NOT be an auto-session file
+      if (lf.slice(0, 10) === todayStr && lf.indexOf('-auto-session') === -1) {
+        // Also verify it was actually modified today (mtime check)
+        try {
+          var lfStat = fs.statSync(path.join(LEARNINGS_DIR, lf));
+          if (lfStat.mtime.toISOString().slice(0, 10) === todayStr) {
+            hasProperLearning = true;
+            break;
+          }
+        } catch (e) {}
+      }
+    }
+  }
+} catch (e) {}
+
 if (hasProperSummary) {
-  // AI already wrote a proper summary, allow session end
+  // Session summary exists — now check learnings (only if workCounter >= 5)
+  if (workCounter < 5 || hasProperLearning) {
+    process.exit(0);
+  }
+
+  // Read auto-gen learning scaffold for context
+  var learningScaffold = '';
+  try {
+    var autoLearningFile = path.join(LEARNINGS_DIR, todayStr + '-auto-session.md');
+    if (fs.existsSync(autoLearningFile)) {
+      learningScaffold = fs.readFileSync(autoLearningFile, 'utf8');
+    }
+  } catch (e) {}
+
+  // Detect lang from INDEX.md
+  var learningLang = 'en';
+  try {
+    var lIndexContent = fs.readFileSync(INDEX_FILE, 'utf8');
+    var lLangMatch = lIndexContent.match(/^language:\s*(\S+)/m);
+    if (lLangMatch) {
+      learningLang = lLangMatch[1].trim();
+    }
+  } catch (e) {}
+
+  var learningTemplate;
+  if (learningLang === 'ko' || learningLang === 'kr') {
+    learningTemplate = '[BriefingVault] 학습 기록을 작성하세요.\n\n' +
+      '파일: .briefing/learnings/' + todayStr + '-<주제>.md\n\n' +
+      '필수 포함:\n' +
+      '---\ndate: ' + todayStr + '\ntype: learning\ntags: [관련, 태그]\n---\n\n' +
+      '# 학습: <주제>\n\n' +
+      '## 배운 점\n(이번 세션에서 발견한 패턴, 해결법, 주의사항)\n\n' +
+      '## 적용 방법\n(향후 어떻게 활용할 수 있는지)\n';
+  } else {
+    learningTemplate = '[BriefingVault] Write a learning entry.\n\n' +
+      'File: .briefing/learnings/' + todayStr + '-<topic>.md\n\n' +
+      'Required format:\n' +
+      '---\ndate: ' + todayStr + '\ntype: learning\ntags: [relevant, tags]\n---\n\n' +
+      '# Learning: <Topic>\n\n' +
+      '## What was learned\n(Patterns, solutions, gotchas discovered this session)\n\n' +
+      '## How to apply\n(How this can be used going forward)\n';
+  }
+
+  if (learningScaffold) {
+    learningTemplate += '\n---\nAuto-collected data (use as reference):\n```\n' + learningScaffold + '\n```';
+  }
+
+  var learningOutput = {
+    decision: 'block',
+    reason: learningLang === 'ko' || learningLang === 'kr'
+      ? '학습 기록 미작성 (' + workCounter + '개 파일 수정됨). .briefing/learnings/' + todayStr + '-<topic>.md를 작성하세요.'
+      : 'No learning entry written (' + workCounter + ' files edited). Write .briefing/learnings/' + todayStr + '-<topic>.md.',
+    systemMessage: learningTemplate
+  };
+
+  process.stdout.write(JSON.stringify(learningOutput) + '\n');
   process.exit(0);
 }
 

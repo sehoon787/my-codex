@@ -330,8 +330,7 @@ Obsidian-compatible persistent memory. Every project maintains a `.briefing/` di
 │   ├── YYYY-MM-DD-<topic>.md        ← AI-written session summary (enforced)
 │   └── YYYY-MM-DD-auto.md           ← Auto-generated scaffold (git diff, agent stats)
 ├── decisions/
-│   ├── YYYY-MM-DD-<decision>.md     ← AI-written decision record
-│   └── YYYY-MM-DD-auto.md           ← Auto-generated scaffold (commits, files)
+│   └── YYYY-MM-DD-<decision>.md     ← AI-written decision record (enforced)
 ├── learnings/
 │   ├── YYYY-MM-DD-<pattern>.md      ← AI-written learning note
 │   └── YYYY-MM-DD-auto-session.md   ← Auto-generated scaffold (agents, files)
@@ -356,14 +355,14 @@ Obsidian-compatible persistent memory. Every project maintains a `.briefing/` di
 | **During Work** | `PostToolUse` WebSearch/WebFetch | Auto-collects URLs to `references/auto-links.md` |
 | **During Work** | `SubagentStop` | Logs agent execution to `agents/agent-log.jsonl` |
 | **During Work** | `UserPromptSubmit` (every 5th) | Throttled persona profile update |
-| **Session End** | `Stop` (1st hook) | Auto-generates scaffolds: `sessions/auto.md`, `learnings/auto-session.md`, `decisions/auto.md`, `persona/profile.md` |
-| **Session End** | `Stop` (2nd hook) | **Enforces** AI-written session summary if ≥ 3 file edits — blocks session end with template |
+| **Session End** | `Stop` (1st hook) | Auto-generates scaffolds: `sessions/auto.md`, `learnings/auto-session.md`, `persona/profile.md` |
+| **Session End** | `Stop` (2nd hook) | **Enforces** AI-written session summary on every active conversation — blocks session end with template |
 
 ### Auto-Generated vs AI-Written
 
 | Type | File Pattern | Created By | Content |
 |------|-------------|-----------|---------|
-| **Auto scaffold** | `*-auto.md`, `*-auto-session.md` | Stop hook (Node.js) | Git diff stats, agent usage, commit list — data only |
+| **Auto scaffold** | `*-auto.md`, `*-auto-session.md` | Stop hook (Node.js) | Git diff stats, agent usage — data only (no decisions/auto.md) |
 | **AI summary** | `YYYY-MM-DD-<topic>.md` | AI during session | Meaningful analysis with context, code refs, rationale |
 | **Telemetry** | `agent-log.jsonl`, `auto-links.md` | Hook scripts | Append-only structured logs |
 | **Persona** | `profile.md`, `suggestions.jsonl` | Stop hook | Usage-based agent affinity and routing suggestions |

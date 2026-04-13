@@ -319,14 +319,40 @@ try {
       }
     } catch (e) {}
 
-    // Run git diff --stat HEAD
+    // Run session-specific git diff
     var gitDiffStat = '(no git changes detected)';
     try {
       var spawnSync = require('child_process').spawnSync;
-      var gitResult = spawnSync('git', ['diff', '--stat', 'HEAD'], { timeout: 5000 });
-      if (gitResult.status === 0 && gitResult.stdout) {
-        var gitOut = gitResult.stdout.toString().trim();
-        if (gitOut) gitDiffStat = gitOut;
+      var sessionHead = '';
+      var headFile = path.join(BRIEFING_DIR, '.session-start-head');
+      if (fs.existsSync(headFile)) {
+        sessionHead = fs.readFileSync(headFile, 'utf8').trim();
+      }
+
+      if (sessionHead) {
+        // Session-specific: committed changes since session start
+        var committedResult = spawnSync('git', ['diff', '--stat', sessionHead + '..HEAD'], { timeout: 5000 });
+        var committedOut = '';
+        if (committedResult.status === 0 && committedResult.stdout) {
+          committedOut = committedResult.stdout.toString().trim();
+        }
+        // Plus any uncommitted changes
+        var uncommittedResult = spawnSync('git', ['diff', '--stat'], { timeout: 5000 });
+        var uncommittedOut = '';
+        if (uncommittedResult.status === 0 && uncommittedResult.stdout) {
+          uncommittedOut = uncommittedResult.stdout.toString().trim();
+        }
+        var parts = [];
+        if (committedOut) parts.push('### Committed\n' + committedOut);
+        if (uncommittedOut) parts.push('### Uncommitted\n' + uncommittedOut);
+        if (parts.length > 0) gitDiffStat = parts.join('\n\n');
+      } else {
+        // Fallback: all uncommitted changes
+        var gitResult = spawnSync('git', ['diff', '--stat', 'HEAD'], { timeout: 5000 });
+        if (gitResult.status === 0 && gitResult.stdout) {
+          var gitOut = gitResult.stdout.toString().trim();
+          if (gitOut) gitDiffStat = gitOut;
+        }
       }
     } catch (e) {}
 
@@ -403,17 +429,37 @@ try {
     } catch (e) {}
 
     if (lwc > 0) {
-      // Run git diff --name-only HEAD
+      // Run session-specific git diff --name-only
       var changedFiles = '(no files detected)';
       try {
         var spawnSync2 = require('child_process').spawnSync;
-        var gitFiles = spawnSync2('git', ['diff', '--name-only', 'HEAD'], { timeout: 5000 });
-        if (gitFiles.status === 0 && gitFiles.stdout) {
-          var gitFilesOut = gitFiles.stdout.toString().trim();
-          if (gitFilesOut) {
-            var fileList = gitFilesOut.split('\n');
-            changedFiles = fileList.map(function(f) { return '- ' + f; }).join('\n');
+        var sessionHead2 = '';
+        var headFile2 = path.join(BRIEFING_DIR, '.session-start-head');
+        if (fs.existsSync(headFile2)) {
+          sessionHead2 = fs.readFileSync(headFile2, 'utf8').trim();
+        }
+
+        var fileSet = {};
+        if (sessionHead2) {
+          // Committed files since session start
+          var cf = spawnSync2('git', ['diff', '--name-only', sessionHead2 + '..HEAD'], { timeout: 5000 });
+          if (cf.status === 0 && cf.stdout) {
+            cf.stdout.toString().trim().split('\n').forEach(function(f) { if (f) fileSet[f] = true; });
           }
+        }
+        // Uncommitted files
+        var uf = spawnSync2('git', ['diff', '--name-only'], { timeout: 5000 });
+        if (uf.status === 0 && uf.stdout) {
+          uf.stdout.toString().trim().split('\n').forEach(function(f) { if (f) fileSet[f] = true; });
+        }
+        // Staged files
+        var sf = spawnSync2('git', ['diff', '--name-only', '--cached'], { timeout: 5000 });
+        if (sf.status === 0 && sf.stdout) {
+          sf.stdout.toString().trim().split('\n').forEach(function(f) { if (f) fileSet[f] = true; });
+        }
+        var allFiles = Object.keys(fileSet);
+        if (allFiles.length > 0) {
+          changedFiles = allFiles.map(function(f) { return '- ' + f; }).join('\n');
         }
       } catch (e) {}
 
@@ -497,17 +543,37 @@ try {
         }
       } catch (e) {}
 
-      // Run git diff --name-only HEAD
+      // Run session-specific git diff --name-only
       var decChangedFiles = '(no files detected)';
       try {
         var spawnSync4 = require('child_process').spawnSync;
-        var decGitFiles = spawnSync4('git', ['diff', '--name-only', 'HEAD'], { timeout: 5000 });
-        if (decGitFiles.status === 0 && decGitFiles.stdout) {
-          var decGitFilesOut = decGitFiles.stdout.toString().trim();
-          if (decGitFilesOut) {
-            var decFileList = decGitFilesOut.split('\n');
-            decChangedFiles = decFileList.map(function(f) { return '- ' + f; }).join('\n');
+        var sessionHead4 = '';
+        var headFile4 = path.join(BRIEFING_DIR, '.session-start-head');
+        if (fs.existsSync(headFile4)) {
+          sessionHead4 = fs.readFileSync(headFile4, 'utf8').trim();
+        }
+
+        var decFileSet = {};
+        if (sessionHead4) {
+          // Committed files since session start
+          var dcf = spawnSync4('git', ['diff', '--name-only', sessionHead4 + '..HEAD'], { timeout: 5000 });
+          if (dcf.status === 0 && dcf.stdout) {
+            dcf.stdout.toString().trim().split('\n').forEach(function(f) { if (f) decFileSet[f] = true; });
           }
+        }
+        // Uncommitted files
+        var duf = spawnSync4('git', ['diff', '--name-only'], { timeout: 5000 });
+        if (duf.status === 0 && duf.stdout) {
+          duf.stdout.toString().trim().split('\n').forEach(function(f) { if (f) decFileSet[f] = true; });
+        }
+        // Staged files
+        var dsf = spawnSync4('git', ['diff', '--name-only', '--cached'], { timeout: 5000 });
+        if (dsf.status === 0 && dsf.stdout) {
+          dsf.stdout.toString().trim().split('\n').forEach(function(f) { if (f) decFileSet[f] = true; });
+        }
+        var decAllFiles = Object.keys(decFileSet);
+        if (decAllFiles.length > 0) {
+          decChangedFiles = decAllFiles.map(function(f) { return '- ' + f; }).join('\n');
         }
       } catch (e) {}
 

@@ -1008,6 +1008,10 @@ if [ -f "$REPO_ROOT/hooks/stop-profile-update.js" ]; then
   cp "$REPO_ROOT/hooks/stop-profile-update.js" "$CODEX_ROOT/hooks/stop-profile-update.js"
   add_manifest_entry "hooks/stop-profile-update.js"
 fi
+if [ -f "$REPO_ROOT/hooks/stop-session-enforcement.js" ]; then
+  cp "$REPO_ROOT/hooks/stop-session-enforcement.js" "$CODEX_ROOT/hooks/stop-session-enforcement.js"
+  add_manifest_entry "hooks/stop-session-enforcement.js"
+fi
 if [ -f "$REPO_ROOT/hooks/persona-rule.js" ]; then
   cp "$REPO_ROOT/hooks/persona-rule.js" "$CODEX_ROOT/hooks/persona-rule.js"
   add_manifest_entry "hooks/persona-rule.js"

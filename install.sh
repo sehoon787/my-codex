@@ -1244,10 +1244,15 @@ chmod +x "$CODEX_ROOT/lib/codex-attribution.sh" \
 git config --global my-codex.codexAttribution true
 
 CURRENT_HOOKS_PATH="$(git config --global core.hooksPath 2>/dev/null || true)"
-if [ -n "$CURRENT_HOOKS_PATH" ] && [ "$CURRENT_HOOKS_PATH" != "$CODEX_ROOT/git-hooks" ]; then
+HOOKS_DIR="$CODEX_ROOT/git-hooks"
+# On Windows (MSYS/Cygwin), convert to native path to avoid git old-style path warnings
+case "$(uname -s)" in
+  MINGW*|MSYS*|CYGWIN*) HOOKS_DIR="$(cygpath -m "$HOOKS_DIR" 2>/dev/null || echo "$HOOKS_DIR")" ;;
+esac
+if [ -n "$CURRENT_HOOKS_PATH" ] && [ "$CURRENT_HOOKS_PATH" != "$HOOKS_DIR" ]; then
   git config --global my-codex.previousHooksPath "$CURRENT_HOOKS_PATH"
 fi
-git config --global core.hooksPath "$CODEX_ROOT/git-hooks"
+git config --global core.hooksPath "$HOOKS_DIR"
 
 for shell_rc in "$HOME/.zshrc" "$HOME/.bashrc"; do
   touch "$shell_rc"

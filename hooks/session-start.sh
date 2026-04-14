@@ -259,8 +259,52 @@ if [ "$_vc_today" != "$_vc_last" ]; then
   if [ -n "$_vc_installed_sha" ]; then
     _vc_remote_sha=$(git ls-remote https://github.com/sehoon787/my-claude.git HEAD 2>/dev/null | cut -f1 | head -c 12)
     if [ -n "$_vc_remote_sha" ] && [ "${_vc_installed_sha}" != "${_vc_remote_sha}" ]; then
-      _vc_current=$(cat "$HOME/.claude/.my-claude-version" 2>/dev/null || echo "unknown")
-      _update_msg="[UpdateCheck] my-claude update available (installed: v${_vc_current}). Run: cd <my-claude-repo> && bash install.sh"
+      # Auto-update hooks/scripts only (lightweight, <5s)
+      _repo_dir=""
+      if [ -f "$HOME/.codex/.my-codex-manifest" ]; then
+        _repo_dir=$(head -1 "$HOME/.codex/.my-codex-manifest" 2>/dev/null | grep -o '/.*my-codex' | head -1)
+      fi
+      # Fallback: check common locations
+      if [ -z "$_repo_dir" ] || [ ! -d "$_repo_dir" ]; then
+        for _candidate in "$HOME/Desktop/proj/my-codex" "$HOME/projects/my-codex" "$HOME/my-codex"; do
+          if [ -d "$_candidate/.git" ] && [ -f "$_candidate/hooks/hooks.json" ]; then
+            _repo_dir="$_candidate"
+            break
+          fi
+        done
+      fi
+
+      if [ -n "$_repo_dir" ] && [ -d "$_repo_dir/.git" ]; then
+        # Pull latest (fast-forward only, non-blocking)
+        _pull_result=$(cd "$_repo_dir" && git pull --ff-only 2>&1) || true
+
+        # Copy hooks and scripts
+        if [ -d "$_repo_dir/hooks" ]; then
+          cp "$_repo_dir/hooks/hooks.json" "$HOME/.codex/hooks/hooks.json" 2>/dev/null || true
+          for _hf in "$_repo_dir/hooks/"*.js; do
+            [ -f "$_hf" ] && cp "$_hf" "$HOME/.codex/hooks/" 2>/dev/null || true
+          done
+          for _hf in "$_repo_dir/hooks/"*.sh; do
+            [ -f "$_hf" ] && cp "$_hf" "$HOME/.codex/hooks/" 2>/dev/null || true
+          done
+        fi
+
+        # Merge hooks into settings.json
+        if [ -f "$_repo_dir/scripts/merge-hooks.js" ]; then
+          node "$_repo_dir/scripts/merge-hooks.js" "$HOME/.codex/hooks/hooks.json" 2>/dev/null || true
+        fi
+
+        # Update installed SHA
+        _new_sha=$(cd "$_repo_dir" && git rev-parse --short=12 HEAD 2>/dev/null)
+        if [ -n "$_new_sha" ]; then
+          echo "$_new_sha" > "$HOME/.codex/.my-codex-installed-sha"
+        fi
+
+        _update_msg="[UpdateCheck] my-codex hooks auto-updated (${_vc_installed_sha} → ${_new_sha:-unknown})"
+      else
+        _vc_current=$(cat "$HOME/.codex/.my-codex-version" 2>/dev/null || echo "unknown")
+        _update_msg="[UpdateCheck] my-codex update available (installed: v${_vc_current}). Run: cd <my-codex-repo> && bash install.sh"
+      fi
     fi
     echo "$_vc_today" > "$_vc_stamp" 2>/dev/null || true
   fi

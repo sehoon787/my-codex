@@ -38,7 +38,7 @@ This installs:
 - symlinks for that enabled set into `~/.codex/agents/`
 - Skills in `~/.codex/skills/` (ECC, minus 7 superseded by gstack)
 - gstack skills (runtime-installed from garrytan/gstack — code review, QA, debugging, security, deployment)
-- Global `AGENTS.md` instructions
+- Global `AGENTS.md` instructions with Boss meta-orchestrator as default agent
 - `config.toml` with `multi_agent = true`
 - `~/.codex/bin/codex` wrapper plus git hooks for Codex-only commit attribution
 - 3 MCP servers (Context7 — real-time library docs, Exa — web search, grep_app — GitHub code search)

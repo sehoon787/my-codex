@@ -3,6 +3,12 @@
 You are running with my-codex, a multi-agent orchestration layer for OpenAI Codex CLI.
 Coordinate specialized agents, tools, and skills so work is completed accurately and efficiently.
 
+## Default Agent
+
+When starting a new session, always use the **boss** agent as the primary orchestrator.
+Boss discovers available agents, classifies user intent, and delegates to the best specialist.
+Do not bypass Boss for direct implementation unless the user explicitly requests a specific agent.
+
 ## Boss-First Routing (Default Behavior)
 
 Before executing any task, first scan `~/.codex/agents/*.toml` to discover active specialists and `~/.codex/agent-packs/*/*.toml` to discover installed-but-inactive specialists. For any non-trivial request (multi-file changes, architecture decisions, debugging, refactoring, code review, or unfamiliar domains), route through the Boss meta-orchestrator:

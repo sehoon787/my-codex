@@ -435,21 +435,7 @@ try {
   var LEARNINGS_DIR = path.join(BRIEFING_DIR, 'learnings');
   fs.mkdirSync(LEARNINGS_DIR, { recursive: true });
 
-  // Skip if any learning file was modified today
-  var learningFiles = fs.readdirSync(LEARNINGS_DIR);
-  var learningExistsToday = false;
-  for (var i = 0; i < learningFiles.length; i++) {
-    if (learningFiles[i].indexOf('-auto-session') !== -1) continue;
-    try {
-      var lStat = fs.statSync(path.join(LEARNINGS_DIR, learningFiles[i]));
-      if (lStat.mtime.toISOString().slice(0, 10) === todayStr) {
-        learningExistsToday = true;
-        break;
-      }
-    } catch (e) {}
-  }
-
-  if (!learningExistsToday) {
+  {
     // Read work counter — skip if no meaningful work
     var lwc = 0;
     try {

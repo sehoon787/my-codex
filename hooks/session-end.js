@@ -11,6 +11,8 @@ const cp = require('child_process');
 
 const BRIEFING_DIR = '.briefing';
 const INDEX_FILE = path.join(BRIEFING_DIR, 'INDEX.md');
+const SESSION_START_STATUS_FILE = path.join(BRIEFING_DIR, '.session-start-status');
+const SESSION_HOOK_NOISE_FILE = path.join(BRIEFING_DIR, '.session-hook-noise');
 
 function exists(filePath) {
   try {
@@ -54,6 +56,17 @@ function run(command, args) {
   }
 }
 
+function runRaw(command, args) {
+  try {
+    return cp.execFileSync(command, args, {
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'ignore']
+    });
+  } catch {
+    return '';
+  }
+}
+
 function tryParseJson(text) {
   if (!text || !text.trim()) return null;
   try {
@@ -83,30 +96,142 @@ function gitPath(relativePath) {
   return run('git', ['rev-parse', '--git-path', relativePath]);
 }
 
+function normalizeRepoPath(filePath) {
+  return (filePath || '')
+    .replace(/^\uFEFF/, '')
+    .replace(/\\/g, '/')
+    .replace(/^\.\//, '')
+    .trim();
+}
+
+function parseStatusOutput(output) {
+  if (!output) return [];
+
+  return output.split(/\r?\n/)
+    .map((line) => line.trimEnd())
+    .filter(Boolean)
+    .map((line) => {
+      const rawStatus = line.slice(0, 2);
+      let filePath = line.slice(3).trim();
+      if (filePath.includes(' -> ')) {
+        filePath = filePath.slice(filePath.lastIndexOf(' -> ') + 4);
+      }
+
+      return {
+        path: normalizeRepoPath(filePath),
+        status: rawStatus,
+        line
+      };
+    })
+    .filter((record) => record.path);
+}
+
+function readHookNoisePaths() {
+  return new Set(
+    readText(SESSION_HOOK_NOISE_FILE)
+      .split(/\r?\n/)
+      .map((line) => normalizeRepoPath(line))
+      .filter(Boolean)
+  );
+}
+
+function isBriefingArtifact(filePath) {
+  return filePath === BRIEFING_DIR || filePath.startsWith(`${BRIEFING_DIR}/`);
+}
+
+function shouldIgnoreSessionPath(filePath, noisePaths) {
+  const normalized = normalizeRepoPath(filePath);
+  return !normalized ||
+    normalized === '.gitignore' ||
+    isBriefingArtifact(normalized) ||
+    noisePaths.has(normalized);
+}
+
+function uniquePaths(paths) {
+  return Array.from(new Set(paths.map((filePath) => normalizeRepoPath(filePath)).filter(Boolean))).sort();
+}
+
 function sessionChangedFiles() {
   const stateDir = gitPath('my-codex-attribution');
   if (!stateDir) return [];
   const changedPath = path.join(stateDir, 'changed-files.txt');
   if (!exists(changedPath)) return [];
-  return readText(changedPath)
+  return uniquePaths(readText(changedPath)
     .split(/\r?\n/)
     .map((line) => line.trim())
-    .filter(Boolean);
+    .filter(Boolean));
 }
 
-function gitStatusLines() {
-  const output = run('git', ['status', '--short']);
-  if (!output) return [];
-  return output.split(/\r?\n/).filter(Boolean);
+function readStatusSnapshot() {
+  return parseStatusOutput(readText(SESSION_START_STATUS_FILE));
 }
 
-function gitDiffSummary(baseRef) {
-  if (!baseRef) return [];
-  const output = run('git', ['diff', '--shortstat', `${baseRef}..HEAD`]);
-  return output ? [output] : [];
+function gitStatusRecords(paths) {
+  const args = ['status', '--short', '--untracked-files=all'];
+  if (paths.length > 0) {
+    args.push('--', ...paths);
+  }
+  return parseStatusOutput(runRaw('git', args));
 }
 
-function todayAgentLines(agentLogPath, today) {
+function fallbackChangedFilesFromStatus(startRecords, endRecords, noisePaths) {
+  const startMap = new Map(startRecords.map((record) => [record.path, record.line]));
+  const endMap = new Map(endRecords.map((record) => [record.path, record.line]));
+  const changed = [];
+
+  Array.from(new Set([...startMap.keys(), ...endMap.keys()]))
+    .sort()
+    .forEach((filePath) => {
+      if (shouldIgnoreSessionPath(filePath, noisePaths)) return;
+      if ((startMap.get(filePath) || '') !== (endMap.get(filePath) || '')) {
+        changed.push(filePath);
+      }
+    });
+
+  return changed;
+}
+
+function gitTrackedDiffSummary(baseRef, paths) {
+  if (paths.length === 0) return '';
+  const args = baseRef
+    ? ['diff', '--shortstat', baseRef, '--', ...paths]
+    : ['diff', '--shortstat', '--', ...paths];
+  return run('git', args);
+}
+
+function endStatusLines(records) {
+  if (records.length === 0) {
+    return ['- clean at session end for recorded files'];
+  }
+  return records.map((record) => `- ${record.line.trimStart()}`);
+}
+
+function sessionDiffLines(baseRef, paths, statusRecords) {
+  if (paths.length === 0) {
+    return ['- no files recorded for this Codex session'];
+  }
+
+  const summary = [];
+  const trackedDiff = gitTrackedDiffSummary(baseRef, paths);
+  if (trackedDiff) {
+    summary.push(`- tracked diff vs ${baseRef ? 'session-start HEAD' : 'current HEAD'} for recorded files: ${trackedDiff}`);
+  }
+
+  const untrackedPaths = statusRecords
+    .filter((record) => record.status === '??')
+    .map((record) => record.path);
+  if (untrackedPaths.length > 0) {
+    summary.push(`- untracked files recorded this session: ${untrackedPaths.join(', ')}`);
+  }
+
+  if (summary.length === 0) {
+    summary.push(`- recorded files match ${baseRef ? 'session-start HEAD' : 'current HEAD'} at session end`);
+  }
+
+  return summary;
+}
+
+function todaySignalLines(agentLogPath, today) {
   if (!exists(agentLogPath)) return [];
   const counts = {};
   readText(agentLogPath).split(/\r?\n/).forEach((line) => {
@@ -118,7 +243,17 @@ function todayAgentLines(agentLogPath, today) {
 
   return Object.keys(counts)
     .sort()
-    .map((name) => `- ${name}: ${counts[name]} calls`);
+    .map((name) => {
+      const count = counts[name];
+      const suffix = count === 1 ? 'event' : 'events';
+      if (name === 'wrapper') {
+        return `- wrapper-managed session stop: ${count} logged ${suffix}`;
+      }
+      if (name === 'throttled-update') {
+        return `- throttled profile update: ${count} logged ${suffix}`;
+      }
+      return `- ${name}: ${count} logged ${suffix}`;
+    });
 }
 
 function appendWrapperAgentEvent(agentLogPath, payload) {
@@ -145,20 +280,17 @@ function appendWrapperAgentEvent(agentLogPath, payload) {
   return changed;
 }
 
-function sessionAutoContent(today, baseRef, changedFiles, statusLines, agentLines, enforcementReason) {
-  const diffLines = gitDiffSummary(baseRef);
+function sessionAutoContent(today, baseRef, changedFiles, statusRecords, statusLines, signalLines, enforcementReason) {
   const changedSection = changedFiles.length > 0
     ? changedFiles.map((file) => `- ${file}`).join('\n')
     : '- (no files recorded for this Codex session)';
   const statusSection = statusLines.length > 0
-    ? statusLines.map((line) => `- ${line}`).join('\n')
-    : '- working tree clean at session end';
-  const diffSection = diffLines.length > 0
-    ? diffLines.map((line) => `- ${line}`).join('\n')
-    : '- no committed diff since session start';
-  const agentSection = agentLines.length > 0
-    ? agentLines.join('\n')
-    : '- wrapper: 1 call';
+    ? statusLines.join('\n')
+    : '- clean at session end for recorded files';
+  const diffSection = sessionDiffLines(baseRef, changedFiles, statusRecords).join('\n');
+  const signalSection = signalLines.length > 0
+    ? signalLines.join('\n')
+    : '- wrapper-managed session stop: 1 logged event';
   const followUp = enforcementReason
     ? `## Follow-Up Required\n${enforcementReason}\n`
     : '## Follow-Up Required\n- Write a human-readable session summary in `.briefing/sessions/YYYY-MM-DD-<topic>.md`.\n';
@@ -174,21 +306,24 @@ function sessionAutoContent(today, baseRef, changedFiles, statusLines, agentLine
     `${diffSection}\n\n` +
     `## Files Recorded This Session\n` +
     `${changedSection}\n\n` +
-    `## Working Tree Snapshot\n` +
+    `## End-of-Session Status For Recorded Files\n` +
     `${statusSection}\n\n` +
-    `## Agent Activity\n` +
-    `${agentSection}\n\n` +
+    `## Logged Session Signals\n` +
+    `${signalSection}\n\n` +
     `${followUp}`
   );
 }
 
-function learningAutoContent(today, changedFiles, statusLines) {
+function learningAutoContent(today, changedFiles, statusLines, signalLines) {
   const changedSection = changedFiles.length > 0
     ? changedFiles.map((file) => `- ${file}`).join('\n')
     : '- (no files recorded for this Codex session)';
   const statusSection = statusLines.length > 0
-    ? statusLines.map((line) => `- ${line}`).join('\n')
-    : '- working tree clean at session end';
+    ? statusLines.join('\n')
+    : '- clean at session end for recorded files';
+  const signalSection = signalLines.length > 0
+    ? signalLines.join('\n')
+    : '- wrapper-managed session stop: 1 logged event';
 
   return (
     `---\n` +
@@ -199,8 +334,10 @@ function learningAutoContent(today, changedFiles, statusLines) {
     `# Learning Scaffold: ${today}\n\n` +
     `## Candidate Files To Review\n` +
     `${changedSection}\n\n` +
-    `## Working Tree Snapshot\n` +
+    `## End-of-Session Status For Recorded Files\n` +
     `${statusSection}\n\n` +
+    `## Logged Session Signals\n` +
+    `${signalSection}\n\n` +
     `## Candidate Learnings\n` +
     `- Non-obvious behavior encountered:\n` +
     `- Fixes or patterns worth reusing:\n` +
@@ -241,16 +378,25 @@ const baseRef = readText(sessionHeadPath).trim();
 const rawInput = readStdin();
 const payload = tryParseJson(rawInput);
 const agentLogPath = path.join(BRIEFING_DIR, 'agents', 'agent-log.jsonl');
+const noisePaths = readHookNoisePaths();
+const startStatusRecords = readStatusSnapshot();
 
-const changedFiles = appendWrapperAgentEvent(agentLogPath, payload);
-const statusLines = gitStatusLines();
-const preProfileAgentLines = todayAgentLines(agentLogPath, today);
+const appendedChangedFiles = appendWrapperAgentEvent(agentLogPath, payload);
+const endStatusSnapshot = gitStatusRecords([]);
+const changedFiles = uniquePaths(
+  appendedChangedFiles
+    .filter((filePath) => !shouldIgnoreSessionPath(filePath, noisePaths))
+    .concat(fallbackChangedFilesFromStatus(startStatusRecords, endStatusSnapshot, noisePaths))
+);
+const statusRecords = gitStatusRecords(changedFiles);
+const statusLines = endStatusLines(statusRecords);
+const preProfileSignalLines = todaySignalLines(agentLogPath, today);
 
 const sessionAutoPath = path.join(BRIEFING_DIR, 'sessions', `${today}-auto.md`);
 const learningAutoPath = path.join(BRIEFING_DIR, 'learnings', `${today}-auto-session.md`);
 
-writeText(sessionAutoPath, sessionAutoContent(today, baseRef, changedFiles, statusLines, preProfileAgentLines, ''));
-writeText(learningAutoPath, learningAutoContent(today, changedFiles, statusLines));
+writeText(sessionAutoPath, sessionAutoContent(today, baseRef, changedFiles, statusRecords, statusLines, preProfileSignalLines, ''));
+writeText(learningAutoPath, learningAutoContent(today, changedFiles, statusLines, preProfileSignalLines));
 
 runNodeHook('stop-profile-update.js', payload || {
   agent_id: 'codex-wrapper-stop',
@@ -263,11 +409,15 @@ const enforcementOutput = runNodeHook('stop-session-enforcement.js', payload || 
 });
 const enforcement = tryParseJson(enforcementOutput);
 const enforcementReason = enforcement && enforcement.reason ? `- ${enforcement.reason}` : '';
-const postProfileAgentLines = todayAgentLines(agentLogPath, today);
+const postProfileSignalLines = todaySignalLines(agentLogPath, today);
 
 writeText(
   sessionAutoPath,
-  sessionAutoContent(today, baseRef, changedFiles, statusLines, postProfileAgentLines, enforcementReason)
+  sessionAutoContent(today, baseRef, changedFiles, statusRecords, statusLines, postProfileSignalLines, enforcementReason)
+);
+writeText(
+  learningAutoPath,
+  learningAutoContent(today, changedFiles, statusLines, postProfileSignalLines)
 );
 
 if (enforcementReason) {

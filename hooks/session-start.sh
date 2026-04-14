@@ -133,10 +133,13 @@ fi
 # 6. Briefing Vault Auto-Create + Context
 _kv_msg=""
 _kv_dir=".briefing"
+_session_noise_file="$_kv_dir/.session-hook-noise"
 if [ ! -f "$_kv_dir/INDEX.md" ]; then
   mkdir -p "$_kv_dir/sessions" "$_kv_dir/decisions" "$_kv_dir/learnings" "$_kv_dir/agents" "$_kv_dir/references" "$_kv_dir/persona/rules" "$_kv_dir/persona/skills"
+  : > "$_session_noise_file"
   # Save git HEAD for session-specific diff at Stop
   git rev-parse HEAD 2>/dev/null > "$_kv_dir/.session-start-head" || true
+  git status --porcelain=v1 --untracked-files=all 2>/dev/null > "$_kv_dir/.session-start-status" || true
   # Reset session-specific counters
   echo "0" > "$_kv_dir/.session-message-count" 2>/dev/null || true
   _proj_name=$(basename "$(pwd)")
@@ -168,13 +171,17 @@ Project knowledge base. Auto-created by SessionStart hook.
 KVEOF
   if [ -f ".gitignore" ] && ! grep -q '\.briefing/' ".gitignore" 2>/dev/null; then
     echo '.briefing/' >> ".gitignore"
+    echo '.gitignore' >> "$_session_noise_file"
   elif [ ! -f ".gitignore" ]; then
     echo '.briefing/' > ".gitignore"
+    echo '.gitignore' >> "$_session_noise_file"
   fi
   _kv_msg="[BriefingVault] Auto-created .briefing/ structure. Log decisions, learnings, sessions per rules/common/briefing-vault.md."
 else
+  : > "$_session_noise_file"
   # Save git HEAD for session-specific diff at Stop
   git rev-parse HEAD 2>/dev/null > "$_kv_dir/.session-start-head" || true
+  git status --porcelain=v1 --untracked-files=all 2>/dev/null > "$_kv_dir/.session-start-status" || true
   # Reset session-specific counters
   echo "0" > "$_kv_dir/.session-message-count" 2>/dev/null || true
   # Add language field to INDEX.md if missing

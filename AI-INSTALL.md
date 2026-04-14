@@ -41,13 +41,17 @@ This installs:
 - Global `AGENTS.md` instructions with Boss meta-orchestrator as default agent
 - `config.toml` with `multi_agent = true`
 - `~/.codex/bin/codex` wrapper plus git hooks for Codex-only commit attribution
-- wrapper-managed Briefing Vault synthesis for Codex sessions (`session-start.sh` + `session-end.js`)
+- wrapper-managed Briefing Vault synthesis for Codex sessions (`session-start.sh` + `session-end.js`, including session and learning auto scaffolds)
 - 3 MCP servers (Context7 — real-time library docs, Exa — web search, grep_app — GitHub code search)
 
 Why the numbers are lower than raw source totals:
 - Several upstream sources ship the same destination filename.
 - `install.sh` merges those sources into `~/.codex/agents/` and category folders under `~/.codex/agent-packs/`.
 - When filenames overlap, later copies replace earlier ones. The final installed counts above are the correct verification target.
+
+Briefing Vault note:
+- `sessions/*-auto.md` and `learnings/*-auto-session.md` are auto-generated scaffolds.
+- Follow-up summaries, decisions, and learning notes are still written by the human or agent during/after the session.
 
 ## Step 1b: Manual install (if install.sh unavailable)
 
@@ -201,6 +205,7 @@ Setup complete. Multi-agent orchestration is ready.
 
 Windows note:
 - `install.sh` patches the npm-managed `codex`, `codex.cmd`, and `codex.ps1` shims when present. This keeps the my-codex vault pipeline active even when `%APPDATA%\\npm` resolves before `~/.codex/bin`.
+- The Codex wrapper writes lightweight wrapper/session signals into `.briefing/agents/`; it does not claim Claude-style per-tool native hook telemetry.
 - Reading `AI-INSTALL.md` does not install anything. Use `install.sh` for unattended agent setup.
 
 ## Codex Attribution Defaults

@@ -345,20 +345,20 @@ Obsidian-compatible persistent memory. Every project maintains a `.briefing/` di
 .briefing/
 ├── INDEX.md                          ← Project context (auto-created once)
 ├── sessions/
-│   ├── YYYY-MM-DD-<topic>.md        ← AI-written session summary (enforced)
-│   └── YYYY-MM-DD-auto.md           ← Auto-generated scaffold (git diff, agent stats)
+│   ├── YYYY-MM-DD-<topic>.md        ← Human/agent-written follow-up session summary
+│   └── YYYY-MM-DD-auto.md           ← Auto-generated scaffold (recorded files, filtered status, follow-up)
 ├── decisions/
-│   └── YYYY-MM-DD-<decision>.md     ← AI-written decision record (enforced)
+│   └── YYYY-MM-DD-<decision>.md     ← Human/agent-written decision record
 ├── learnings/
-│   ├── YYYY-MM-DD-<pattern>.md      ← AI-written learning note
-│   └── YYYY-MM-DD-auto-session.md   ← Auto-generated scaffold (agents, files)
+│   ├── YYYY-MM-DD-<pattern>.md      ← Human/agent-written learning note
+│   └── YYYY-MM-DD-auto-session.md   ← Auto-generated scaffold (files, wrapper activity, prompts)
 ├── references/
-│   └── auto-links.md                ← Auto-collected URLs from web searches
+│   └── auto-links.md                ← Reserved for collected research links
 ├── agents/
-│   ├── agent-log.jsonl              ← Subagent execution telemetry
-│   └── YYYY-MM-DD-summary.md        ← Daily agent usage breakdown
+│   ├── agent-log.jsonl              ← Wrapper/session log
+│   └── YYYY-MM-DD-summary.md        ← Daily logged-signal breakdown
 └── persona/
-    ├── profile.md                   ← Agent affinity stats (auto-updated)
+    ├── profile.md                   ← Routing/profile summary from logged signals
     ├── suggestions.jsonl            ← Routing suggestions (auto-generated)
     ├── rules/                       ← Accepted routing preferences
     └── skills/                      ← Accepted persona skills
@@ -369,23 +369,25 @@ Obsidian-compatible persistent memory. Every project maintains a `.briefing/` di
 | Path | Description |
 |------|-------------|
 | `INDEX.md` | Project overview with links to recent decisions and learnings. Auto-created on first session, refreshed periodically. |
-| `sessions/` | **Session summaries.** `*-auto.md` — auto-generated scaffold at session end with git status, recorded changed files, and follow-up reminders. `<topic>.md` — human or agent-written session summary prompted by the vault reminders. |
-| `decisions/` | **Architecture and design decisions** with rationale. AI-written, enforced during active work. |
-| `learnings/` | **Patterns, gotchas, non-obvious solutions.** `*-auto-session.md` — auto-generated scaffold with the session's recorded file list. `<topic>.md` — human or agent-written learning note. |
-| `references/` | **Web research URLs.** `auto-links.md` — auto-collected from WebSearch/WebFetch calls. |
-| `agents/` | **Agent telemetry.** `agent-log.jsonl` — per-call log. `YYYY-MM-DD-summary.md` — daily usage breakdown. |
-| `persona/` | **User work style profile.** `profile.md` — tool affinity stats. `suggestions.jsonl` — routing recommendations. `rules/`, `skills/` — accepted preferences. |
+| `sessions/` | **Session summaries.** `*-auto.md` — auto-generated scaffold at session end with recorded session files, a filtered end-of-session status snapshot, logged wrapper/session signals, and follow-up reminders. `<topic>.md` — human or agent-written follow-up session summary prompted by the vault reminders. |
+| `decisions/` | **Architecture and design decisions** with rationale. Write these as durable notes when a decision is important enough to keep. |
+| `learnings/` | **Patterns, gotchas, non-obvious solutions.** `*-auto-session.md` — auto-generated scaffold with the session's recorded file list, logged wrapper/session signals, and prompts for follow-up notes. `<topic>.md` — human or agent-written learning note. |
+| `references/` | **Web research URLs.** `references/` is available for saved links and notes. The current Codex wrapper flow does not auto-populate `auto-links.md`. |
+| `agents/` | **Logged session signals.** `agent-log.jsonl` — wrapper/session log plus any richer hook payloads that are available. `YYYY-MM-DD-summary.md` — daily logged-signal breakdown derived from that log. |
+| `persona/` | **User work style profile.** `profile.md` — routing/profile summary derived from logged signals. `suggestions.jsonl` — routing recommendations. `rules/`, `skills/` — accepted preferences. |
 
 ### Session-Specific Diffs
 
-At session start, the current git HEAD is saved to `.briefing/.session-start-head`. At session end, diffs are calculated relative to this saved point — showing only changes from the current session, not accumulated uncommitted changes from previous sessions.
+At session start, my-codex saves the current git HEAD and a snapshot of the working tree state. During the session, the wrapper records which repo paths actually changed. At session end, the auto scaffold summarizes diff and status only for those recorded paths, while filtering hook-created noise such as `.briefing/` artifacts and session-start `.gitignore` edits.
+
+This keeps the scaffold focused on session-owned work instead of dumping the entire repository status.
 
 ### Using with Obsidian
 
 1. Open Obsidian → **Open folder as vault** → select `.briefing/`
 2. Notes appear in graph view, linked by `[[wiki-links]]`
 3. YAML frontmatter (`date`, `type`, `tags`) enables structured search
-4. Timeline of decisions and learnings builds automatically over sessions
+4. Timeline scaffolds for sessions and learnings build automatically; follow-up summaries, decisions, and learning notes accumulate as you write them
 
 ---
 
@@ -429,7 +431,7 @@ Features built specifically for this project, beyond what upstream sources provi
 | **3-Phase Sprint** | Design (interactive) → Execute (autonomous via executor) → Review (interactive vs design doc) |
 | **Agent Tier Priority** | core > omo > omc > awesome-core deduplication. Most specialized agent wins. |
 | **Cost Optimization** | o4-mini for advisory, o3 for implementation — automatic model routing for 330+ agents |
-| **Agent Telemetry** | PostToolUse hook logs agent usage to `agent-usage.jsonl` |
+| **Briefing Signals** | Wrapper/session logging feeds `.briefing/agents/agent-log.jsonl`, daily summaries, and routing/profile hints |
 | **Smart Packs** | Project-type detection recommends relevant agent packs at session start |
 | **Agent Pack System** | On-demand domain specialist activation via `--profile` and `my-codex-packs` helper |
 | **Codex Attribution** | git hooks record Codex-touched files and append `AI-Contributed-By: Codex` to commit messages |

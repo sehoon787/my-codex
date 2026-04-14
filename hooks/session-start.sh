@@ -279,6 +279,11 @@ if [ "$_vc_today" != "$_vc_last" ]; then
           done
         fi
 
+        # Refresh AGENTS.md (Boss default agent instructions)
+        if [ -f "$_repo_dir/templates/codex-AGENTS.md" ] && [ -f "$HOME/.codex/AGENTS.md" ]; then
+          cp "$_repo_dir/templates/codex-AGENTS.md" "$HOME/.codex/AGENTS.md" 2>/dev/null || true
+        fi
+
         # Merge hooks into settings.json
         if [ -f "$_repo_dir/scripts/merge-hooks.js" ]; then
           node "$_repo_dir/scripts/merge-hooks.js" "$HOME/.codex/hooks/hooks.json" 2>/dev/null || true

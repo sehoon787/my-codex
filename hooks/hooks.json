@@ -5,12 +5,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"$HOME/.claude/scripts/validate-hooks.js\"",
-            "timeout": 5000
-          },
-          {
-            "type": "command",
-            "command": "bash \"$HOME/.claude/hooks/session-start.sh\"",
+            "command": "bash \"$HOME/.codex/hooks/session-start.sh\"",
             "timeout": 30000
           }
         ]
@@ -105,14 +100,14 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"$HOME/.claude/hooks/stop-profile-update.js\"",
+            "command": "node \"$HOME/.codex/hooks/stop-profile-update.js\"",
             "timeout": 30000,
             "description": "Persona vault: auto-update profile.md, suggestions.jsonl, and agents/YYYY-MM-DD-summary.md (writes files only, no stdout)"
           },
           {
             "type": "command",
-            "command": "node \"$HOME/.claude/hooks/stop-session-enforcement.js\"",
-            "timeout": 5000,
+            "command": "node \"$HOME/.codex/hooks/stop-session-enforcement.js\"",
+            "timeout": 30000,
             "description": "BriefingVault: auto-create session summary and learnings if missing at session end"
           }
         ]
@@ -123,7 +118,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node -e \"const fs=require('fs');const cp=require('child_process');try{if(!fs.existsSync('.briefing/INDEX.md')){process.exit(0)}const counterFile='.briefing/.profile-update-counter';let counter=0;if(fs.existsSync(counterFile)){counter=parseInt(fs.readFileSync(counterFile,'utf8').trim(),10)||0}const smcFile='.briefing/.session-message-count';let smc='1';try{smc=fs.readFileSync(smcFile,'utf8').trim()}catch(e){}counter++;if(smc==='0'||counter>=5){fs.writeFileSync(counterFile,counter>=5?'0':String(counter));const stub=JSON.stringify({agent_id:'user-prompt-submit',agent_type:'throttled-update'});cp.spawnSync(process.execPath,[(process.env.HOME||process.env.USERPROFILE)+'/.claude/hooks/stop-profile-update.js'],{input:stub,stdio:['pipe','ignore','ignore'],timeout:9000})}else{fs.writeFileSync(counterFile,String(counter))}}catch(e){process.exit(0)}\"",
+            "command": "node -e \"const fs=require('fs');const cp=require('child_process');try{if(!fs.existsSync('.briefing/INDEX.md')){process.exit(0)}const counterFile='.briefing/.profile-update-counter';let counter=0;if(fs.existsSync(counterFile)){counter=parseInt(fs.readFileSync(counterFile,'utf8').trim(),10)||0}const smcFile='.briefing/.session-message-count';let smc='1';try{smc=fs.readFileSync(smcFile,'utf8').trim()}catch(e){}counter++;if(smc==='0'||counter>=5){fs.writeFileSync(counterFile,counter>=5?'0':String(counter));const stub=JSON.stringify({agent_id:'user-prompt-submit',agent_type:'throttled-update'});cp.spawnSync(process.execPath,[(process.env.HOME||process.env.USERPROFILE)+'/.codex/hooks/stop-profile-update.js'],{input:stub,stdio:['pipe','ignore','ignore'],timeout:9000})}else{fs.writeFileSync(counterFile,String(counter))}}catch(e){process.exit(0)}\"",
             "timeout": 10000,
             "description": "Persona vault: throttled mid-session update (every 5 user messages) for profile.md, suggestions.jsonl, agents/YYYY-MM-DD-summary.md"
           },

@@ -1,7 +1,10 @@
 #!/usr/bin/env node
-// Stop hook: auto-create session summary and learnings if missing.
+// Stop hook: enforce meaningful session summary and learnings.
+// Blocks session end if work was done but no proper session summary exists.
 // Runs AFTER stop-profile-update.js which generates the auto-gen scaffold.
 'use strict';
+
+try {
 
 var fs = require('fs');
 var path = require('path');
@@ -18,7 +21,7 @@ if (!fs.existsSync(INDEX_FILE)) {
 
 var todayStr = new Date().toISOString().slice(0, 10);
 
-// Check session activity
+// --- Check session activity ---
 var workCounter = 0;
 try {
   var wcPath = path.join(BRIEFING_DIR, '.work-counter');
@@ -65,7 +68,7 @@ if (workCounter === 0 && !hasAgentActivity && !hasUserMessages && !hasMessageCou
   process.exit(0);
 }
 
-// Detect project language from INDEX.md
+// --- Detect project language from INDEX.md ---
 var lang = 'en';
 try {
   var indexContent = fs.readFileSync(INDEX_FILE, 'utf8');
@@ -75,7 +78,9 @@ try {
   }
 } catch (e) {}
 
-// Check for proper (non-auto) session summary for today
+var isKo = (lang === 'ko' || lang === 'kr');
+
+// --- Check for proper (non-auto) session summary for today ---
 var hasProperSummary = false;
 try {
   if (fs.existsSync(SESSIONS_DIR)) {
@@ -89,18 +94,7 @@ try {
   }
 } catch (e) {}
 
-// Promote auto scaffold to proper session file if missing
-if (!hasProperSummary) {
-  try {
-    var autoFile = path.join(SESSIONS_DIR, todayStr + '-auto.md');
-    var targetFile = path.join(SESSIONS_DIR, todayStr + '-session.md');
-    if (fs.existsSync(autoFile)) {
-      fs.renameSync(autoFile, targetFile);
-    }
-  } catch (e) {}
-}
-
-// Check for proper (non-auto) learning file modified today
+// --- Check for proper (non-auto) learning for today ---
 var hasProperLearning = false;
 try {
   if (fs.existsSync(LEARNINGS_DIR)) {
@@ -120,37 +114,40 @@ try {
   }
 } catch (e) {}
 
-// Promote auto learning scaffold to proper learning file if missing
-if (workCounter >= 5 && !hasProperLearning) {
-  try {
-    var autoLearningFile = path.join(LEARNINGS_DIR, todayStr + '-auto-session.md');
-    var targetLearningFile = path.join(LEARNINGS_DIR, todayStr + '-learning.md');
-    if (fs.existsSync(autoLearningFile)) {
-      fs.renameSync(autoLearningFile, targetLearningFile);
-    }
-  } catch (e) {}
-}
+// --- Decision logic ---
 
-// Output brief feedback about what was promoted
-var promoted = [];
+// Case 1: No proper session summary — block
 if (!hasProperSummary) {
-  var sessionTarget = path.join(SESSIONS_DIR, todayStr + '-session.md');
-  if (fs.existsSync(sessionTarget)) {
-    promoted.push('.briefing/sessions/' + todayStr + '-session.md');
-  }
-}
-if (workCounter >= 5 && !hasProperLearning) {
-  var learningTarget = path.join(LEARNINGS_DIR, todayStr + '-learning.md');
-  if (fs.existsSync(learningTarget)) {
-    promoted.push('.briefing/learnings/' + todayStr + '-learning.md');
-  }
+  var reason = isKo
+    ? '[BriefingVault] 세션 요약 미작성. .briefing/sessions/' + todayStr + '-<topic>.md 작성 필요.'
+    : '[BriefingVault] No session summary. Write .briefing/sessions/' + todayStr + '-<topic>.md';
+
+  var sessionOutput = {
+    decision: 'block',
+    reason: reason
+  };
+  process.stdout.write(JSON.stringify(sessionOutput) + '\n');
+  process.exit(0);
 }
 
-if (promoted.length > 0) {
-  var msg = (lang === 'ko' || lang === 'kr')
-    ? '[BriefingVault] 세션 기록 저장: ' + promoted.join(', ')
-    : '[BriefingVault] Session saved: ' + promoted.join(', ');
-  process.stdout.write(JSON.stringify({ reason: msg }) + '\n');
+// Case 2: Session summary exists, but significant work (>=5 edits) and no learning
+if (hasProperSummary && workCounter >= 5 && !hasProperLearning) {
+  var lReason = isKo
+    ? '[BriefingVault] learning 미작성 (' + workCounter + '개 수정). .briefing/learnings/' + todayStr + '-<topic>.md 작성 필요.'
+    : '[BriefingVault] No learning (' + workCounter + ' edits). Write .briefing/learnings/' + todayStr + '-<topic>.md';
+
+  var learningOutput = {
+    decision: 'block',
+    reason: lReason
+  };
+  process.stdout.write(JSON.stringify(learningOutput) + '\n');
+  process.exit(0);
 }
 
+// Case 3: Both exist — allow session to end silently
 process.exit(0);
+
+} catch (e) {
+  // Never crash the hook
+  process.exit(0);
+}

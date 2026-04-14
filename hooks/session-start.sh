@@ -7,12 +7,12 @@ MISSING=()
 INSTALLED=()
 
 # 1. Anthropic Skills
-if [ ! -d "$HOME/.claude/skills/pdf" ] && [ ! -d "$HOME/.claude/skills/docx" ]; then
+if [ ! -d "$HOME/.codex/skills/pdf" ] && [ ! -d "$HOME/.codex/skills/docx" ]; then
   _tmp_dir=$(mktemp -d)
   git clone --depth 1 https://github.com/anthropics/skills.git "$_tmp_dir/skills" 2>/dev/null
   if [ -d "$_tmp_dir/skills/skills" ]; then
-    mkdir -p "$HOME/.claude/skills"
-    cp -r "$_tmp_dir/skills/skills/"* "$HOME/.claude/skills/" 2>/dev/null
+    mkdir -p "$HOME/.codex/skills"
+    cp -r "$_tmp_dir/skills/skills/"* "$HOME/.codex/skills/" 2>/dev/null
     rm -rf "$_tmp_dir"
     INSTALLED+=("anthropic-skills")
   else
@@ -45,9 +45,9 @@ _needs_regen=0
 if [ ! -f "$REGISTRY_FILE" ]; then
   _needs_regen=1
 else
-  if find "$HOME/.claude/agents" "$HOME/.claude/skills" -name "*.md" -newer "$REGISTRY_FILE" 2>/dev/null | grep -q .; then
+  if find "$HOME/.codex/agents" "$HOME/.codex/skills" -name "*.md" -newer "$REGISTRY_FILE" 2>/dev/null | grep -q .; then
     _needs_regen=1
-  elif [ -d ".claude/agents" ] && find ".claude/agents" ".claude/skills" -name "*.md" -newer "$REGISTRY_FILE" 2>/dev/null | grep -q .; then
+  elif [ -d ".codex/agents" ] && find ".codex/agents" ".codex/skills" -name "*.md" -newer "$REGISTRY_FILE" 2>/dev/null | grep -q .; then
     _needs_regen=1
   fi
 fi
@@ -65,9 +65,9 @@ if [ "$_needs_regen" -eq 1 ]; then
 
   _agents_json="["
   _first_agent=1
-  for _f in "$HOME/.claude/agents/"*.md .claude/agents/*.md; do
+  for _f in "$HOME/.codex/agents/"*.md .codex/agents/*.md; do
     [ -f "$_f" ] || continue
-    case "$_f" in "$HOME/.claude/agents/"*) _scope="global" ;; *) _scope="project" ;; esac
+    case "$_f" in "$HOME/.codex/agents/"*) _scope="global" ;; *) _scope="project" ;; esac
     _name=$(sed -n '/^---/,/^---/p' "$_f" 2>/dev/null | grep '^name:' | head -1 | sed 's/^name:[[:space:]]*//' | tr -d '"'"'"'')
     _desc=$(sed -n '/^---/,/^---/p' "$_f" 2>/dev/null | grep '^description:' | head -1 | sed 's/^description:[[:space:]]*//' | tr -d '"'"'"'')
     _model=$(sed -n '/^---/,/^---/p' "$_f" 2>/dev/null | grep '^model:' | head -1 | sed 's/^model:[[:space:]]*//' | tr -d '"'"'"'')
@@ -79,7 +79,7 @@ if [ "$_needs_regen" -eq 1 ]; then
   _agents_json="${_agents_json}]"
   _skills_json="["
   _first_skill=1
-  for _f in "$HOME/.claude/skills/"*/SKILL.md .claude/skills/*/SKILL.md; do
+  for _f in "$HOME/.codex/skills/"*/SKILL.md .codex/skills/*/SKILL.md; do
     [ -f "$_f" ] || continue
     _sname=$(basename "$(dirname "$_f")")
     if [ "$_first_skill" -eq 1 ]; then _first_skill=0; else _skills_json="${_skills_json},"; fi
@@ -88,7 +88,7 @@ if [ "$_needs_regen" -eq 1 ]; then
   _skills_json="${_skills_json}]"
   _mcp_json="["
   _first_mcp=1
-  for _sf in "$HOME/.claude/settings.json" ".mcp.json"; do
+  for _sf in ".mcp.json"; do
     [ -f "$_sf" ] || continue
     while IFS= read -r _key; do
       [ -z "$_key" ] && continue
@@ -249,15 +249,15 @@ fi
 
 # 10. Version Freshness Check (once per day, non-blocking)
 _update_msg=""
-_vc_stamp="$HOME/.claude/.my-claude-update-check"
+_vc_stamp="$HOME/.codex/.my-codex-update-check"
 _vc_today=$(date +%Y-%m-%d)
 _vc_last=""
 [ -f "$_vc_stamp" ] && _vc_last=$(head -1 "$_vc_stamp" 2>/dev/null)
 if [ "$_vc_today" != "$_vc_last" ]; then
   _vc_installed_sha=""
-  [ -f "$HOME/.claude/.my-claude-installed-sha" ] && _vc_installed_sha=$(cat "$HOME/.claude/.my-claude-installed-sha" 2>/dev/null)
+  [ -f "$HOME/.codex/.my-codex-installed-sha" ] && _vc_installed_sha=$(cat "$HOME/.codex/.my-codex-installed-sha" 2>/dev/null)
   if [ -n "$_vc_installed_sha" ]; then
-    _vc_remote_sha=$(git ls-remote https://github.com/sehoon787/my-claude.git HEAD 2>/dev/null | cut -f1 | head -c 12)
+    _vc_remote_sha=$(git ls-remote https://github.com/sehoon787/my-codex.git HEAD 2>/dev/null | cut -f1 | head -c 12)
     if [ -n "$_vc_remote_sha" ] && [ "${_vc_installed_sha}" != "${_vc_remote_sha}" ]; then
       # Auto-update hooks/scripts only (lightweight, <5s)
       _repo_dir=""

@@ -39,4 +39,18 @@ if (-not $realPs1) {
 }
 
 & $realPs1 @args
-exit $LASTEXITCODE
+$codexExit = $LASTEXITCODE
+
+try {
+    $sessionEndPath = Join-Path $env:USERPROFILE ".codex\hooks\session-end.js"
+    if (Test-Path $sessionEndPath) {
+        $payload = '{"agent_id":"codex-wrapper-stop","agent_type":"wrapper"}'
+        $env:MY_CODEX_SESSION_END_AGENT_ID = "codex-wrapper-stop"
+        $env:MY_CODEX_SESSION_END_AGENT_TYPE = "wrapper"
+        $payload | node $sessionEndPath *> $null
+        Remove-Item Env:MY_CODEX_SESSION_END_AGENT_ID -ErrorAction SilentlyContinue
+        Remove-Item Env:MY_CODEX_SESSION_END_AGENT_TYPE -ErrorAction SilentlyContinue
+    }
+} catch {}
+
+exit $codexExit

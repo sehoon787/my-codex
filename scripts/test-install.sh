@@ -22,6 +22,9 @@ cat > "$BIN_DIR/codex" <<'EOF'
 #!/usr/bin/env bash
 set -euo pipefail
 LOG_FILE="${MY_CODEX_TEST_LOG:?}"
+if [ -n "${MY_CODEX_TEST_TOUCH_FILE:-}" ]; then
+  printf 'codex touched\n' >> "${MY_CODEX_TEST_TOUCH_FILE}"
+fi
 case "${1:-}" in
   --version)
     echo "codex-test"
@@ -160,5 +163,30 @@ test "$(cat "$PIPE_HOME/.codex/.my-codex-version")" = "$expected_version"
 test -L "$PIPE_HOME/.agents/plugins/plugins/my-codex"
 test "$(readlink "$PIPE_HOME/.agents/plugins/plugins/my-codex")" = "$PIPE_HOME/.codex/vendor/my-codex"
 test -f "$PIPE_HOME/.codex/vendor/my-codex/install.sh"
+
+PROJECT_ROOT="$TMP_ROOT/project"
+mkdir -p "$PROJECT_ROOT"
+(
+  cd "$PROJECT_ROOT"
+  git init -q
+  git config user.name test
+  git config user.email test@example.com
+  printf 'baseline\n' > tracked.txt
+  git add tracked.txt
+  git commit -q -m "baseline"
+  HOME="$TEST_HOME" PATH="$TEST_HOME/.codex/bin:$BIN_DIR:$PATH" MY_CODEX_TEST_LOG="$LOG_FILE" \
+    MY_CODEX_TEST_TOUCH_FILE="$PROJECT_ROOT/tracked.txt" \
+    "$TEST_HOME/.codex/bin/codex" run > "$TMP_ROOT/vault.out"
+)
+
+today="$(date -u +%Y-%m-%d)"
+test -f "$PROJECT_ROOT/.briefing/INDEX.md"
+test -f "$PROJECT_ROOT/.briefing/persona/profile.md"
+test -f "$PROJECT_ROOT/.briefing/agents/agent-log.jsonl"
+test -f "$PROJECT_ROOT/.briefing/agents/$today-summary.md"
+test -f "$PROJECT_ROOT/.briefing/sessions/$today-auto.md"
+test -f "$PROJECT_ROOT/.briefing/learnings/$today-auto-session.md"
+grep -q 'tracked.txt' "$PROJECT_ROOT/.briefing/sessions/$today-auto.md"
+grep -q 'tracked.txt' "$PROJECT_ROOT/.briefing/learnings/$today-auto-session.md"
 
 echo "Install smoke test passed"

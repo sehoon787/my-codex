@@ -100,7 +100,10 @@ fi
 
 if ! command -v git >/dev/null 2>&1 || ! command -v date >/dev/null 2>&1 || ! command -v mktemp >/dev/null 2>&1; then
   "$REAL_CODEX" "$@"; _cs=$?
-  echo '{"agent_id":"codex-wrapper-stop","agent_type":"wrapper"}' | node "$HOME/.codex/hooks/stop-profile-update.js" 2>/dev/null || true
+  if [ -f "$HOME/.codex/hooks/session-end.js" ]; then
+    echo '{"agent_id":"codex-wrapper-stop","agent_type":"wrapper"}' | \
+      node "$HOME/.codex/hooks/session-end.js" 2>/dev/null || true
+  fi
   exit $_cs
 fi
 
@@ -111,7 +114,10 @@ fi
 
 if [ -z "$repo_root" ] || ! my_codex_is_enabled; then
   "$REAL_CODEX" "$@"; _cs=$?
-  echo '{"agent_id":"codex-wrapper-stop","agent_type":"wrapper"}' | node "$HOME/.codex/hooks/stop-profile-update.js" 2>/dev/null || true
+  if [ -f "$HOME/.codex/hooks/session-end.js" ]; then
+    echo '{"agent_id":"codex-wrapper-stop","agent_type":"wrapper"}' | \
+      node "$HOME/.codex/hooks/session-end.js" 2>/dev/null || true
+  fi
   exit $_cs
 fi
 
@@ -131,8 +137,9 @@ codex_status=$?
 set -e
 snapshot_changed_files "$repo_root" "$after_file"
 record_session_changes "$repo_root" "$before_file" "$after_file" "$timestamp"
-# Run my-codex Stop hook (profile + session + decisions + learnings auto-gen)
-if [ -f "$HOME/.codex/hooks/stop-profile-update.js" ]; then
-  echo '{"agent_id":"codex-wrapper-stop","agent_type":"wrapper"}' | node "$HOME/.codex/hooks/stop-profile-update.js" 2>/dev/null || true
+# Run my-codex session-end synthesis (profile + auto scaffolds + reminders)
+if [ -f "$HOME/.codex/hooks/session-end.js" ]; then
+  echo '{"agent_id":"codex-wrapper-stop","agent_type":"wrapper"}' | \
+    node "$HOME/.codex/hooks/session-end.js" 2>/dev/null || true
 fi
 exit "$codex_status"

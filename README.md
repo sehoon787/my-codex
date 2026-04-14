@@ -56,6 +56,10 @@ bash /tmp/my-codex/install.sh
 rm -rf /tmp/my-codex
 ```
 
+Windows note:
+- `install.sh` patches the npm-managed `codex`, `codex.cmd`, and `codex.ps1` shims when they exist, so the my-codex session-start and session-end vault pipeline still runs even if `%APPDATA%\npm` resolves before `~/.codex/bin`.
+- Fetching `AI-INSTALL.md` only prints instructions. Use `install.sh` for unattended setup.
+
 ---
 
 ## How Boss Works
@@ -365,9 +369,9 @@ Obsidian-compatible persistent memory. Every project maintains a `.briefing/` di
 | Path | Description |
 |------|-------------|
 | `INDEX.md` | Project overview with links to recent decisions and learnings. Auto-created on first session, refreshed periodically. |
-| `sessions/` | **Session summaries.** `*-auto.md` — scaffold with git diff stats and agent counts. `<topic>.md` — AI-written summary enforced by hooks. |
+| `sessions/` | **Session summaries.** `*-auto.md` — auto-generated scaffold at session end with git status, recorded changed files, and follow-up reminders. `<topic>.md` — human or agent-written session summary prompted by the vault reminders. |
 | `decisions/` | **Architecture and design decisions** with rationale. AI-written, enforced during active work. |
-| `learnings/` | **Patterns, gotchas, non-obvious solutions.** `*-auto-session.md` — scaffold with file lists. `<topic>.md` — AI-written. |
+| `learnings/` | **Patterns, gotchas, non-obvious solutions.** `*-auto-session.md` — auto-generated scaffold with the session's recorded file list. `<topic>.md` — human or agent-written learning note. |
 | `references/` | **Web research URLs.** `auto-links.md` — auto-collected from WebSearch/WebFetch calls. |
 | `agents/` | **Agent telemetry.** `agent-log.jsonl` — per-call log. `YYYY-MM-DD-summary.md` — daily usage breakdown. |
 | `persona/` | **User work style profile.** `profile.md` — tool affinity stats. `suggestions.jsonl` — routing recommendations. `rules/`, `skills/` — accepted preferences. |

@@ -708,7 +708,8 @@ cleanup_cross_tool_skills() {
 
 patch_npm_shims() {
   # Patch npm shims (codex.cmd, codex.ps1, extensionless codex) so they run
-  # the SessionStart hook before delegating to the original npm shim.
+  # the SessionStart hook before delegating to the original npm shim, then
+  # synthesize session-end vault artifacts after Codex exits.
   # Only runs on Windows (MSYS/Cygwin environments used by Git Bash).
   # Safe to re-run: checks for sentinel marker before patching.
   # Never aborts the install if npm shims are absent or patching fails.
@@ -727,9 +728,6 @@ patch_npm_shims() {
   # --- codex.cmd ---
   local cmd_shim="$npm_dir/codex.cmd"
   if [ -f "$cmd_shim" ]; then
-    if grep -q 'my-codex wrapper' "$cmd_shim" 2>/dev/null; then
-      echo "  npm codex.cmd: already patched, skipping"
-    else
       local backup="$npm_dir/codex.real.cmd"
       if [ ! -f "$backup" ]; then
         cp "$cmd_shim" "$backup"
@@ -762,10 +760,15 @@ IF NOT DEFINED TS SET "TS=unknown"
 
 :delegate
 CALL "%~dp0codex.real.cmd" %*
-EXIT /B !ERRORLEVEL!
+SET "CODEX_EXIT=!ERRORLEVEL!"
+IF DEFINED GIT_BASH (
+  IF EXIST "%USERPROFILE%\.codex\hooks\session-end.js" (
+    "!GIT_BASH!" -c "echo '{\"agent_id\":\"codex-wrapper-stop\",\"agent_type\":\"wrapper\"}' | node ~/.codex/hooks/session-end.js" 1>NUL 2>NUL
+  )
+)
+EXIT /B !CODEX_EXIT!
 CMDEOF
       echo "  npm codex.cmd: patched"
-    fi
   else
     echo "  npm codex.cmd: not found, skipping"
   fi
@@ -773,9 +776,6 @@ CMDEOF
   # --- codex.ps1 ---
   local ps1_shim="$npm_dir/codex.ps1"
   if [ -f "$ps1_shim" ]; then
-    if grep -q 'my-codex' "$ps1_shim" 2>/dev/null; then
-      echo "  npm codex.ps1: already patched, skipping"
-    else
       local ps1_backup="$npm_dir/codex.real.ps1"
       if [ ! -f "$ps1_backup" ]; then
         cp "$ps1_shim" "$ps1_backup"
@@ -811,10 +811,23 @@ if (-not $env:CODEX_WRAPPER_INVOKED) {
 }
 
 & "$PSScriptRoot\codex.real.ps1" @args
-exit $LASTEXITCODE
+$codexExit = $LASTEXITCODE
+
+try {
+    $sessionEndPath = Join-Path $env:USERPROFILE ".codex\hooks\session-end.js"
+    if (Test-Path $sessionEndPath) {
+        $payload = '{"agent_id":"codex-wrapper-stop","agent_type":"wrapper"}'
+        $env:MY_CODEX_SESSION_END_AGENT_ID = "codex-wrapper-stop"
+        $env:MY_CODEX_SESSION_END_AGENT_TYPE = "wrapper"
+        $payload | node $sessionEndPath *> $null
+        Remove-Item Env:MY_CODEX_SESSION_END_AGENT_ID -ErrorAction SilentlyContinue
+        Remove-Item Env:MY_CODEX_SESSION_END_AGENT_TYPE -ErrorAction SilentlyContinue
+    }
+} catch {}
+
+exit $codexExit
 PS1EOF
       echo "  npm codex.ps1: patched"
-    fi
   else
     echo "  npm codex.ps1: not found, skipping"
   fi
@@ -822,9 +835,6 @@ PS1EOF
   # --- extensionless bash shim ---
   local bash_shim="$npm_dir/codex"
   if [ -f "$bash_shim" ]; then
-    if grep -q 'my-codex' "$bash_shim" 2>/dev/null; then
-      echo "  npm codex (bash shim): already patched, skipping"
-    else
       local bash_backup="$npm_dir/codex.real"
       if [ ! -f "$bash_backup" ]; then
         cp "$bash_shim" "$bash_backup"
@@ -850,10 +860,15 @@ if [ -z "${CODEX_WRAPPER_INVOKED:-}" ]; then
     >> "$HOME/.codex/last-invocation.log" 2>/dev/null || true
 fi
 
-exec "$basedir/codex.real" "$@"
+"$basedir/codex.real" "$@"
+codex_status=$?
+if [ -f "$HOME/.codex/hooks/session-end.js" ]; then
+  echo '{"agent_id":"codex-wrapper-stop","agent_type":"wrapper"}' | \
+    node "$HOME/.codex/hooks/session-end.js" >/dev/null 2>&1 || true
+fi
+exit "$codex_status"
 BASHEOF
       echo "  npm codex (bash shim): patched"
-    fi
   else
     echo "  npm codex (bash shim): not found, skipping"
   fi
@@ -1211,6 +1226,10 @@ fi
 if [ -f "$REPO_ROOT/hooks/stop-profile-update.js" ]; then
   cp "$REPO_ROOT/hooks/stop-profile-update.js" "$CODEX_ROOT/hooks/stop-profile-update.js"
   add_manifest_entry "hooks/stop-profile-update.js"
+fi
+if [ -f "$REPO_ROOT/hooks/session-end.js" ]; then
+  cp "$REPO_ROOT/hooks/session-end.js" "$CODEX_ROOT/hooks/session-end.js"
+  add_manifest_entry "hooks/session-end.js"
 fi
 if [ -f "$REPO_ROOT/hooks/stop-session-enforcement.js" ]; then
   cp "$REPO_ROOT/hooks/stop-session-enforcement.js" "$CODEX_ROOT/hooks/stop-session-enforcement.js"

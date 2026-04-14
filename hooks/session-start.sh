@@ -21,17 +21,7 @@ if [ ! -d "$HOME/.codex/skills/pdf" ] && [ ! -d "$HOME/.codex/skills/docx" ]; th
   fi
 fi
 
-# 2. OMC CLI
-if ! command -v omc >/dev/null 2>&1; then
-  npm i -g oh-my-claude-sisyphus@latest 2>/dev/null && INSTALLED+=("omc") || MISSING+=("omc")
-fi
-
-# 3. omo CLI
-if ! command -v oh-my-opencode >/dev/null 2>&1; then
-  npm i -g oh-my-opencode@latest 2>/dev/null && INSTALLED+=("omo") || MISSING+=("omo")
-fi
-
-# 4. ast-grep
+# 2. ast-grep
 if ! command -v ast-grep >/dev/null 2>&1; then
   npm i -g @ast-grep/cli 2>/dev/null && INSTALLED+=("ast-grep") || MISSING+=("ast-grep")
 fi

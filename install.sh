@@ -7,6 +7,44 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$SCRIPT_DIR"
 
+resolve_windows_home() {
+  local raw_path="${1:-}" drive rest candidate
+  [ -n "$raw_path" ] || return 1
+
+  case "$raw_path" in
+    /mnt/*|/c/*|/[A-Za-z]/*)
+      printf '%s' "$raw_path"
+      return 0
+      ;;
+    [A-Za-z]:\\*)
+      if command -v cygpath >/dev/null 2>&1; then
+        cygpath -u "$raw_path" 2>/dev/null && return 0
+      fi
+      drive="$(printf '%s' "${raw_path%%:*}" | tr '[:upper:]' '[:lower:]')"
+      rest="${raw_path#?:}"
+      rest="${rest//\\//}"
+      for candidate in "/mnt/$drive$rest" "/$drive$rest"; do
+        if [ -d "$candidate" ]; then
+          printf '%s' "$candidate"
+          return 0
+        fi
+      done
+      printf '/mnt/%s%s' "$drive" "$rest"
+      return 0
+      ;;
+  esac
+
+  return 1
+}
+
+if [ -n "${USERPROFILE:-}" ]; then
+  _windows_home="$(resolve_windows_home "$USERPROFILE" 2>/dev/null || true)"
+  if [ -n "$_windows_home" ]; then
+    HOME="$_windows_home"
+    export HOME
+  fi
+fi
+
 bootstrap_into_real_repo() {
   local bootstrap_source="${MY_CODEX_BOOTSTRAP_REPO:-https://github.com/sehoon787/my-codex.git}"
   local bootstrap_root
@@ -1222,6 +1260,14 @@ if [ -f "$REPO_ROOT/hooks/session-start.sh" ]; then
   cp "$REPO_ROOT/hooks/session-start.sh" "$CODEX_ROOT/hooks/session-start.sh"
   chmod +x "$CODEX_ROOT/hooks/session-start.sh"
   add_manifest_entry "hooks/session-start.sh"
+fi
+if [ -f "$REPO_ROOT/hooks/briefing-runtime.js" ]; then
+  cp "$REPO_ROOT/hooks/briefing-runtime.js" "$CODEX_ROOT/hooks/briefing-runtime.js"
+  add_manifest_entry "hooks/briefing-runtime.js"
+fi
+if [ -f "$REPO_ROOT/hooks/session-start-state.js" ]; then
+  cp "$REPO_ROOT/hooks/session-start-state.js" "$CODEX_ROOT/hooks/session-start-state.js"
+  add_manifest_entry "hooks/session-start-state.js"
 fi
 if [ -f "$REPO_ROOT/hooks/stop-profile-update.js" ]; then
   cp "$REPO_ROOT/hooks/stop-profile-update.js" "$CODEX_ROOT/hooks/stop-profile-update.js"

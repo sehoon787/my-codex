@@ -58,9 +58,9 @@ if [ "$_needs_regen" -eq 1 ]; then
   for _f in "$HOME/.codex/agents/"*.md .codex/agents/*.md; do
     [ -f "$_f" ] || continue
     case "$_f" in "$HOME/.codex/agents/"*) _scope="global" ;; *) _scope="project" ;; esac
-    _name=$(sed -n '/^---/,/^---/p' "$_f" 2>/dev/null | grep '^name:' | head -1 | sed 's/^name:[[:space:]]*//' | tr -d '"'"'"'')
-    _desc=$(sed -n '/^---/,/^---/p' "$_f" 2>/dev/null | grep '^description:' | head -1 | sed 's/^description:[[:space:]]*//' | tr -d '"'"'"'')
-    _model=$(sed -n '/^---/,/^---/p' "$_f" 2>/dev/null | grep '^model:' | head -1 | sed 's/^model:[[:space:]]*//' | tr -d '"'"'"'')
+    _name=$(sed -n '/^---/,/^---/p' "$_f" 2>/dev/null | grep '^name:' | head -1 | sed 's/^name:[[:space:]]*//' | tr -d '"')
+    _desc=$(sed -n '/^---/,/^---/p' "$_f" 2>/dev/null | grep '^description:' | head -1 | sed 's/^description:[[:space:]]*//' | tr -d '"')
+    _model=$(sed -n '/^---/,/^---/p' "$_f" 2>/dev/null | grep '^model:' | head -1 | sed 's/^model:[[:space:]]*//' | tr -d '"')
     [ -z "$_name" ] && _name=$(basename "$_f" .md)
     [ -z "$_model" ] && _model=""
     if [ "$_first_agent" -eq 1 ]; then _first_agent=0; else _agents_json="${_agents_json},"; fi
@@ -94,23 +94,19 @@ EOF
     && REGISTRY_STATUS="regenerated" || REGISTRY_STATUS="failed"
 fi
 
-# 5b. .knowledge → .briefing migration (one-time, backward compat)
+# 5b. .knowledge -> .briefing migration (one-time, backward compat)
 if [ -d ".knowledge" ]; then
   if [ ! -d ".briefing" ]; then
-    # Simple rename
     mv ".knowledge" ".briefing"
     mkdir -p ".briefing/persona/rules" ".briefing/persona/skills"
-    # Add language field to INDEX.md if missing
     if [ -f ".briefing/INDEX.md" ] && ! grep -q '^language:' ".briefing/INDEX.md"; then
       sed -i '/^type:/a language: en' ".briefing/INDEX.md" 2>/dev/null || true
     fi
-    # Update .gitignore
     if [ -f ".gitignore" ]; then
       sed -i '/^\.knowledge\//d' ".gitignore" 2>/dev/null || true
       grep -q '\.briefing/' ".gitignore" 2>/dev/null || echo '.briefing/' >> ".gitignore"
     fi
   else
-    # Both exist — merge unique files from .knowledge into .briefing, then remove
     for _subdir in sessions decisions learnings agents references; do
       if [ -d ".knowledge/$_subdir" ]; then
         mkdir -p ".briefing/$_subdir"
@@ -133,67 +129,10 @@ fi
 # 6. Briefing Vault Auto-Create + Context
 _kv_msg=""
 _kv_dir=".briefing"
-_session_noise_file="$_kv_dir/.session-hook-noise"
-if [ ! -f "$_kv_dir/INDEX.md" ]; then
-  mkdir -p "$_kv_dir/sessions" "$_kv_dir/decisions" "$_kv_dir/learnings" "$_kv_dir/agents" "$_kv_dir/references" "$_kv_dir/persona/rules" "$_kv_dir/persona/skills"
-  : > "$_session_noise_file"
-  # Save git HEAD for session-specific diff at Stop
-  git rev-parse HEAD 2>/dev/null > "$_kv_dir/.session-start-head" || true
-  git status --porcelain=v1 --untracked-files=all 2>/dev/null > "$_kv_dir/.session-start-status" || true
-  # Reset session-specific counters
-  echo "0" > "$_kv_dir/.session-message-count" 2>/dev/null || true
-  _proj_name=$(basename "$(pwd)")
-  cat > "$_kv_dir/INDEX.md" <<KVEOF
----
-date: $(date +%Y-%m-%d)
-type: index
-tags: [project, index]
-language: en
----
-
-# ${_proj_name} Knowledge Base
-
-## Overview
-Project knowledge base. Auto-created by SessionStart hook.
-
-## Recent Decisions
-
-## Recent Sessions
-
-## Open Questions
-
-## Key Links
-- [[sessions/]] — Session logs
-- [[decisions/]] — Architecture decisions
-- [[learnings/]] — Patterns and solutions
-- [[agents/]] — Agent execution logs
-- [[references/]] — Reference materials
-KVEOF
-  if [ -f ".gitignore" ] && ! grep -q '\.briefing/' ".gitignore" 2>/dev/null; then
-    echo '.briefing/' >> ".gitignore"
-    echo '.gitignore' >> "$_session_noise_file"
-  elif [ ! -f ".gitignore" ]; then
-    echo '.briefing/' > ".gitignore"
-    echo '.gitignore' >> "$_session_noise_file"
-  fi
-  _kv_msg="[BriefingVault] Auto-created .briefing/ structure. Log decisions, learnings, sessions per rules/common/briefing-vault.md."
+if command -v node >/dev/null 2>&1 && [ -f "$HOME/.codex/hooks/session-start-state.js" ]; then
+  _kv_msg=$(node "$HOME/.codex/hooks/session-start-state.js" 2>/dev/null || true)
 else
-  : > "$_session_noise_file"
-  # Save git HEAD for session-specific diff at Stop
-  git rev-parse HEAD 2>/dev/null > "$_kv_dir/.session-start-head" || true
-  git status --porcelain=v1 --untracked-files=all 2>/dev/null > "$_kv_dir/.session-start-status" || true
-  # Reset session-specific counters
-  echo "0" > "$_kv_dir/.session-message-count" 2>/dev/null || true
-  # Add language field to INDEX.md if missing
-  if ! grep -q '^language:' "$_kv_dir/INDEX.md" 2>/dev/null; then
-    sed -i '/^type:/a language: en' "$_kv_dir/INDEX.md" 2>/dev/null || true
-  fi
-  _kv_recent=$(grep -E '^\- \[\[' "$_kv_dir/INDEX.md" 2>/dev/null | head -5 | tr '\n' '; ')
-  if [ -n "$_kv_recent" ]; then
-    _kv_msg="[BriefingVault] .briefing/INDEX.md loaded. Recent: ${_kv_recent}Log decisions→.briefing/decisions/, learnings→.briefing/learnings/, sessions→.briefing/sessions/, agent logs→.briefing/agents/."
-  else
-    _kv_msg="[BriefingVault] .briefing/INDEX.md exists. Log decisions/learnings/sessions per rules/common/briefing-vault.md."
-  fi
+  _kv_msg="[BriefingVault] JSON runtime bootstrap unavailable; session state was not refreshed."
 fi
 
 # 7. Persona: Pending Suggestions Notification
@@ -256,12 +195,10 @@ if [ "$_vc_today" != "$_vc_last" ]; then
   if [ -n "$_vc_installed_sha" ]; then
     _vc_remote_sha=$(git ls-remote https://github.com/sehoon787/my-codex.git HEAD 2>/dev/null | cut -f1 | head -c 12)
     if [ -n "$_vc_remote_sha" ] && [ "${_vc_installed_sha}" != "${_vc_remote_sha}" ]; then
-      # Auto-update hooks/scripts only (lightweight, <5s)
       _repo_dir=""
       if [ -f "$HOME/.codex/.my-codex-manifest" ]; then
         _repo_dir=$(head -1 "$HOME/.codex/.my-codex-manifest" 2>/dev/null | grep -o '/.*my-codex' | head -1)
       fi
-      # Fallback: check common locations
       if [ -z "$_repo_dir" ] || [ ! -d "$_repo_dir" ]; then
         for _candidate in "$HOME/Desktop/proj/my-codex" "$HOME/projects/my-codex" "$HOME/my-codex"; do
           if [ -d "$_candidate/.git" ] && [ -f "$_candidate/hooks/hooks.json" ]; then
@@ -272,10 +209,8 @@ if [ "$_vc_today" != "$_vc_last" ]; then
       fi
 
       if [ -n "$_repo_dir" ] && [ -d "$_repo_dir/.git" ]; then
-        # Pull latest (fast-forward only, non-blocking)
         _pull_result=$(cd "$_repo_dir" && git pull --ff-only 2>&1) || true
 
-        # Copy hooks and scripts
         if [ -d "$_repo_dir/hooks" ]; then
           cp "$_repo_dir/hooks/hooks.json" "$HOME/.codex/hooks/hooks.json" 2>/dev/null || true
           for _hf in "$_repo_dir/hooks/"*.js; do
@@ -286,23 +221,20 @@ if [ "$_vc_today" != "$_vc_last" ]; then
           done
         fi
 
-        # Refresh AGENTS.md (Boss default agent instructions)
         if [ -f "$_repo_dir/templates/codex-AGENTS.md" ] && [ -f "$HOME/.codex/AGENTS.md" ]; then
           cp "$_repo_dir/templates/codex-AGENTS.md" "$HOME/.codex/AGENTS.md" 2>/dev/null || true
         fi
 
-        # Sync the latest installed hook payload
         if [ -f "$_repo_dir/scripts/merge-hooks.js" ]; then
           node "$_repo_dir/scripts/merge-hooks.js" "$HOME/.codex/hooks/hooks.json" 2>/dev/null || true
         fi
 
-        # Update installed SHA
         _new_sha=$(cd "$_repo_dir" && git rev-parse --short=12 HEAD 2>/dev/null)
         if [ -n "$_new_sha" ]; then
           echo "$_new_sha" > "$HOME/.codex/.my-codex-installed-sha"
         fi
 
-        _update_msg="[UpdateCheck] my-codex hooks auto-updated (${_vc_installed_sha} → ${_new_sha:-unknown})"
+        _update_msg="[UpdateCheck] my-codex hooks auto-updated (${_vc_installed_sha} -> ${_new_sha:-unknown})"
       else
         _vc_current=$(cat "$HOME/.codex/.my-codex-version" 2>/dev/null || echo "unknown")
         _update_msg="[UpdateCheck] my-codex update available (installed: v${_vc_current}). Run: cd <my-codex-repo> && bash install.sh"

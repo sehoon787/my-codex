@@ -73,8 +73,7 @@ function main() {
   runtime.mkdirp(path.join(runtime.BRIEFING_DIR, 'learnings'));
   runtime.mkdirp(path.join(runtime.BRIEFING_DIR, 'agents'));
   runtime.mkdirp(path.join(runtime.BRIEFING_DIR, 'references'));
-  runtime.mkdirp(path.join(runtime.BRIEFING_DIR, 'persona', 'rules'));
-  runtime.mkdirp(path.join(runtime.BRIEFING_DIR, 'persona', 'skills'));
+  runtime.mkdirp(runtime.PERSONA_DIR);
 
   const projectName = path.basename(process.cwd());
   const indexCreated = ensureIndex(projectName);
@@ -132,6 +131,7 @@ function main() {
   }));
 
   runtime.cleanupLegacyRuntimeFiles();
+  runtime.writePersonaPolicy(runtime.readPersonaPolicy());
 
   const message = indexCreated
     ? '[BriefingVault] Auto-created .briefing/ and initialized .briefing/state.json.'

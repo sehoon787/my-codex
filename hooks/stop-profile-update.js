@@ -13,6 +13,7 @@ const AGENT_LOG = path.join(runtime.BRIEFING_DIR, 'agents', 'agent-log.jsonl');
 const PERSONA_DIR = path.join(runtime.BRIEFING_DIR, 'persona');
 const PROFILE_FILE = path.join(PERSONA_DIR, 'profile.md');
 const SUGGESTIONS_FILE = path.join(PERSONA_DIR, 'suggestions.jsonl');
+const PERSONA_POLICY_FILE = runtime.PERSONA_POLICY_FILE;
 
 function resolveAgentType(entry) {
   let agentType = entry.agent_type || entry.agent || 'unknown';
@@ -130,8 +131,7 @@ if (!fs.existsSync(INDEX_FILE)) {
 }
 
 try {
-  fs.mkdirSync(path.join(PERSONA_DIR, 'rules'), { recursive: true });
-  fs.mkdirSync(path.join(PERSONA_DIR, 'skills'), { recursive: true });
+  fs.mkdirSync(PERSONA_DIR, { recursive: true });
 } catch (error) {
   process.stderr.write(`stop-profile-update: failed to create persona dirs: ${error.message}\n`);
   process.exit(0);
@@ -170,6 +170,7 @@ const totalSpecialistSignals30d = totalCount(specialistCounts30d);
 const wrapperSignals30d = signalCounts30d.wrapper || 0;
 const pattern7d = countByType(entries7d, isSpecialistSignal);
 const existingSuggestions = readJsonl(SUGGESTIONS_FILE);
+const personaPolicy = runtime.readPersonaPolicy();
 
 const newSuggestions = [];
 for (const agentType of Object.keys(pattern7d)) {
@@ -200,7 +201,7 @@ for (const agentType of Object.keys(pattern7d)) {
       agent_type: agentType,
       count,
       ts: now.toISOString(),
-      message: `You logged ${agentType} ${count} times in 7 days. Create an auto-rule to prefer ${agentType} for matching tasks?`
+      message: `You logged ${agentType} ${count} times in 7 days. Add a soft routing preference for ${agentType} to persona-policy.json?`
     });
   }
 }
@@ -259,6 +260,15 @@ const recentLinks = (sessionState.links || []).slice(-5).map((entry) => {
   return `- ${target}${entry.context ? ` -- ${entry.context}` : ''}`;
 }).join('\n') || '(no captured links)';
 
+const activePreferences = Object.keys(personaPolicy.preferences || {}).sort();
+const preferenceLines = activePreferences.length > 0
+  ? activePreferences.map((agentType) => {
+    const pref = personaPolicy.preferences[agentType] || {};
+    const count = pref.observed_count_7d ? ` (${pref.observed_count_7d} calls/7d at acceptance)` : '';
+    return `- ${agentType}: ${pref.preference || 'prefer'}${count}`;
+  }).join('\n')
+  : '(none yet)';
+
 const profileContent = [
   '---',
   `date: ${todayStr}`,
@@ -289,8 +299,8 @@ const profileContent = [
   '## Specialist Preferences',
   specialistLines,
   '',
-  '## Active Persona Rules',
-  '(none yet)',
+  '## Active Persona Policy',
+  preferenceLines,
   ''
 ].join('\n');
 

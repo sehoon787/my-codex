@@ -51,7 +51,8 @@ Why the numbers are lower than raw source totals:
 
 Briefing Vault note:
 - `sessions/*-auto.md` and `learnings/*-auto-session.md` are auto-generated scaffolds.
-- Follow-up summaries, decisions, and learning notes are still written by the human or agent during/after the session.
+- `decisions/*-auto.md` is also generated as a scaffold during active Codex sessions.
+- Promoted topic notes and `persona/persona-policy.json` are created only when the session produces matching signals.
 
 ## Step 1b: Manual install (if install.sh unavailable)
 

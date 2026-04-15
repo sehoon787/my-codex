@@ -360,8 +360,7 @@ Obsidian-compatible persistent memory. Every project maintains a `.briefing/` di
 └── persona/
     ├── profile.md                   ← Routing/profile summary from logged signals
     ├── suggestions.jsonl            ← Routing suggestions (auto-generated)
-    ├── rules/                       ← Accepted routing preferences
-    └── skills/                      ← Accepted persona skills
+    └── persona-policy.json          ← Accepted soft routing preferences for Boss
 ```
 
 ### Sub-Vaults
@@ -374,7 +373,7 @@ Obsidian-compatible persistent memory. Every project maintains a `.briefing/` di
 | `learnings/` | **Patterns, gotchas, non-obvious solutions.** `*-auto-session.md` — auto-generated scaffold refreshed during the session with the session's recorded file list, logged signals, and prompts for follow-up notes. `<topic>.md` — human or agent-written learning note. |
 | `references/` | **Web research URLs.** `references/auto-links.md` is updated from `WebSearch`/`WebFetch` hook activity when those native Codex hooks are available. |
 | `agents/` | **Logged session signals.** `agent-log.jsonl` — wrapper/session log plus richer hook payloads when available. `YYYY-MM-DD-summary.md` — daily logged-signal breakdown derived from that log. |
-| `persona/` | **User work style profile.** `profile.md` — routing/profile summary derived from logged signals. `suggestions.jsonl` — routing recommendations. `rules/`, `skills/` — accepted preferences. |
+| `persona/` | **User work style profile.** `profile.md` — routing/profile summary derived from logged signals. `suggestions.jsonl` — routing recommendations. `persona-policy.json` — accepted soft routing preferences that Boss can use as tie-breakers when capabilities already match. |
 
 ### Session-Specific Diffs
 

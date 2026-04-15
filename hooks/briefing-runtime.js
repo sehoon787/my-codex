@@ -6,6 +6,8 @@ const path = require('path');
 
 const BRIEFING_DIR = '.briefing';
 const STATE_FILE = path.join(BRIEFING_DIR, 'state.json');
+const PERSONA_DIR = path.join(BRIEFING_DIR, 'persona');
+const PERSONA_POLICY_FILE = path.join(PERSONA_DIR, 'persona-policy.json');
 
 function exists(filePath) {
   try {
@@ -123,6 +125,37 @@ function writeState(state) {
   return next;
 }
 
+function defaultPersonaPolicy() {
+  return {
+    version: 1,
+    updatedAt: '',
+    preferences: {},
+    notes: []
+  };
+}
+
+function readPersonaPolicy() {
+  const parsed = tryParseJson(readText(PERSONA_POLICY_FILE));
+  if (!parsed || typeof parsed !== 'object') {
+    return defaultPersonaPolicy();
+  }
+  const next = Object.assign(defaultPersonaPolicy(), parsed);
+  if (!next.preferences || typeof next.preferences !== 'object') {
+    next.preferences = {};
+  }
+  if (!Array.isArray(next.notes)) {
+    next.notes = [];
+  }
+  return next;
+}
+
+function writePersonaPolicy(policy) {
+  const next = Object.assign(defaultPersonaPolicy(), policy || {});
+  next.updatedAt = isoNow();
+  writeText(PERSONA_POLICY_FILE, JSON.stringify(next, null, 2) + '\n');
+  return next;
+}
+
 function appendUniqueEntry(list, entry, key, maxItems) {
   const items = Array.isArray(list) ? list.slice() : [];
   const normalizedKey = key ? String(entry[key] || '') : '';
@@ -227,9 +260,12 @@ function summarizePaths(paths) {
 module.exports = {
   BRIEFING_DIR,
   STATE_FILE,
+  PERSONA_DIR,
+  PERSONA_POLICY_FILE,
   appendUniqueEntry,
   cleanupLegacyRuntimeFiles,
   currentDate,
+  defaultPersonaPolicy,
   defaultState,
   exists,
   extractPromptText,
@@ -238,10 +274,12 @@ module.exports = {
   normalizeRepoPath,
   parseStatusOutput,
   readState,
+  readPersonaPolicy,
   readText,
   summarizePaths,
   truncateLine,
   uniquePaths,
+  writePersonaPolicy,
   writeState,
   writeText
 };

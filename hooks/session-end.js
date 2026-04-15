@@ -128,6 +128,11 @@ function changedFilesSummary(changedFiles) {
   return changedFiles.map((filePath) => `- ${filePath}`);
 }
 
+function changedFilesInline(changedFiles) {
+  if (!changedFiles || changedFiles.length === 0) return '(none)';
+  return changedFiles.join(', ');
+}
+
 function promptSummaryLines(prompts) {
   if (!prompts || prompts.length === 0) {
     return ['- No prompt text was captured for this session.'];
@@ -136,6 +141,118 @@ function promptSummaryLines(prompts) {
     const prefix = index === prompts.slice(-5).length - 1 ? 'latest' : `prompt ${index + 1}`;
     return `- ${prefix}: ${entry.excerpt || entry.text}`;
   });
+}
+
+function meaningfulPromptTexts(state) {
+  return (state.prompts || [])
+    .map((entry) => (entry.excerpt || entry.text || '').trim())
+    .filter(Boolean);
+}
+
+function promptSignal(promptTexts, keywords) {
+  const hits = [];
+  for (const text of promptTexts || []) {
+    const lower = text.toLowerCase();
+    for (const keyword of keywords) {
+      if (lower.includes(keyword)) {
+        hits.push(text);
+        break;
+      }
+    }
+  }
+  return hits;
+}
+
+function slugifyTopic(text, fallback) {
+  const stopwords = new Set([
+    'the', 'and', 'for', 'with', 'from', 'this', 'that', 'into', 'about', 'should', 'would',
+    'could', 'have', 'has', 'had', 'feel', 'like', 'real', 'note', 'notes', 'session',
+    'summary', 'summaries', 'work', 'done', 'capture', 'finalize', 'list', 'check',
+    'guide', 'implementation', 'remaining', 'follow', 'followups', 'follow-up', 'quality'
+  ]);
+  const words = String(text || '')
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, ' ')
+    .split(/\s+/)
+    .map((word) => word.trim())
+    .filter(Boolean)
+    .filter((word) => word.length > 2 && !stopwords.has(word));
+  const picked = [];
+  for (const word of words) {
+    if (!picked.includes(word)) picked.push(word);
+    if (picked.length >= 5) break;
+  }
+  if (picked.length === 0) {
+    return fallback;
+  }
+  return picked.join('-');
+}
+
+function deriveTopicSlug(state, changedFiles, kind) {
+  const prompts = meaningfulPromptTexts(state);
+  const first = prompts[0] || '';
+  const latest = prompts[prompts.length - 1] || first || '';
+  const allPromptText = prompts.join(' ');
+  const fileHint = (changedFiles[0] || '').split('/').pop() || '';
+
+  if (kind === 'session') {
+    return slugifyTopic(first || allPromptText || fileHint, 'session-work');
+  }
+  if (kind === 'decision') {
+    return slugifyTopic(allPromptText || latest || fileHint, 'decision-rationale');
+  }
+  if (kind === 'learning') {
+    return slugifyTopic(latest || allPromptText || fileHint, 'reusable-pattern');
+  }
+  return slugifyTopic(latest || fileHint, 'briefing-note');
+}
+
+function decisionSignal(state, changedFiles) {
+  const prompts = meaningfulPromptTexts(state);
+  const keywords = [
+    'decision', 'decisions', 'choose', 'chosen', 'choice', 'policy', 'routing',
+    'route', 'prefer', 'install path', 'consolidate', 'replace', 'switch', 'adopt'
+  ];
+  const matchedPrompts = promptSignal(prompts, keywords);
+  const policy = runtime.readPersonaPolicy();
+  const hasPolicy = Object.keys(policy.preferences || {}).length > 0;
+  const shouldPromote = matchedPrompts.length > 0 || hasPolicy;
+
+  return {
+    shouldPromote,
+    matchedPrompts,
+    hasPolicy,
+    slug: slugifyTopic((matchedPrompts[0] || prompts[0] || changedFiles[0] || ''), 'decision-rationale')
+  };
+}
+
+function learningSignal(state, changedFiles) {
+  const prompts = meaningfulPromptTexts(state);
+  const keywords = [
+    'learning', 'learnings', 'reusable', 'pattern', 'patterns', 'why', 'worked',
+    'works', 'gotcha', 'warning', 'avoid', 'fix', 'solution', 'problem'
+  ];
+  const matchedPrompts = promptSignal(prompts, keywords);
+  const shouldPromote = matchedPrompts.length > 0;
+
+  return {
+    shouldPromote,
+    matchedPrompts,
+    slug: slugifyTopic((matchedPrompts[matchedPrompts.length - 1] || changedFiles[0] || prompts[prompts.length - 1] || ''), 'reusable-pattern')
+  };
+}
+
+function topicNotePath(subdir, today, slug) {
+  return path.join(runtime.BRIEFING_DIR, subdir, `${today}-${slug}.md`);
+}
+
+function firstExistingTopicNote(subdir, today) {
+  const dir = path.join(runtime.BRIEFING_DIR, subdir);
+  if (!runtime.exists(dir)) return '';
+  const names = fs.readdirSync(dir)
+    .filter((name) => name.startsWith(`${today}-`) && !name.includes('-auto'))
+    .sort();
+  return names.length > 0 ? path.join(dir, names[0]) : '';
 }
 
 function actionLines(state, diffSummary, signalLines) {
@@ -165,6 +282,30 @@ function actionLines(state, diffSummary, signalLines) {
   return lines.length > 0 ? lines : ['- No meaningful work signals were recorded.'];
 }
 
+function inferDecisionCandidates(state, changedFiles) {
+  const candidates = [];
+  const promptTexts = (state.prompts || []).map((entry) => entry.excerpt || entry.text).filter(Boolean);
+  const promptBlob = promptTexts.join(' ').toLowerCase();
+
+  if ((state.changedFiles || []).length > 0) {
+    candidates.push(`- State and hook wiring changed across ${changedFilesInline(changedFiles)}.`);
+  }
+  if ((state.searchCount || 0) > 0) {
+    candidates.push('- External references were used, so any adopted pattern should be captured with rationale.');
+  }
+  if (promptBlob.includes('policy') || promptBlob.includes('routing') || promptBlob.includes('persona')) {
+    candidates.push('- Persona or routing behavior changed; capture the new policy boundary and why it exists.');
+  }
+  if (promptBlob.includes('windows') || promptBlob.includes('install')) {
+    candidates.push('- Installation behavior changed; document the expected platform-specific path handling.');
+  }
+  if (promptBlob.includes('vault') || promptBlob.includes('briefing')) {
+    candidates.push('- Vault structure or note-generation behavior changed; capture the intended note contract.');
+  }
+
+  return Array.from(new Set(candidates));
+}
+
 function referenceLines(links) {
   if (!links || links.length === 0) {
     return ['- No external references were captured.'];
@@ -188,6 +329,9 @@ function nextStepLines(changedFiles, enforcementReason, state) {
   }
   if ((state.links || []).length > 0) {
     lines.push('- Promote any durable external source into a dedicated note under `.briefing/references/` if it will matter again.');
+  }
+  if ((state.changedFiles || []).length > 0) {
+    lines.push(`- If one concrete choice was made, turn it into \`.briefing/decisions/${runtime.currentDate()}-<topic>.md\`.`);
   }
   return lines;
 }
@@ -317,6 +461,39 @@ function sessionAutoContent(today, state, changedFiles, statusLines, signalLines
   ].join('\n');
 }
 
+function sessionTopicContent(today, slug, state, changedFiles, diffSummary, references) {
+  const prompts = meaningfulPromptTexts(state);
+  const title = slug.split('-').map((part) => part.charAt(0).toUpperCase() + part.slice(1)).join(' ');
+  return [
+    '---',
+    `date: ${today}`,
+    'type: session',
+    'tags: [session, codex]',
+    'related: []',
+    '---',
+    '',
+    `# Session: ${title}`,
+    '',
+    '## Goal',
+    ...(prompts.length > 0 ? [`- ${prompts[0]}`] : ['- Goal was inferred from the captured session context.']),
+    '',
+    '## Actions',
+    ...actionLines(state, diffSummary, []),
+    '',
+    '## Results',
+    ...(changedFiles.length > 0 ? [`- Changed files: ${changedFilesInline(changedFiles)}.`] : ['- No tracked file changes were recorded.']),
+    ...((state.links || []).length > 0 ? [`- Consulted ${state.links.length} reference link(s) while shaping the result.`] : []),
+    '',
+    '## References',
+    ...(references.length > 0 ? references : ['- No external references were captured.']),
+    '',
+    '## Next Steps',
+    '- Promote any durable architectural choice into a dedicated decision note.',
+    '- Promote any reusable technique or warning into a dedicated learning note.',
+    ''
+  ].join('\n');
+}
+
 function learningAutoContent(today, state, changedFiles, statusLines, signalLines) {
   const candidates = learningCandidateLines(state, changedFiles);
   return [
@@ -347,6 +524,111 @@ function learningAutoContent(today, state, changedFiles, statusLines, signalLine
   ].join('\n');
 }
 
+function learningTopicContent(today, slug, state, changedFiles, learningInfo) {
+  const title = slug.split('-').map((part) => part.charAt(0).toUpperCase() + part.slice(1)).join(' ');
+  const matched = (learningInfo && learningInfo.matchedPrompts) || [];
+  const latestPrompt = matched.slice(-1)[0] || meaningfulPromptTexts(state).slice(-1)[0] || 'The session surfaced a reusable pattern.';
+  return [
+    '---',
+    `date: ${today}`,
+    'type: learning',
+    'tags: [pattern, codex]',
+    'related: []',
+    '---',
+    '',
+    `# Learning: ${title}`,
+    '',
+    '## Problem',
+    `- ${latestPrompt}`,
+    '',
+    '## Solution',
+    ...(learningCandidateLines(state, changedFiles).map((line) => line.replace(/^- /, '- '))),
+    '',
+    '## Why It Works',
+    ...(changedFiles.length > 0
+      ? [`- The pattern was grounded in changes across ${changedFilesInline(changedFiles)}.`]
+      : ['- This learning was inferred from the captured prompts and references.']),
+    ''
+  ].join('\n');
+}
+
+function decisionAutoContent(today, state, changedFiles, signalLines, references) {
+  const candidates = inferDecisionCandidates(state, changedFiles);
+  return [
+    '---',
+    `date: ${today}`,
+    'type: decision-auto',
+    'tags: [briefing-vault, codex, auto]',
+    '---',
+    '',
+    `# Decision Scaffold: ${today}`,
+    '',
+    '## Candidate Decisions',
+    ...(candidates.length > 0 ? candidates : ['- No durable architectural or workflow decision was confidently detected yet.']),
+    '',
+    '## Why This Might Matter',
+    `- Changed files: ${changedFilesInline(changedFiles)}.`,
+    `- Prompt/edit/search counts: ${state.promptCount || 0}/${state.editCount || 0}/${state.searchCount || 0}.`,
+    '',
+    '## Supporting Signals',
+    ...(signalLines.length > 0 ? signalLines : ['- No strong routing or wrapper signal was logged yet.']),
+    '',
+    '## References In Play',
+    ...(references.length > 0 ? references : ['- No external references were captured.']),
+    '',
+    '## Suggested Follow-Up',
+    `- If a real decision was made, write \`.briefing/decisions/${today}-<topic>.md\` with context, choice, and consequences.`,
+    '- Delete this scaffold if the session contained implementation churn but no durable decision.',
+    ''
+  ].join('\n');
+}
+
+function decisionTopicContent(today, slug, state, changedFiles, references, decisionInfo) {
+  const title = slug.split('-').map((part) => part.charAt(0).toUpperCase() + part.slice(1)).join(' ');
+  const candidates = inferDecisionCandidates(state, changedFiles);
+  const matched = (decisionInfo && decisionInfo.matchedPrompts) || [];
+  const policy = runtime.readPersonaPolicy();
+  const policyAgents = Object.keys(policy.preferences || {});
+  return [
+    '---',
+    `date: ${today}`,
+    'type: decision',
+    'tags: [architecture, codex]',
+    'status: accepted',
+    'related: []',
+    '---',
+    '',
+    `# Decision: ${title}`,
+    '',
+    '## Context',
+    ...(candidates.length > 0 ? candidates : ['- A durable decision was inferred from the session context.']),
+    ...(matched.length > 0 ? [`- Prompt evidence: ${matched[0]}.`] : []),
+    ...(policyAgents.length > 0 ? [`- Active persona policy in scope: ${policyAgents.join(', ')}.`] : []),
+    '',
+    '## Options Considered',
+    '- Keep the previous behavior and continue relying on the auto scaffold only.',
+    '- Promote the durable choice into a named project note for future sessions.',
+    '',
+    '## Decision',
+    '- Promote this session outcome into a named note so future sessions can reuse it without re-reading the scaffold.',
+    '',
+    '## Consequences',
+    ...(references.length > 0
+      ? ['- Supporting references were captured and can be revisited if the decision is questioned later.']
+      : ['- This decision currently rests on local session evidence only.']),
+    ...(changedFiles.length > 0 ? [`- Affected files: ${changedFilesInline(changedFiles)}.`] : []),
+    ''
+  ].join('\n');
+}
+
+function writePromotedNote(subdir, today, slug, contentBuilder) {
+  const existing = firstExistingTopicNote(subdir, today);
+  if (existing) return existing;
+  const filePath = topicNotePath(subdir, today, slug);
+  runtime.writeText(filePath, contentBuilder(filePath));
+  return filePath;
+}
+
 function runNodeHook(scriptName, payload) {
   const scriptPath = path.join(process.env.HOME || process.env.USERPROFILE || '', '.codex', 'hooks', scriptName);
   if (!runtime.exists(scriptPath)) return '';
@@ -369,10 +651,10 @@ if (!runtime.exists(INDEX_FILE)) {
 
 runtime.mkdirp(path.join(runtime.BRIEFING_DIR, 'sessions'));
 runtime.mkdirp(path.join(runtime.BRIEFING_DIR, 'learnings'));
+runtime.mkdirp(path.join(runtime.BRIEFING_DIR, 'decisions'));
 runtime.mkdirp(path.join(runtime.BRIEFING_DIR, 'agents'));
 runtime.mkdirp(path.join(runtime.BRIEFING_DIR, 'references'));
-runtime.mkdirp(path.join(runtime.BRIEFING_DIR, 'persona', 'rules'));
-runtime.mkdirp(path.join(runtime.BRIEFING_DIR, 'persona', 'skills'));
+runtime.mkdirp(path.join(runtime.BRIEFING_DIR, 'persona'));
 const today = runtime.currentDate();
 const rawInput = readStdin();
 const payload = tryParseJson(rawInput);
@@ -397,11 +679,14 @@ if (!syncOnly) {
   appendWrapperAgentEvent(agentLogPath, payload, sessionState);
 }
 
-const statusRecords = gitStatusRecords(sessionState.changedFiles || []);
+const statusRecords = gitStatusRecords(sessionState.changedFiles || [])
+  .filter((record) => !shouldIgnoreSessionPath(record.path, sessionState.sessionHookNoise));
 const statusLines = endStatusLines(statusRecords);
 const diffSummary = gitTrackedDiffSummary(sessionState.sessionStartHead, sessionState.changedFiles || []);
 const preProfileSignalLines = todaySignalLines(agentLogPath, today);
 const linksFile = path.join(runtime.BRIEFING_DIR, 'references', 'auto-links.md');
+const decisionAutoPath = path.join(runtime.BRIEFING_DIR, 'decisions', `${today}-auto.md`);
+const referenceSection = referenceLines(sessionState.links || []);
 
 writeAutoLinks(linksFile, sessionState.links || []);
 
@@ -416,12 +701,41 @@ runtime.writeText(
   learningAutoPath,
   learningAutoContent(today, sessionState, sessionState.changedFiles || [], statusLines, preProfileSignalLines)
 );
+runtime.writeText(
+  decisionAutoPath,
+  decisionAutoContent(today, sessionState, sessionState.changedFiles || [], preProfileSignalLines, referenceSection)
+);
 
 if (!syncOnly) {
   runNodeHook('stop-profile-update.js', payload || {
     agent_id: 'codex-wrapper-stop',
     agent_type: process.env.MY_CODEX_SESSION_END_AGENT_TYPE || 'wrapper'
   });
+}
+
+if (!syncOnly) {
+  const sessionSlug = deriveTopicSlug(sessionState, sessionState.changedFiles || [], 'session');
+  const changedFiles = sessionState.changedFiles || [];
+  const learningInfo = learningSignal(sessionState, changedFiles);
+  const decisionInfo = decisionSignal(sessionState, changedFiles);
+  const learningSlug = learningInfo.slug;
+  const decisionSlug = decisionInfo.slug;
+
+  if ((sessionState.promptCount || 0) > 0 || changedFiles.length > 0 || (sessionState.links || []).length > 0) {
+    writePromotedNote('sessions', today, sessionSlug, function() {
+      return sessionTopicContent(today, sessionSlug, sessionState, changedFiles, diffSummary, referenceSection);
+    });
+  }
+  if (learningInfo.shouldPromote) {
+    writePromotedNote('learnings', today, learningSlug, function() {
+      return learningTopicContent(today, learningSlug, sessionState, changedFiles, learningInfo);
+    });
+  }
+  if (decisionInfo.shouldPromote) {
+    writePromotedNote('decisions', today, decisionSlug, function() {
+      return decisionTopicContent(today, decisionSlug, sessionState, changedFiles, referenceSection, decisionInfo);
+    });
+  }
 }
 
 const enforcementOutput = runNodeHook('stop-session-enforcement.js', payload || {
@@ -439,6 +753,10 @@ runtime.writeText(
 runtime.writeText(
   learningAutoPath,
   learningAutoContent(today, sessionState, sessionState.changedFiles || [], statusLines, postProfileSignalLines)
+);
+runtime.writeText(
+  decisionAutoPath,
+  decisionAutoContent(today, sessionState, sessionState.changedFiles || [], postProfileSignalLines, referenceSection)
 );
 
 if (enforcementReason) {

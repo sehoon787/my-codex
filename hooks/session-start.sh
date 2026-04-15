@@ -98,7 +98,7 @@ fi
 if [ -d ".knowledge" ]; then
   if [ ! -d ".briefing" ]; then
     mv ".knowledge" ".briefing"
-    mkdir -p ".briefing/persona/rules" ".briefing/persona/skills"
+    mkdir -p ".briefing/persona"
     if [ -f ".briefing/INDEX.md" ] && ! grep -q '^language:' ".briefing/INDEX.md"; then
       sed -i '/^type:/a language: en' ".briefing/INDEX.md" 2>/dev/null || true
     fi
@@ -118,7 +118,7 @@ if [ -d ".knowledge" ]; then
       fi
     done
     rm -rf ".knowledge"
-    mkdir -p ".briefing/persona/rules" ".briefing/persona/skills"
+    mkdir -p ".briefing/persona"
     if [ -f ".gitignore" ]; then
       sed -i '/^\.knowledge\//d' ".gitignore" 2>/dev/null || true
       grep -q '\.briefing/' ".gitignore" 2>/dev/null || echo '.briefing/' >> ".gitignore"
@@ -147,39 +147,12 @@ if [ -f "$_sug_file" ]; then
   fi
 fi
 
-# 8. Persona: Active Rules Summary
-_rules_dir="$_kv_dir/persona/rules"
-if [ -d "$_rules_dir" ]; then
-  _rule_names=""
-  for _rf in "$_rules_dir"/*.md; do
-    [ -f "$_rf" ] || continue
-    _rname=$(basename "$_rf" .md)
-    if [ -z "$_rule_names" ]; then
-      _rule_names="$_rname"
-    else
-      _rule_names="$_rule_names, $_rname"
-    fi
-  done
-  if [ -n "$_rule_names" ]; then
-    _kv_msg="${_kv_msg} [BriefingVault] Active persona rules: ${_rule_names}"
-  fi
-fi
-
-# 9. Persona: Active Skills Summary
-_skills_dir="$_kv_dir/persona/skills"
-if [ -d "$_skills_dir" ]; then
-  _skill_names=""
-  for _sf in "$_skills_dir"/*.md; do
-    [ -f "$_sf" ] || continue
-    _sname=$(basename "$_sf" .md)
-    if [ -z "$_skill_names" ]; then
-      _skill_names="$_sname"
-    else
-      _skill_names="$_skill_names, $_sname"
-    fi
-  done
-  if [ -n "$_skill_names" ]; then
-    _kv_msg="${_kv_msg} [BriefingVault] Active persona skills: ${_skill_names}"
+# 8. Persona: Active Policy Summary
+_policy_file="$_kv_dir/persona/persona-policy.json"
+if [ -f "$_policy_file" ] && command -v node >/dev/null 2>&1; then
+  _policy_summary=$(node -e "const fs=require('fs');try{const p=JSON.parse(fs.readFileSync(process.argv[1],'utf8'));const prefs=p&&p.preferences&&typeof p.preferences==='object'?Object.keys(p.preferences):[];if(prefs.length){console.log(prefs.sort().join(', '))}}catch(e){}" "$_policy_file" 2>/dev/null || true)
+  if [ -n "$_policy_summary" ]; then
+    _kv_msg="${_kv_msg} [BriefingVault] Active persona policy: ${_policy_summary}"
   fi
 fi
 

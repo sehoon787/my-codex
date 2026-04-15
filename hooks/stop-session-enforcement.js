@@ -11,6 +11,7 @@ try {
   const BRIEFING_DIR = runtime.BRIEFING_DIR;
   const SESSIONS_DIR = path.join(BRIEFING_DIR, 'sessions');
   const LEARNINGS_DIR = path.join(BRIEFING_DIR, 'learnings');
+  const DECISIONS_DIR = path.join(BRIEFING_DIR, 'decisions');
   const INDEX_FILE = path.join(BRIEFING_DIR, 'INDEX.md');
 
   if (!fs.existsSync(INDEX_FILE)) {
@@ -29,6 +30,24 @@ try {
 
   if (!meaningfulWork) {
     process.exit(0);
+  }
+
+  function promptTexts() {
+    return (sessionState.prompts || [])
+      .map((entry) => (entry && (entry.excerpt || entry.text) || '').trim().toLowerCase())
+      .filter(Boolean);
+  }
+
+  function hasPromptKeyword(keywords) {
+    const texts = promptTexts();
+    for (const text of texts) {
+      for (const keyword of keywords) {
+        if (text.indexOf(keyword) !== -1) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
   let lang = 'en';
@@ -66,6 +85,31 @@ try {
     }
   } catch {}
 
+  let hasProperDecision = false;
+  try {
+    if (fs.existsSync(DECISIONS_DIR)) {
+      for (const file of fs.readdirSync(DECISIONS_DIR)) {
+        if (file.slice(0, 10) === todayStr && file.indexOf('-auto') === -1) {
+          hasProperDecision = true;
+          break;
+        }
+      }
+    }
+  } catch {}
+
+  const policy = runtime.readPersonaPolicy();
+  const decisionNeeded =
+    hasPromptKeyword([
+      'decision', 'decisions', 'choose', 'chosen', 'choice', 'policy', 'routing',
+      'route', 'prefer', 'install path', 'consolidate', 'replace', 'switch', 'adopt'
+    ]) ||
+    Object.keys(policy.preferences || {}).length > 0;
+  const learningNeeded =
+    hasPromptKeyword([
+      'learning', 'learnings', 'reusable', 'pattern', 'patterns', 'why', 'worked',
+      'works', 'gotcha', 'warning', 'avoid', 'fix', 'solution', 'problem'
+    ]);
+
   if (!hasProperSummary) {
     const reason = isKo
       ? `[BriefingVault] 실제 세션 요약이 없습니다. .briefing/sessions/${todayStr}-<topic>.md 에 목표, 작업, 결과를 적으세요.`
@@ -78,7 +122,7 @@ try {
     process.exit(0);
   }
 
-  if (hasProperSummary && (sessionState.workCounter || 0) >= 5 && !hasProperLearning) {
+  if (hasProperSummary && learningNeeded && !hasProperLearning) {
     const learningReason = isKo
       ? `[BriefingVault] 작업량이 많았지만 학습 노트가 없습니다. .briefing/learnings/${todayStr}-<topic>.md 에 재사용할 패턴이나 주의점을 남기세요.`
       : `[BriefingVault] No follow-up learning despite significant work. Write .briefing/learnings/${todayStr}-<topic>.md with the reusable pattern or warning.`;
@@ -86,6 +130,18 @@ try {
     process.stdout.write(JSON.stringify({
       decision: 'block',
       reason: learningReason
+    }) + '\n');
+    process.exit(0);
+  }
+
+  if (hasProperSummary && decisionNeeded && !hasProperDecision) {
+    const decisionReason = isKo
+      ? `[BriefingVault] 파일 변경이 많지만 후속 decision note가 없습니다. .briefing/decisions/${todayStr}-<topic>.md 에 왜 이런 구조를 택했는지 적으세요.`
+      : `[BriefingVault] Significant file changes were made without a follow-up decision note. Write .briefing/decisions/${todayStr}-<topic>.md with the choice and rationale.`;
+
+    process.stdout.write(JSON.stringify({
+      decision: 'block',
+      reason: decisionReason
     }) + '\n');
     process.exit(0);
   }

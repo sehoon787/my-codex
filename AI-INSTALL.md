@@ -41,7 +41,7 @@ This installs:
 - Global `AGENTS.md` instructions with Boss meta-orchestrator as default agent
 - `config.toml` with `multi_agent = true`
 - `~/.codex/bin/codex` wrapper plus git hooks for Codex-only commit attribution
-- wrapper-managed Briefing Vault synthesis for Codex sessions (`session-start.sh` + `session-end.js`, including session and learning auto scaffolds)
+- Codex-native Briefing Vault hooks plus wrapper fallback (`session-start.sh`, `session-sync.js`, `session-end.js`)
 - 3 MCP servers (Context7 — real-time library docs, Exa — web search, grep_app — GitHub code search)
 
 Why the numbers are lower than raw source totals:
@@ -205,7 +205,8 @@ Setup complete. Multi-agent orchestration is ready.
 
 Windows note:
 - `install.sh` patches the npm-managed `codex`, `codex.cmd`, and `codex.ps1` shims when present. This keeps the my-codex vault pipeline active even when `%APPDATA%\\npm` resolves before `~/.codex/bin`.
-- The Codex wrapper writes lightweight wrapper/session signals into `.briefing/agents/`; it does not claim Claude-style per-tool native hook telemetry.
+- The Codex plugin auto-loads `hooks/hooks.json` by convention; do not declare a `hooks` field in `.codex-plugin/plugin.json`.
+- Briefing Vault updates now happen both during the session (`UserPromptSubmit`, `PostToolUse`) and at stop, with wrapper fallback for session continuity.
 - Reading `AI-INSTALL.md` does not install anything. Use `install.sh` for unattended agent setup.
 
 ## Codex Attribution Defaults

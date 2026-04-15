@@ -1231,6 +1231,10 @@ if [ -f "$REPO_ROOT/hooks/session-end.js" ]; then
   cp "$REPO_ROOT/hooks/session-end.js" "$CODEX_ROOT/hooks/session-end.js"
   add_manifest_entry "hooks/session-end.js"
 fi
+if [ -f "$REPO_ROOT/hooks/session-sync.js" ]; then
+  cp "$REPO_ROOT/hooks/session-sync.js" "$CODEX_ROOT/hooks/session-sync.js"
+  add_manifest_entry "hooks/session-sync.js"
+fi
 if [ -f "$REPO_ROOT/hooks/stop-session-enforcement.js" ]; then
   cp "$REPO_ROOT/hooks/stop-session-enforcement.js" "$CODEX_ROOT/hooks/stop-session-enforcement.js"
   add_manifest_entry "hooks/stop-session-enforcement.js"

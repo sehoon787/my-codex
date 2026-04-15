@@ -380,8 +380,9 @@ const payload = tryParseJson(rawInput);
 const agentLogPath = path.join(BRIEFING_DIR, 'agents', 'agent-log.jsonl');
 const noisePaths = readHookNoisePaths();
 const startStatusRecords = readStatusSnapshot();
+const syncOnly = process.env.MY_CODEX_SESSION_SYNC_ONLY === '1';
 
-const appendedChangedFiles = appendWrapperAgentEvent(agentLogPath, payload);
+const appendedChangedFiles = syncOnly ? sessionChangedFiles() : appendWrapperAgentEvent(agentLogPath, payload);
 const endStatusSnapshot = gitStatusRecords([]);
 const changedFiles = uniquePaths(
   appendedChangedFiles
@@ -398,10 +399,12 @@ const learningAutoPath = path.join(BRIEFING_DIR, 'learnings', `${today}-auto-ses
 writeText(sessionAutoPath, sessionAutoContent(today, baseRef, changedFiles, statusRecords, statusLines, preProfileSignalLines, ''));
 writeText(learningAutoPath, learningAutoContent(today, changedFiles, statusLines, preProfileSignalLines));
 
-runNodeHook('stop-profile-update.js', payload || {
-  agent_id: 'codex-wrapper-stop',
-  agent_type: process.env.MY_CODEX_SESSION_END_AGENT_TYPE || 'wrapper'
-});
+if (!syncOnly) {
+  runNodeHook('stop-profile-update.js', payload || {
+    agent_id: 'codex-wrapper-stop',
+    agent_type: process.env.MY_CODEX_SESSION_END_AGENT_TYPE || 'wrapper'
+  });
+}
 
 const enforcementOutput = runNodeHook('stop-session-enforcement.js', payload || {
   agent_id: 'codex-wrapper-stop',

@@ -2,6 +2,5 @@
   "name": "my-codex",
   "description": "Multi-agent orchestration plugin for Codex CLI with BriefingVault enforcement",
   "version": "0.17.8",
-  "author": { "name": "sehoon787" },
-  "hooks": "./hooks/hooks.json"
+  "author": { "name": "sehoon787" }
 }

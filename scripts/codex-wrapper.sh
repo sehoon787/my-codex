@@ -82,8 +82,8 @@ if [ -z "$REAL_CODEX" ]; then
   exit 127
 fi
 
-# Run my-codex SessionStart hook (side effects only; Codex CLI has no native hook support)
-# Output discarded because nothing in Codex consumes hookSpecificOutput. Failures non-blocking.
+# Run my-codex SessionStart hook as a wrapper fallback.
+# Native Codex plugin hooks should also fire when the plugin is installed. Failures here are non-blocking.
 _hook_installed="no"
 [ -x "$HOME/.codex/hooks/session-start.sh" ] && _hook_installed="yes"
 if [ -x "$HOME/.codex/hooks/session-start.sh" ]; then

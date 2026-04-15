@@ -57,7 +57,7 @@ rm -rf /tmp/my-codex
 ```
 
 Windows note:
-- `install.sh` patches the npm-managed `codex`, `codex.cmd`, and `codex.ps1` shims when they exist, so the my-codex session-start and session-end vault pipeline still runs even if `%APPDATA%\npm` resolves before `~/.codex/bin`.
+- `install.sh` patches the npm-managed `codex`, `codex.cmd`, and `codex.ps1` shims when they exist, so the my-codex vault pipeline still has wrapper fallback coverage even if `%APPDATA%\npm` resolves before `~/.codex/bin`.
 - Fetching `AI-INSTALL.md` only prints instructions. Use `install.sh` for unattended setup.
 
 ---
@@ -339,7 +339,7 @@ bash /tmp/my-codex/install.sh --profile full
 
 ## <img src="https://obsidian.md/images/obsidian-logo-gradient.svg" width="24" height="24" align="center"/> Briefing Vault
 
-Obsidian-compatible persistent memory. Every project maintains a `.briefing/` directory that auto-populates across sessions.
+Obsidian-compatible persistent memory. Every project maintains a `.briefing/` directory that updates during Codex sessions via native plugin hooks, with wrapper fallback for session start/end continuity.
 
 ```
 .briefing/
@@ -369,16 +369,16 @@ Obsidian-compatible persistent memory. Every project maintains a `.briefing/` di
 | Path | Description |
 |------|-------------|
 | `INDEX.md` | Project overview with links to recent decisions and learnings. Auto-created on first session, refreshed periodically. |
-| `sessions/` | **Session summaries.** `*-auto.md` — auto-generated scaffold at session end with recorded session files, a filtered end-of-session status snapshot, logged wrapper/session signals, and follow-up reminders. `<topic>.md` — human or agent-written follow-up session summary prompted by the vault reminders. |
+| `sessions/` | **Session summaries.** `*-auto.md` — auto-generated scaffold refreshed during the session and finalized at stop using recorded session files, filtered status, and logged signals. `<topic>.md` — human or agent-written follow-up session summary prompted by the vault reminders. |
 | `decisions/` | **Architecture and design decisions** with rationale. Write these as durable notes when a decision is important enough to keep. |
-| `learnings/` | **Patterns, gotchas, non-obvious solutions.** `*-auto-session.md` — auto-generated scaffold with the session's recorded file list, logged wrapper/session signals, and prompts for follow-up notes. `<topic>.md` — human or agent-written learning note. |
-| `references/` | **Web research URLs.** `references/` is available for saved links and notes. The current Codex wrapper flow does not auto-populate `auto-links.md`. |
-| `agents/` | **Logged session signals.** `agent-log.jsonl` — wrapper/session log plus any richer hook payloads that are available. `YYYY-MM-DD-summary.md` — daily logged-signal breakdown derived from that log. |
+| `learnings/` | **Patterns, gotchas, non-obvious solutions.** `*-auto-session.md` — auto-generated scaffold refreshed during the session with the session's recorded file list, logged signals, and prompts for follow-up notes. `<topic>.md` — human or agent-written learning note. |
+| `references/` | **Web research URLs.** `references/auto-links.md` is updated from `WebSearch`/`WebFetch` hook activity when those native Codex hooks are available. |
+| `agents/` | **Logged session signals.** `agent-log.jsonl` — wrapper/session log plus richer hook payloads when available. `YYYY-MM-DD-summary.md` — daily logged-signal breakdown derived from that log. |
 | `persona/` | **User work style profile.** `profile.md` — routing/profile summary derived from logged signals. `suggestions.jsonl` — routing recommendations. `rules/`, `skills/` — accepted preferences. |
 
 ### Session-Specific Diffs
 
-At session start, my-codex saves the current git HEAD and a snapshot of the working tree state. During the session, the wrapper records which repo paths actually changed. At session end, the auto scaffold summarizes diff and status only for those recorded paths, while filtering hook-created noise such as `.briefing/` artifacts and session-start `.gitignore` edits.
+At session start, my-codex saves the current git HEAD and a snapshot of the working tree state. During the session, native Codex hooks refresh `.briefing` scaffolds after prompts, edits, searches, and subagent completions. At session end, the final scaffold summarizes diff and status only for recorded paths, while filtering hook-created noise such as `.briefing/` artifacts and session-start `.gitignore` edits.
 
 This keeps the scaffold focused on session-owned work instead of dumping the entire repository status.
 

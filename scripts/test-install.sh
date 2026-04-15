@@ -9,8 +9,51 @@ TMP_ROOT="$TMP_PARENT/my-codex-install-test.$$"
 TEST_HOME="$TMP_ROOT/home"
 BIN_DIR="$TMP_ROOT/bin"
 LOG_FILE="$TMP_ROOT/codex.log"
+VAULT_ONLY=0
+
+if [ "${1:-}" = "--vault-only" ]; then
+  VAULT_ONLY=1
+fi
+
+find_git_bash() {
+  local candidate
+  local program_files="${ProgramFiles:-}"
+  local program_files_x86
+  program_files_x86="$(printenv 'ProgramFiles(x86)' 2>/dev/null || true)"
+  for candidate in \
+    "$program_files/Git/bin/bash.exe" \
+    "$program_files/Git/usr/bin/bash.exe" \
+    "$program_files_x86/Git/bin/bash.exe" \
+    "$program_files_x86/Git/usr/bin/bash.exe" \
+    "/c/Program Files/Git/bin/bash.exe" \
+    "/c/Program Files/Git/usr/bin/bash.exe" \
+    "/mnt/c/Program Files/Git/bin/bash.exe" \
+    "/mnt/c/Program Files/Git/usr/bin/bash.exe"
+  do
+    [ -x "$candidate" ] && { printf '%s\n' "$candidate"; return 0; }
+  done
+  return 1
+}
+
+to_git_bash_path() {
+  local value="$1"
+  if command -v cygpath >/dev/null 2>&1; then
+    cygpath -u "$value" 2>/dev/null && return 0
+  fi
+  case "$value" in
+    /mnt/[A-Za-z]/*)
+      printf '%s' "$value" | sed -E 's#^/mnt/([A-Za-z])#/\L\1#'
+      return 0
+      ;;
+  esac
+  printf '%s' "$value" | sed -E 's#^([A-Za-z]):#/\L\1#; s#\\#/#g'
+}
 
 cleanup() {
+  if [ "${KEEP_TMP_ROOT:-0}" = "1" ]; then
+    echo "Preserving test root: $TMP_ROOT" >&2
+    return
+  fi
   rm -rf "$TMP_ROOT"
 }
 trap cleanup EXIT
@@ -59,6 +102,108 @@ expected_version="$(git -C "$REPO_ROOT" rev-parse --short=12 HEAD 2>/dev/null ||
 HOME="$TEST_HOME" PATH="$BIN_DIR:$PATH" MY_CODEX_TEST_LOG="$LOG_FILE" \
   bash "$REPO_ROOT/install.sh" > "$TMP_ROOT/install.out"
 
+test -f "$TEST_HOME/.agents/plugins/marketplace.json"
+grep -q '"name": "my-codex"' "$TEST_HOME/.agents/plugins/marketplace.json"
+test -L "$TEST_HOME/.agents/plugins/plugins/my-codex"
+test "$(readlink "$TEST_HOME/.agents/plugins/plugins/my-codex")" = "$TEST_HOME/.codex/vendor/my-codex"
+test -f "$TEST_HOME/.codex/vendor/my-codex/.codex-plugin/plugin.json"
+! grep -q '"hooks"' "$TEST_HOME/.codex/vendor/my-codex/.codex-plugin/plugin.json"
+test -f "$TEST_HOME/.codex/hooks/session-sync.js"
+
+if [ "$VAULT_ONLY" = "1" ]; then
+  GIT_BASH=""
+  case "$(uname -s)" in
+    MINGW*|MSYS*|CYGWIN*|Linux)
+      GIT_BASH="$(find_git_bash || true)"
+      ;;
+  esac
+  PROJECT_ROOT="$TMP_ROOT/project"
+  mkdir -p "$PROJECT_ROOT"
+  (
+    cd "$PROJECT_ROOT"
+    git init -q
+    git config user.name test
+    git config user.email test@example.com
+    printf 'baseline\n' > tracked.txt
+    git add tracked.txt
+    git commit -q -m "baseline"
+    if [ -n "$GIT_BASH" ]; then
+      wrapper_path="$(to_git_bash_path "$TEST_HOME/.codex/bin/codex")"
+      project_path="$(to_git_bash_path "$(pwd)")"
+      test_home_path="$(to_git_bash_path "$TEST_HOME")"
+      bin_path="$(to_git_bash_path "$BIN_DIR")"
+      log_path="$(to_git_bash_path "$LOG_FILE")"
+      touch_path="$(to_git_bash_path "$PROJECT_ROOT/tracked.txt")"
+      "$GIT_BASH" -lc \
+        "cd '$project_path' && HOME='$test_home_path' PATH=\"$test_home_path/.codex/bin:$bin_path:\$PATH\" MY_CODEX_TEST_LOG='$log_path' MY_CODEX_TEST_TOUCH_FILE='$touch_path' '$wrapper_path' run" \
+        > "$TMP_ROOT/vault.out"
+    else
+      HOME="$TEST_HOME" PATH="$TEST_HOME/.codex/bin:$BIN_DIR:$PATH" MY_CODEX_TEST_LOG="$LOG_FILE" \
+        MY_CODEX_TEST_TOUCH_FILE="$PROJECT_ROOT/tracked.txt" \
+        "$TEST_HOME/.codex/bin/codex" run > "$TMP_ROOT/vault.out"
+    fi
+  )
+
+  today="$(date -u +%Y-%m-%d)"
+  session_auto="$PROJECT_ROOT/.briefing/sessions/$today-auto.md"
+  learning_auto="$PROJECT_ROOT/.briefing/learnings/$today-auto-session.md"
+  test -f "$PROJECT_ROOT/.briefing/INDEX.md"
+  test -f "$PROJECT_ROOT/.briefing/agents/agent-log.jsonl"
+  test -f "$session_auto"
+  test -f "$learning_auto"
+  grep -q 'tracked.txt' "$session_auto"
+  grep -q 'tracked.txt' "$learning_auto"
+  ! grep -q '\.gitignore' "$session_auto"
+  ! grep -q '\.gitignore' "$learning_auto"
+
+  HOOK_PROJECT="$TMP_ROOT/hook-project"
+  mkdir -p "$HOOK_PROJECT"
+  (
+    cd "$HOOK_PROJECT"
+    git init -q
+    git config user.name test
+    git config user.email test@example.com
+    printf 'baseline\n' > tracked.txt
+    git add tracked.txt
+    git commit -q -m "baseline"
+
+    if [ -n "$GIT_BASH" ]; then
+      hook_project_path="$(to_git_bash_path "$HOOK_PROJECT")"
+      test_home_path="$(to_git_bash_path "$TEST_HOME")"
+      tmp_root_path="$(to_git_bash_path "$TMP_ROOT")"
+      "$GIT_BASH" -lc \
+        "cd '$hook_project_path' && HOME='$test_home_path' bash '$test_home_path/.codex/hooks/session-start.sh' > /dev/null && printf 'edited\n' >> tracked.txt && printf '{}' | HOME='$test_home_path' node '$test_home_path/.codex/hooks/session-sync.js' edit > '$tmp_root_path/hook-edit.out' && printf '{\"tool_input\":{\"url\":\"https://example.com/docs\"}}' | HOME='$test_home_path' node '$test_home_path/.codex/hooks/session-sync.js' search > '$tmp_root_path/hook-search.out' && printf '{}' | HOME='$test_home_path' node '$test_home_path/.codex/hooks/session-sync.js' prompt > '$tmp_root_path/hook-prompt-1.out' && printf '{}' | HOME='$test_home_path' node '$test_home_path/.codex/hooks/session-sync.js' prompt > '$tmp_root_path/hook-prompt-2.out' && printf '{}' | HOME='$test_home_path' node '$test_home_path/.codex/hooks/session-sync.js' prompt > '$tmp_root_path/hook-prompt-3.out' && printf '{}' | HOME='$test_home_path' node '$test_home_path/.codex/hooks/session-sync.js' prompt > '$tmp_root_path/hook-prompt-4.out' && printf '{}' | HOME='$test_home_path' node '$test_home_path/.codex/hooks/session-sync.js' prompt > '$tmp_root_path/hook-prompt-5.out'"
+    else
+      HOME="$TEST_HOME" bash "$TEST_HOME/.codex/hooks/session-start.sh" > /dev/null
+      printf 'edited\n' >> tracked.txt
+      printf '{}' | HOME="$TEST_HOME" node "$TEST_HOME/.codex/hooks/session-sync.js" edit > "$TMP_ROOT/hook-edit.out"
+      printf '{"tool_input":{"url":"https://example.com/docs"}}' | HOME="$TEST_HOME" node "$TEST_HOME/.codex/hooks/session-sync.js" search > "$TMP_ROOT/hook-search.out"
+      printf '{}' | HOME="$TEST_HOME" node "$TEST_HOME/.codex/hooks/session-sync.js" prompt > "$TMP_ROOT/hook-prompt-1.out"
+      printf '{}' | HOME="$TEST_HOME" node "$TEST_HOME/.codex/hooks/session-sync.js" prompt > "$TMP_ROOT/hook-prompt-2.out"
+      printf '{}' | HOME="$TEST_HOME" node "$TEST_HOME/.codex/hooks/session-sync.js" prompt > "$TMP_ROOT/hook-prompt-3.out"
+      printf '{}' | HOME="$TEST_HOME" node "$TEST_HOME/.codex/hooks/session-sync.js" prompt > "$TMP_ROOT/hook-prompt-4.out"
+      printf '{}' | HOME="$TEST_HOME" node "$TEST_HOME/.codex/hooks/session-sync.js" prompt > "$TMP_ROOT/hook-prompt-5.out"
+    fi
+  )
+
+  hook_session_auto="$HOOK_PROJECT/.briefing/sessions/$today-auto.md"
+  hook_learning_auto="$HOOK_PROJECT/.briefing/learnings/$today-auto-session.md"
+  hook_profile_md="$HOOK_PROJECT/.briefing/persona/profile.md"
+  hook_links_md="$HOOK_PROJECT/.briefing/references/auto-links.md"
+  test -f "$hook_session_auto"
+  test -f "$hook_learning_auto"
+  test -f "$hook_profile_md"
+  test -f "$hook_links_md"
+  grep -q 'tracked.txt' "$hook_session_auto"
+  grep -q 'tracked.txt' "$hook_learning_auto"
+  grep -q 'https://example.com/docs' "$hook_links_md"
+  grep -q 'BriefingVault' "$TMP_ROOT/hook-prompt-3.out"
+  grep -q '(insufficient data)\|Only wrapper/session-level signals have been observed so far.' "$hook_profile_md"
+
+  echo "Vault smoke test passed"
+  exit 0
+fi
+
 actual_core=$(find "$TEST_HOME/.codex/agents" -maxdepth 1 -type f -name '*.toml' | wc -l | tr -d ' ')
 actual_active_pack_links=$(find "$TEST_HOME/.codex/agents" -maxdepth 1 -type l -name '*.toml' | wc -l | tr -d ' ')
 actual_packs=$(find "$TEST_HOME/.codex/agent-packs" -name '*.toml' | wc -l | tr -d ' ')
@@ -78,10 +223,6 @@ test -f "$TEST_HOME/.codex/enabled-agent-packs.txt"
 test -x "$TEST_HOME/.codex/bin/codex"
 test -x "$TEST_HOME/.codex/bin/codex-mark-used"
 test -x "$TEST_HOME/.codex/bin/my-codex-packs"
-test -f "$TEST_HOME/.agents/plugins/marketplace.json"
-grep -q '"name": "my-codex"' "$TEST_HOME/.agents/plugins/marketplace.json"
-test -L "$TEST_HOME/.agents/plugins/plugins/my-codex"
-test "$(readlink "$TEST_HOME/.agents/plugins/plugins/my-codex")" = "$TEST_HOME/.codex/vendor/my-codex"
 test -f "$TEST_HOME/.codex/vendor/my-codex/install.sh"
 test -x "$TEST_HOME/.codex/git-hooks/prepare-commit-msg"
 test -x "$TEST_HOME/.codex/git-hooks/commit-msg"
@@ -205,5 +346,41 @@ grep -q '## Logged Signals' "$profile_md"
 grep -q '## Specialist Preferences' "$profile_md"
 grep -q 'wrapper-managed session stop: 1 logged event' "$signal_summary"
 grep -q 'Total logged signals today: 1' "$signal_summary"
+
+HOOK_PROJECT="$TMP_ROOT/hook-project"
+mkdir -p "$HOOK_PROJECT"
+(
+  cd "$HOOK_PROJECT"
+  git init -q
+  git config user.name test
+  git config user.email test@example.com
+  printf 'baseline\n' > tracked.txt
+  git add tracked.txt
+  git commit -q -m "baseline"
+  HOME="$TEST_HOME" bash "$TEST_HOME/.codex/hooks/session-start.sh" > /dev/null
+  printf 'edited\n' >> tracked.txt
+  printf '{}' | HOME="$TEST_HOME" node "$TEST_HOME/.codex/hooks/session-sync.js" edit > "$TMP_ROOT/hook-edit.out"
+  printf '{"tool_input":{"url":"https://example.com/docs"}}' | HOME="$TEST_HOME" node "$TEST_HOME/.codex/hooks/session-sync.js" search > "$TMP_ROOT/hook-search.out"
+  printf '{}' | HOME="$TEST_HOME" node "$TEST_HOME/.codex/hooks/session-sync.js" prompt > "$TMP_ROOT/hook-prompt-1.out"
+  printf '{}' | HOME="$TEST_HOME" node "$TEST_HOME/.codex/hooks/session-sync.js" prompt > "$TMP_ROOT/hook-prompt-2.out"
+  printf '{}' | HOME="$TEST_HOME" node "$TEST_HOME/.codex/hooks/session-sync.js" prompt > "$TMP_ROOT/hook-prompt-3.out"
+  printf '{}' | HOME="$TEST_HOME" node "$TEST_HOME/.codex/hooks/session-sync.js" prompt > "$TMP_ROOT/hook-prompt-4.out"
+  printf '{}' | HOME="$TEST_HOME" node "$TEST_HOME/.codex/hooks/session-sync.js" prompt > "$TMP_ROOT/hook-prompt-5.out"
+)
+
+hook_session_auto="$HOOK_PROJECT/.briefing/sessions/$today-auto.md"
+hook_learning_auto="$HOOK_PROJECT/.briefing/learnings/$today-auto-session.md"
+hook_profile_md="$HOOK_PROJECT/.briefing/persona/profile.md"
+hook_links_md="$HOOK_PROJECT/.briefing/references/auto-links.md"
+test -f "$hook_session_auto"
+test -f "$hook_learning_auto"
+test -f "$hook_profile_md"
+test -f "$hook_links_md"
+grep -q 'tracked.txt' "$hook_session_auto"
+grep -q 'tracked.txt' "$hook_learning_auto"
+grep -q 'wrapper-managed session stop: 1 logged event\|mid-session-sync' "$hook_session_auto"
+grep -q 'https://example.com/docs' "$hook_links_md"
+grep -q 'BriefingVault' "$TMP_ROOT/hook-prompt-3.out"
+grep -q 'Only wrapper/session-level signals have been observed so far.\|no specialist-level signals yet' "$hook_profile_md"
 
 echo "Install smoke test passed"

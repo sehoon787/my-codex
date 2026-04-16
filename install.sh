@@ -776,9 +776,6 @@ patch_npm_shims() {
 REM my-codex wrapper - runs SessionStart hook via Git Bash, logs invocation, delegates to codex.real.cmd
 SETLOCAL EnableDelayedExpansion
 
-IF DEFINED CODEX_WRAPPER_INVOKED GOTO :delegate
-SET "CODEX_WRAPPER_INVOKED=1"
-
 SET "GIT_BASH="
 IF EXIST "%ProgramFiles%\Git\bin\bash.exe" SET "GIT_BASH=%ProgramFiles%\Git\bin\bash.exe"
 IF NOT DEFINED GIT_BASH IF EXIST "%ProgramFiles%\Git\usr\bin\bash.exe" SET "GIT_BASH=%ProgramFiles%\Git\usr\bin\bash.exe"
@@ -824,29 +821,25 @@ CMDEOF
 # my-codex in-place patch of npm codex.ps1
 # Runs SessionStart hook via Git Bash, logs invocation, delegates to codex.real.ps1.
 
-if (-not $env:CODEX_WRAPPER_INVOKED) {
-    $env:CODEX_WRAPPER_INVOKED = "1"
+$gitBash = @(
+    (Join-Path $env:ProgramFiles "Git\bin\bash.exe"),
+    (Join-Path $env:ProgramFiles "Git\usr\bin\bash.exe"),
+    (Join-Path ${env:ProgramFiles(x86)} "Git\bin\bash.exe")
+) | Where-Object { $_ -and (Test-Path $_) } | Select-Object -First 1
 
-    $gitBash = @(
-        (Join-Path $env:ProgramFiles "Git\bin\bash.exe"),
-        (Join-Path $env:ProgramFiles "Git\usr\bin\bash.exe"),
-        (Join-Path ${env:ProgramFiles(x86)} "Git\bin\bash.exe")
-    ) | Where-Object { $_ -and (Test-Path $_) } | Select-Object -First 1
+$hookPath = Join-Path $env:USERPROFILE ".codex\hooks\session-start.sh"
+$hookOk = if (Test-Path $hookPath) { "yes" } else { "no" }
 
-    $hookPath = Join-Path $env:USERPROFILE ".codex\hooks\session-start.sh"
-    $hookOk = if (Test-Path $hookPath) { "yes" } else { "no" }
-
-    if ($gitBash -and ($hookOk -eq "yes")) {
-        try { & $gitBash $hookPath *> $null } catch {}
-    }
-
-    try {
-        $ts = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
-        $logPath = Join-Path $env:USERPROFILE ".codex\last-invocation.log"
-        $line = "$ts`twrapper=npm\codex.ps1`tcwd=$($PWD.Path)`thook_installed=$hookOk`tgit_bash=$gitBash"
-        Add-Content -Path $logPath -Value $line -Encoding UTF8
-    } catch {}
+if ($gitBash -and ($hookOk -eq "yes")) {
+    try { & $gitBash $hookPath *> $null } catch {}
 }
+
+try {
+    $ts = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
+    $logPath = Join-Path $env:USERPROFILE ".codex\last-invocation.log"
+    $line = "$ts`twrapper=npm\codex.ps1`tcwd=$($PWD.Path)`thook_installed=$hookOk`tgit_bash=$gitBash"
+    Add-Content -Path $logPath -Value $line -Encoding UTF8
+} catch {}
 
 & "$PSScriptRoot\codex.real.ps1" @args
 $codexExit = $LASTEXITCODE
@@ -884,19 +877,15 @@ PS1EOF
 # Runs SessionStart hook, logs invocation, then delegates to codex.real.
 
 basedir=$(dirname "$(echo "$0" | sed -e 's,\,/,g')")
-
-if [ -z "${CODEX_WRAPPER_INVOKED:-}" ]; then
-  export CODEX_WRAPPER_INVOKED=1
-  hook_path="$HOME/.codex/hooks/session-start.sh"
-  hook_ok="no"
-  if [ -f "$hook_path" ]; then
-    hook_ok="yes"
-    bash "$hook_path" >/dev/null 2>&1 || true
-  fi
-  ts=$(date -u +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || echo unknown)
-  printf '%s\twrapper=npm/codex\tcwd=%s\thook_installed=%s\n' "$ts" "$PWD" "$hook_ok" \
-    >> "$HOME/.codex/last-invocation.log" 2>/dev/null || true
+hook_path="$HOME/.codex/hooks/session-start.sh"
+hook_ok="no"
+if [ -f "$hook_path" ]; then
+  hook_ok="yes"
+  bash "$hook_path" >/dev/null 2>&1 || true
 fi
+ts=$(date -u +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || echo unknown)
+printf '%s\twrapper=npm/codex\tcwd=%s\thook_installed=%s\n' "$ts" "$PWD" "$hook_ok" \
+  >> "$HOME/.codex/last-invocation.log" 2>/dev/null || true
 
 "$basedir/codex.real" "$@"
 codex_status=$?

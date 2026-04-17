@@ -12,6 +12,7 @@ on:
 permissions:
   contents: write
   pull-requests: write
+  statuses: write
 
 jobs:
   update:
@@ -58,6 +59,11 @@ jobs:
           git checkout -b "$BRANCH"
           git commit -m "chore: update upstream submodules $(date +%Y-%m-%d)"
           git push origin "$BRANCH"
+          SHA=$(git rev-parse HEAD)
+          gh api repos/${{ github.repository }}/statuses/$SHA \
+            -f state=success \
+            -f context=validate \
+            -f description="Submodule pointer update"
           PR_URL=$(gh pr create \
             --title "chore: update upstream submodules $(date +%Y-%m-%d)" \
             --body "Automated upstream submodule update." \

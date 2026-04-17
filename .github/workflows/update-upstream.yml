@@ -1,7 +1,7 @@
 name: Update Upstream Submodules
 on:
   schedule:
-    - cron: '0 9 * * 1'
+    - cron: '0 9 */3 * *'
   workflow_dispatch:
     inputs:
       submodule:
@@ -11,7 +11,6 @@ on:
 
 permissions:
   contents: write
-  pull-requests: write
 
 jobs:
   update:
@@ -49,35 +48,8 @@ jobs:
             git diff --cached --name-only >> "$GITHUB_STEP_SUMMARY"
           fi
 
-      - name: Create and merge Pull Request
+      - name: Push to main
         if: steps.check.outputs.changed == 'true'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          BRANCH="chore/update-upstream-$(date +%Y%m%d)"
-          git checkout -b "$BRANCH"
-          git commit -m "chore: update upstream submodules"
-          git push origin "$BRANCH"
-          PR_URL=$(gh pr create \
-            --title "chore: update upstream submodules $(date +%Y-%m-%d)" \
-            --body "Automated weekly upstream submodule update." \
-            --base main)
-          gh pr merge "$PR_URL" --squash --delete-branch --admin 2>/dev/null || \
-            gh pr merge "$PR_URL" --squash --delete-branch 2>/dev/null || \
-            echo "Auto-merge not available — PR created at $PR_URL"
-
-      - name: Cleanup stale update branches
-        if: always()
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gh api repos/${{ github.repository }}/branches --paginate --jq '.[].name' 2>/dev/null | \
-            grep '^chore/update-upstream-' | while read -r branch; do
-              PR_STATE=$(gh pr list --head "$branch" --state all --json state --jq '.[0].state' 2>/dev/null || echo "")
-              case "$PR_STATE" in
-                MERGED|CLOSED)
-                  gh api -X DELETE "repos/${{ github.repository }}/git/refs/heads/$branch" 2>/dev/null || true
-                  echo "Deleted stale branch: $branch"
-                  ;;
-              esac
-            done
+          git commit -m "chore: update upstream submodules $(date +%Y-%m-%d)"
+          git push origin main

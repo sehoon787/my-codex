@@ -11,6 +11,7 @@ on:
 
 permissions:
   contents: write
+  pull-requests: write
 
 jobs:
   update:
@@ -48,8 +49,17 @@ jobs:
             git diff --cached --name-only >> "$GITHUB_STEP_SUMMARY"
           fi
 
-      - name: Push to main
+      - name: Create PR with auto-merge
         if: steps.check.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          BRANCH="chore/update-upstream-$(date +%Y%m%d)"
+          git checkout -b "$BRANCH"
           git commit -m "chore: update upstream submodules $(date +%Y-%m-%d)"
-          git push origin main
+          git push origin "$BRANCH"
+          PR_URL=$(gh pr create \
+            --title "chore: update upstream submodules $(date +%Y-%m-%d)" \
+            --body "Automated upstream submodule update." \
+            --base main)
+          gh pr merge "$PR_URL" --auto --squash --delete-branch

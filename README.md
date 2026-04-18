@@ -34,21 +34,7 @@ then routes your task to the right specialist via `spawn_agent`. No config. No b
 curl -fsSL https://raw.githubusercontent.com/sehoon787/my-codex/main/install.sh | bash
 ```
 
-### For AI Agents
-
-```bash
-curl -s https://raw.githubusercontent.com/sehoon787/my-codex/main/AI-INSTALL.md
-```
-
-That command prints the installation guide for an AI agent to follow. It does not install by itself.
-
-If you want the AI to install immediately, use:
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/sehoon787/my-codex/main/install.sh | bash
-```
-
-Clone-based install still works too:
+Clone-based install:
 
 ```bash
 git clone --depth 1 https://github.com/sehoon787/my-codex.git /tmp/my-codex
@@ -58,7 +44,10 @@ rm -rf /tmp/my-codex
 
 Windows note:
 - `install.sh` patches the npm-managed `codex`, `codex.cmd`, and `codex.ps1` shims when they exist, so the my-codex vault pipeline still has wrapper fallback coverage even if `%APPDATA%\npm` resolves before `~/.codex/bin`.
-- Fetching `AI-INSTALL.md` only prints instructions. Use `install.sh` for unattended setup.
+
+### For AI Agents
+
+Read [AI-INSTALL.md](https://raw.githubusercontent.com/sehoon787/my-codex/main/AI-INSTALL.md) and follow every step.
 
 ---
 

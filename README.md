@@ -47,7 +47,9 @@ Windows note:
 
 ### For AI Agents
 
-Read [AI-INSTALL.md](https://raw.githubusercontent.com/sehoon787/my-codex/main/AI-INSTALL.md) and follow every step.
+```
+Read https://raw.githubusercontent.com/sehoon787/my-codex/main/AI-INSTALL.md and follow every step.
+```
 
 ---
 

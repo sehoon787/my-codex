@@ -130,6 +130,15 @@ if (!fs.existsSync(INDEX_FILE)) {
   process.exit(0);
 }
 
+// Guard: if boss-briefing already ran today, skip profile overwrite
+try {
+  const guardState = runtime.readState();
+  const todayGuard = new Date().toISOString().slice(0, 10);
+  if (guardState.lastVaultSync && guardState.lastVaultSync.slice(0, 10) === todayGuard) {
+    process.exit(0);
+  }
+} catch(e) {}
+
 try {
   fs.mkdirSync(PERSONA_DIR, { recursive: true });
 } catch (error) {

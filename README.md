@@ -173,7 +173,7 @@ Confirm "design done"   Architect verification  User: approve / improve
 |----------|------:|--------|
 | **Core agents** (always loaded) | 98 | Boss 1 + OMO 9 + OMX 33 + Awesome Core 54 + Superpowers 1 |
 | **Agent packs** (on-demand) | 220+ | 20 domain categories from agency-agents + awesome-codex-subagents |
-| **Skills** | 200+ | ECC 180+ · gstack 40 · OMX 36 · Superpowers 14 · Core 1 |
+| **Skills** | 200+ | ECC 180+ · gstack 40 · OMX 36 · Superpowers 14 · Core 2 |
 | **MCP Servers** | 3 | Context7, Exa, grep.app |
 | **config.toml** | 1 | my-codex |
 | **AGENTS.md** | 1 | my-codex |
@@ -311,7 +311,7 @@ bash /tmp/my-codex/install.sh --profile full
 | [oh-my-codex](https://github.com/Yeachan-Heo/oh-my-codex) | 36 | plan, team, trace, deep-dive, blueprint, ultrawork |
 | [gstack](https://github.com/garrytan/gstack) | 40 | /qa, /review, /ship, /cso, /investigate, /office-hours |
 | [superpowers](https://github.com/obra/superpowers) | 14 | brainstorming, systematic-debugging, TDD, parallel-agents |
-| [my-codex Core](https://github.com/sehoon787/my-codex) | 1 | boss-advanced |
+| [my-codex Core](https://github.com/sehoon787/my-codex) | 2 | boss-advanced, boss-briefing |
 
 </details>
 
@@ -335,6 +335,7 @@ Obsidian-compatible persistent memory. Every project maintains a `.briefing/` di
 ```
 .briefing/
 ├── INDEX.md                          ← Project context (auto-created once)
+├── state.json                        ← Session metadata, counters, lastVaultSync (auto-managed)
 ├── sessions/
 │   ├── YYYY-MM-DD-<topic>.md        ← Human/agent-written follow-up session summary
 │   └── YYYY-MM-DD-auto.md           ← Auto-generated scaffold (recorded files, filtered status, follow-up)
@@ -351,7 +352,8 @@ Obsidian-compatible persistent memory. Every project maintains a `.briefing/` di
 └── persona/
     ├── profile.md                   ← Routing/profile summary from logged signals
     ├── suggestions.jsonl            ← Routing suggestions (auto-generated)
-    └── persona-policy.json          ← Accepted soft routing preferences for Boss
+    ├── persona-policy.json          ← Accepted soft routing preferences for Boss
+    └── rules/                       ← Workflow pattern rules (workflow-*.md)
 ```
 
 ### Sub-Vaults
@@ -363,14 +365,15 @@ Obsidian-compatible persistent memory. Every project maintains a `.briefing/` di
 | `decisions/` | **Architecture and design decisions** with rationale. Write these as durable notes when a decision is important enough to keep. |
 | `learnings/` | **Patterns, gotchas, non-obvious solutions.** `*-auto-session.md` — auto-generated scaffold refreshed during the session with the session's recorded file list, logged signals, and prompts for follow-up notes. `<topic>.md` — human or agent-written learning note. |
 | `references/` | **Web research URLs.** `references/auto-links.md` is updated from `WebSearch`/`WebFetch` hook activity when those native Codex hooks are available. |
-| `agents/` | **Logged session signals.** `agent-log.jsonl` — wrapper/session log plus richer hook payloads when available. `YYYY-MM-DD-summary.md` — daily logged-signal breakdown derived from that log. |
-| `persona/` | **User work style profile.** `profile.md` — routing/profile summary derived from logged signals. `suggestions.jsonl` — routing recommendations. `persona-policy.json` — accepted soft routing preferences that Boss can use as tie-breakers when capabilities already match. |
+| `agents/` | **Logged session signals.** `agent-log.jsonl` — enriched entries with `{ts, agent_id, agent_type, phase, seq, task_hint}`. `YYYY-MM-DD-summary.md` — daily logged-signal breakdown derived from that log. |
+| `persona/` | **User work style profile.** `profile.md` — routing/profile summary derived from logged signals. `suggestions.jsonl` — routing recommendations. `persona-policy.json` — accepted soft routing preferences. `rules/workflow-*.md` — workflow sequence pattern rules proposed by `/boss-briefing`. |
+| `state.json` | Session metadata: counters, lastVaultSync, sessionStartHead. Auto-managed by hooks. |
 
 ### Session-Specific Diffs
 
 At session start, my-codex saves the current git HEAD and a snapshot of the working tree state. During the session, native Codex hooks refresh `.briefing` scaffolds after prompts, edits, searches, and subagent completions. At session end, the final scaffold summarizes diff and status only for recorded paths, while filtering hook-created noise such as `.briefing/` artifacts and session-start `.gitignore` edits.
 
-This keeps the scaffold focused on session-owned work instead of dumping the entire repository status.
+This keeps the scaffold focused on session-owned work instead of dumping the entire repository status. For non-git projects, a `YYYY-MM-DD:cwd` identifier is used as fallback.
 
 ### Using with Obsidian
 
@@ -378,6 +381,31 @@ This keeps the scaffold focused on session-owned work instead of dumping the ent
 2. Notes appear in graph view, linked by `[[wiki-links]]`
 3. YAML frontmatter (`date`, `type`, `tags`) enables structured search
 4. Timeline scaffolds for sessions and learnings build automatically; follow-up summaries, decisions, and learning notes accumulate as you write them
+
+### /boss-briefing
+
+Run `/boss-briefing` during or at the end of a session to:
+- **Sync vault**: Update profile.md, INDEX.md, and agent summaries
+- **Detect workflow patterns**: Analyze temporal agent call sequences across sessions
+- **Recover from gaps**: Generate recovery summaries if days have passed since the last session
+- **Propose persona rules**: Suggest workflow-based routing preferences (not just frequency)
+- **Validate session notes**: Check that today's session has a proper summary
+
+The Stop hook checks whether `/boss-briefing` has run today. If not, it blocks session end with a reminder. The existing `stop-profile-update.js` continues to run as a fallback.
+
+### Behavioral Hooks
+
+| Hook | Event | Behavior |
+|------|-------|----------|
+| Session Setup | SessionStart | Auto-detects tools + injects Briefing Vault context |
+| Delegation Guard | PreToolUse | Blocks Boss from directly modifying files |
+| Agent Telemetry | PostToolUse | Logs agent usage to analytics |
+| Vault Enforcer | PostToolUse | Counts edits, warns if no vault entries |
+| Subagent Logger | SubagentStop | Logs agent execution to Briefing Vault |
+| Vault Reminder | UserPromptSubmit | Suggests /boss-briefing after 5+ messages |
+| Completion Check | Stop | Runs profile fallback + guards /boss-briefing |
+| Teammate Guide | TeammateIdle | Prompts leader on idle teammates |
+| Quality Gate | TaskCompleted | Verifies deliverable quality |
 
 ---
 

@@ -103,7 +103,15 @@ function reminderText(state) {
   const linkCount = (state.links || []).length;
 
   if (promptCount < 3) return '';
-  if (workCount === 0 && changedCount === 0 && linkCount === 0) return '';
+  if (workCount === 0 && changedCount === 0 && linkCount === 0) {
+    // Still check if boss-briefing reminder is needed
+    var lastSync = state.lastVaultSync || '';
+    var syncToday = lastSync && lastSync.slice(0, 10) === runtime.currentDate();
+    if (promptCount >= 5 && !syncToday) {
+      return '[BriefingVault] Run /boss-briefing to sync vault and analyze workflow patterns.';
+    }
+    return '';
+  }
 
   if (isKo) {
     if (promptCount >= 6 || changedCount >= 3) {

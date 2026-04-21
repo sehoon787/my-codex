@@ -62,7 +62,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node -e \"const fs=require('fs');const d='.briefing/agents';if(fs.existsSync('.briefing/INDEX.md')){fs.mkdirSync(d,{recursive:true});const j=JSON.parse(fs.readFileSync(0,'utf8'));const e={ts:new Date().toISOString(),agent_id:j.agent_id||'unknown',agent_type:j.agent_type||'unknown'};fs.appendFileSync(d+'/agent-log.jsonl',JSON.stringify(e)+'\\n')}\"",
+            "command": "node -e \"const fs=require('fs');const p=require('path');const d='.briefing/agents';if(fs.existsSync('.briefing/INDEX.md')){fs.mkdirSync(d,{recursive:true});const j=JSON.parse(fs.readFileSync(0,'utf8'));const at=j.agent_type||'unknown';var pm={explore:'research',executor:'implement','code-reviewer':'review','tdd-guide':'test',planner:'plan',debugger:'debug'};var phase=pm[at]||'';var sf='.briefing/state.json';var seq=0;try{var st=JSON.parse(fs.readFileSync(sf,'utf8'));seq=(parseInt(st.subagentSeq,10)||0)+1;st.subagentSeq=seq;fs.writeFileSync(sf,JSON.stringify(st,null,2)+'\\n')}catch(x){}var th=(j.description||j.name||'').replace(/[\\r\\n]+/g,' ').slice(0,120);const e={ts:new Date().toISOString(),agent_id:j.agent_id||'unknown',agent_type:at,phase:phase,seq:seq,task_hint:th};fs.appendFileSync(d+'/agent-log.jsonl',JSON.stringify(e)+'\\n')}\"",
             "timeout": 5000
           },
           {

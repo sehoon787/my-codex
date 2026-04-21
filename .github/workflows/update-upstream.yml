@@ -59,6 +59,10 @@ jobs:
           git checkout -b "$BRANCH"
           git commit -m "chore: update upstream submodules $(date +%Y-%m-%d)"
           git push origin "$BRANCH"
+          # Rebase onto latest main to avoid diverged-branch auto-merge failures
+          git fetch origin main
+          git rebase origin/main
+          git push --force-with-lease origin "$BRANCH"
           SHA=$(git rev-parse HEAD)
           gh api repos/${{ github.repository }}/statuses/$SHA \
             -f state=success \

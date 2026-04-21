@@ -83,6 +83,21 @@ function main() {
   const sessionId = startHead || `${runtime.currentDate()}:${process.cwd()}`;
   const state = runtime.readState();
 
+  // Gap detection: warn if days have passed since last session
+  var gapMessage = '';
+  try {
+    var prevDate = state.date || '';
+    var todayStr = runtime.currentDate();
+    if (prevDate && prevDate !== todayStr) {
+      var prev = new Date(prevDate + 'T00:00:00Z');
+      var now = new Date(todayStr + 'T00:00:00Z');
+      var diffDays = Math.round((now - prev) / (1000 * 60 * 60 * 24));
+      if (diffDays >= 1) {
+        gapMessage = '[BriefingVault] ' + diffDays + ' day(s) since last session (' + prevDate + '). Run /boss-briefing for recovery.';
+      }
+    }
+  } catch(e) {}
+
   let gitignoreChanged = false;
   try {
     const gitignorePath = '.gitignore';
@@ -137,7 +152,7 @@ function main() {
     ? '[BriefingVault] Auto-created .briefing/ and initialized .briefing/state.json.'
     : '[BriefingVault] Loaded .briefing/ and reset .briefing/state.json for this session.';
 
-  process.stdout.write(message);
+  process.stdout.write(gapMessage ? message + '\n' + gapMessage : message);
 }
 
 main();

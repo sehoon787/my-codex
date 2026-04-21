@@ -104,7 +104,9 @@ function defaultState() {
     lastSearchQuery: '',
     lastSearchUrl: '',
     lastProfileUpdateAt: '',
-    sessionCount: 0
+    sessionCount: 0,
+    lastVaultSync: '',
+    subagentSeq: 0
   };
 }
 

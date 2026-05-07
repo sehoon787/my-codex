@@ -31,7 +31,7 @@
   },
   "vibeproxy": {
     "repo": "https://github.com/automazeio/vibeproxy",
-    "method": "submodule + setup",
+    "method": "vendor-scripts",
     "note": "OAuth-based model proxy for GPT/Gemini/Claude in Codex CLI"
   }
 }

@@ -28,5 +28,10 @@
   "superpowers": {
     "repo": "https://github.com/obra/superpowers",
     "method": "submodule"
+  },
+  "vibeproxy": {
+    "repo": "https://github.com/automazeio/vibeproxy",
+    "method": "submodule + setup",
+    "note": "OAuth-based model proxy for GPT/Gemini/Claude in Codex CLI"
   }
 }

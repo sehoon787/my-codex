@@ -385,7 +385,7 @@ Beim Sitzungsstart wird der aktuelle git-HEAD in `.briefing/.session-start-head`
 
 ## Upstream Open-Source-Quellen
 
-my-codex bündelt Inhalte aus 8 Upstream-Repositories:
+my-codex bündelt Inhalte aus 9 Upstream-Repositories:
 
 | # | Quelle | Was bereitgestellt wird |
 |---|--------|------------------------|
@@ -397,6 +397,7 @@ my-codex bündelt Inhalte aus 8 Upstream-Repositories:
 | 6 | <img src="https://github.com/obra.png?size=32" width="20" height="20" align="center"/> **[superpowers](https://github.com/obra/superpowers)** — Jesse Vincent | 14 Skills + 1 Agent zu Brainstorming, TDD, parallelen Agenten und Code-Review. |
 | 7 | <img src="https://github.com/code-yeongyu.png?size=32" width="20" height="20" align="center"/> **[oh-my-openagent](https://github.com/code-yeongyu/oh-my-openagent)** — code-yeongyu | 9 OMO-Agenten (Sisyphus, Atlas, Oracle usw.). Für das native Codex-TOML-Format angepasst. |
 | 8 | <img src="https://github.com/garrytan.png?size=32" width="20" height="20" align="center"/> **[gstack](https://github.com/garrytan/gstack)** — garrytan | 40 Skills für Code-Review, QA, Sicherheits-Audit und Deployment. Enthält Playwright-Browser-Daemon. |
+| 9 | <img src="https://github.com/automazeio.png?size=32" width="20" height="20" align="center"/> **[VibeProxy](https://github.com/automazeio/vibeproxy)** — automazeio | OAuth-basierter API-Proxy. Nutzt vorhandene AI-Abonnements (ChatGPT Plus, Gemini, Claude) ohne separate API-Schlüssel. Optionale Einrichtung über `vibeproxy-setup.sh`. |
 
 ---
 

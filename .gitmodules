@@ -16,3 +16,6 @@
 [submodule "upstream/superpowers"]
 	path = upstream/superpowers
 	url = https://github.com/obra/superpowers
+[submodule "upstream/vibeproxy"]
+	path = upstream/vibeproxy
+	url = https://github.com/automazeio/vibeproxy

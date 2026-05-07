@@ -395,7 +395,7 @@ Au début de la session, le git HEAD courant est enregistré dans `.briefing/.se
 
 ## Sources open source en amont
 
-my-codex regroupe du contenu provenant de 8 dépôts upstream :
+my-codex regroupe du contenu provenant de 9 dépôts upstream :
 
 | # | Source | Ce qu'elle fournit |
 |---|--------|-----------------|
@@ -407,6 +407,7 @@ my-codex regroupe du contenu provenant de 8 dépôts upstream :
 | 6 | <img src="https://github.com/obra.png?size=32" width="20" height="20" align="center"/> **[superpowers](https://github.com/obra/superpowers)** — Jesse Vincent | 14 skills + 1 agent couvrant brainstorming, TDD, agents parallèles et révision de code. |
 | 7 | <img src="https://github.com/code-yeongyu.png?size=32" width="20" height="20" align="center"/> **[oh-my-openagent](https://github.com/code-yeongyu/oh-my-openagent)** — code-yeongyu | 9 agents OMO (Sisyphus, Atlas, Oracle, etc.). Adaptés au format TOML natif Codex. |
 | 8 | <img src="https://github.com/garrytan.png?size=32" width="20" height="20" align="center"/> **[gstack](https://github.com/garrytan/gstack)** — garrytan | 40 skills pour la révision de code, QA, audit de sécurité, déploiement. Inclut un daemon navigateur Playwright. |
+| 9 | <img src="https://github.com/automazeio.png?size=32" width="20" height="20" align="center"/> **[VibeProxy](https://github.com/automazeio/vibeproxy)** — automazeio | Proxy API basé sur OAuth. Utilise les abonnements AI existants (ChatGPT Plus, Gemini, Claude) sans clés API séparées. Configuration optionnelle via `vibeproxy-setup.sh`. |
 
 ---
 

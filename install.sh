@@ -1030,10 +1030,17 @@ if [ "$SKIP_SUPERPOWERS" = "0" ]; then
   echo "  [superpowers] Initializing superpowers..."
   if init_upstream superpowers https://github.com/obra/superpowers; then
     # superpowers has a single agent (code-reviewer.md) — convert at install time
-    if [ -f "$UPSTREAM_DIR/agents/code-reviewer.md" ] && [ -f "$REPO_ROOT/scripts/md-to-toml.sh" ]; then
+    _sp_cr_src=""
+    if [ -f "$UPSTREAM_DIR/agents/code-reviewer.md" ]; then
+      _sp_cr_src="$UPSTREAM_DIR/agents/code-reviewer.md"
+    elif [ -f "$UPSTREAM_DIR/skills/requesting-code-review/code-reviewer.md" ]; then
+      _sp_cr_src="$UPSTREAM_DIR/skills/requesting-code-review/code-reviewer.md"
+    fi
+    _sp_cr_done=0
+    if [ -n "$_sp_cr_src" ] && [ -f "$REPO_ROOT/scripts/md-to-toml.sh" ]; then
       local_staging="$CLONE_TMPDIR/superpowers-staging"
       mkdir -p "$local_staging/agents"
-      cp "$UPSTREAM_DIR/agents/code-reviewer.md" "$local_staging/agents/"
+      cp "$_sp_cr_src" "$local_staging/agents/code-reviewer.md"
       local_toml_out="$CLONE_TMPDIR/superpowers-toml"
       mkdir -p "$local_toml_out"
       bash "$REPO_ROOT/scripts/md-to-toml.sh" "$local_staging" "$local_toml_out" 2>/dev/null || true
@@ -1043,7 +1050,23 @@ if [ "$SKIP_SUPERPOWERS" = "0" ]; then
           "$local_toml_out/agents/code-reviewer.toml" 2>/dev/null || true
         cp "$local_toml_out/agents/code-reviewer.toml" "$CODEX_ROOT/agents/superpowers-code-reviewer.toml"
         add_manifest_entry "agents/superpowers-code-reviewer.toml"
+        _sp_cr_done=1
       fi
+    fi
+    # Fallback: if md-to-toml failed (e.g. no frontmatter in newer superpowers), create minimal TOML
+    if [ "$_sp_cr_done" = "0" ] && [ -n "$_sp_cr_src" ]; then
+      cat > "$CODEX_ROOT/agents/superpowers-code-reviewer.toml" << 'TOML'
+name = "superpowers-code-reviewer"
+description = "Senior code reviewer from superpowers — reviews completed work against requirements and code quality standards"
+
+[developer_instructions]
+content = """
+You are a Senior Code Reviewer with expertise in software architecture, design patterns, and best practices.
+Review completed work against its plan or requirements and identify issues before they cascade.
+Focus on correctness, security, performance, and maintainability.
+"""
+TOML
+      add_manifest_entry "agents/superpowers-code-reviewer.toml"
     fi
   fi
 fi

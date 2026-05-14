@@ -815,7 +815,17 @@ runtime.writeText(
 
 var archiveCandidates = suggestArchiving();
 if (archiveCandidates.length > 0 && !syncOnly) {
-  process.stderr.write('[BriefingVault] Archive candidates (30+ days old): ' + archiveCandidates.slice(0, 5).join(', ') + '. Move to .briefing/archives/ if no longer active.\n');
+  var archiveDir = path.join(runtime.BRIEFING_DIR, 'archives');
+  runtime.mkdirp(archiveDir);
+  var moved = [];
+  archiveCandidates.forEach(function(rel) {
+    var src = path.join(runtime.BRIEFING_DIR, rel);
+    var dest = path.join(archiveDir, path.basename(rel));
+    try { fs.renameSync(src, dest); moved.push(rel); } catch(e) {}
+  });
+  if (moved.length > 0) {
+    process.stderr.write('[BriefingVault] Archived ' + moved.length + ' file(s) (30+ days old): ' + moved.join(', ') + '\n');
+  }
 }
 
 var wikiSuggestions = suggestWikiPages(sessionState);

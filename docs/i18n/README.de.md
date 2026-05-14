@@ -340,11 +340,17 @@ Obsidian-kompatibler persistenter Speicher. Jedes Projekt pflegt ein `.briefing/
 ├── agents/
 │   ├── agent-log.jsonl              ← Subagent execution telemetry
 │   └── YYYY-MM-DD-summary.md        ← Daily agent usage breakdown
-└── persona/
-    ├── profile.md                   ← Agent affinity stats (auto-updated)
-    ├── suggestions.jsonl            ← Routing suggestions (auto-generated)
-    ├── rules/                       ← Accepted routing preferences
-    └── skills/                      ← Accepted persona skills
+├── persona/
+│   ├── profile.md                   ← Agent affinity stats (auto-updated)
+│   ├── suggestions.jsonl            ← Routing suggestions (auto-generated)
+│   ├── rules/                       ← Accepted routing preferences
+│   └── skills/                      ← Accepted persona skills
+├── archives/                         ← Abgeschlossene/inaktive Notizen (30+ Tage)
+│   ├── sessions/
+│   ├── decisions/
+│   └── learnings/
+└── wiki/                             ← Konzeptseiten (automatisch vorgeschlagen)
+    └── _schema.md
 ```
 
 ### Automatisierungs-Lebenszyklus
@@ -358,6 +364,8 @@ Obsidian-kompatibler persistenter Speicher. Jedes Projekt pflegt ein `.briefing/
 | **Während der Arbeit** | `UserPromptSubmit` (every 5th) | Gedrosseltes Persona-Profil-Update |
 | **Sitzungsende** | `Stop` (1. Hook) | Generiert automatisch Gerüste: `sessions/auto.md`, `learnings/auto-session.md`, `decisions/auto.md`, `persona/profile.md` |
 | **Sitzungsende** | `Stop` (2. Hook) | **Erzwingt** KI-erstellte Sitzungszusammenfassung bei ≥ 3 Dateibearbeitungen — blockiert Sitzungsende mit Vorlage |
+| **archives/** | — | Schlägt automatisch vor, abgeschlossene/inaktive Notizen ab 30+ Tagen zu archivieren. PARA-Archiv-Konzept. |
+| **wiki/** | — | Konzept-Wiki-Seiten. Automatisch vorgeschlagen, wenn ein Schlüsselwort 3+ Mal vorkommt. LLM-wiki-Konzept. |
 
 ### Automatisch generiert vs. KI-erstellt
 
@@ -380,6 +388,16 @@ Beim Sitzungsstart wird der aktuelle git-HEAD in `.briefing/.session-start-head`
 2. Notizen erscheinen in der Graphansicht, verknüpft durch `[[wiki-links]]`
 3. YAML-Frontmatter (`date`, `type`, `tags`) ermöglicht strukturierte Suche
 4. Eine Zeitleiste von Entscheidungen und Lernnotizen entsteht automatisch über Sitzungen hinweg
+
+### Wissensmanagement (v2)
+
+BriefingVault v2 integriert drei Wissensmanagement-Methoden:
+
+| Methode | Konzept | Anwendung in BriefingVault |
+|---------|---------|---------------------------|
+| **PARA** (Tiago Forte) | Organisieren nach Handlungsfähigkeit: Projekte, Bereiche, Ressourcen, Archive | sessions/ = Projekte, decisions/ = Bereiche, references/ = Ressourcen, archives/ = Archive |
+| **Zettelkasten** (Luhmann) | Atomare Notizen mit eindeutigen IDs und expliziten Links | learnings/-Dateien: `YYYYMMDDHHMMSS`-IDs, `related:` mindestens 2 Links erforderlich |
+| **LLM-wiki** (Karpathy) | KI-gepflegte Konzeptseiten aus Quellnotizen | wiki/-Seiten: automatisch vorgeschlagen bei 3+ Wiederholungen eines Schlüsselworts |
 
 ---
 

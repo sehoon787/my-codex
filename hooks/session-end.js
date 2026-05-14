@@ -461,15 +461,26 @@ function sessionAutoContent(today, state, changedFiles, statusLines, signalLines
   ].join('\n');
 }
 
+function recentRelated(briefingDir) {
+  try {
+    const sessions = fs.readdirSync(path.join(briefingDir, 'sessions'))
+      .filter(f => f.endsWith('.md') && !f.includes('-auto'))
+      .sort().reverse();
+    if (sessions.length > 0) return `[[sessions/${sessions[0].replace('.md', '')}]]`;
+  } catch(e) {}
+  return '';
+}
+
 function sessionTopicContent(today, slug, state, changedFiles, diffSummary, references) {
   const prompts = meaningfulPromptTexts(state);
   const title = slug.split('-').map((part) => part.charAt(0).toUpperCase() + part.slice(1)).join(' ');
   return [
     '---',
     `date: ${today}`,
+    `id: "${runtime.generateZkId()}"`,
     'type: session',
     'tags: [session, codex]',
-    'related: []',
+    `related: [${recentRelated(runtime.BRIEFING_DIR)}]`,
     '---',
     '',
     `# Session: ${title}`,
@@ -531,9 +542,10 @@ function learningTopicContent(today, slug, state, changedFiles, learningInfo) {
   return [
     '---',
     `date: ${today}`,
+    `id: "${runtime.generateZkId()}"`,
     'type: learning',
     'tags: [pattern, codex]',
-    'related: []',
+    `related: [${recentRelated(runtime.BRIEFING_DIR)}]`,
     '---',
     '',
     `# Learning: ${title}`,
@@ -592,10 +604,11 @@ function decisionTopicContent(today, slug, state, changedFiles, references, deci
   return [
     '---',
     `date: ${today}`,
+    `id: "${runtime.generateZkId()}"`,
     'type: decision',
     'tags: [architecture, codex]',
     'status: accepted',
-    'related: []',
+    `related: [${recentRelated(runtime.BRIEFING_DIR)}]`,
     '---',
     '',
     `# Decision: ${title}`,
@@ -645,6 +658,45 @@ function runNodeHook(scriptName, payload) {
   }
 }
 
+function suggestArchiving() {
+  var thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+  var candidates = [];
+  ['sessions', 'decisions', 'learnings'].forEach(function(subdir) {
+    var dir = path.join(runtime.BRIEFING_DIR, subdir);
+    if (!runtime.exists(dir)) return;
+    try {
+      fs.readdirSync(dir).forEach(function(name) {
+        if (name.includes('-auto')) return;
+        var dateMatch = name.match(/^(\d{4}-\d{2}-\d{2})/);
+        if (dateMatch && dateMatch[1] < thirtyDaysAgo) {
+          candidates.push(subdir + '/' + name);
+        }
+      });
+    } catch(e) {}
+  });
+  return candidates;
+}
+
+function suggestWikiPages(state) {
+  var prompts = meaningfulPromptTexts(state);
+  var allText = prompts.join(' ').toLowerCase();
+  var words = allText.replace(/[^a-z0-9\s]/g, ' ').split(/\s+/).filter(function(w) { return w.length > 3; });
+  var freq = {};
+  words.forEach(function(w) { freq[w] = (freq[w] || 0) + 1; });
+  var wikiDir = path.join(runtime.BRIEFING_DIR, 'wiki');
+  var existing = [];
+  if (runtime.exists(wikiDir)) {
+    try { existing = fs.readdirSync(wikiDir).map(function(f) { return f.replace('.md', ''); }); } catch(e) {}
+  }
+  var suggestions = [];
+  Object.keys(freq).forEach(function(word) {
+    if (freq[word] >= 3 && existing.indexOf(word) === -1 && word !== '_schema') {
+      suggestions.push(word);
+    }
+  });
+  return suggestions.slice(0, 3);
+}
+
 if (!runtime.exists(INDEX_FILE)) {
   process.exit(0);
 }
@@ -655,6 +707,8 @@ runtime.mkdirp(path.join(runtime.BRIEFING_DIR, 'decisions'));
 runtime.mkdirp(path.join(runtime.BRIEFING_DIR, 'agents'));
 runtime.mkdirp(path.join(runtime.BRIEFING_DIR, 'references'));
 runtime.mkdirp(path.join(runtime.BRIEFING_DIR, 'persona'));
+runtime.mkdirp(path.join(runtime.BRIEFING_DIR, 'archives'));
+runtime.mkdirp(path.join(runtime.BRIEFING_DIR, 'wiki'));
 const today = runtime.currentDate();
 const rawInput = readStdin();
 const payload = tryParseJson(rawInput);
@@ -758,6 +812,16 @@ runtime.writeText(
   decisionAutoPath,
   decisionAutoContent(today, sessionState, sessionState.changedFiles || [], postProfileSignalLines, referenceSection)
 );
+
+var archiveCandidates = suggestArchiving();
+if (archiveCandidates.length > 0 && !syncOnly) {
+  process.stderr.write('[BriefingVault] Archive candidates (30+ days old): ' + archiveCandidates.slice(0, 5).join(', ') + '. Move to .briefing/archives/ if no longer active.\n');
+}
+
+var wikiSuggestions = suggestWikiPages(sessionState);
+if (wikiSuggestions.length > 0 && !syncOnly) {
+  process.stderr.write('[BriefingVault] Wiki page candidates (3+ mentions): ' + wikiSuggestions.join(', ') + '. Create .briefing/wiki/<concept>.md to document these.\n');
+}
 
 if (enforcementReason) {
   process.stderr.write(enforcementReason + '\n');

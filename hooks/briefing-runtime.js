@@ -259,6 +259,28 @@ function summarizePaths(paths) {
   }).join(', ');
 }
 
+function ensureBriefingDirs() {
+  var dirs = [
+    BRIEFING_DIR,
+    path.join(BRIEFING_DIR, 'sessions'),
+    path.join(BRIEFING_DIR, 'decisions'),
+    path.join(BRIEFING_DIR, 'learnings'),
+    path.join(BRIEFING_DIR, 'references'),
+    path.join(BRIEFING_DIR, 'agents'),
+    path.join(BRIEFING_DIR, 'persona'),
+    path.join(BRIEFING_DIR, 'persona', 'rules'),
+    path.join(BRIEFING_DIR, 'archives'),
+    path.join(BRIEFING_DIR, 'wiki')
+  ];
+  dirs.forEach(function(dir) { mkdirp(dir); });
+}
+
+function generateZkId() {
+  var now = new Date();
+  var pad = function(n, len) { return String(n).padStart(len || 2, '0'); };
+  return pad(now.getFullYear(), 4) + pad(now.getMonth() + 1) + pad(now.getDate()) + pad(now.getHours()) + pad(now.getMinutes()) + pad(now.getSeconds());
+}
+
 module.exports = {
   BRIEFING_DIR,
   STATE_FILE,
@@ -269,8 +291,10 @@ module.exports = {
   currentDate,
   defaultPersonaPolicy,
   defaultState,
+  ensureBriefingDirs,
   exists,
   extractPromptText,
+  generateZkId,
   isoNow,
   mkdirp,
   normalizeRepoPath,

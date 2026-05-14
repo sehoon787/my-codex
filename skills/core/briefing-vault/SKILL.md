@@ -175,3 +175,70 @@ grep -r "type: decision" .briefing/ --include="*.md"
 - Graph View shows note connections via `[[wiki-links]]`
 - Use tags for filtering (#decision, #learning, #session)
 - Install "Dataview" plugin for dynamic tables of decisions/learnings
+
+## Archives (PARA)
+
+The `archives/` directory stores completed or inactive notes following PARA methodology.
+
+### Directory Structure
+```
+.briefing/archives/       ← flat directory, type: in frontmatter identifies origin
+```
+
+### Archiving
+- Session-end hooks suggest candidates older than 30 days
+- Move manually: `mv .briefing/sessions/old-file.md .briefing/archives/`
+- The note's `type:` frontmatter preserves its original category
+- Archived notes remain searchable and linkable via `[[wiki-links]]`
+
+## Wiki (LLM-wiki)
+
+The `wiki/` directory stores concept pages — distilled knowledge from multiple sessions.
+
+### Schema
+```yaml
+---
+id: "YYYYMMDDHHMMSS"
+date: YYYY-MM-DD
+type: wiki
+tags: [concept, category]
+sources: [sessions/file.md, decisions/file.md]
+updated: YYYY-MM-DD
+---
+
+# Concept Name
+
+## Definition
+One-paragraph summary.
+
+## Key Facts
+- Fact 1
+- Fact 2
+
+## Related
+- [[other-concept]]
+```
+
+### Creating Wiki Pages
+- Manual: User requests "summarize X as a wiki page"
+- Auto-suggest: Session-end hooks detect keywords mentioned 3+ times
+- Template: `.briefing/wiki/_schema.md`
+
+## Zettelkasten Note Format
+
+Learnings follow atomic note principles:
+
+```yaml
+---
+id: "YYYYMMDDHHMMSS"
+date: YYYY-MM-DD
+type: learning
+tags: [pattern, topic]
+related: [[other-learning-1], [other-learning-2]]
+---
+
+# One Insight Title
+
+Brief description of the pattern or insight (~500 chars recommended).
+One file = one idea. Link to at least 2 related notes.
+```

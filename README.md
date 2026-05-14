@@ -346,6 +346,9 @@ Obsidian-compatible persistent memory. Every project maintains a `.briefing/` di
 │   └── YYYY-MM-DD-auto-session.md   ← Auto-generated scaffold (files, wrapper activity, prompts)
 ├── references/
 │   └── auto-links.md                ← Reserved for collected research links
+├── archives/                         ← PARA: completed/inactive notes (flat)
+├── wiki/                             ← LLM-wiki: concept pages
+│   └── _schema.md
 ├── agents/
 │   ├── agent-log.jsonl              ← Wrapper/session log
 │   └── YYYY-MM-DD-summary.md        ← Daily logged-signal breakdown
@@ -368,6 +371,23 @@ Obsidian-compatible persistent memory. Every project maintains a `.briefing/` di
 | `agents/` | **Logged session signals.** `agent-log.jsonl` — enriched entries with `{ts, agent_id, agent_type, phase, seq, task_hint}`. `YYYY-MM-DD-summary.md` — daily logged-signal breakdown derived from that log. |
 | `persona/` | **User work style profile.** `profile.md` — routing/profile summary derived from logged signals. `suggestions.jsonl` — routing recommendations. `persona-policy.json` — accepted soft routing preferences. `rules/workflow-*.md` — workflow sequence pattern rules proposed by `/boss-briefing`. |
 | `state.json` | Session metadata: counters, lastVaultSync, sessionStartHead. Auto-managed by hooks. |
+| `archives/` | PARA Archives — completed sessions (30+ days), superseded decisions, inactive learnings |
+| `wiki/` | LLM-wiki concept pages — distilled knowledge from multiple sessions |
+
+### Knowledge Management (v2)
+
+BriefingVault v2 integrates three knowledge management methodologies:
+
+| Methodology | Applied As |
+|------------|-----------|
+| **PARA** (Tiago Forte) | Directory structure: sessions=Projects, decisions=Areas, references=Resources, archives=Archives |
+| **Zettelkasten** (Luhmann) | Atomic notes in `learnings/`, unique IDs (`YYYYMMDDHHMMSS`), enforced `[[wiki-links]]` |
+| **LLM-wiki** (Karpathy) | Concept pages in `wiki/` — auto-suggested when keywords appear 3+ times |
+
+Codex CLI session-end hooks automatically:
+- Suggest archiving notes older than 30 days
+- Propose wiki pages for frequently mentioned concepts
+- Generate unique Zettelkasten IDs for new notes
 
 ### Session-Specific Diffs
 

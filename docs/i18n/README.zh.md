@@ -340,11 +340,17 @@ bash /tmp/my-codex/install.sh --profile full
 ├── agents/
 │   ├── agent-log.jsonl              ← Subagent execution telemetry
 │   └── YYYY-MM-DD-summary.md        ← Daily agent usage breakdown
-└── persona/
-    ├── profile.md                   ← Agent affinity stats (auto-updated)
-    ├── suggestions.jsonl            ← Routing suggestions (auto-generated)
-    ├── rules/                       ← Accepted routing preferences
-    └── skills/                      ← Accepted persona skills
+├── persona/
+│   ├── profile.md                   ← Agent affinity stats (auto-updated)
+│   ├── suggestions.jsonl            ← Routing suggestions (auto-generated)
+│   ├── rules/                       ← Accepted routing preferences
+│   └── skills/                      ← Accepted persona skills
+├── archives/                         ← 已完成/不活跃的笔记 (30天+)
+│   ├── sessions/
+│   ├── decisions/
+│   └── learnings/
+└── wiki/                             ← 概念页面 (自动建议)
+    └── _schema.md
 ```
 
 ### 自动化生命周期
@@ -358,6 +364,8 @@ bash /tmp/my-codex/install.sh --profile full
 | **工作期间** | `UserPromptSubmit`（每 5 次） | 节流更新个性化档案 |
 | **会话结束** | `Stop`（第 1 个 hook） | 自动生成脚手架：`sessions/auto.md`、`learnings/auto-session.md`、`decisions/auto.md`、`persona/profile.md` |
 | **会话结束** | `Stop`（第 2 个 hook） | 若文件编辑 ≥ 3 次则**强制** AI 撰写会话摘要——以模板阻止会话结束 |
+| **archives/** | — | 自动建议将 30 天以上的已完成/不活跃笔记归档。PARA 归档概念。 |
+| **wiki/** | — | 概念 wiki 页面。关键词出现 3 次以上时自动建议生成。LLM-wiki 概念。 |
 
 ### 自动生成 vs AI 撰写
 
@@ -380,6 +388,16 @@ bash /tmp/my-codex/install.sh --profile full
 2. 笔记显示在图谱视图中，通过 `[[wiki-links]]` 关联
 3. YAML frontmatter（`date`、`type`、`tags`）支持结构化搜索
 4. 决策与学习的时间线跨会话自动积累
+
+### 知识管理 (v2)
+
+BriefingVault v2 整合了三种知识管理方法论：
+
+| 方法论 | 概念 | 在 BriefingVault 中的应用 |
+|--------|------|--------------------------|
+| **PARA**（Tiago Forte） | 按可行性分类：项目、领域、资源、归档 | sessions/ = 项目，decisions/ = 领域，references/ = 资源，archives/ = 归档 |
+| **Zettelkasten**（Luhmann） | 具有唯一 ID 和明确链接的原子笔记 | learnings/ 文件：`YYYYMMDDHHMMSS` ID，`related:` 需至少 2 个链接 |
+| **LLM-wiki**（Karpathy） | 由 AI 从原始笔记维护的概念页面 | wiki/ 页面：关键词出现 3 次以上时自动建议 |
 
 ---
 

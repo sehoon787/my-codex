@@ -350,11 +350,17 @@ Mémoire persistante compatible Obsidian. Chaque projet maintient un répertoire
 ├── agents/
 │   ├── agent-log.jsonl              ← Télémétrie d'exécution des sous-agents
 │   └── YYYY-MM-DD-summary.md        ← Récapitulatif quotidien d'utilisation des agents
-└── persona/
-    ├── profile.md                   ← Statistiques d'affinité d'agents (mis à jour auto)
-    ├── suggestions.jsonl            ← Suggestions de routage (auto-générées)
-    ├── rules/                       ← Préférences de routage acceptées
-    └── skills/                      ← Skills persona acceptés
+├── persona/
+│   ├── profile.md                   ← Statistiques d'affinité d'agents (mis à jour auto)
+│   ├── suggestions.jsonl            ← Suggestions de routage (auto-générées)
+│   ├── rules/                       ← Préférences de routage acceptées
+│   └── skills/                      ← Skills persona acceptés
+├── archives/                         ← Notes terminées/inactives (30+ jours)
+│   ├── sessions/
+│   ├── decisions/
+│   └── learnings/
+└── wiki/                             ← Pages de concepts (suggestion automatique)
+    └── _schema.md
 ```
 
 ### Cycle d'automatisation
@@ -368,6 +374,8 @@ Mémoire persistante compatible Obsidian. Chaque projet maintient un répertoire
 | **Pendant le travail** | `UserPromptSubmit` (tous les 5) | Mise à jour limitée du profil persona |
 | **Fin de session** | `Stop` (1er hook) | Auto-génère les scaffolds : `sessions/auto.md`, `learnings/auto-session.md`, `decisions/auto.md`, `persona/profile.md` |
 | **Fin de session** | `Stop` (2e hook) | **Oblige** un résumé de session écrit par l'IA si ≥ 3 éditions de fichiers — bloque la fin de session avec un modèle |
+| **archives/** | — | Propose automatiquement d'archiver les notes terminées/inactives après 30+ jours. Concept Archives PARA. |
+| **wiki/** | — | Pages wiki de concepts. Suggestion automatique quand un mot-clé apparaît 3+ fois. Concept LLM-wiki. |
 
 ### Auto-généré vs Écrit par l'IA
 
@@ -390,6 +398,16 @@ Au début de la session, le git HEAD courant est enregistré dans `.briefing/.se
 2. Les notes apparaissent dans la vue graphique, liées par `[[wiki-links]]`
 3. Le frontmatter YAML (`date`, `type`, `tags`) permet une recherche structurée
 4. La chronologie des décisions et apprentissages se construit automatiquement entre les sessions
+
+### Gestion des connaissances (v2)
+
+BriefingVault v2 intègre trois méthodologies de gestion des connaissances :
+
+| Méthodologie | Concept | Application dans BriefingVault |
+|--------------|---------|-------------------------------|
+| **PARA** (Tiago Forte) | Organiser par actionabilité : Projets, Domaines, Ressources, Archives | sessions/ = Projets, decisions/ = Domaines, references/ = Ressources, archives/ = Archives |
+| **Zettelkasten** (Luhmann) | Notes atomiques avec ID uniques et liens explicites | fichiers learnings/ : ID `YYYYMMDDHHMMSS`, champ `related:` avec 2+ liens requis |
+| **LLM-wiki** (Karpathy) | Pages de concepts maintenues par l'IA depuis les notes sources | pages wiki/ : suggestion automatique pour les mots-clés répétés 3+ fois |
 
 ---
 

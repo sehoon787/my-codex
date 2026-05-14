@@ -146,6 +146,22 @@ Read `.briefing/INDEX.md` and rebuild the dynamic sections:
 
 Preserve all other sections (Overview, Open Questions, Key Links, language frontmatter) unchanged.
 
+## Step 7b: Suggest Archiving
+
+Scan `.briefing/sessions/`, `.briefing/decisions/`, and `.briefing/learnings/` for notes older than 30 days (based on filename date prefix `YYYY-MM-DD`).
+
+- Skip files with `-auto` in the name
+- If candidates exist, list them and suggest: "Consider moving these to `.briefing/archives/`"
+- Do NOT auto-move. Only suggest.
+
+## Step 7c: Suggest Wiki Pages
+
+Review the session's prompt history and changed files for recurring concepts:
+
+- If a concept/keyword appears 3+ times across prompts and no `.briefing/wiki/<concept>.md` exists, suggest creating one
+- Wiki page format: Definition → Key Facts → Related links
+- Template available at `.briefing/wiki/_schema.md`
+
 ## Step 8: Record lastVaultSync
 
 Write the current ISO timestamp to `state.json` field `lastVaultSync`:

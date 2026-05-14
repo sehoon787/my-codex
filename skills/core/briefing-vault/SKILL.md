@@ -186,8 +186,7 @@ The `archives/` directory stores completed or inactive notes following PARA meth
 ```
 
 ### Archiving
-- Session-end hooks suggest candidates older than 30 days
-- Move manually: `mv .briefing/sessions/old-file.md .briefing/archives/`
+- Session-end hooks automatically move non-auto files older than 30 days to `archives/`
 - The note's `type:` frontmatter preserves its original category
 - Archived notes remain searchable and linkable via `[[wiki-links]]`
 

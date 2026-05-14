@@ -146,13 +146,12 @@ Read `.briefing/INDEX.md` and rebuild the dynamic sections:
 
 Preserve all other sections (Overview, Open Questions, Key Links, language frontmatter) unchanged.
 
-## Step 7b: Suggest Archiving
+## Step 7b: Review Auto-Archived Files
 
-Scan `.briefing/sessions/`, `.briefing/decisions/`, and `.briefing/learnings/` for notes older than 30 days (based on filename date prefix `YYYY-MM-DD`).
+Scan `.briefing/archives/` for files recently moved by the session-end hook (files older than 30 days that were automatically moved from `sessions/`, `decisions/`, and `learnings/`).
 
 - Skip files with `-auto` in the name
-- If candidates exist, list them and suggest: "Consider moving these to `.briefing/archives/`"
-- Do NOT auto-move. Only suggest.
+- If recently archived files exist, list them so the user is aware of what was auto-archived
 
 ## Step 7c: Suggest Wiki Pages
 

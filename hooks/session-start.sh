@@ -6,18 +6,23 @@ set +e
 MISSING=()
 INSTALLED=()
 
-# 1. Anthropic Skills
-if [ ! -d "$HOME/.codex/skills/pdf" ] && [ ! -d "$HOME/.codex/skills/docx" ]; then
-  _tmp_dir=$(mktemp -d)
-  git clone --depth 1 https://github.com/anthropics/skills.git "$_tmp_dir/skills" 2>/dev/null
-  if [ -d "$_tmp_dir/skills/skills" ]; then
-    mkdir -p "$HOME/.codex/skills"
-    cp -r "$_tmp_dir/skills/skills/"* "$HOME/.codex/skills/" 2>/dev/null
-    rm -rf "$_tmp_dir"
-    INSTALLED+=("anthropic-skills")
-  else
-    rm -rf "$_tmp_dir"
-    MISSING+=("anthropic-skills")
+# 1. Anthropic Skills (pdf + docx only)
+if [ ! -f "$HOME/.codex/.skills-managed" ]; then
+  if [ ! -d "$HOME/.codex/skills/pdf" ] || [ ! -d "$HOME/.codex/skills/docx" ]; then
+    _tmp_dir=$(mktemp -d)
+    git clone --depth 1 https://github.com/anthropics/skills.git "$_tmp_dir/skills" 2>/dev/null
+    if [ -d "$_tmp_dir/skills/skills" ]; then
+      mkdir -p "$HOME/.codex/skills"
+      [ ! -d "$HOME/.codex/skills/pdf" ] && [ -d "$_tmp_dir/skills/skills/pdf" ] && \
+        cp -r "$_tmp_dir/skills/skills/pdf" "$HOME/.codex/skills/pdf" 2>/dev/null
+      [ ! -d "$HOME/.codex/skills/docx" ] && [ -d "$_tmp_dir/skills/skills/docx" ] && \
+        cp -r "$_tmp_dir/skills/skills/docx" "$HOME/.codex/skills/docx" 2>/dev/null
+      rm -rf "$_tmp_dir"
+      INSTALLED+=("anthropic-skills(pdf,docx)")
+    else
+      rm -rf "$_tmp_dir"
+      MISSING+=("anthropic-skills")
+    fi
   fi
 fi
 

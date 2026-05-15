@@ -45,12 +45,32 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           NEW_TAG="${{ steps.bump.outputs.tag }}"
+
+          # Push tag if it doesn't exist yet
           if git rev-parse "$NEW_TAG" >/dev/null 2>&1; then
-            echo "Tag $NEW_TAG already exists, skipping"
+            echo "Tag $NEW_TAG already exists"
+          else
+            git tag "$NEW_TAG"
+            git push origin "$NEW_TAG"
+          fi
+
+          # Create release if it doesn't exist (recovers from prior 5xx failures)
+          if gh release view "$NEW_TAG" >/dev/null 2>&1; then
+            echo "Release $NEW_TAG already exists, skipping"
             exit 0
           fi
-          git tag "$NEW_TAG"
-          git push origin "${{ steps.bump.outputs.tag }}"
-          gh release create "${{ steps.bump.outputs.tag }}" \
-            --title "${{ steps.bump.outputs.tag }}" \
-            --generate-notes
+
+          # Retry up to 3 times for transient API errors
+          for attempt in 1 2 3; do
+            echo "Creating release $NEW_TAG (attempt $attempt/3)..."
+            if gh release create "$NEW_TAG" \
+              --title "$NEW_TAG" \
+              --generate-notes; then
+              echo "Release $NEW_TAG created successfully"
+              exit 0
+            fi
+            echo "Attempt $attempt failed, waiting $((attempt * 5))s..."
+            sleep $((attempt * 5))
+          done
+          echo "::error::Failed to create release $NEW_TAG after 3 attempts"
+          exit 1

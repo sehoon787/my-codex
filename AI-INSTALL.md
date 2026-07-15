@@ -33,6 +33,52 @@ Rerunning either install command installs the latest published `main` snapshot, 
 
 Update/cleanup behavior: `install.sh` records every path it writes into `~/.codex/.my-codex-manifest.txt` as it copies each file (never by scanning `~/.codex/agents`, `~/.codex/agent-packs`, or `~/.codex/skills` afterward). On the next run, only paths listed in that manifest are removed before reinstalling, so anything you added yourself directly under those directories is never listed and is never touched. Paths that were part of a previous my-codex install but aren't recreated by the current run (e.g. an upstream agent was renamed) are dropped as stale. If `.my-codex-manifest.txt` doesn't exist yet (first install, or a pre-manifest legacy install), stale-file cleanup is skipped entirely and a warning is printed instead of guessing.
 
+### Updating (and how the Codex marketplace fits in)
+
+Codex CLI has a native plugin marketplace (`codex plugin marketplace add|upgrade|remove`),
+and `install.sh` registers my-codex into it — but as a **local** marketplace:
+
+- `install.sh` snapshots the repo into a stable vendor path and writes
+  `~/.agents/plugins/marketplace.json` with `source: { "source": "local", "path": "./plugins/my-codex" }`
+  (`INSTALLED_BY_DEFAULT`). Codex reads that file as its default marketplace registry.
+- Because the source is **local**, `codex plugin marketplace upgrade` only re-reads that
+  on-disk snapshot — it does **not** fetch newer code from GitHub. The snapshot changes
+  only when `install.sh` runs again.
+
+**So the update path for my-codex is to re-run the installer**, which re-clones the latest
+`main` and re-snapshots the local marketplace:
+
+```bash
+# Either the one-liner…
+curl -fsSL https://raw.githubusercontent.com/sehoon787/my-codex/main/install.sh | bash
+# …or the explicit clone form:
+git clone --depth 1 https://github.com/sehoon787/my-codex.git /tmp/my-codex
+bash /tmp/my-codex/install.sh
+rm -rf /tmp/my-codex
+```
+
+A remote marketplace path (`codex plugin marketplace add sehoon787/my-codex` +
+`codex plugin marketplace upgrade`) is **not** configured, by design. The CLI does accept
+a remote `<SOURCE>` (`codex plugin marketplace add` takes `owner/repo[@ref]`, HTTPS/SSH
+Git URLs, or a local dir), but a remote `add` only works if the **repo itself** commits a
+repo-scoped marketplace manifest (`.agents/plugins/marketplace.json`) pointing at a
+concrete plugin subdirectory — the layout the vendored `upstream/ecc/.codex-plugin/README.md`
+documents. my-codex does not commit that manifest; it only ships `.codex-plugin/plugin.json`
+(a plugin manifest) and **generates** `~/.agents/plugins/marketplace.json` locally at
+install time. Two reasons it stays local rather than adding a remote manifest:
+
+1. Upstream Codex marketplace/plugin runtime loading is still fragile — Codex copies only
+   the plugin folder into its install cache, so parent-referenced `skills/`/`.mcp.json`
+   may not resolve in a fresh session (openai/codex#26037). ECC itself recommends the
+   manual re-run/sync flow as the fully-supported path today.
+2. Re-running `install.sh` already re-clones latest `main` and re-snapshots the local
+   marketplace, so it is a complete update path without a second remote-fetch mechanism.
+
+Unlike my-claude (a Claude Code plugin whose agents can be shadowed by stale user-level
+`~/.claude/agents/*.md`), my-codex writes agents under `~/.codex/agents/` exclusively
+through `install.sh` and its manifest, so a re-run always refreshes them — there is no
+separate stale-agent source to reconcile.
+
 This installs:
 - Core agents in `~/.codex/agents/` (always loaded by Codex CLI via `spawn_agent`)
 - Domain agent-packs in `~/.codex/agent-packs/`

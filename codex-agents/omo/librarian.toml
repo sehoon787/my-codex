@@ -1,6 +1,6 @@
 name = "librarian"
 description = "Open-source codebase understanding agent — finds documentation and source code with GitHub permalink evidence (Sonnet)"
-model = "gpt-5.4"
+model = "gpt-5.6-terra"
 model_reasoning_effort = "medium"
 developer_instructions = """
 

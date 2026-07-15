@@ -968,7 +968,7 @@ if [ "$SKIP_OMX" = "0" ]; then
           {
             printf 'name = "%s"\n' "$fname"
             printf 'description = "Team orchestration specialist"\n'
-            printf 'model = "o3"\n'
+            printf 'model = "gpt-5.6"\n'
             printf 'model_reasoning_effort = "medium"\n'
             printf 'developer_instructions = """\n'
             tr -d '\r' < "$md_file"
@@ -988,7 +988,7 @@ name: $fname
         fi
         # Add model: if missing
         if ! grep -q '^model:' "$omc_staging/omc/$bname" 2>/dev/null; then
-          sed -i '/^description:/a model: gpt-5.4' "$omc_staging/omc/$bname" 2>/dev/null || true
+          sed -i '/^description:/a model: gpt-5.6' "$omc_staging/omc/$bname" 2>/dev/null || true
         fi
       done
       omc_toml_out="$CLONE_TMPDIR/omc-toml"
@@ -1089,7 +1089,7 @@ if [ "$SKIP_AGENCY" = "0" ]; then
     # Add model field to agents missing it
     find "$agency_staging" -name '*.md' | while read f; do
       if ! grep -q '^model:' "$f" 2>/dev/null; then
-        sed -i '/^description:/a model: gpt-5.4' "$f" 2>/dev/null || true
+        sed -i '/^description:/a model: gpt-5.6' "$f" 2>/dev/null || true
       fi
     done
     # Convert MD → TOML
@@ -1454,6 +1454,7 @@ fi
 
 LC_ALL=C sort -u "$TMP_MANIFEST" > "$MANIFEST_FILE"
 printf '%s\n' "$INSTALLING_VERSION" > "$VERSION_FILE"
+echo "$REPO_ROOT" > "$CODEX_ROOT/.my-codex-repo-path" 2>/dev/null || true
 
 echo ""
 echo "[7/7] Verification"

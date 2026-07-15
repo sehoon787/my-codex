@@ -113,9 +113,9 @@ Boss cascades every request through a priority chain until the best match is fou
 
 | Complexity | Model | Used For |
 |-----------|-------|----------|
-| Deep analysis, architecture | o3 (high reasoning) | Boss, Oracle, Sisyphus, Atlas |
-| Standard implementation | o3 (medium) | executor, debugger, security-reviewer |
-| Quick lookup, exploration | o4-mini (low) | explore, simple advisory |
+| Deep analysis, architecture | gpt-5.6 (high reasoning) | Boss, Oracle, Sisyphus, Atlas |
+| Standard implementation | gpt-5.6-terra (medium) | executor, debugger, security-reviewer |
+| Quick lookup, exploration | gpt-5.6-luna (low) | explore, simple advisory |
 
 ### 3-Phase Sprint Workflow
 
@@ -140,7 +140,7 @@ Confirm "design done"   Architect verification  User: approve / improve
 └───────────────────────┬─────────────────────────────┘
                         ▼
 ┌─────────────────────────────────────────────────────┐
-│  Boss · Meta-Orchestrator (o3 high)                   │
+│  Boss · Meta-Orchestrator (gpt-5.6 high)              │
 │  Discovery → Classification → Matching → Delegation  │
 └──┬──────────┬──────────┬──────────┬─────────────────┘
    │          │          │          │
@@ -183,7 +183,7 @@ Confirm "design done"   Architect verification  User: approve / improve
 
 | Agent | Model | Role | Source |
 |-------|-------|------|--------|
-| Boss | o3 high | Dynamic runtime discovery → capability matching → optimal routing. Never writes code. | my-codex |
+| Boss | gpt-5.6 high | Dynamic runtime discovery → capability matching → optimal routing. Never writes code. | my-codex |
 
 </details>
 
@@ -192,15 +192,15 @@ Confirm "design done"   Architect verification  User: approve / improve
 
 | Agent | Model | Role | Source |
 |-------|-------|------|--------|
-| Sisyphus | o3 high | Intent classification → specialist delegation → verification | [oh-my-openagent](https://github.com/code-yeongyu/oh-my-openagent) |
-| Hephaestus | o3 high | Autonomous explore → plan → execute → verify | oh-my-openagent |
-| Atlas | o3 high | Task decomposition + 4-stage QA verification | oh-my-openagent |
-| Oracle | o3 high | Strategic technical consulting (read-only) | oh-my-openagent |
-| Metis | o3 high | Intent analysis, ambiguity detection | oh-my-openagent |
-| Momus | o3 high | Plan feasibility review | oh-my-openagent |
-| Prometheus | o3 high | Interview-based detailed planning | oh-my-openagent |
-| Librarian | o3 medium | Open-source documentation search via MCP | oh-my-openagent |
-| Multimodal-Looker | o3 medium | Image/screenshot/diagram analysis | oh-my-openagent |
+| Sisyphus | gpt-5.6 high | Intent classification → specialist delegation → verification | [oh-my-openagent](https://github.com/code-yeongyu/oh-my-openagent) |
+| Hephaestus | gpt-5.6 high | Autonomous explore → plan → execute → verify | oh-my-openagent |
+| Atlas | gpt-5.6 high | Task decomposition + 4-stage QA verification | oh-my-openagent |
+| Oracle | gpt-5.6 high | Strategic technical consulting (read-only) | oh-my-openagent |
+| Metis | gpt-5.6 high | Intent analysis, ambiguity detection | oh-my-openagent |
+| Momus | gpt-5.6 high | Plan feasibility review | oh-my-openagent |
+| Prometheus | gpt-5.6 high | Interview-based detailed planning | oh-my-openagent |
+| Librarian | gpt-5.6-terra medium | Open-source documentation search via MCP | oh-my-openagent |
+| Multimodal-Looker | gpt-5.6-terra medium | Image/screenshot/diagram analysis | oh-my-openagent |
 
 </details>
 
@@ -469,7 +469,7 @@ Features built specifically for this project, beyond what upstream sources provi
 | **Boss Meta-Orchestrator** | Dynamic capability discovery → intent classification → 4-priority routing → delegation → verification |
 | **3-Phase Sprint** | Design (interactive) → Execute (autonomous via executor) → Review (interactive vs design doc) |
 | **Agent Tier Priority** | core > omo > omc > awesome-core deduplication. Most specialized agent wins. |
-| **Cost Optimization** | o4-mini for advisory, o3 for implementation — automatic model routing for 330+ agents |
+| **Cost Optimization** | gpt-5.6-luna for advisory, gpt-5.6 for implementation — automatic model routing for 330+ agents |
 | **Briefing Signals** | Wrapper/session logging feeds `.briefing/agents/agent-log.jsonl`, daily summaries, and routing/profile hints |
 | **Smart Packs** | Project-type detection recommends relevant agent packs at session start |
 | **Agent Pack System** | On-demand domain specialist activation via `--profile` and `my-codex-packs` helper |
@@ -519,7 +519,7 @@ Every agent is a native TOML file in `~/.codex/agents/`:
 ```toml
 name = "debugger"
 description = "Focused debugging specialist — traces failures to root cause"
-model = "o3"
+model = "gpt-5.6-terra"
 model_reasoning_effort = "medium"
 
 [developer_instructions]
@@ -595,7 +595,7 @@ A GitHub Actions workflow runs every Monday, pulling the latest commits from all
 <details>
 <summary><strong>What models does my-codex use?</strong></summary>
 
-Boss and sub-orchestrators (Sisyphus, Atlas, Oracle) use o3 with high reasoning effort. Standard workers use o3 with medium reasoning. Lightweight advisory agents use o4-mini.
+Boss and sub-orchestrators (Sisyphus, Atlas, Oracle) use gpt-5.6 with high reasoning effort. Standard workers use gpt-5.6-terra with medium reasoning. Lightweight advisory agents use gpt-5.6-luna.
 
 </details>
 

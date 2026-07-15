@@ -58,7 +58,7 @@ developer_instructions = """
 
 | Field | Values | Notes |
 |-------|--------|-------|
-| `model` | `"gpt-5.4"`, `"o4-mini"` | Defaults to `gpt-5.4` if omitted |
+| `model` | `"gpt-5.6"`, `"gpt-5.6-luna"` | Defaults to `gpt-5.6` if omitted |
 | `model_reasoning_effort` | `"high"`, `"medium"`, `"low"` | Applies when model supports reasoning |
 | `sandbox_mode` | `"read-only"`, `"workspace-write"` | Use `read-only` for reviewers; `workspace-write` for implementers |
 | `nickname_candidates` | array of strings | Short invocation aliases |
@@ -67,8 +67,8 @@ developer_instructions = """
 
 | Model | Use For |
 |-------|---------|
-| `gpt-5.4` | Standard development work, analysis, orchestration |
-| `o4-mini` | Fast lookups, lightweight agents, frequent invocation |
+| `gpt-5.6` | Standard development work, analysis, orchestration |
+| `gpt-5.6-luna` | Fast lookups, lightweight agents, frequent invocation |
 
 **Sandbox mode guidance:**
 

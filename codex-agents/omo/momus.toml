@@ -1,6 +1,6 @@
 name = "momus"
 description = "Practical work plan reviewer that verifies executability and catches blocking issues only — read-only (Opus)"
-model = "gpt-5.4"
+model = "gpt-5.6"
 model_reasoning_effort = "high"
 developer_instructions = """
 

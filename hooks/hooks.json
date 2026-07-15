@@ -83,7 +83,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node -e \"console.log(JSON.stringify({hookSpecificOutput:{additionalContext:'Teammate idle. Check TaskList — if all tasks done, send shutdown_request. If tasks remain, send next instructions.'}})\"",
+            "command": "node -e \"console.log(JSON.stringify({hookSpecificOutput:{additionalContext:'Teammate idle. Check TaskList — if all tasks done, send shutdown_request. If tasks remain, send next instructions.'}}))\"",
             "timeout": 5000
           }
         ]
@@ -94,7 +94,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node -e \"console.log(JSON.stringify({hookSpecificOutput:{additionalContext:'Task completed. Verify deliverable exists and check quality before accepting.'}})\"",
+            "command": "node -e \"console.log(JSON.stringify({hookSpecificOutput:{additionalContext:'Task completed. Verify deliverable exists and check quality before accepting.'}}))\"",
             "timeout": 5000
           }
         ]

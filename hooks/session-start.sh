@@ -148,7 +148,7 @@ if [ -f "$_sug_file" ]; then
     case "$_line" in *'"type":"pending"'*|*'"type": "pending"'*) _pending_count=$((_pending_count + 1)) ;; esac
   done < "$_sug_file"
   if [ "$_pending_count" -gt 0 ]; then
-    _kv_msg="${_kv_msg} [BriefingVault] ${_pending_count} pending persona suggestion(s). Run: node hooks/persona-rule.js list"
+    _kv_msg="${_kv_msg} [BriefingVault] ${_pending_count} pending persona suggestion(s). Run: node $HOME/.codex/hooks/persona-rule.js list"
   fi
 fi
 
@@ -174,11 +174,11 @@ if [ "$_vc_today" != "$_vc_last" ]; then
     _vc_remote_sha=$(git ls-remote https://github.com/sehoon787/my-codex.git HEAD 2>/dev/null | cut -f1 | head -c 12)
     if [ -n "$_vc_remote_sha" ] && [ "${_vc_installed_sha}" != "${_vc_remote_sha}" ]; then
       _repo_dir=""
-      if [ -f "$HOME/.codex/.my-codex-manifest" ]; then
-        _repo_dir=$(head -1 "$HOME/.codex/.my-codex-manifest" 2>/dev/null | grep -o '/.*my-codex' | head -1)
+      if [ -f "$HOME/.codex/.my-codex-repo-path" ]; then
+        _repo_dir=$(cat "$HOME/.codex/.my-codex-repo-path" 2>/dev/null)
       fi
       if [ -z "$_repo_dir" ] || [ ! -d "$_repo_dir" ]; then
-        for _candidate in "$HOME/Desktop/proj/my-codex" "$HOME/projects/my-codex" "$HOME/my-codex"; do
+        for _candidate in "$HOME/Desktop/proj/my-codex" "$HOME/Desktop/proj/ai-proj/my-codex" "$HOME/Desktop/proj"/*/my-codex "$HOME/projects/my-codex" "$HOME/my-codex"; do
           if [ -d "$_candidate/.git" ] && [ -f "$_candidate/hooks/hooks.json" ]; then
             _repo_dir="$_candidate"
             break

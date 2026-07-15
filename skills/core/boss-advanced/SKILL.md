@@ -224,8 +224,8 @@ Include all 5 of the following when spawning any teammate:
    - If first attempt fails, wait briefly then retry
 6. Fallback: If no shutdown response, wait 10s then clean up manually
 
-For detailed per-agent characteristics (Write/Edit capability, teammate suitability, recommended roles),
-see `agent-teams-reference.md`.
+For per-agent characteristics (write access via `sandbox_mode`, recommended roles), see each agent's
+definition under `codex-agents/core/` and `codex-agents/omo/`.
 
 ---
 

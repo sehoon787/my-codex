@@ -4,6 +4,10 @@
 
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
+# shellcheck source=model-tiers.sh
+source "$SCRIPT_DIR/model-tiers.sh"
+
 if [[ $# -lt 2 ]]; then
   echo "Usage: $0 <input_dir> <output_dir>" >&2
   exit 1
@@ -20,21 +24,21 @@ map_model() {
   local m="$1"
   case "$m" in
     claude-opus-4-5|claude-opus-4-6)
-      echo 'model = "gpt-5.6"'
-      echo 'model_reasoning_effort = "high"'
+      echo "model = \"$MODEL_TIER_HIGH\""
+      echo "model_reasoning_effort = \"$MODEL_TIER_HIGH_EFFORT\""
       ;;
     claude-sonnet-4-6|claude-sonnet-4-5)
-      echo 'model = "gpt-5.6-terra"'
-      echo 'model_reasoning_effort = "medium"'
+      echo "model = \"$MODEL_TIER_MEDIUM\""
+      echo "model_reasoning_effort = \"$MODEL_TIER_MEDIUM_EFFORT\""
       ;;
     claude-haiku-4-5)
-      echo 'model = "gpt-5.6-luna"'
-      echo 'model_reasoning_effort = "low"'
+      echo "model = \"$MODEL_TIER_LOW\""
+      echo "model_reasoning_effort = \"$MODEL_TIER_LOW_EFFORT\""
       ;;
     *)
       # default / unknown
-      echo 'model = "gpt-5.6-terra"'
-      echo 'model_reasoning_effort = "medium"'
+      echo "model = \"$MODEL_TIER_MEDIUM\""
+      echo "model_reasoning_effort = \"$MODEL_TIER_MEDIUM_EFFORT\""
       ;;
   esac
 }

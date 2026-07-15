@@ -7,6 +7,9 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$SCRIPT_DIR"
 
+# shellcheck source=scripts/model-tiers.sh
+source "$SCRIPT_DIR/scripts/model-tiers.sh"
+
 resolve_windows_home() {
   local raw_path="${1:-}" drive rest candidate
   [ -n "$raw_path" ] || return 1
@@ -537,31 +540,30 @@ copy_toml_dir_dedup() {
   done
 }
 
-# Normalize legacy/upstream-native model values to current gpt-5.6 tiers.
-# Some upstream sources (e.g. awesome-codex-subagents) ship native .toml
-# agents with their own model value, bypassing md-to-toml.sh's map_model
-# tiering. Keep this in sync with map_model's tier philosophy: workhorse ->
-# gpt-5.6-terra, lightweight -> gpt-5.6-luna.
+# Normalize legacy/upstream-native model values to current tiers (see
+# scripts/model-tiers.sh). Some upstream sources (e.g. awesome-codex-subagents)
+# ship native .toml agents with their own model value, bypassing
+# md-to-toml.sh's map_model tiering.
 normalize_agent_models() {
   local dir="$1"
   local legacy_workhorse legacy_spark
   [ -d "$dir" ] || return 0
 
-  legacy_workhorse=$(grep -rl '^model = "gpt-5.4"$' "$dir" --include='*.toml' 2>/dev/null | wc -l | tr -d ' ')
+  legacy_workhorse=$(grep -rl "^model = \"$LEGACY_WORKHORSE_MODEL\"\$" "$dir" --include='*.toml' 2>/dev/null | wc -l | tr -d ' ')
   if [ "$legacy_workhorse" -gt 0 ]; then
-    grep -rl '^model = "gpt-5.4"$' "$dir" --include='*.toml' 2>/dev/null | while IFS= read -r f; do
-      sed -i 's/^model = "gpt-5.4"$/model = "gpt-5.6-terra"/' "$f"
+    grep -rl "^model = \"$LEGACY_WORKHORSE_MODEL\"\$" "$dir" --include='*.toml' 2>/dev/null | while IFS= read -r f; do
+      sed -i "s/^model = \"$LEGACY_WORKHORSE_MODEL\"\$/model = \"$MODEL_TIER_MEDIUM\"/" "$f"
     done
   fi
 
-  legacy_spark=$(grep -rl '^model = "gpt-5.3-codex-spark"$' "$dir" --include='*.toml' 2>/dev/null | wc -l | tr -d ' ')
+  legacy_spark=$(grep -rl "^model = \"$LEGACY_SPARK_MODEL\"\$" "$dir" --include='*.toml' 2>/dev/null | wc -l | tr -d ' ')
   if [ "$legacy_spark" -gt 0 ]; then
-    grep -rl '^model = "gpt-5.3-codex-spark"$' "$dir" --include='*.toml' 2>/dev/null | while IFS= read -r f; do
-      sed -i 's/^model = "gpt-5.3-codex-spark"$/model = "gpt-5.6-luna"/' "$f"
+    grep -rl "^model = \"$LEGACY_SPARK_MODEL\"\$" "$dir" --include='*.toml' 2>/dev/null | while IFS= read -r f; do
+      sed -i "s/^model = \"$LEGACY_SPARK_MODEL\"\$/model = \"$MODEL_TIER_LOW\"/" "$f"
     done
   fi
 
-  echo "  Normalized $dir: $legacy_workhorse gpt-5.4 -> gpt-5.6-terra, $legacy_spark gpt-5.3-codex-spark -> gpt-5.6-luna"
+  echo "  Normalized $dir: $legacy_workhorse $LEGACY_WORKHORSE_MODEL -> $MODEL_TIER_MEDIUM, $legacy_spark $LEGACY_SPARK_MODEL -> $MODEL_TIER_LOW"
 }
 
 copy_skill_dirs() {
@@ -973,7 +975,7 @@ if [ "$SKIP_OMX" = "0" ]; then
           {
             printf 'name = "%s"\n' "$fname"
             printf 'description = "Team orchestration specialist"\n'
-            printf 'model = "gpt-5.6"\n'
+            printf 'model = "%s"\n' "$MODEL_TIER_HIGH"
             printf 'model_reasoning_effort = "medium"\n'
             printf 'developer_instructions = """\n'
             tr -d '\r' < "$md_file"
@@ -993,7 +995,7 @@ name: $fname
         fi
         # Add model: if missing
         if ! grep -q '^model:' "$omc_staging/omc/$bname" 2>/dev/null; then
-          sed -i '/^description:/a model: gpt-5.6' "$omc_staging/omc/$bname" 2>/dev/null || true
+          sed -i "/^description:/a model: $MODEL_TIER_HIGH" "$omc_staging/omc/$bname" 2>/dev/null || true
         fi
       done
       omc_toml_out="$CLONE_TMPDIR/omc-toml"
@@ -1094,7 +1096,7 @@ if [ "$SKIP_AGENCY" = "0" ]; then
     # Add model field to agents missing it
     find "$agency_staging" -name '*.md' | while read f; do
       if ! grep -q '^model:' "$f" 2>/dev/null; then
-        sed -i '/^description:/a model: gpt-5.6' "$f" 2>/dev/null || true
+        sed -i "/^description:/a model: $MODEL_TIER_HIGH" "$f" 2>/dev/null || true
       fi
     done
     # Convert MD → TOML

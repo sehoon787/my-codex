@@ -596,6 +596,8 @@ A GitHub Actions workflow runs every Monday, pulling the latest commits from all
 
 Boss and sub-orchestrators (Sisyphus, Atlas, Oracle) use gpt-5.6 with high reasoning effort. Standard workers use gpt-5.6-terra with medium reasoning. Lightweight advisory agents use gpt-5.6-luna.
 
+Skills consume the SKILL.md standard as-is with no transformation; only agents are converted to Codex TOML, and the model tier for that conversion is managed from a single file, `scripts/model-tiers.sh`. When Codex ships its next model generation, update only that file — `scripts/md-to-toml.sh` and `install.sh` both source it.
+
 </details>
 
 ---

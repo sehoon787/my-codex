@@ -9,11 +9,12 @@
 # (if a migration file legitimately references an old ID) EXCLUDE_PATHS.
 #
 # Excluded by design:
-#   - upstream/  : vendored third-party submodules, not ours to police.
-#   - .git/      : object store.
-#   - install.sh : contains the legacy-model normalization logic that must
-#                  reference old IDs (gpt-5.4, gpt-5.3-codex-spark) in order
-#                  to rewrite them to the current tier.
+#   - upstream/               : vendored third-party submodules, not ours to police.
+#   - .git/                   : object store.
+#   - scripts/model-tiers.sh  : single source of truth for model tiers; holds
+#                               the legacy-model normalization mapping (old IDs
+#                               gpt-5.4, gpt-5.3-codex-spark -> current tier)
+#                               that install.sh and md-to-toml.sh source.
 
 set -uo pipefail
 
@@ -22,7 +23,7 @@ set -uo pipefail
 OLD_MODEL_PATTERN="${OLD_MODEL_PATTERN:-gpt-5\.[0-5]([.-]|$| )|gpt-4|gpt-3|\bo1\b|\bo3\b|\bo4-mini\b|codex-spark}"
 
 # Path fragments to exclude from the scan (grep -E, matched against file path).
-EXCLUDE_PATHS="${EXCLUDE_PATHS:-(^|/)upstream/|(^|/)\.git/|(^|/)install\.sh$}"
+EXCLUDE_PATHS="${EXCLUDE_PATHS:-(^|/)upstream/|(^|/)\.git/|(^|/)scripts/model-tiers\.sh$}"
 
 repo_root="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$repo_root"

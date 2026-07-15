@@ -50,7 +50,7 @@ jobs:
             git diff --cached --name-only >> "$GITHUB_STEP_SUMMARY"
           fi
 
-      - name: Create PR with auto-merge
+      - name: Create PR and merge
         if: steps.check.outputs.changed == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -72,4 +72,4 @@ jobs:
             --title "chore: update upstream submodules $(date +%Y-%m-%d)" \
             --body "Automated upstream submodule update." \
             --base main)
-          gh pr merge "$PR_URL" --auto --squash --delete-branch
+          gh pr merge "$PR_URL" --squash --delete-branch

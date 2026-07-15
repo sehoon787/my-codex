@@ -1013,20 +1013,15 @@ fi
 if [ "$SKIP_AWESOME" = "0" ]; then
   echo "  [awesome] Initializing awesome-codex-subagents..."
   if init_upstream awesome https://github.com/VoltAgent/awesome-codex-subagents; then
-    # awesome-core categories → auto-loaded agents
+    # All categories are optional agent packs (opt-in via --with-packs /
+    # agent-pack-manager), not auto-loaded core agents — matches the other
+    # awesome categories and agency-agents' pack treatment.
     if [ -d "$UPSTREAM_DIR/categories" ]; then
       for cat_dir in "$UPSTREAM_DIR/categories/"*/; do
         [ -d "$cat_dir" ] || continue
         raw_name="$(basename "$cat_dir")"
         cat_name="${raw_name#[0-9][0-9]-}"
-        case "$raw_name" in
-          01-core-development|03-infrastructure|04-quality-security|09-meta-orchestration)
-            copy_toml_dir "$cat_dir" "$CODEX_ROOT/agents"
-            ;;
-          *)
-            copy_toml_dir_dedup "$cat_dir" "$CODEX_ROOT/agent-packs/$cat_name"
-            ;;
-        esac
+        copy_toml_dir_dedup "$cat_dir" "$CODEX_ROOT/agent-packs/$cat_name"
       done
     fi
   fi

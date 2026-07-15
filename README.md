@@ -171,8 +171,8 @@ Confirm "design done"   Architect verification  User: approve / improve
 
 | Category | Count | Source |
 |----------|------:|--------|
-| **Core agents** (always loaded) | 98 | Boss 1 + OMO 9 + OMX 33 + Awesome Core 54 + Superpowers 1 |
-| **Agent packs** (on-demand) | 220+ | 20 domain categories from agency-agents + awesome-codex-subagents |
+| **Core agents** (always loaded) | 44 | Boss 1 + OMO 9 + OMX 33 + Superpowers 1 |
+| **Agent packs** (on-demand) | 274+ | 24 domain categories from agency-agents + awesome-codex-subagents (all 13 awesome categories are opt-in packs) |
 | **Skills** | 200+ | ECC 180+ · gstack 40 · OMX 36 · Superpowers 14 · Core 2 |
 | **MCP Servers** | 3 | Context7, Exa, grep.app |
 | **config.toml** | 1 | my-codex |
@@ -232,9 +232,9 @@ Confirm "design done"   Architect verification  User: approve / improve
 </details>
 
 <details>
-<summary><strong>Awesome Core Agents (54) — From awesome-codex-subagents</strong></summary>
+<summary><strong>Awesome Agent Packs (54) — From awesome-codex-subagents (opt-in, not auto-loaded)</strong></summary>
 
-4 categories installed to `~/.codex/agents/`:
+4 categories moved to `~/.codex/agent-packs/` — opt-in via `--with-packs` or `my-codex-packs`, no longer auto-loaded on install:
 
 **01-core-development (12)**
 accessibility-tester, ad-security-reviewer, agent-installer, api-designer, code-documenter, code-reviewer, dependency-manager, full-stack-developer, monorepo-specialist, performance-optimizer, refactoring-specialist, tech-debt-analyzer
@@ -436,7 +436,7 @@ my-codex bundles content from 9 upstream repositories:
 | # | Source | What It Provides |
 |---|--------|-----------------|
 | 1 | <img src="https://github.com/sehoon787.png?size=32" width="20" height="20" align="center"/> **[my-claude](https://github.com/sehoon787/my-claude)** — sehoon787 | Sister project. Same Boss orchestration in native Claude `.md` agent format. Skills, rules, and briefing vault shared across both projects. |
-| 2 | <img src="https://github.com/VoltAgent.png?size=32" width="20" height="20" align="center"/> **[awesome-codex-subagents](https://github.com/VoltAgent/awesome-codex-subagents)** — VoltAgent | 136 production-grade agents in native TOML format. Already Codex-compatible, no conversion needed. 54 core agents auto-loaded. |
+| 2 | <img src="https://github.com/VoltAgent.png?size=32" width="20" height="20" align="center"/> **[awesome-codex-subagents](https://github.com/VoltAgent/awesome-codex-subagents)** — VoltAgent | 136 production-grade agents in native TOML format. Already Codex-compatible, no conversion needed. All 136 ship as opt-in agent packs (`--with-packs`/`my-codex-packs`); none are auto-loaded by default. |
 | 3 | <img src="https://github.com/Yeachan-Heo.png?size=32" width="20" height="20" align="center"/> **[oh-my-codex](https://github.com/Yeachan-Heo/oh-my-codex)** — Yeachan Heo | 36 skills, hooks, HUD, and team pipelines for Codex CLI. Referenced as architectural inspiration. |
 | 4 | <img src="https://github.com/msitarzewski.png?size=32" width="20" height="20" align="center"/> **[agency-agents](https://github.com/msitarzewski/agency-agents)** — msitarzewski | 180+ business specialist agent personas across 14 categories. Converted from Markdown to native TOML via automated pipeline. |
 | 5 | <img src="https://github.com/affaan-m.png?size=32" width="20" height="20" align="center"/> **[everything-claude-code](https://github.com/affaan-m/everything-claude-code)** — affaan-m | 180+ skills across development workflows. Claude Code-specific content stripped; generic coding skills retained. |
@@ -467,7 +467,7 @@ Features built specifically for this project, beyond what upstream sources provi
 |---------|-------------|
 | **Boss Meta-Orchestrator** | Dynamic capability discovery → intent classification → 4-priority routing → delegation → verification |
 | **3-Phase Sprint** | Design (interactive) → Execute (autonomous via executor) → Review (interactive vs design doc) |
-| **Agent Tier Priority** | core > omo > omc > awesome-core deduplication. Most specialized agent wins. |
+| **Agent Tier Priority** | core > omo > omc deduplication. awesome-codex-subagents packs are skipped if their name collides with a core agent. Most specialized agent wins. |
 | **Cost Optimization** | gpt-5.6-luna for advisory, gpt-5.6 for implementation — automatic model routing for 330+ agents |
 | **Briefing Signals** | Wrapper/session logging feeds `.briefing/agents/agent-log.jsonl`, daily summaries, and routing/profile hints |
 | **Smart Packs** | Project-type detection recommends relevant agent packs at session start |

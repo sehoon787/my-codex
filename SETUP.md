@@ -54,7 +54,7 @@ What gets installed:
 
 | Destination | Contents |
 |---|---|
-| `~/.codex/agents/` | agents (core + awesome core, deduplicated) |
+| `~/.codex/agents/` | core agents only (deduplicated) — awesome-codex-subagents ships as opt-in packs |
 | `~/.codex/agent-packs/` | 364 pack files after upstream overlap is deduplicated during install |
 | `~/.codex/skills/` | skills |
 | `~/.codex/AGENTS.md` | Agent catalog and routing instructions |

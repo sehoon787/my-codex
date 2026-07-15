@@ -561,6 +561,33 @@ copy_toml_dir_dedup() {
   done
 }
 
+# Normalize legacy/upstream-native model values to current gpt-5.6 tiers.
+# Some upstream sources (e.g. awesome-codex-subagents) ship native .toml
+# agents with their own model value, bypassing md-to-toml.sh's map_model
+# tiering. Keep this in sync with map_model's tier philosophy: workhorse ->
+# gpt-5.6-terra, lightweight -> gpt-5.6-luna.
+normalize_agent_models() {
+  local dir="$1"
+  local legacy_workhorse legacy_spark
+  [ -d "$dir" ] || return 0
+
+  legacy_workhorse=$(grep -rl '^model = "gpt-5.4"$' "$dir" --include='*.toml' 2>/dev/null | wc -l | tr -d ' ')
+  if [ "$legacy_workhorse" -gt 0 ]; then
+    grep -rl '^model = "gpt-5.4"$' "$dir" --include='*.toml' 2>/dev/null | while IFS= read -r f; do
+      sed -i 's/^model = "gpt-5.4"$/model = "gpt-5.6-terra"/' "$f"
+    done
+  fi
+
+  legacy_spark=$(grep -rl '^model = "gpt-5.3-codex-spark"$' "$dir" --include='*.toml' 2>/dev/null | wc -l | tr -d ' ')
+  if [ "$legacy_spark" -gt 0 ]; then
+    grep -rl '^model = "gpt-5.3-codex-spark"$' "$dir" --include='*.toml' 2>/dev/null | while IFS= read -r f; do
+      sed -i 's/^model = "gpt-5.3-codex-spark"$/model = "gpt-5.6-luna"/' "$f"
+    done
+  fi
+
+  echo "  Normalized $dir: $legacy_workhorse gpt-5.4 -> gpt-5.6-terra, $legacy_spark gpt-5.3-codex-spark -> gpt-5.6-luna"
+}
+
 copy_skill_dirs() {
   local skill_src="$1"
   local skill_dir dest_dir rel_path
@@ -1110,6 +1137,10 @@ fi
 
 echo "  Core agents: $(find "$CODEX_ROOT/agents" -maxdepth 1 -name '*.toml' | wc -l | tr -d ' ') installed"
 echo "  Agent packs: $(find "$CODEX_ROOT/agent-packs" -name '*.toml' | wc -l | tr -d ' ') installed"
+
+echo "  Normalizing upstream-native agent models..."
+normalize_agent_models "$CODEX_ROOT/agents"
+normalize_agent_models "$CODEX_ROOT/agent-packs"
 
 # --with-packs: symlink requested pack agents into ~/.codex/agents/
 if [ -n "$WITH_PACKS" ]; then

@@ -876,7 +876,7 @@ PS1EOF
 # my-codex in-place patch of npm codex (bash shim)
 # Runs SessionStart hook, logs invocation, then delegates to codex.real.
 
-basedir=$(dirname "$(echo "$0" | sed -e 's,\,/,g')")
+basedir=$(dirname "$(echo "$0" | sed -e 's,\\,/,g')")
 hook_path="$HOME/.codex/hooks/session-start.sh"
 hook_ok="no"
 if [ -f "$hook_path" ]; then

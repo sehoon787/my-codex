@@ -443,7 +443,6 @@ my-codex bundles content from 9 upstream repositories:
 | 6 | <img src="https://github.com/obra.png?size=32" width="20" height="20" align="center"/> **[superpowers](https://github.com/obra/superpowers)** — Jesse Vincent | 14 skills + 1 agent covering brainstorming, TDD, parallel agents, and code review. |
 | 7 | <img src="https://github.com/code-yeongyu.png?size=32" width="20" height="20" align="center"/> **[oh-my-openagent](https://github.com/code-yeongyu/oh-my-openagent)** — code-yeongyu | 9 OMO agents (Sisyphus, Atlas, Oracle, etc.). Adapted to Codex-native TOML format. |
 | 8 | <img src="https://github.com/garrytan.png?size=32" width="20" height="20" align="center"/> **[gstack](https://github.com/garrytan/gstack)** — garrytan | 40 skills for code review, QA, security audit, deployment. Includes Playwright browser daemon. |
-| 9 | <img src="https://github.com/automazeio.png?size=32" width="20" height="20" align="center"/> **[VibeProxy](https://github.com/automazeio/vibeproxy)** — automazeio | OAuth-based API proxy. Uses existing AI subscriptions (ChatGPT Plus, Gemini, Claude) without separate API keys. Optional setup via `vibeproxy-setup.sh`. |
 
 ---
 

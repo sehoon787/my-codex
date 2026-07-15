@@ -1436,22 +1436,6 @@ else
   npm i -g @ast-grep/cli@0.42.0 2>/dev/null || echo "    WARNING: ast-grep install failed"
 fi
 
-# 6b. VibeProxy (optional — use GPT/Gemini/Claude via OAuth)
-echo "  [6b] VibeProxy (optional)..."
-if [ "${MY_CODEX_SKIP_VIBEPROXY:-}" = "1" ]; then
-  echo "    Skipped (MY_CODEX_SKIP_VIBEPROXY=1)"
-elif [ -t 0 ]; then
-  printf "    Install VibeProxy to use GPT/Gemini/Claude via OAuth? [y/N] "
-  read -r INSTALL_VP
-  if [ "$INSTALL_VP" = "y" ] || [ "$INSTALL_VP" = "Y" ]; then
-    bash "$SCRIPT_DIR/scripts/vibeproxy-setup.sh" --codex
-  else
-    echo "    Skipped"
-  fi
-else
-  echo "    Skipped (non-interactive)"
-fi
-
 LC_ALL=C sort -u "$TMP_MANIFEST" > "$MANIFEST_FILE"
 printf '%s\n' "$INSTALLING_VERSION" > "$VERSION_FILE"
 echo "$REPO_ROOT" > "$CODEX_ROOT/.my-codex-repo-path" 2>/dev/null || true

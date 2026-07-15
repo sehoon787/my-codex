@@ -415,7 +415,6 @@ my-codex 捆绑了来自 9 个上游仓库的内容：
 | 6 | <img src="https://github.com/obra.png?size=32" width="20" height="20" align="center"/> **[superpowers](https://github.com/obra/superpowers)** — Jesse Vincent | 14 个 skills + 1 个 Agent，覆盖头脑风暴、TDD、并行 Agent 和代码审查。 |
 | 7 | <img src="https://github.com/code-yeongyu.png?size=32" width="20" height="20" align="center"/> **[oh-my-openagent](https://github.com/code-yeongyu/oh-my-openagent)** — code-yeongyu | 9 个 OMO Agent（Sisyphus、Atlas、Oracle 等）。适配为 Codex 原生 TOML 格式。 |
 | 8 | <img src="https://github.com/garrytan.png?size=32" width="20" height="20" align="center"/> **[gstack](https://github.com/garrytan/gstack)** — garrytan | 40 个用于代码审查、QA、安全审计、部署的 skills。包含 Playwright 浏览器守护进程。 |
-| 9 | <img src="https://github.com/automazeio.png?size=32" width="20" height="20" align="center"/> **[VibeProxy](https://github.com/automazeio/vibeproxy)** — automazeio | 基于OAuth的API代理。使用现有AI订阅（ChatGPT Plus、Gemini、Claude），无需单独API密钥。通过 `vibeproxy-setup.sh` 可选设置。 |
 
 ---
 

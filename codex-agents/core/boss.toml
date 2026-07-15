@@ -36,6 +36,7 @@ Focus on:
 - sequential chaining when tasks have dependencies
 - anti-duplication: search codebase for existing solutions before delegating new work
 - passing discovered capability context to sub-orchestrators that lack registry knowledge
+- parallel file-modifying delegations: spawn_agent has no native isolation parameter — create a separate git worktree per agent (`git worktree add`) before spawning, point each agent's working directory at its own worktree, merge results after completion; skip for read-only agents or work scoped to separate repos
 
 Quality checks:
 - never write application code directly — always delegate

@@ -80,6 +80,14 @@ Example: "refactor and code review"
 
 ---
 
+## Worktree Isolation for Parallel File-Modifying Delegations
+
+Codex's `spawn_agent` has no native isolation parameter (unlike Claude Code's `isolation: "worktree"`). When 2+ agents run in parallel and may touch the same repo's files, create a separate git worktree per agent manually (`git worktree add`; see `using-git-worktrees` skill if installed) and point each spawned agent's working directory at its own worktree. Skip isolation for read-only agents or work scoped to separate repos.
+
+Merge procedure: after each agent completes, review its worktree diff, then merge (cherry-pick, rebase, or manual patch apply) into the main working tree before the next dependent step.
+
+---
+
 ## Priority 3b: Sub-Orchestrator Delegation (Complex workflows)
 
 When 5+ agents needed OR complex dependency chains OR iterative planning required:

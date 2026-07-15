@@ -50,7 +50,17 @@ jobs:
             git diff --cached --name-only >> "$GITHUB_STEP_SUMMARY"
           fi
 
-      - name: Create PR and merge
+      - name: Security scan of upstream diff
+        id: scan
+        if: steps.check.outputs.changed == 'true'
+        env:
+          SCAN_REPORT: scan-report.md
+        run: |
+          bash scripts/scan-upstream-diff.sh
+          cat scan-report.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Create PR
+        id: pr
         if: steps.check.outputs.changed == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -72,4 +82,26 @@ jobs:
             --title "chore: update upstream submodules $(date +%Y-%m-%d)" \
             --body "Automated upstream submodule update." \
             --base main)
-          gh pr merge "$PR_URL" --squash --delete-branch
+          echo "url=$PR_URL" >> "$GITHUB_OUTPUT"
+
+      # Clean scan → merge automatically, as before.
+      - name: Auto-merge (scan clean)
+        if: steps.check.outputs.changed == 'true' && steps.scan.outputs.flagged == 'false'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr merge "${{ steps.pr.outputs.url }}" --squash --delete-branch
+
+      # Flagged scan → leave PR open, label it, and post the scan report.
+      - name: Flag for manual review (scan flagged)
+        if: steps.check.outputs.changed == 'true' && steps.scan.outputs.flagged == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh label create needs-review \
+            --color FBCA04 \
+            --description "Automated change flagged by security scan; needs human review" \
+            2>/dev/null || true
+          gh pr edit "${{ steps.pr.outputs.url }}" --add-label needs-review
+          gh pr comment "${{ steps.pr.outputs.url }}" --body-file scan-report.md
+          echo "::warning::Upstream sync flagged by security scan — PR left open for manual review."

@@ -1159,6 +1159,9 @@ if [ "$SKIP_ECC" = "0" ]; then
   if init_upstream ecc https://github.com/affaan-m/everything-claude-code; then
     if [ -d "$UPSTREAM_DIR/skills" ]; then
       copy_skill_dirs "$UPSTREAM_DIR/skills"
+      # continuous-learning v1 is self-declared deprecated in favor of v2; exclude from install
+      rm -rf "$CODEX_ROOT/skills/continuous-learning"
+      grep -v '^skills/continuous-learning$' "$TMP_MANIFEST" > "$TMP_MANIFEST.tmp" 2>/dev/null && mv "$TMP_MANIFEST.tmp" "$TMP_MANIFEST"
     fi
   fi
 fi

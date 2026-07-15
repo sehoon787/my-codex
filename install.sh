@@ -502,30 +502,6 @@ remove_manifest_paths() {
   done < "$manifest"
 }
 
-legacy_cleanup() {
-  local src_dir cat_dir cat_name file_name skill_dir
-
-  # Clean flat agents from core/omo/omc/awesome-core (self-owned dirs)
-  for src_dir in \
-    "$REPO_ROOT/codex-agents/core" \
-    "$REPO_ROOT/codex-agents/omo"
-  do
-    [ -d "$src_dir" ] || continue
-    for file_name in "$src_dir"/*.toml; do
-      [ -f "$file_name" ] || continue
-      rm -f "$CODEX_ROOT/agents/$(basename "$file_name")" 2>/dev/null || true
-    done
-  done
-
-  # Clean skills from self-owned core
-  if [ -d "$REPO_ROOT/skills/core" ] && [ -d "$CODEX_ROOT/skills" ]; then
-    for skill_dir in "$REPO_ROOT/skills/core/"*/; do
-      [ -d "$skill_dir" ] || continue
-      rm -rf "$CODEX_ROOT/skills/$(basename "$skill_dir")" 2>/dev/null || true
-    done
-  fi
-}
-
 copy_toml_dir() {
   local src_dir="$1"
   local dest_dir="$2"
@@ -962,8 +938,10 @@ mkdir -p "$CODEX_ROOT/agents" "$CODEX_ROOT/agent-packs" "$CODEX_ROOT/skills"
 if [ -x "$PACK_MANAGER" ]; then
   HOME="$HOME" "$PACK_MANAGER" ensure-state
 fi
-if ! remove_manifest_paths "$MANIFEST_FILE"; then
-  legacy_cleanup
+if [ -f "$MANIFEST_FILE" ]; then
+  remove_manifest_paths "$MANIFEST_FILE"
+else
+  echo "  No previous manifest found — skipping stale-file cleanup (safe default for first-time or pre-manifest legacy installs)"
 fi
 cleanup_cross_tool_skills
 echo "  Previous my-codex-managed files cleaned"

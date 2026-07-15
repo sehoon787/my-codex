@@ -31,6 +31,8 @@ rm -rf /tmp/my-codex
 
 Rerunning either install command installs the latest published `main` snapshot, updates only my-codex-managed assets in `~/.codex/`, and removes stale my-codex skills-only copies from `~/.agents/skills/` and `~/.claude/skills/`.
 
+Update/cleanup behavior: `install.sh` records every path it writes into `~/.codex/.my-codex-manifest.txt` as it copies each file (never by scanning `~/.codex/agents`, `~/.codex/agent-packs`, or `~/.codex/skills` afterward). On the next run, only paths listed in that manifest are removed before reinstalling, so anything you added yourself directly under those directories is never listed and is never touched. Paths that were part of a previous my-codex install but aren't recreated by the current run (e.g. an upstream agent was renamed) are dropped as stale. If `.my-codex-manifest.txt` doesn't exist yet (first install, or a pre-manifest legacy install), stale-file cleanup is skipped entirely and a warning is printed instead of guessing.
+
 This installs:
 - Core agents in `~/.codex/agents/` (always loaded by Codex CLI via `spawn_agent`)
 - Domain agent-packs in `~/.codex/agent-packs/`

@@ -70,6 +70,8 @@ Invoke skills with `$name` syntax:
 - `$security-review` — security analysis
 - `$trace` — evidence-driven debugging
 
+Codex CLI 0.128.0+ ships a native `/goal` command (single-thread objective + token budget, self-audited completion) behind the experimental `goals` feature flag, which is off by default (enable with `codex features enable goals`). It has no `codex exec`/CLI equivalent, so Boss and gstack-sprint cannot invoke it as an automated pipeline step. Use `/goal` for simple ad-hoc interactive persistence in a single session; use `$ralph` when you need fresh-context restarts, external architect/critic verification, or orchestration by Boss/gstack-sprint.
+
 ## Research & Reuse (mandatory before new implementation)
 1. Search GitHub for existing implementations first
 2. Check library docs for API behavior

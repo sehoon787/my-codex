@@ -1,0 +1,46 @@
+name: Smoke Tests
+on:
+  push:
+    branches: [main, 'auto/**']
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+# Model-drift patterns live here so a future model-generation bump is a
+# one-line edit. Keep in sync with scripts/check-model-drift.sh defaults.
+env:
+  OLD_MODEL_PATTERN: 'gpt-5\.[0-5]([.-]|$| )|gpt-4|gpt-3|\bo1\b|\bo3\b|\bo4-mini\b|codex-spark'
+  EXCLUDE_PATHS: '(^|/)upstream/|(^|/)\.git/|(^|/)install\.sh$'
+
+jobs:
+  hooks:
+    name: Hook scripts syntax check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Check hooks.json + inline node -e + standalone .js
+        run: node scripts/smoke-hooks.js
+
+  shell:
+    name: Shell scripts syntax check
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: bash -n all shell scripts
+        shell: bash
+        run: bash scripts/smoke-shell.sh
+
+  drift:
+    name: Model-generation drift check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fail on stale model IDs
+        run: bash scripts/check-model-drift.sh

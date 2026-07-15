@@ -25,6 +25,7 @@ When both a skill and an agent could handle the request, evaluate three dimensio
 - **File-format deliverable** (the output IS a pdf/docx/xlsx/pptx) -> Skill always wins, regardless of dimensions
 - **Visual design deliverable** (landing page, component, UI) where the primary output is rendered HTML/CSS -> Skill wins (one-shot generation); **design consultation** (evaluate existing design, propose improvements iteratively) -> Agent wins (iterative exploration)
 - **Single-file security review** -> If scope is exactly 1 file, prefer gstack `/cso` Skill (checklist-based review is more thorough for single files); if multi-file -> gstack `/cso` also preferred
+- **Security audit cadence** -> gstack `/cso` is the representative Skill for periodic/scheduled security audits (threat modeling, broader review); `security-scan` is the representative Skill for pre-commit/pre-push diff-scoped scans (fast, blocking gate). Do not conflate the two roles.
 - **Methodology + implementation** (e.g. "implement this feature using TDD") -> Skill inside Agent — skill provides methodology, agent executes
 - **Chained routing** — when a task requires two distinct steps handled by different capabilities (e.g. "read PDF and do security analysis"), Boss orchestrates as P3a: step 1 (Skill or Agent) -> step 2 (Skill or Agent), each matched independently
 - **Ambiguous scope** -> ask the user one clarifying question rather than guessing

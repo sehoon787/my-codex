@@ -100,7 +100,7 @@ Domain routing table:
 
 If gstack is not installed, fall back naturally to Priority 1–4.
 
-Keyword → skill mappings: "review"/"code review" → gstack /review, "QA"/"qa" → gstack /qa, "deploy"/"ship" → gstack /ship, "security"/"security audit" → gstack /cso, "debug"/"investigate" → gstack /investigate, "sprint"/"end-to-end"/"e2e implementation" → gstack-sprint skill.
+Keyword → skill mappings: "review"/"code review" → gstack /review, "QA"/"qa" → gstack /qa or /qa-only ("ultraqa" is omc-mode-only — route there only inside an active ultrawork/autopilot mode session, not as a standalone default), "deploy"/"ship" → gstack /ship, "security audit"/"정기 감사" → gstack /cso, "pre-commit security"/"커밋 전 점검" → security-scan, "debug"/"investigate" → gstack /investigate, "sprint"/"end-to-end"/"e2e implementation" → gstack-sprint skill, "research"/"리서치" → deep-research (general-purpose) or market-research (domain-specific), "plan"/"기획" → autoplan (gstack plan-review automation) or ralplan (omc interview-driven planning).
 
 gstack 3-Phase Sprint Workflow:
 When handling end-to-end feature requests or deployment workflows, execute in 3 phases:

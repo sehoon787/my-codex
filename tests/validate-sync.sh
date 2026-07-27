@@ -49,9 +49,8 @@ if [ "$MODE" = "repo" ]; then
         [ "$SKILL_COUNT" -ge 20 ] && echo "OK: $sub — $SKILL_COUNT skills" || { echo "FAIL: $sub has $SKILL_COUNT skills (expected >= 20)"; ERRORS=$((ERRORS + 1)); }
         ;;
       superpowers)
-        AGENT_COUNT=$(find "$subdir/agents" -name '*.md' 2>/dev/null | wc -l | tr -d ' ')
-        SKILL_COUNT=$(find "$subdir/skills" -name 'SKILL.md' 2>/dev/null | wc -l | tr -d ' ')
-        [ "$AGENT_COUNT" -ge 1 ] && echo "OK: $sub — $AGENT_COUNT agents" || { echo "FAIL: $sub has $AGENT_COUNT agents (expected >= 1)"; ERRORS=$((ERRORS + 1)); }
+        # v6.2.0 ships no agents/ dir — skills are the only contract.
+        SKILL_COUNT=$({ find "$subdir/skills" -name 'SKILL.md' 2>/dev/null || true; } | wc -l | tr -d ' ')
         [ "$SKILL_COUNT" -ge 10 ] && echo "OK: $sub — $SKILL_COUNT skills" || { echo "FAIL: $sub has $SKILL_COUNT skills (expected >= 10)"; ERRORS=$((ERRORS + 1)); }
         ;;
     esac

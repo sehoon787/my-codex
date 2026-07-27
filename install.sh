@@ -548,14 +548,14 @@ normalize_agent_models() {
   local legacy_workhorse legacy_spark
   [ -d "$dir" ] || return 0
 
-  legacy_workhorse=$(grep -rl "^model = \"$LEGACY_WORKHORSE_MODEL\"\$" "$dir" --include='*.toml' 2>/dev/null | wc -l | tr -d ' ')
+  legacy_workhorse=$({ grep -rl "^model = \"$LEGACY_WORKHORSE_MODEL\"\$" "$dir" --include='*.toml' 2>/dev/null || true; } | wc -l | tr -d ' ')
   if [ "$legacy_workhorse" -gt 0 ]; then
     grep -rl "^model = \"$LEGACY_WORKHORSE_MODEL\"\$" "$dir" --include='*.toml' 2>/dev/null | while IFS= read -r f; do
       sed -i "s/^model = \"$LEGACY_WORKHORSE_MODEL\"\$/model = \"$MODEL_TIER_MEDIUM\"/" "$f"
     done
   fi
 
-  legacy_spark=$(grep -rl "^model = \"$LEGACY_SPARK_MODEL\"\$" "$dir" --include='*.toml' 2>/dev/null | wc -l | tr -d ' ')
+  legacy_spark=$({ grep -rl "^model = \"$LEGACY_SPARK_MODEL\"\$" "$dir" --include='*.toml' 2>/dev/null || true; } | wc -l | tr -d ' ')
   if [ "$legacy_spark" -gt 0 ]; then
     grep -rl "^model = \"$LEGACY_SPARK_MODEL\"\$" "$dir" --include='*.toml' 2>/dev/null | while IFS= read -r f; do
       sed -i "s/^model = \"$LEGACY_SPARK_MODEL\"\$/model = \"$MODEL_TIER_LOW\"/" "$f"

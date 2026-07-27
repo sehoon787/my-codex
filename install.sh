@@ -885,7 +885,7 @@ fi
 
 echo "=== my-codex installer ==="
 echo ""
-echo "Install footprint: 330+ agents, 200+ skills from 6 upstream sources"
+echo "Install footprint: 17 core agents + 17 opt-in AI agents (2 packs), 123 curated skills from 4 upstream sources"
 if [ "$INSTALLED_VERSION" = "none" ]; then
   echo "Install mode: fresh (${INSTALLING_VERSION})"
 elif [ "$INSTALLED_VERSION" = "$INSTALLING_VERSION" ]; then

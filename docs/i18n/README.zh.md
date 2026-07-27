@@ -9,13 +9,13 @@
 # my-codex
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
-![Agents](https://img.shields.io/badge/agents-330%2B-blue)
-![Skills](https://img.shields.io/badge/skills-200%2B-purple)
+![Agents](https://img.shields.io/badge/agents-17_core_%2B_17_opt--in-blue)
+![Skills](https://img.shields.io/badge/skills-123-purple)
 ![MCP](https://img.shields.io/badge/MCP-3-green)
-![Auto Sync](https://img.shields.io/badge/upstream_sync-weekly-brightgreen)
+![Auto Sync](https://img.shields.io/badge/upstream_sync-every_3_days-brightgreen)
 
 **OpenAI Codex CLI 的一体化 Agent 框架。**
-**安装一次，330+ Agent 随时待命。**
+**安装一次，17 个精选 Agent 随时待命。**
 
 Boss 在运行时自动发现所有 Agent 和 Skill，
 并通过 `spawn_agent` 将任务路由到最合适的专家。无需配置，无需样板代码。
@@ -94,7 +94,7 @@ Boss 对每个请求按优先级链逐级匹配，直到找到最佳方案：
 
 | 优先级 | 匹配类型 | 触发时机 | 示例 |
 |:--------:|-----------|------|---------|
-| **P1** | Skill 匹配 | 任务对应某个独立 skill | `"merge PDFs"` → pdf skill |
+| **P1** | Skill 匹配 | 任务对应某个独立 skill | `"review this diff"` → /review skill |
 | **P2** | 专家 Agent | 存在领域专属 Agent | `"security audit"` → security-reviewer |
 | **P3a** | Boss 直接 | 2–4 个独立 Agent | `"fix 3 bugs"` → parallel spawn |
 | **P3b** | 子编排器 | 复杂多步骤工作流 | `"refactor + test"` → Sisyphus |
@@ -143,13 +143,13 @@ Confirm "design done"   Architect verification  User: approve / improve
 │spawn │ │Atlas   │ │ Direct │ │toml    │
 └──────┘ └────────┘ └────────┘ └────────┘
 ┌─────────────────────────────────────────────────────┐
-│  Agent Layer (330+ installed TOML files)              │
-│  OMO 9 · OMX 33 · Awesome Core 54 · Superpowers 1   │
-│  + 20 domain agent-packs (on-demand)                  │
+│  Agent Layer (17 installed TOML files)                │
+│  Boss 1 · OMO 9 · OMX 7                               │
+│  + 2 opt-in agent packs (17 agents, off by default)   │
 ├─────────────────────────────────────────────────────┤
-│  Skills Layer (200+ from ECC + gstack + OMX + more)  │
-│  tdd-workflow · security-review · autopilot           │
-│  pdf · docx · pptx · xlsx · team                     │
+│  Skills Layer (123 from ECC + gstack + superpowers)   │
+│  coding-standards · security-scan · deep-research     │
+│  /review · /qa · /cso · /ship                         │
 ├─────────────────────────────────────────────────────┤
 │  MCP Layer                                            │
 │  Context7 · Exa · grep.app                            │
@@ -162,9 +162,9 @@ Confirm "design done"   Architect verification  User: approve / improve
 
 | 类别 | 数量 | 来源 |
 |----------|------:|--------|
-| **核心 Agent**（始终加载） | 98 | Boss 1 + OMO 9 + OMX 33 + Awesome Core 54 + Superpowers 1 |
-| **Agent 包**（按需加载） | 220+ | 来自 agency-agents + awesome-codex-subagents 的 20 个领域分类 |
-| **Skills** | 200+ | ECC 180+ · gstack 40 · OMX 36 · Superpowers 14 · Core 1 |
+| **核心 Agent**（始终加载） | 17 | Boss 1 + OMO 9 + OMX 7 |
+| **Agent 包**（可选启用，默认全部关闭） | 17 | 2 个内置分类：data-ai 13 + llmops 4 |
+| **Skills** | 123 | ECC 79 · gstack 27 · Superpowers 13 · Core 4 |
 | **MCP 服务器** | 3 | Context7、Exa、grep.app |
 | **config.toml** | 1 | my-codex |
 | **AGENTS.md** | 1 | my-codex |
@@ -196,113 +196,62 @@ Confirm "design done"   Architect verification  User: approve / improve
 </details>
 
 <details>
-<summary><strong>OMC Agents — 专家工作者（19）</strong></summary>
+<summary><strong>OMX Agents — 专家工作者（7）</strong></summary>
 
-| Agent | 角色 | 来源 |
-|-------|------|--------|
-| analyst | 规划前预分析 | [oh-my-claudecode](https://github.com/Yeachan-Heo/oh-my-claudecode) |
-| architect | 系统设计与架构 | oh-my-claudecode |
-| code-reviewer | 专注代码审查 | oh-my-claudecode |
-| code-simplifier | 代码简化与清理 | oh-my-claudecode |
-| critic | 批判性分析、替代方案提议 | oh-my-claudecode |
-| debugger | 专注调试 | oh-my-claudecode |
-| designer | UI/UX 设计指导 | oh-my-claudecode |
-| document-specialist | 文档撰写 | oh-my-claudecode |
-| executor | 任务执行 | oh-my-claudecode |
-| explore | 代码库探索 | oh-my-claudecode |
-| git-master | Git 工作流管理 | oh-my-claudecode |
-| planner | 快速规划 | oh-my-claudecode |
-| qa-tester | 质量保证测试 | oh-my-claudecode |
-| scientist | 研究与实验 | oh-my-claudecode |
-| security-reviewer | 安全审查 | oh-my-claudecode |
-| test-engineer | 测试编写与维护 | oh-my-claudecode |
-| tracer | 执行追踪与分析 | oh-my-claudecode |
-| verifier | 最终验证 | oh-my-claudecode |
-| writer | 内容与文档 | oh-my-claudecode |
+由 [oh-my-codex](https://github.com/Yeachan-Heo/oh-my-codex) 的 `prompts/*.md` 转换为 Codex TOML。仅转换 `templates/codex-AGENTS.md` 中列出的通道，允许列表位于 `scripts/skill-allowlists.sh`。
+
+| Agent | 沙箱 | 角色 | 来源 |
+|-------|---------|------|--------|
+| executor | workspace-write | 代码实现 | oh-my-codex |
+| planner | workspace-write | 实现规划 | oh-my-codex |
+| architect | read-only | 系统设计与架构 | oh-my-codex |
+| test-engineer | workspace-write | 测试策略与覆盖率 | oh-my-codex |
+| security-reviewer | read-only | 安全分析 | oh-my-codex |
+| code-reviewer | read-only | 专注的代码审查 | oh-my-codex |
+| debugger | workspace-write | 根因分析 | oh-my-codex |
 
 </details>
 
 <details>
-<summary><strong>Awesome Core Agents（54）— 来自 awesome-codex-subagents</strong></summary>
+<summary><strong>Agent 包 — 可选启用的 AI 专家（2 个包，17 个 Agent）</strong></summary>
 
-4 个分类安装至 `~/.codex/agents/`：
-
-**01-core-development（12）**
-accessibility-tester, ad-security-reviewer, agent-installer, api-designer, code-documenter, code-reviewer, dependency-manager, full-stack-developer, monorepo-specialist, performance-optimizer, refactoring-specialist, tech-debt-analyzer
-
-**03-infrastructure（16）**
-azure-infra-engineer, cloud-architect, container-orchestrator, database-architect, disaster-recovery-planner, edge-computing-specialist, infrastructure-as-code, kubernetes-operator, load-balancer-specialist, message-queue-designer, microservices-architect, monitoring-specialist, network-engineer, serverless-architect, service-mesh-designer, storage-architect
-
-**04-quality-security（16）**
-api-security-tester, chaos-engineer, compliance-auditor, contract-tester, data-privacy-officer, e2e-test-architect, incident-responder, load-tester, mutation-tester, penetration-tester, regression-tester, security-scanner, soc-analyst, static-analyzer, threat-modeler, vulnerability-assessor
-
-**09-meta-orchestration（10）**
-agent-organizer, capability-assessor, conflict-resolver, context-manager, execution-planner, multi-agent-coordinator, priority-manager, resource-allocator, task-decomposer, workflow-orchestrator
-
-</details>
-
-<details>
-<summary><strong>Superpowers Agent（1）— 来自 obra/superpowers</strong></summary>
-
-| Agent | 角色 | 来源 |
-|-------|------|--------|
-| superpowers-code-reviewer | 全面代码审查，包含头脑风暴和 TDD 验证 | [superpowers](https://github.com/obra/superpowers) |
-
-</details>
-
-<details>
-<summary><strong>Agent 包 — 按需领域专家（21 个分类）</strong></summary>
-
-安装至 `~/.codex/agent-packs/`。通过以下命令管理：
+从 [awesome-codex-subagents](https://github.com/VoltAgent/awesome-codex-subagents)（MIT）内置到 `codex-agents/packs/`，并安装到 `~/.codex/agent-packs/`。**默认不启用任何包** — 需要显式开启：
 
 ```bash
-# View current state
+# 查看当前状态
 ~/.codex/bin/my-codex-packs status
 
-# Enable a pack immediately
-~/.codex/bin/my-codex-packs enable marketing
+# 立即启用某个包
+~/.codex/bin/my-codex-packs enable data-ai
 
-# Switch profiles at install time
-bash /tmp/my-codex/install.sh --profile minimal
-bash /tmp/my-codex/install.sh --profile full
+# 安装时切换配置档
+bash /tmp/my-codex/install.sh --profile minimal   # 不启用任何包
+bash /tmp/my-codex/install.sh --profile dev       # data-ai + llmops
+bash /tmp/my-codex/install.sh --profile full      # 已安装的全部包
 ```
 
-| 包 | 数量 | 示例 |
+| 包 | 数量 | Agent |
 |------|------:|---------|
-| engineering | 32 | Backend、Frontend、Mobile、DevOps、AI、Data |
-| marketing | 27 | Douyin、Xiaohongshu、WeChat OA、TikTok、SEO |
-| language-specialists | 27 | Python、Go、Rust、Swift、Kotlin、Java |
-| specialized | 31 | 法律、金融、医疗、工作流 |
-| game-development | 20 | Unity、Unreal、Godot、Roblox、Blender |
-| infrastructure | 19 | Cloud、K8s、Terraform、Docker、SRE |
-| developer-experience | 13 | MCP Builder、LSP、Terminal、Rapid Prototyper |
-| data-ai | 13 | Data Engineer、ML、Database、ClickHouse |
-| specialized-domains | 12 | 供应链、物流、电商 |
-| design | 11 | 品牌、UI、UX、视觉叙事 |
-| business-product | 11 | 产品经理、增长、分析 |
-| testing | 11 | API、无障碍、性能、E2E、QA |
-| sales | 8 | 交易策略、管道、外向销售 |
-| paid-media | 7 | Google Ads、Meta Ads、程序化广告 |
-| research-analysis | 7 | 趋势、市场、竞争分析 |
-| project-management | 6 | 敏捷、Jira、工作流 |
-| spatial-computing | 6 | XR、WebXR、AR/VR、visionOS |
-| support | 6 | 客户支持、开发者倡导 |
-| academic | 5 | 留学、企业培训 |
-| product | 5 | 产品管理、UX 研究 |
-| security | 5 | 渗透测试、合规、审计 |
+| data-ai | 13 | ai-engineer, data-analyst, data-engineer, data-scientist, database-optimizer, llm-architect, machine-learning-engineer, ml-engineer, mlops-engineer, nlp-engineer, postgres-pro, prompt-engineer, reinforcement-learning-engineer |
+| llmops | 4 | ai-observability-engineer, eval-engineer, hallucination-investigator, prompt-regression-tester |
 
 </details>
 
 <details>
-<summary><strong>Skills — 200+ 来自 5 个来源</strong></summary>
+<summary><strong>Skills — 123 个，来自 4 个来源</strong></summary>
 
-| 来源 | 数量 | 核心 Skills |
+按技能逐项筛选的允许列表位于 `scripts/skill-allowlists.sh`，该文件决定实际安装内容。
+
+| 来源 | 数量 | 主要 Skills |
 |--------|------:|------------|
-| [everything-claude-code](https://github.com/affaan-m/everything-claude-code) | 180+ | tdd-workflow、autopilot、security-review、coding-standards |
-| [oh-my-codex](https://github.com/Yeachan-Heo/oh-my-codex) | 36 | plan、team、trace、deep-dive、blueprint、ultrawork |
-| [gstack](https://github.com/garrytan/gstack) | 40 | /qa、/review、/ship、/cso、/investigate、/office-hours |
-| [superpowers](https://github.com/obra/superpowers) | 14 | brainstorming、systematic-debugging、TDD、parallel-agents |
-| [my-codex Core](https://github.com/sehoon787/my-codex) | 1 | boss-advanced |
+| [everything-claude-code](https://github.com/affaan-m/everything-claude-code) | 79 | coding-standards, python-testing, api-design, deep-research |
+| [gstack](https://github.com/garrytan/gstack) | 27 | /qa, /review, /ship, /cso, /investigate, /office-hours |
+| [superpowers](https://github.com/obra/superpowers) | 13 | brainstorming, systematic-debugging, TDD, writing-plans |
+| [my-codex Core](https://github.com/sehoon787/my-codex) | 4 | boss-advanced, boss-briefing, briefing-vault, gstack-sprint |
+
+gstack 按允许列表的 26 个技能加上仓库根条目计为 27。整个 gstack 仓库同时位于 `~/.codex/skills/gstack`，作为其标准运行时目录树。ECC 另外提供 9 个允许列表规则文件。
+
+Codex **不提供文档类 skill** — 本捆绑包中没有 `pdf`、`docx`、`pptx`、`xlsx` skill。
 
 </details>
 
@@ -403,18 +352,19 @@ BriefingVault v2 整合了三种知识管理方法论：
 
 ## 上游开源来源
 
-my-codex 捆绑了来自 9 个上游仓库的内容：
+my-codex 由 **4 个上游子模块**，加上 1 份内置快照与 2 个适配/姊妹项目组成：
 
-| # | 来源 | 提供的内容 |
-|---|--------|-----------------|
-| 1 | <img src="https://github.com/sehoon787.png?size=32" width="20" height="20" align="center"/> **[my-claude](https://github.com/sehoon787/my-claude)** — sehoon787 | 姊妹项目。同样的 Boss 编排架构，原生 Claude `.md` Agent 格式。Skills、规则和 Briefing Vault 在两个项目间共享。 |
-| 2 | <img src="https://github.com/VoltAgent.png?size=32" width="20" height="20" align="center"/> **[awesome-codex-subagents](https://github.com/VoltAgent/awesome-codex-subagents)** — VoltAgent | 136 个生产级 Agent，原生 TOML 格式。已兼容 Codex，无需转换。54 个核心 Agent 自动加载。 |
-| 3 | <img src="https://github.com/Yeachan-Heo.png?size=32" width="20" height="20" align="center"/> **[oh-my-codex](https://github.com/Yeachan-Heo/oh-my-codex)** — Yeachan Heo | 36 个 skills、hooks、HUD 和团队流水线，适用于 Codex CLI。作为架构参考。 |
-| 4 | <img src="https://github.com/msitarzewski.png?size=32" width="20" height="20" align="center"/> **[agency-agents](https://github.com/msitarzewski/agency-agents)** — msitarzewski | 180+ 个业务专家 Agent 角色，覆盖 14 个分类。通过自动化流水线从 Markdown 转换为原生 TOML。 |
-| 5 | <img src="https://github.com/affaan-m.png?size=32" width="20" height="20" align="center"/> **[everything-claude-code](https://github.com/affaan-m/everything-claude-code)** — affaan-m | 180+ 个跨开发工作流的 skills。移除 Claude Code 专属内容，保留通用编码 skills。 |
-| 6 | <img src="https://github.com/obra.png?size=32" width="20" height="20" align="center"/> **[superpowers](https://github.com/obra/superpowers)** — Jesse Vincent | 14 个 skills + 1 个 Agent，覆盖头脑风暴、TDD、并行 Agent 和代码审查。 |
-| 7 | <img src="https://github.com/code-yeongyu.png?size=32" width="20" height="20" align="center"/> **[oh-my-openagent](https://github.com/code-yeongyu/oh-my-openagent)** — code-yeongyu | 9 个 OMO Agent（Sisyphus、Atlas、Oracle 等）。适配为 Codex 原生 TOML 格式。 |
-| 8 | <img src="https://github.com/garrytan.png?size=32" width="20" height="20" align="center"/> **[gstack](https://github.com/garrytan/gstack)** — garrytan | 40 个用于代码审查、QA、安全审计、部署的 skills。包含 Playwright 浏览器守护进程。 |
+| # | 来源 | 方式 | 提供的内容 |
+|---|--------|------|-----------------|
+| 1 | <img src="https://github.com/affaan-m.png?size=32" width="20" height="20" align="center"/> **[everything-claude-code](https://github.com/affaan-m/everything-claude-code)** — affaan-m | 子模块 | 覆盖开发工作流的 79 个允许列表 skills。移除 Claude Code 专属内容，保留通用编码 skills。 |
+| 2 | <img src="https://github.com/garrytan.png?size=32" width="20" height="20" align="center"/> **[gstack](https://github.com/garrytan/gstack)** — garrytan | 子模块 | 27 个用于代码审查、QA、安全审计、部署的 skills。包含 Playwright 浏览器守护进程。 |
+| 3 | <img src="https://github.com/Yeachan-Heo.png?size=32" width="20" height="20" align="center"/> **[oh-my-codex](https://github.com/Yeachan-Heo/oh-my-codex)** — Yeachan Heo | 子模块 | 7 个允许列表工作 Agent（executor、planner、architect、test-engineer、security-reviewer、code-reviewer、debugger），由 Markdown 提示词转换为 Codex TOML。 |
+| 4 | <img src="https://github.com/obra.png?size=32" width="20" height="20" align="center"/> **[superpowers](https://github.com/obra/superpowers)** — Jesse Vincent | 子模块 | 13 个 skills，覆盖头脑风暴、TDD、系统化调试与计划撰写。不安装任何 Agent。 |
+| 5 | <img src="https://github.com/VoltAgent.png?size=32" width="20" height="20" align="center"/> **[awesome-codex-subagents](https://github.com/VoltAgent/awesome-codex-subagents)** — VoltAgent | 内置快照 (MIT) | 17 个 AI/LLM Agent 快照到 `codex-agents/packs/`，作为 2 个可选启用的包（data-ai 13、llmops 4）。子模块已于 2026-07-27 移除。 |
+| 6 | <img src="https://github.com/code-yeongyu.png?size=32" width="20" height="20" align="center"/> **[oh-my-openagent](https://github.com/code-yeongyu/oh-my-openagent)** — code-yeongyu | 适配 | 9 个 OMO Agent（Sisyphus、Atlas、Oracle 等）。适配为 Codex 原生 TOML 格式并在本仓库维护。 |
+| 7 | <img src="https://github.com/sehoon787.png?size=32" width="20" height="20" align="center"/> **[my-claude](https://github.com/sehoon787/my-claude)** — sehoon787 | 姊妹项目 | 同样的 Boss 编排架构，原生 Claude `.md` Agent 格式。Skills、规则和 Briefing Vault 在两个项目间共享。 |
+
+所有子模块均在 `upstream/SOURCES.json`（AI-BOM）中以 SHA 固定，该文件同时记录了两个已移除的子模块（`agency-agents` — 未内置任何内容；`awesome-codex-subagents` — 内置 17 个 Agent）。
 
 ---
 
@@ -423,7 +373,8 @@ my-codex 捆绑了来自 9 个上游仓库的内容：
 | 工作流 | 触发条件 | 用途 |
 |----------|---------|---------|
 | **CI** | push、PR | 验证 TOML Agent 文件、skill 存在性和上游文件数量 |
-| **Update Upstream** | 每周（周一）/ 手动 | 运行 `git submodule update --remote` 并创建自动合并 PR |
+| **Smoke Tests** | push, PR | `hooks`、`shell`、`drift`、`routing-refs` 作业——校验钩子接线、shell 语法、模型漂移与 AGENTS.md 路由引用 |
+| **Update Upstream** | 每 3 天 / 手动 | 带安全门禁的 `git submodule update --remote`，刷新 `upstream/SOURCES.json` 固定值并创建自动合并 PR |
 | **Auto Tag** | push 到 main | 从 `config.toml` 读取版本并在有新版本时创建 git tag |
 | **Pages** | push 到 main | 将 `docs/index.html` 部署到 GitHub Pages |
 | **CLA** | PR | 贡献者许可协议检查 |
@@ -439,8 +390,8 @@ my-codex 捆绑了来自 9 个上游仓库的内容：
 |---------|-------------|
 | **Boss 元编排器** | 动态能力发现 → 意图分类 → 4 级优先路由 → 委派 → 验证 |
 | **三阶段冲刺** | 设计（交互式）→ 执行（通过 executor 自主进行）→ 审查（交互式对比设计文档） |
-| **Agent 层级优先级** | core > omo > omc > awesome-core 去重。最专业的 Agent 优先。 |
-| **成本优化** | 咨询用 gpt-5.6-luna，实现用 gpt-5.6——330+ Agent 自动模型路由 |
+| **Agent 层级优先级** | core > omo > omx > 可选包 依次去重。与已安装 Agent 同名的包内 Agent 会被跳过。最专业的 Agent 优先。 |
+| **成本优化** | 咨询用 gpt-5.6-luna，实现用 gpt-5.6——覆盖全部 34 个已安装 Agent 的自动模型路由 |
 | **Agent 遥测** | PostToolUse hook 将 Agent 使用情况记录到 `agent-usage.jsonl` |
 | **智能包** | 项目类型检测在会话开始时推荐相关 Agent 包 |
 | **Agent 包系统** | 通过 `--profile` 和 `my-codex-packs` 助手按需激活领域专家 |
@@ -463,13 +414,19 @@ rm -rf /tmp/my-codex
 
 ### Agent 包配置文件
 
-首次安装时，my-codex 自动激活推荐的 `dev` 集合（`engineering`、`design`、`testing`、`marketing`、`support`），并记录在 `~/.codex/enabled-agent-packs.txt` 中。
+包会被安装，但**默认不启用**。全新安装会在 `~/.codex/enabled-agent-packs.txt` 中记录一个空集合。按包逐个启用，或选择一个配置档：
 
 ```bash
-# Minimal profile (core agents only, no packs)
+# 立即启用某个包
+~/.codex/bin/my-codex-packs enable data-ai
+
+# minimal 配置档（仅核心 Agent，不启用任何包 — 默认）
 bash /tmp/my-codex/install.sh --profile minimal
 
-# Full profile (all 21 pack categories enabled)
+# dev 配置档（data-ai + llmops）
+bash /tmp/my-codex/install.sh --profile dev
+
+# full 配置档（启用已安装的 2 个包分类）
 bash /tmp/my-codex/install.sh --profile full
 ```
 
@@ -524,12 +481,11 @@ max_depth = 1
 
 | 来源 | 同步方式 |
 |--------|------|
-| [agency-agents](https://github.com/msitarzewski/agency-agents) | submodule |
-| [everything-claude-code](https://github.com/affaan-m/everything-claude-code) | submodule |
-| [oh-my-codex](https://github.com/Yeachan-Heo/oh-my-codex) | submodule |
-| [awesome-codex-subagents](https://github.com/VoltAgent/awesome-codex-subagents) | submodule |
-| [gstack](https://github.com/garrytan/gstack) | submodule |
-| [superpowers](https://github.com/obra/superpowers) | submodule |
+| [everything-claude-code](https://github.com/affaan-m/everything-claude-code) | 子模块 (`upstream/ecc`) |
+| [gstack](https://github.com/garrytan/gstack) | 子模块 (`upstream/gstack`) |
+| [oh-my-codex](https://github.com/Yeachan-Heo/oh-my-codex) | 子模块 (`upstream/omx`) |
+| [superpowers](https://github.com/obra/superpowers) | 子模块 (`upstream/superpowers`) |
+| [awesome-codex-subagents](https://github.com/VoltAgent/awesome-codex-subagents) | 内置快照（子模块已于 2026-07-27 移除） |
 
 ---
 
@@ -552,14 +508,14 @@ my-codex 和 my-claude 共享相同的 Boss 编排架构和上游 skill 来源�
 <details>
 <summary><strong>Agent 包如何工作？</strong></summary>
 
-Agent 包是安装到 `~/.codex/agent-packs/` 的领域专属 Agent 集合。首次安装时，`dev` 配置文件自动激活。使用 `my-codex-packs enable <pack>` 激活更多包，或以 `--profile full` 重新安装以启用所有 21 个分类。
+Agent 包是安装到 `~/.codex/agent-packs/` 的领域专属 Agent 集合。目前提供 `data-ai`（13 个）与 `llmops`（4 个）两个包，且**安装时不会启用任何包**。使用 `my-codex-packs enable <pack>` 启用，或以 `--profile full` 重新安装以启用这两个分类。
 
 </details>
 
 <details>
 <summary><strong>上游同步如何工作？</strong></summary>
 
-GitHub Actions 工作流每周一运行，从所有上游子模块拉取最新提交并创建自动合并 PR。也可以从 Actions 标签页手动触发。
+GitHub Actions 工作流每 3 天运行一次，从 4 个上游子模块拉取最新提交，刷新 `upstream/SOURCES.json` 中的 SHA 固定值，并创建带安全门禁的自动合并 PR。也可以从 Actions 标签页手动触发。
 
 </details>
 
@@ -594,7 +550,7 @@ npx skills add sehoon787/my-codex -y -g
 
 ## 致谢
 
-本项目基于以下工作构建：[my-claude](https://github.com/sehoon787/my-claude)（sehoon787）、[awesome-codex-subagents](https://github.com/VoltAgent/awesome-codex-subagents)（VoltAgent）、[oh-my-codex](https://github.com/Yeachan-Heo/oh-my-codex)（Yeachan Heo）、[agency-agents](https://github.com/msitarzewski/agency-agents)（msitarzewski）、[everything-claude-code](https://github.com/affaan-m/everything-claude-code)（affaan-m）、[oh-my-openagent](https://github.com/code-yeongyu/oh-my-openagent)（code-yeongyu）、[gstack](https://github.com/garrytan/gstack)（garrytan）、[superpowers](https://github.com/obra/superpowers)（Jesse Vincent）、[openai/skills](https://github.com/openai/skills)（OpenAI）。
+本项目基于以下工作构建：[my-claude](https://github.com/sehoon787/my-claude)（sehoon787）、[everything-claude-code](https://github.com/affaan-m/everything-claude-code)（affaan-m）、[gstack](https://github.com/garrytan/gstack)（garrytan）、[oh-my-codex](https://github.com/Yeachan-Heo/oh-my-codex)（Yeachan Heo）、[superpowers](https://github.com/obra/superpowers)（Jesse Vincent）、[awesome-codex-subagents](https://github.com/VoltAgent/awesome-codex-subagents)（VoltAgent）、[oh-my-openagent](https://github.com/code-yeongyu/oh-my-openagent)（code-yeongyu）、[openai/skills](https://github.com/openai/skills)（OpenAI）。
 
 ## 许可证
 

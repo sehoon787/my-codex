@@ -54,11 +54,11 @@ What gets installed:
 
 | Destination | Contents |
 |---|---|
-| `~/.codex/agents/` | core agents only (deduplicated) — awesome-codex-subagents ships as opt-in packs |
-| `~/.codex/agent-packs/` | 364 pack files after upstream overlap is deduplicated during install |
-| `~/.codex/skills/` | skills |
+| `~/.codex/agents/` | 17 core agents (Boss 1 + OMO 9 + OMX 7), deduplicated by tier |
+| `~/.codex/agent-packs/` | 17 opt-in pack agents across 2 packs (data-ai 13, llmops 4) |
+| `~/.codex/skills/` | 123 skills (ECC 79 + gstack 27 + superpowers 13 + core 4) |
 | `~/.codex/AGENTS.md` | Agent catalog and routing instructions |
-| `~/.codex/enabled-agent-packs.txt` | Persisted active pack set; first install writes a recommended default |
+| `~/.codex/enabled-agent-packs.txt` | Persisted active pack set; first install writes an empty set (packs are opt-in) |
 | `~/.codex/config.toml` | `multi_agent = true` + model defaults |
 | `~/.codex/git-hooks/` | `prepare-commit-msg` + `commit-msg` + `post-commit` hooks for Codex attribution |
 | `~/.codex/bin/codex` | Wrapper that records Codex-touched files for commit attribution |
@@ -80,15 +80,15 @@ echo "Enabled set:  $(grep -Ev '^(#|$)' ~/.codex/enabled-agent-packs.txt | paste
 
 Expected output:
 ```
-Core agents:  (dynamic)
-Active packs: 90
-Agent packs:  (dynamic)
-Skills:       (dynamic)
+Core agents:  17
+Active packs: 0
+Agent packs:  17
+Skills:       123
 AGENTS.md:    OK
 config.toml:  OK
 ```
 
-Note: the repository contains more raw TOML files than the final installed counts. `install.sh` verifies the installed footprint above, not the pre-deduped source totals.
+Note: agents and skills come from curated allowlists (`scripts/skill-allowlists.sh`), not bulk copies. `install.sh` verifies the installed footprint above.
 
 ---
 
@@ -121,53 +121,27 @@ git config --global my-codex.codexAttribution false
 
 ## 5. Agent Packs Activation
 
-Agent packs are stored in `~/.codex/agent-packs/`. On first install, `my-codex` auto-activates a recommended set:
-
-- `engineering`
-- `design`
-- `testing`
-- `marketing`
-- `support`
-
-That state is persisted in `~/.codex/enabled-agent-packs.txt`. Re-running `install.sh` rehydrates the symlinks from that file. The default is biased toward packs that add net-new specialists beyond the core registry, which is why `security` and `infrastructure` stay opt-in even though they are popular domains. You can also change it live with the installed helper.
+Agent packs are stored in `~/.codex/agent-packs/`. **No pack is enabled on install** — the empty set is persisted in `~/.codex/enabled-agent-packs.txt`, and re-running `install.sh` rehydrates the symlinks from that file. Packs stay opt-in so the core registry of 17 agents is what Boss discovers by default; enable a pack only when a task needs its specialists.
 
 ```bash
 # Inspect current state
 ~/.codex/bin/my-codex-packs status
 
-# Enable another pack immediately
-~/.codex/bin/my-codex-packs enable security
+# Enable a pack immediately
+~/.codex/bin/my-codex-packs enable data-ai
 
 # Switch profiles during install
-bash /tmp/my-codex/install.sh --profile minimal
-bash /tmp/my-codex/install.sh --profile full
+bash /tmp/my-codex/install.sh --profile minimal   # no packs (default)
+bash /tmp/my-codex/install.sh --profile dev       # data-ai + llmops
+bash /tmp/my-codex/install.sh --profile full      # all installed packs
 ```
 
-Available packs and agent counts:
+Available packs and agent counts (vendored from awesome-codex-subagents, MIT):
 
 | Pack | Agents |
 |---|---|
-| engineering | 32 |
-| marketing | 27 |
-| language-specialists | 27 |
-| specialized | 31 |
-| game-development | 20 |
-| infrastructure | 19 |
-| developer-experience | 13 |
 | data-ai | 13 |
-| specialized-domains | 12 |
-| design | 11 |
-| business-product | 11 |
-| testing | 11 |
-| sales | 8 |
-| paid-media | 7 |
-| research-analysis | 7 |
-| project-management | 6 |
-| spatial-computing | 6 |
-| support | 6 |
-| academic | 5 |
-| product | 5 |
-| security | 5 |
+| llmops | 4 |
 
 ---
 
@@ -265,7 +239,7 @@ You are boss. The goal is to add OAuth2 support.
 ```bash
 # Verify agents exist
 ls ~/.codex/agents/*.toml | wc -l
-# Should be 80+
+# Should be 17 (plus one symlink per enabled pack agent)
 ```
 
 **`spawn_agent` fails**

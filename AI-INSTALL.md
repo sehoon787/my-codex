@@ -1,8 +1,8 @@
 # my-codex AI Installation Guide
 
 You are an AI agent setting up a Codex CLI multi-agent orchestration environment.
-The bundle installs 400+ agent files and 200+ skills (+ 40 gstack runtime), and 3 MCP servers.
-The repository sources contain TOML definitions from overlapping upstream sources; install-time deduplication reduces that to the final installed footprint.
+The bundle installs 17 auto-loaded agents, 17 opt-in pack agents (2 packs, disabled by default), 123 curated skills, and 3 MCP servers.
+Agents and skills come from curated allowlists (`scripts/skill-allowlists.sh`), not bulk copies — the installed footprint is the allowlist, deduplicated by tier.
 Only 2-3 steps are needed.
 
 Read the FULL output, then execute each step in order.
@@ -80,22 +80,23 @@ through `install.sh` and its manifest, so a re-run always refreshes them — the
 separate stale-agent source to reconcile.
 
 This installs:
-- Core agents in `~/.codex/agents/` (always loaded by Codex CLI via `spawn_agent`)
-- Domain agent-packs in `~/.codex/agent-packs/`
-- `~/.codex/enabled-agent-packs.txt` with a recommended default set (`engineering`, `design`, `testing`, `marketing`, `support`)
-- symlinks for that enabled set into `~/.codex/agents/`
-- Skills in `~/.codex/skills/` (ECC, minus 7 superseded by gstack)
-- gstack skills (runtime-installed from garrytan/gstack — code review, QA, debugging, security, deployment)
+- 17 core agents in `~/.codex/agents/` (always loaded by Codex CLI via `spawn_agent`): Boss 1 + OMO 9 + OMX 7
+- 2 opt-in agent packs in `~/.codex/agent-packs/` (`data-ai` 13, `llmops` 4), vendored from awesome-codex-subagents
+- `~/.codex/enabled-agent-packs.txt` with **no packs enabled** — opt in with `~/.codex/bin/my-codex-packs enable <pack>`
+- 123 skills in `~/.codex/skills/` (ECC 79 · gstack 27 · superpowers 13 · my-codex core 4)
+- gstack also cloned whole to `~/.codex/skills/gstack` as its canonical runtime tree
 - Global `AGENTS.md` instructions with Boss meta-orchestrator as default agent
 - `config.toml` with `multi_agent = true`
 - `~/.codex/bin/codex` wrapper plus git hooks for Codex-only commit attribution
-- Codex-native Briefing Vault hooks plus wrapper fallback (`session-start.sh`, `session-sync.js`, `session-end.js`)
+- Codex-native Briefing Vault hooks (9 hook files across 8 events) plus wrapper fallback (`session-start.sh`, `session-sync.js`, `session-end.js`)
 - 3 MCP servers (Context7 — real-time library docs, Exa — web search, grep_app — GitHub code search)
 
-Why the numbers are lower than raw source totals:
-- Several upstream sources ship the same destination filename.
-- `install.sh` merges those sources into `~/.codex/agents/` and category folders under `~/.codex/agent-packs/`.
-- When filenames overlap, later copies replace earlier ones. The final installed counts above are the correct verification target.
+Why the installed counts are smaller than raw upstream totals:
+- Upstream repos are not copied wholesale. `scripts/skill-allowlists.sh` names every skill and upstream agent that ships.
+- Tier dedup applies on top: core > omo > omx > opt-in packs. A pack agent whose filename collides with an already-installed agent is skipped.
+- The counts above are the correct verification target.
+
+Note: Codex ships **no document skills** in this bundle — there is no `pdf`, `docx`, `pptx`, or `xlsx` skill.
 
 Briefing Vault note:
 - `sessions/*-auto.md` and `learnings/*-auto-session.md` are auto-generated scaffolds.
@@ -104,7 +105,7 @@ Briefing Vault note:
 
 ## Step 1b: Manual install (if install.sh unavailable)
 
-> **Note**: This repository uses git submodules for upstream content. Run `git submodule update --init` after cloning to populate the `upstream/` directories used below. Paths like `upstream/ecc/`, `upstream/agency-agents/`, etc. will be empty without this step.
+> **Note**: This repository uses git submodules for upstream content. Run `git submodule update --init` after cloning to populate the 4 `upstream/` directories used below (`upstream/ecc`, `upstream/gstack`, `upstream/omx`, `upstream/superpowers`). They will be empty without this step.
 
 ```bash
 git clone --depth 1 https://github.com/sehoon787/my-codex.git /tmp/my-codex
@@ -116,33 +117,28 @@ mkdir -p ~/.codex/bin
 cp /tmp/my-codex/codex-agents/core/*.toml ~/.codex/agents/
 cp /tmp/my-codex/codex-agents/omo/*.toml ~/.codex/agents/
 
-# Awesome core categories → auto-loaded agents
-for d in 01-core-development 03-infrastructure 04-quality-security 09-meta-orchestration; do
-  cp /tmp/my-codex/upstream/awesome/categories/$d/*.toml ~/.codex/agents/ 2>/dev/null
+# OMX worker agents (MD → TOML conversion; use install.sh for this)
+# install.sh converts only the 7 allowlisted lanes in $OMX_AGENT_ALLOWLIST
+# (executor planner architect test-engineer security-reviewer code-reviewer debugger).
+bash /tmp/my-codex/scripts/md-to-toml.sh /tmp/my-codex/upstream/omx/prompts /tmp/omx-toml 2>/dev/null
+for agent in executor planner architect test-engineer security-reviewer code-reviewer debugger; do
+  cp "/tmp/omx-toml/$agent.toml" ~/.codex/agents/ 2>/dev/null
 done
 
-# Awesome remaining categories → agent-packs
-for d in /tmp/my-codex/upstream/awesome/categories/*/; do
-  raw_name=$(basename "$d")
-  case "$raw_name" in 01-core-development|03-infrastructure|04-quality-security|09-meta-orchestration) continue ;; esac
-  cat_name="${raw_name#[0-9][0-9]-}"
-  mkdir -p ~/.codex/agent-packs/$cat_name
-  cp "$d"*.toml ~/.codex/agent-packs/$cat_name/ 2>/dev/null
-done
-
-# Agency agents (MD → TOML conversion needed; use install.sh for this)
-# install.sh handles md-to-toml.sh conversion at runtime.
-# Manual alternative: run scripts/md-to-toml.sh on upstream/agency-agents/ categories
-bash /tmp/my-codex/scripts/md-to-toml.sh /tmp/my-codex/upstream/agency-agents /tmp/agency-toml 2>/dev/null
-for d in /tmp/agency-toml/*/; do
+# Vendored agent packs (opt-in — installed but NOT enabled)
+for d in /tmp/my-codex/codex-agents/packs/*/; do
   cat_name=$(basename "$d")
   mkdir -p ~/.codex/agent-packs/$cat_name
   cp "$d"*.toml ~/.codex/agent-packs/$cat_name/ 2>/dev/null
 done
 
-# Skills
-cp -R /tmp/my-codex/upstream/ecc/skills/* ~/.codex/skills/
-# ── gstack (sprint-process harness with 40 skills) ──
+# Skills — allowlisted only; see scripts/skill-allowlists.sh for the authoritative lists
+source /tmp/my-codex/scripts/skill-allowlists.sh
+for skill in $ECC_SKILL_ALLOWLIST; do
+  cp -R /tmp/my-codex/upstream/ecc/skills/"$skill" ~/.codex/skills/ 2>/dev/null
+done
+cp -R /tmp/my-codex/skills/core/* ~/.codex/skills/
+# ── gstack (sprint-process harness, 27 skill entries) ──
 GSTACK_DIR="$HOME/.codex/skills/gstack"
 if [ -d "$GSTACK_DIR/.git" ]; then
   (cd "$GSTACK_DIR" && git pull --ff-only 2>/dev/null || true)
@@ -171,15 +167,11 @@ cp /tmp/my-codex/templates/codex-AGENTS.md ~/.codex/AGENTS.md
 cp /tmp/my-codex/scripts/agent-pack-manager.sh ~/.codex/bin/my-codex-packs
 chmod +x ~/.codex/bin/my-codex-packs
 
-# Persist and activate the recommended pack set
+# Persist the pack state — empty by default, packs are opt-in
 cat > ~/.codex/enabled-agent-packs.txt <<'EOF'
 # One pack name per line.
 # This file is managed by my-codex and preserved across reinstalls.
-engineering
-design
-testing
-marketing
-support
+# No packs are enabled by default. Available: data-ai, llmops.
 EOF
 
 while IFS= read -r pack; do
@@ -222,12 +214,13 @@ npm i -g @ast-grep/cli@0.42.0
 # Inspect the current active set
 ~/.codex/bin/my-codex-packs status
 
-# Enable another pack immediately
-~/.codex/bin/my-codex-packs enable marketing
+# Enable a pack immediately (available: data-ai, llmops)
+~/.codex/bin/my-codex-packs enable data-ai
 
 # Or switch profiles at install time
-bash /tmp/my-codex/install.sh --profile minimal
-bash /tmp/my-codex/install.sh --profile full
+bash /tmp/my-codex/install.sh --profile minimal   # no packs (default)
+bash /tmp/my-codex/install.sh --profile dev       # data-ai + llmops
+bash /tmp/my-codex/install.sh --profile full      # all installed packs
 ```
 
 ## Verify
@@ -243,12 +236,13 @@ echo "Enabled packs: $(grep -Ev '^(#|$)' ~/.codex/enabled-agent-packs.txt 2>/dev
 ```
 
 Expected:
-- Core agents: (dynamic)
-- Active packs: 90
-- Agent packs: (dynamic)
-- Skills: ECC + gstack (runtime)
+- Core agents: 17 (Boss 1 + OMO 9 + OMX 7)
+- Active packs: 0 (packs are opt-in)
+- Agent packs: 17 (data-ai 13 + llmops 4)
+- Skills: 123 (ECC 79 + gstack 27 + superpowers 13 + core 4)
 - AGENTS.md: OK
 - config.toml: OK
+- Enabled packs: (empty)
 
 Setup complete. Multi-agent orchestration is ready.
 

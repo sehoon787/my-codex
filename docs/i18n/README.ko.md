@@ -9,13 +9,13 @@
 # my-codex
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
-![Agents](https://img.shields.io/badge/agents-330%2B-blue)
-![Skills](https://img.shields.io/badge/skills-200%2B-purple)
+![Agents](https://img.shields.io/badge/agents-17_core_%2B_17_opt--in-blue)
+![Skills](https://img.shields.io/badge/skills-123-purple)
 ![MCP](https://img.shields.io/badge/MCP-3-green)
-![Auto Sync](https://img.shields.io/badge/upstream_sync-weekly-brightgreen)
+![Auto Sync](https://img.shields.io/badge/upstream_sync-every_3_days-brightgreen)
 
 **OpenAI Codex CLI를 위한 올인원 에이전트 하네스.**
-**한 번 설치하면 330개 이상의 에이전트가 준비됩니다.**
+**한 번 설치하면 엄선된 17개 에이전트가 준비됩니다.**
 
 Boss가 런타임에 모든 에이전트와 스킬을 자동으로 탐색하고,
 `spawn_agent`를 통해 작업을 적합한 전문가에게 라우팅합니다. 설정도, 보일러플레이트도 없습니다.
@@ -94,7 +94,7 @@ Boss는 가장 적합한 매칭을 찾을 때까지 모든 요청을 우선순�
 
 | 우선순위 | 매칭 유형 | 조건 | 예시 |
 |:--------:|-----------|------|---------|
-| **P1** | 스킬 매칭 | 작업이 독립적인 스킬에 해당 | `"merge PDFs"` → pdf 스킬 |
+| **P1** | 스킬 매칭 | 작업이 독립적인 스킬에 해당 | `"review this diff"` → /review 스킬 |
 | **P2** | 전문가 에이전트 | 도메인별 에이전트 존재 | `"security audit"` → security-reviewer |
 | **P3a** | Boss 직접 | 독립적인 에이전트 2~4개 | `"fix 3 bugs"` → 병렬 스폰 |
 | **P3b** | 서브 오케스트레이터 | 복잡한 다단계 워크플로 | `"refactor + test"` → Sisyphus |
@@ -143,13 +143,13 @@ Confirm "design done"   Architect verification  User: approve / improve
 │spawn │ │Atlas   │ │ Direct │ │toml    │
 └──────┘ └────────┘ └────────┘ └────────┘
 ┌─────────────────────────────────────────────────────┐
-│  Agent Layer (330+ installed TOML files)              │
-│  OMO 9 · OMX 33 · Awesome Core 54 · Superpowers 1   │
-│  + 20 domain agent-packs (on-demand)                  │
+│  Agent Layer (17 installed TOML files)                │
+│  Boss 1 · OMO 9 · OMX 7                               │
+│  + 2 opt-in agent packs (17 agents, off by default)   │
 ├─────────────────────────────────────────────────────┤
-│  Skills Layer (200+ from ECC + gstack + OMX + more)  │
-│  tdd-workflow · security-review · autopilot           │
-│  pdf · docx · pptx · xlsx · team                     │
+│  Skills Layer (123 from ECC + gstack + superpowers)   │
+│  coding-standards · security-scan · deep-research     │
+│  /review · /qa · /cso · /ship                         │
 ├─────────────────────────────────────────────────────┤
 │  MCP Layer                                            │
 │  Context7 · Exa · grep.app                            │
@@ -162,9 +162,9 @@ Confirm "design done"   Architect verification  User: approve / improve
 
 | 카테고리 | 수량 | 출처 |
 |----------|------:|--------|
-| **핵심 에이전트** (항상 로드됨) | 98 | Boss 1 + OMO 9 + OMX 33 + Awesome Core 54 + Superpowers 1 |
-| **에이전트 팩** (온디맨드) | 220+ | agency-agents + awesome-codex-subagents의 20개 도메인 카테고리 |
-| **스킬** | 200+ | ECC 180+ · gstack 40 · OMX 36 · Superpowers 14 · Core 1 |
+| **핵심 에이전트** (항상 로드됨) | 17 | Boss 1 + OMO 9 + OMX 7 |
+| **에이전트 팩** (옵트인, 기본 비활성) | 17 | 벤더링된 2개 카테고리: data-ai 13 + llmops 4 |
+| **스킬** | 123 | ECC 79 · gstack 27 · Superpowers 13 · Core 4 |
 | **MCP 서버** | 3 | Context7, Exa, grep.app |
 | **config.toml** | 1 | my-codex |
 | **AGENTS.md** | 1 | my-codex |
@@ -196,113 +196,62 @@ Confirm "design done"   Architect verification  User: approve / improve
 </details>
 
 <details>
-<summary><strong>OMC 에이전트 — 전문가 작업자 (19)</strong></summary>
+<summary><strong>OMX 에이전트 — 전문가 작업자 (7)</strong></summary>
 
-| 에이전트 | 역할 | 출처 |
-|-------|------|--------|
-| analyst | 계획 전 사전 분석 | [oh-my-claudecode](https://github.com/Yeachan-Heo/oh-my-claudecode) |
-| architect | 시스템 설계 및 아키텍처 | oh-my-claudecode |
-| code-reviewer | 집중적인 코드 리뷰 | oh-my-claudecode |
-| code-simplifier | 코드 단순화 및 정리 | oh-my-claudecode |
-| critic | 비판적 분석, 대안 제안 | oh-my-claudecode |
-| debugger | 집중적인 디버깅 | oh-my-claudecode |
-| designer | UI/UX 디자인 가이드 | oh-my-claudecode |
-| document-specialist | 문서 작성 | oh-my-claudecode |
-| executor | 작업 실행 | oh-my-claudecode |
-| explore | 코드베이스 탐색 | oh-my-claudecode |
-| git-master | Git 워크플로 관리 | oh-my-claudecode |
-| planner | 신속한 계획 수립 | oh-my-claudecode |
-| qa-tester | 품질 보증 테스팅 | oh-my-claudecode |
-| scientist | 연구 및 실험 | oh-my-claudecode |
-| security-reviewer | 보안 리뷰 | oh-my-claudecode |
-| test-engineer | 테스트 작성 및 유지 관리 | oh-my-claudecode |
-| tracer | 실행 추적 및 분석 | oh-my-claudecode |
-| verifier | 최종 검증 | oh-my-claudecode |
-| writer | 콘텐츠 및 문서 작성 | oh-my-claudecode |
+[oh-my-codex](https://github.com/Yeachan-Heo/oh-my-codex)의 `prompts/*.md`를 Codex TOML로 변환한 것입니다. `templates/codex-AGENTS.md`가 안내하는 레인만 변환되며, 허용목록은 `scripts/skill-allowlists.sh`에 있습니다.
+
+| 에이전트 | 샌드박스 | 역할 | 출처 |
+|-------|---------|------|--------|
+| executor | workspace-write | 코드 구현 | oh-my-codex |
+| planner | workspace-write | 구현 계획 수립 | oh-my-codex |
+| architect | read-only | 시스템 설계 및 아키텍처 | oh-my-codex |
+| test-engineer | workspace-write | 테스트 전략 및 커버리지 | oh-my-codex |
+| security-reviewer | read-only | 보안 분석 | oh-my-codex |
+| code-reviewer | read-only | 집중적인 코드 리뷰 | oh-my-codex |
+| debugger | workspace-write | 근본 원인 분석 | oh-my-codex |
 
 </details>
 
 <details>
-<summary><strong>Awesome Core 에이전트 (54) — awesome-codex-subagents 출처</strong></summary>
+<summary><strong>에이전트 팩 — 옵트인 AI 전문가 (2개 팩, 17개 에이전트)</strong></summary>
 
-`~/.codex/agents/`에 4개 카테고리가 설치됩니다:
-
-**01-core-development (12)**
-accessibility-tester, ad-security-reviewer, agent-installer, api-designer, code-documenter, code-reviewer, dependency-manager, full-stack-developer, monorepo-specialist, performance-optimizer, refactoring-specialist, tech-debt-analyzer
-
-**03-infrastructure (16)**
-azure-infra-engineer, cloud-architect, container-orchestrator, database-architect, disaster-recovery-planner, edge-computing-specialist, infrastructure-as-code, kubernetes-operator, load-balancer-specialist, message-queue-designer, microservices-architect, monitoring-specialist, network-engineer, serverless-architect, service-mesh-designer, storage-architect
-
-**04-quality-security (16)**
-api-security-tester, chaos-engineer, compliance-auditor, contract-tester, data-privacy-officer, e2e-test-architect, incident-responder, load-tester, mutation-tester, penetration-tester, regression-tester, security-scanner, soc-analyst, static-analyzer, threat-modeler, vulnerability-assessor
-
-**09-meta-orchestration (10)**
-agent-organizer, capability-assessor, conflict-resolver, context-manager, execution-planner, multi-agent-coordinator, priority-manager, resource-allocator, task-decomposer, workflow-orchestrator
-
-</details>
-
-<details>
-<summary><strong>Superpowers 에이전트 (1) — obra/superpowers 출처</strong></summary>
-
-| 에이전트 | 역할 | 출처 |
-|-------|------|--------|
-| superpowers-code-reviewer | 브레인스토밍 및 TDD 검증을 포함한 포괄적인 코드 리뷰 | [superpowers](https://github.com/obra/superpowers) |
-
-</details>
-
-<details>
-<summary><strong>에이전트 팩 — 온디맨드 도메인 전문가 (21개 카테고리)</strong></summary>
-
-`~/.codex/agent-packs/`에 설치됩니다. 다음을 통해 관리:
+[awesome-codex-subagents](https://github.com/VoltAgent/awesome-codex-subagents)(MIT)에서 `codex-agents/packs/`로 벤더링되어 `~/.codex/agent-packs/`에 설치됩니다. **기본적으로 활성화되는 팩은 없습니다** — 명시적으로 옵트인하세요:
 
 ```bash
 # 현재 상태 확인
 ~/.codex/bin/my-codex-packs status
 
 # 팩 즉시 활성화
-~/.codex/bin/my-codex-packs enable marketing
+~/.codex/bin/my-codex-packs enable data-ai
 
 # 설치 시 프로필 전환
-bash /tmp/my-codex/install.sh --profile minimal
-bash /tmp/my-codex/install.sh --profile full
+bash /tmp/my-codex/install.sh --profile minimal   # 팩 없음
+bash /tmp/my-codex/install.sh --profile dev       # data-ai + llmops
+bash /tmp/my-codex/install.sh --profile full      # 설치된 모든 팩
 ```
 
-| 팩 | 수량 | 예시 |
+| 팩 | 수량 | 에이전트 |
 |------|------:|---------|
-| engineering | 32 | 백엔드, 프론트엔드, 모바일, DevOps, AI, 데이터 |
-| marketing | 27 | Douyin, Xiaohongshu, WeChat OA, TikTok, SEO |
-| language-specialists | 27 | Python, Go, Rust, Swift, Kotlin, Java |
-| specialized | 31 | 법률, 금융, 헬스케어, 워크플로 |
-| game-development | 20 | Unity, Unreal, Godot, Roblox, Blender |
-| infrastructure | 19 | Cloud, K8s, Terraform, Docker, SRE |
-| developer-experience | 13 | MCP Builder, LSP, 터미널, Rapid Prototyper |
-| data-ai | 13 | 데이터 엔지니어, ML, 데이터베이스, ClickHouse |
-| specialized-domains | 12 | 공급망, 물류, 이커머스 |
-| design | 11 | 브랜드, UI, UX, 비주얼 스토리텔링 |
-| business-product | 11 | 프로덕트 매니저, 성장, 분석 |
-| testing | 11 | API, 접근성, 성능, E2E, QA |
-| sales | 8 | 딜 전략, 파이프라인, 아웃바운드 |
-| paid-media | 7 | Google Ads, Meta Ads, 프로그래매틱 |
-| research-analysis | 7 | 트렌드, 시장, 경쟁 분석 |
-| project-management | 6 | Agile, Jira, 워크플로 |
-| spatial-computing | 6 | XR, WebXR, AR/VR, visionOS |
-| support | 6 | 고객 지원, 개발자 애드보커시 |
-| academic | 5 | 유학, 기업 교육 |
-| product | 5 | 프로덕트 관리, UX 리서치 |
-| security | 5 | 침투 테스트, 컴플라이언스, 감사 |
+| data-ai | 13 | ai-engineer, data-analyst, data-engineer, data-scientist, database-optimizer, llm-architect, machine-learning-engineer, ml-engineer, mlops-engineer, nlp-engineer, postgres-pro, prompt-engineer, reinforcement-learning-engineer |
+| llmops | 4 | ai-observability-engineer, eval-engineer, hallucination-investigator, prompt-regression-tester |
 
 </details>
 
 <details>
-<summary><strong>스킬 — 5개 출처에서 200개 이상</strong></summary>
+<summary><strong>스킬 — 4개 출처에서 123개</strong></summary>
+
+스킬 단위 큐레이션 허용목록은 `scripts/skill-allowlists.sh`에 있으며, 이 파일이 무엇을 설치할지 결정하는 기준입니다.
 
 | 출처 | 수량 | 주요 스킬 |
 |--------|------:|------------|
-| [everything-claude-code](https://github.com/affaan-m/everything-claude-code) | 180+ | tdd-workflow, autopilot, security-review, coding-standards |
-| [oh-my-codex](https://github.com/Yeachan-Heo/oh-my-codex) | 36 | plan, team, trace, deep-dive, blueprint, ultrawork |
-| [gstack](https://github.com/garrytan/gstack) | 40 | /qa, /review, /ship, /cso, /investigate, /office-hours |
-| [superpowers](https://github.com/obra/superpowers) | 14 | brainstorming, systematic-debugging, TDD, parallel-agents |
-| [my-codex Core](https://github.com/sehoon787/my-codex) | 1 | boss-advanced |
+| [everything-claude-code](https://github.com/affaan-m/everything-claude-code) | 79 | coding-standards, python-testing, api-design, deep-research |
+| [gstack](https://github.com/garrytan/gstack) | 27 | /qa, /review, /ship, /cso, /investigate, /office-hours |
+| [superpowers](https://github.com/obra/superpowers) | 13 | brainstorming, systematic-debugging, TDD, writing-plans |
+| [my-codex Core](https://github.com/sehoon787/my-codex) | 4 | boss-advanced, boss-briefing, briefing-vault, gstack-sprint |
+
+gstack은 허용목록 스킬 26개에 저장소 루트 항목을 더해 27개로 집계됩니다. gstack 저장소 전체는 `~/.codex/skills/gstack`에 표준 런타임 트리로도 존재합니다.
+
+Codex에는 **문서 스킬이 없습니다** — 이 번들에 `pdf`, `docx`, `pptx`, `xlsx` 스킬은 포함되지 않습니다.
 
 </details>
 
@@ -403,18 +352,19 @@ BriefingVault v2는 세 가지 지식 관리 방법론을 통합합니다:
 
 ## 업스트림 오픈소스 출처
 
-my-codex는 9개의 업스트림 저장소 콘텐츠를 번들로 제공합니다:
+my-codex는 **4개의 업스트림 서브모듈**과 벤더링된 스냅샷 1개, 적용/자매 프로젝트 2개로 구성됩니다:
 
-| # | 출처 | 제공 내용 |
-|---|--------|-----------------|
-| 1 | <img src="https://github.com/sehoon787.png?size=32" width="20" height="20" align="center"/> **[my-claude](https://github.com/sehoon787/my-claude)** — sehoon787 | 자매 프로젝트. 네이티브 Claude `.md` 에이전트 형식의 동일한 Boss 오케스트레이션. 스킬, 규칙, Briefing Vault를 두 프로젝트가 공유합니다. |
-| 2 | <img src="https://github.com/VoltAgent.png?size=32" width="20" height="20" align="center"/> **[awesome-codex-subagents](https://github.com/VoltAgent/awesome-codex-subagents)** — VoltAgent | 네이티브 TOML 형식의 프로덕션급 에이전트 136개. 이미 Codex 호환이라 변환 불필요. 핵심 에이전트 54개 자동 로드. |
-| 3 | <img src="https://github.com/Yeachan-Heo.png?size=32" width="20" height="20" align="center"/> **[oh-my-codex](https://github.com/Yeachan-Heo/oh-my-codex)** — Yeachan Heo | Codex CLI용 스킬 36개, 훅, HUD, 팀 파이프라인. 아키텍처적 영감으로 참조됩니다. |
-| 4 | <img src="https://github.com/msitarzewski.png?size=32" width="20" height="20" align="center"/> **[agency-agents](https://github.com/msitarzewski/agency-agents)** — msitarzewski | 14개 카테고리에 걸친 비즈니스 전문가 에이전트 180개 이상. 자동화 파이프라인을 통해 Markdown에서 네이티브 TOML로 변환. |
-| 5 | <img src="https://github.com/affaan-m.png?size=32" width="20" height="20" align="center"/> **[everything-claude-code](https://github.com/affaan-m/everything-claude-code)** — affaan-m | 개발 워크플로에 걸친 스킬 180개 이상. Claude Code 전용 콘텐츠는 제거, 범용 코딩 스킬만 유지. |
-| 6 | <img src="https://github.com/obra.png?size=32" width="20" height="20" align="center"/> **[superpowers](https://github.com/obra/superpowers)** — Jesse Vincent | 브레인스토밍, TDD, 병렬 에이전트, 코드 리뷰를 다루는 스킬 14개 + 에이전트 1개. |
-| 7 | <img src="https://github.com/code-yeongyu.png?size=32" width="20" height="20" align="center"/> **[oh-my-openagent](https://github.com/code-yeongyu/oh-my-openagent)** — code-yeongyu | OMO 에이전트 9개 (Sisyphus, Atlas, Oracle 등). Codex 네이티브 TOML 형식으로 적용. |
-| 8 | <img src="https://github.com/garrytan.png?size=32" width="20" height="20" align="center"/> **[gstack](https://github.com/garrytan/gstack)** — garrytan | 코드 리뷰, QA, 보안 감사, 배포를 위한 스킬 40개. Playwright 브라우저 데몬 포함. |
+| # | 출처 | 방식 | 제공 내용 |
+|---|--------|------|-----------------|
+| 1 | <img src="https://github.com/affaan-m.png?size=32" width="20" height="20" align="center"/> **[everything-claude-code](https://github.com/affaan-m/everything-claude-code)** — affaan-m | 서브모듈 | 개발 워크플로 전반의 허용목록 스킬 79개. Claude Code 전용 콘텐츠는 제거, 범용 코딩 스킬만 유지. |
+| 2 | <img src="https://github.com/garrytan.png?size=32" width="20" height="20" align="center"/> **[gstack](https://github.com/garrytan/gstack)** — garrytan | 서브모듈 | 코드 리뷰, QA, 보안 감사, 배포를 위한 스킬 27개. Playwright 브라우저 데몬 포함. |
+| 3 | <img src="https://github.com/Yeachan-Heo.png?size=32" width="20" height="20" align="center"/> **[oh-my-codex](https://github.com/Yeachan-Heo/oh-my-codex)** — Yeachan Heo | 서브모듈 | 허용목록 작업자 에이전트 7개(executor, planner, architect, test-engineer, security-reviewer, code-reviewer, debugger). Markdown 프롬프트를 Codex TOML로 변환. |
+| 4 | <img src="https://github.com/obra.png?size=32" width="20" height="20" align="center"/> **[superpowers](https://github.com/obra/superpowers)** — Jesse Vincent | 서브모듈 | 브레인스토밍, TDD, 체계적 디버깅, 계획 작성을 다루는 스킬 13개. 설치되는 에이전트는 없습니다. |
+| 5 | <img src="https://github.com/VoltAgent.png?size=32" width="20" height="20" align="center"/> **[awesome-codex-subagents](https://github.com/VoltAgent/awesome-codex-subagents)** — VoltAgent | 벤더링 (MIT) | AI/LLM 에이전트 17개를 `codex-agents/packs/`에 스냅샷하여 옵트인 팩 2개(data-ai 13, llmops 4)로 제공. 서브모듈은 2026-07-27에 제거되었습니다. |
+| 6 | <img src="https://github.com/code-yeongyu.png?size=32" width="20" height="20" align="center"/> **[oh-my-openagent](https://github.com/code-yeongyu/oh-my-openagent)** — code-yeongyu | 적용 | OMO 에이전트 9개 (Sisyphus, Atlas, Oracle 등). Codex 네이티브 TOML 형식으로 적용하여 저장소에서 관리합니다. |
+| 7 | <img src="https://github.com/sehoon787.png?size=32" width="20" height="20" align="center"/> **[my-claude](https://github.com/sehoon787/my-claude)** — sehoon787 | 자매 프로젝트 | 네이티브 Claude `.md` 에이전트 형식의 동일한 Boss 오케스트레이션. 스킬, 규칙, Briefing Vault를 두 프로젝트가 공유합니다. |
+
+모든 서브모듈은 `upstream/SOURCES.json`(AI-BOM)에 SHA로 고정되어 있으며, 제거된 서브모듈 2개(`agency-agents` — 벤더링 없음, `awesome-codex-subagents` — 에이전트 17개 벤더링)도 함께 기록됩니다.
 
 ---
 
@@ -423,7 +373,8 @@ my-codex는 9개의 업스트림 저장소 콘텐츠를 번들로 제공합니�
 | 워크플로 | 트리거 | 목적 |
 |----------|---------|---------|
 | **CI** | push, PR | TOML 에이전트 파일, 스킬 존재 여부, 업스트림 파일 수 검증 |
-| **Update Upstream** | 주간 (월요일) / 수동 | `git submodule update --remote` 실행 후 자동 병합 PR 생성 |
+| **Smoke Tests** | push, PR | `hooks`, `shell`, `drift`, `routing-refs` 작업 — 훅 연결, 셸 문법, 모델 드리프트, AGENTS.md 라우팅 참조 검증 |
+| **Update Upstream** | 3일마다 / 수동 | 보안 게이트가 적용된 `git submodule update --remote`, `upstream/SOURCES.json` 핀 갱신, 자동 병합 PR 생성 |
 | **Auto Tag** | main에 push | `config.toml`에서 버전을 읽고 신규 시 git 태그 생성 |
 | **Pages** | main에 push | `docs/index.html`을 GitHub Pages에 배포 |
 | **CLA** | PR | 기여자 라이선스 동의 확인 |
@@ -439,8 +390,8 @@ my-codex는 9개의 업스트림 저장소 콘텐츠를 번들로 제공합니�
 |---------|-------------|
 | **Boss 메타 오케스트레이터** | 동적 역량 탐색 → 의도 분류 → 4단계 우선순위 라우팅 → 위임 → 검증 |
 | **3단계 스프린트** | 설계 (대화형) → 실행 (executor를 통한 자율) → 리뷰 (설계 문서와 대화형 비교) |
-| **에이전트 티어 우선순위** | core > omo > omc > awesome-core 중복 제거. 가장 특화된 에이전트가 선택됩니다. |
-| **비용 최적화** | 자문에는 gpt-5.6-luna, 구현에는 gpt-5.6 — 330개 이상 에이전트에 대한 자동 모델 라우팅 |
+| **에이전트 티어 우선순위** | core > omo > omx > 옵트인 팩 순으로 중복 제거. 이미 설치된 에이전트와 이름이 겹치는 팩 에이전트는 건너뜁니다. 가장 특화된 에이전트가 선택됩니다. |
+| **비용 최적화** | 자문에는 gpt-5.6-luna, 구현에는 gpt-5.6 — 설치된 34개 에이전트 전체에 대한 자동 모델 라우팅 |
 | **에이전트 텔레메트리** | PostToolUse 훅이 에이전트 사용량을 `agent-usage.jsonl`에 기록 |
 | **Smart Packs** | 프로젝트 유형 감지로 세션 시작 시 관련 에이전트 팩 추천 |
 | **에이전트 팩 시스템** | `--profile` 및 `my-codex-packs` 헬퍼를 통한 온디맨드 도메인 전문가 활성화 |
@@ -463,13 +414,19 @@ rm -rf /tmp/my-codex
 
 ### 에이전트 팩 프로필
 
-첫 설치 시 my-codex는 권장 `dev` 세트(`engineering`, `design`, `testing`, `marketing`, `support`)를 자동으로 활성화하고 `~/.codex/enabled-agent-packs.txt`에 기록합니다.
+팩은 설치되지만 **기본적으로 비활성 상태**입니다. 신규 설치는 활성 팩 없이 빈 세트를 `~/.codex/enabled-agent-packs.txt`에 기록합니다. 팩 단위로 옵트인하거나 프로필을 선택하세요:
 
 ```bash
-# 최소 프로필 (핵심 에이전트만, 팩 없음)
+# 팩 하나를 즉시 활성화
+~/.codex/bin/my-codex-packs enable data-ai
+
+# 최소 프로필 (핵심 에이전트만, 팩 없음 — 기본값)
 bash /tmp/my-codex/install.sh --profile minimal
 
-# 전체 프로필 (21개 팩 카테고리 모두 활성화)
+# dev 프로필 (data-ai + llmops)
+bash /tmp/my-codex/install.sh --profile dev
+
+# 전체 프로필 (설치된 팩 카테고리 2개 모두 활성화)
 bash /tmp/my-codex/install.sh --profile full
 ```
 
@@ -524,12 +481,11 @@ max_depth = 1
 
 | 출처 | 동기화 방식 |
 |--------|------|
-| [agency-agents](https://github.com/msitarzewski/agency-agents) | submodule |
-| [everything-claude-code](https://github.com/affaan-m/everything-claude-code) | submodule |
-| [oh-my-codex](https://github.com/Yeachan-Heo/oh-my-codex) | submodule |
-| [awesome-codex-subagents](https://github.com/VoltAgent/awesome-codex-subagents) | submodule |
-| [gstack](https://github.com/garrytan/gstack) | submodule |
-| [superpowers](https://github.com/obra/superpowers) | submodule |
+| [everything-claude-code](https://github.com/affaan-m/everything-claude-code) | 서브모듈 (`upstream/ecc`) |
+| [gstack](https://github.com/garrytan/gstack) | 서브모듈 (`upstream/gstack`) |
+| [oh-my-codex](https://github.com/Yeachan-Heo/oh-my-codex) | 서브모듈 (`upstream/omx`) |
+| [superpowers](https://github.com/obra/superpowers) | 서브모듈 (`upstream/superpowers`) |
+| [awesome-codex-subagents](https://github.com/VoltAgent/awesome-codex-subagents) | 벤더링 스냅샷 (서브모듈은 2026-07-27 제거) |
 
 ---
 
@@ -552,14 +508,14 @@ my-codex와 my-claude는 동일한 Boss 오케스트레이션 아키텍처와 �
 <details>
 <summary><strong>에이전트 팩은 어떻게 작동하나요?</strong></summary>
 
-에이전트 팩은 `~/.codex/agent-packs/`에 설치되는 도메인별 에이전트 컬렉션입니다. 첫 설치 시 `dev` 프로필이 자동 활성화됩니다. `my-codex-packs enable <pack>`으로 추가 팩을 활성화하거나, `--profile full`로 재설치하여 21개 카테고리 전체를 활성화할 수 있습니다.
+에이전트 팩은 `~/.codex/agent-packs/`에 설치되는 도메인별 에이전트 컬렉션입니다. 현재 `data-ai`(13개)와 `llmops`(4개) 두 팩이 제공되며 **설치 시 활성화되는 팩은 없습니다**. `my-codex-packs enable <pack>`으로 활성화하거나, `--profile full`로 재설치하여 두 카테고리를 모두 활성화할 수 있습니다.
 
 </details>
 
 <details>
 <summary><strong>업스트림 동기화는 어떻게 이루어지나요?</strong></summary>
 
-GitHub Actions 워크플로가 매주 월요일에 실행되어 모든 업스트림 서브모듈의 최신 커밋을 가져오고 자동 병합 PR을 생성합니다. Actions 탭에서 수동으로 트리거할 수도 있습니다.
+GitHub Actions 워크플로가 3일마다 실행되어 4개 업스트림 서브모듈의 최신 커밋을 가져오고, `upstream/SOURCES.json`의 SHA 핀을 갱신한 뒤, 보안 게이트가 적용된 자동 병합 PR을 생성합니다. Actions 탭에서 수동으로 트리거할 수도 있습니다.
 
 </details>
 
@@ -594,7 +550,7 @@ npx skills add sehoon787/my-codex -y -g
 
 ## 크레딧
 
-다음 작업을 기반으로 구축되었습니다: [my-claude](https://github.com/sehoon787/my-claude) (sehoon787), [awesome-codex-subagents](https://github.com/VoltAgent/awesome-codex-subagents) (VoltAgent), [oh-my-codex](https://github.com/Yeachan-Heo/oh-my-codex) (Yeachan Heo), [agency-agents](https://github.com/msitarzewski/agency-agents) (msitarzewski), [everything-claude-code](https://github.com/affaan-m/everything-claude-code) (affaan-m), [oh-my-openagent](https://github.com/code-yeongyu/oh-my-openagent) (code-yeongyu), [gstack](https://github.com/garrytan/gstack) (garrytan), [superpowers](https://github.com/obra/superpowers) (Jesse Vincent), [openai/skills](https://github.com/openai/skills) (OpenAI).
+다음 작업을 기반으로 구축되었습니다: [my-claude](https://github.com/sehoon787/my-claude) (sehoon787), [everything-claude-code](https://github.com/affaan-m/everything-claude-code) (affaan-m), [gstack](https://github.com/garrytan/gstack) (garrytan), [oh-my-codex](https://github.com/Yeachan-Heo/oh-my-codex) (Yeachan Heo), [superpowers](https://github.com/obra/superpowers) (Jesse Vincent), [awesome-codex-subagents](https://github.com/VoltAgent/awesome-codex-subagents) (VoltAgent), [oh-my-openagent](https://github.com/code-yeongyu/oh-my-openagent) (code-yeongyu), [openai/skills](https://github.com/openai/skills) (OpenAI).
 
 ## 라이선스
 

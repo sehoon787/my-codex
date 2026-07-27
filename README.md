@@ -9,13 +9,13 @@
 # my-codex
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
-![Agents](https://img.shields.io/badge/agents-330%2B-blue)
-![Skills](https://img.shields.io/badge/skills-200%2B-purple)
+![Agents](https://img.shields.io/badge/agents-17_core_%2B_17_opt--in-blue)
+![Skills](https://img.shields.io/badge/skills-123-purple)
 ![MCP](https://img.shields.io/badge/MCP-3-green)
-![Auto Sync](https://img.shields.io/badge/upstream_sync-weekly-brightgreen)
+![Auto Sync](https://img.shields.io/badge/upstream_sync-every_3_days-brightgreen)
 
 **All-in-one agent harness for OpenAI Codex CLI.**
-**Install once, 330+ agents ready.**
+**Install once, 17 curated agents ready.**
 
 Boss auto-discovers every agent and skill at runtime,
 then routes your task to the right specialist via `spawn_agent`. No config. No boilerplate.
@@ -103,7 +103,7 @@ Boss cascades every request through a priority chain until the best match is fou
 
 | Priority | Match Type | When | Example |
 |:--------:|-----------|------|---------|
-| **P1** | Skill match | Task maps to a self-contained skill | `"merge PDFs"` → pdf skill |
+| **P1** | Skill match | Task maps to a self-contained skill | `"review this diff"` → /review skill |
 | **P2** | Specialist agent | Domain-specific agent exists | `"security audit"` → security-reviewer |
 | **P3a** | Boss direct | 2–4 independent agents | `"fix 3 bugs"` → parallel spawn |
 | **P3b** | Sub-orchestrator | Complex multi-step workflow | `"refactor + test"` → Sisyphus |
@@ -152,13 +152,13 @@ Confirm "design done"   Architect verification  User: approve / improve
 │spawn │ │Atlas   │ │ Direct │ │toml    │
 └──────┘ └────────┘ └────────┘ └────────┘
 ┌─────────────────────────────────────────────────────┐
-│  Agent Layer (330+ installed TOML files)              │
-│  OMO 9 · OMX 33 · Awesome Core 54 · Superpowers 1   │
-│  + 20 domain agent-packs (on-demand)                  │
+│  Agent Layer (17 installed TOML files)                │
+│  Boss 1 · OMO 9 · OMX 7                               │
+│  + 2 opt-in agent packs (17 agents, off by default)   │
 ├─────────────────────────────────────────────────────┤
-│  Skills Layer (200+ from ECC + gstack + OMX + more)  │
-│  tdd-workflow · security-review · autopilot           │
-│  pdf · docx · pptx · xlsx · team                     │
+│  Skills Layer (123 from ECC + gstack + superpowers)   │
+│  coding-standards · security-scan · deep-research     │
+│  /review · /qa · /cso · /ship                         │
 ├─────────────────────────────────────────────────────┤
 │  MCP Layer                                            │
 │  Context7 · Exa · grep.app                            │
@@ -171,9 +171,9 @@ Confirm "design done"   Architect verification  User: approve / improve
 
 | Category | Count | Source |
 |----------|------:|--------|
-| **Core agents** (always loaded) | 44 | Boss 1 + OMO 9 + OMX 33 + Superpowers 1 |
-| **Agent packs** (on-demand) | 274+ | 24 domain categories from agency-agents + awesome-codex-subagents (all 13 awesome categories are opt-in packs) |
-| **Skills** | 200+ | ECC 180+ · gstack 40 · OMX 36 · Superpowers 14 · Core 2 |
+| **Core agents** (always loaded) | 17 | Boss 1 + OMO 9 + OMX 7 |
+| **Agent packs** (opt-in, none enabled by default) | 17 | 2 vendored categories: data-ai 13 + llmops 4 |
+| **Skills** | 123 | ECC 79 · gstack 27 · Superpowers 13 · Core 4 |
 | **MCP Servers** | 3 | Context7, Exa, grep.app |
 | **config.toml** | 1 | my-codex |
 | **AGENTS.md** | 1 | my-codex |
@@ -205,113 +205,62 @@ Confirm "design done"   Architect verification  User: approve / improve
 </details>
 
 <details>
-<summary><strong>OMC Agents — Specialist workers (19)</strong></summary>
+<summary><strong>OMX Agents — Specialist workers (7)</strong></summary>
 
-| Agent | Role | Source |
-|-------|------|--------|
-| analyst | Pre-analysis before planning | [oh-my-claudecode](https://github.com/Yeachan-Heo/oh-my-claudecode) |
-| architect | System design and architecture | oh-my-claudecode |
-| code-reviewer | Focused code review | oh-my-claudecode |
-| code-simplifier | Code simplification and cleanup | oh-my-claudecode |
-| critic | Critical analysis, alternative proposals | oh-my-claudecode |
-| debugger | Focused debugging | oh-my-claudecode |
-| designer | UI/UX design guidance | oh-my-claudecode |
-| document-specialist | Documentation writing | oh-my-claudecode |
-| executor | Task execution | oh-my-claudecode |
-| explore | Codebase exploration | oh-my-claudecode |
-| git-master | Git workflow management | oh-my-claudecode |
-| planner | Rapid planning | oh-my-claudecode |
-| qa-tester | Quality assurance testing | oh-my-claudecode |
-| scientist | Research and experimentation | oh-my-claudecode |
-| security-reviewer | Security review | oh-my-claudecode |
-| test-engineer | Test writing and maintenance | oh-my-claudecode |
-| tracer | Execution tracing and analysis | oh-my-claudecode |
-| verifier | Final verification | oh-my-claudecode |
-| writer | Content and documentation | oh-my-claudecode |
+Converted from [oh-my-codex](https://github.com/Yeachan-Heo/oh-my-codex) `prompts/*.md` to Codex TOML. Only the lanes `templates/codex-AGENTS.md` advertises are converted — the allowlist lives in `scripts/skill-allowlists.sh`.
+
+| Agent | Sandbox | Role | Source |
+|-------|---------|------|--------|
+| executor | workspace-write | Code implementation | oh-my-codex |
+| planner | workspace-write | Implementation planning | oh-my-codex |
+| architect | read-only | System design and architecture | oh-my-codex |
+| test-engineer | workspace-write | Test strategy and coverage | oh-my-codex |
+| security-reviewer | read-only | Security analysis | oh-my-codex |
+| code-reviewer | read-only | Focused code review | oh-my-codex |
+| debugger | workspace-write | Root cause analysis | oh-my-codex |
 
 </details>
 
 <details>
-<summary><strong>Awesome Agent Packs (54) — From awesome-codex-subagents (opt-in, not auto-loaded)</strong></summary>
+<summary><strong>Agent Packs — Opt-in AI specialists (2 packs, 17 agents)</strong></summary>
 
-4 categories moved to `~/.codex/agent-packs/` — opt-in via `--with-packs` or `my-codex-packs`, no longer auto-loaded on install:
-
-**01-core-development (12)**
-accessibility-tester, ad-security-reviewer, agent-installer, api-designer, code-documenter, code-reviewer, dependency-manager, full-stack-developer, monorepo-specialist, performance-optimizer, refactoring-specialist, tech-debt-analyzer
-
-**03-infrastructure (16)**
-azure-infra-engineer, cloud-architect, container-orchestrator, database-architect, disaster-recovery-planner, edge-computing-specialist, infrastructure-as-code, kubernetes-operator, load-balancer-specialist, message-queue-designer, microservices-architect, monitoring-specialist, network-engineer, serverless-architect, service-mesh-designer, storage-architect
-
-**04-quality-security (16)**
-api-security-tester, chaos-engineer, compliance-auditor, contract-tester, data-privacy-officer, e2e-test-architect, incident-responder, load-tester, mutation-tester, penetration-tester, regression-tester, security-scanner, soc-analyst, static-analyzer, threat-modeler, vulnerability-assessor
-
-**09-meta-orchestration (10)**
-agent-organizer, capability-assessor, conflict-resolver, context-manager, execution-planner, multi-agent-coordinator, priority-manager, resource-allocator, task-decomposer, workflow-orchestrator
-
-</details>
-
-<details>
-<summary><strong>Superpowers Agent (1) — From obra/superpowers</strong></summary>
-
-| Agent | Role | Source |
-|-------|------|--------|
-| superpowers-code-reviewer | Comprehensive code review with brainstorming and TDD verification | [superpowers](https://github.com/obra/superpowers) |
-
-</details>
-
-<details>
-<summary><strong>Agent Packs — On-demand domain specialists (21 categories)</strong></summary>
-
-Installed to `~/.codex/agent-packs/`. Managed via:
+Vendored from [awesome-codex-subagents](https://github.com/VoltAgent/awesome-codex-subagents) (MIT) into `codex-agents/packs/` and installed to `~/.codex/agent-packs/`. **No pack is enabled by default** — opt in explicitly:
 
 ```bash
 # View current state
 ~/.codex/bin/my-codex-packs status
 
 # Enable a pack immediately
-~/.codex/bin/my-codex-packs enable marketing
+~/.codex/bin/my-codex-packs enable data-ai
 
 # Switch profiles at install time
-bash /tmp/my-codex/install.sh --profile minimal
-bash /tmp/my-codex/install.sh --profile full
+bash /tmp/my-codex/install.sh --profile minimal   # no packs
+bash /tmp/my-codex/install.sh --profile dev       # data-ai + llmops
+bash /tmp/my-codex/install.sh --profile full      # every installed pack
 ```
 
-| Pack | Count | Examples |
-|------|------:|---------|
-| engineering | 32 | Backend, Frontend, Mobile, DevOps, AI, Data |
-| marketing | 27 | Douyin, Xiaohongshu, WeChat OA, TikTok, SEO |
-| language-specialists | 27 | Python, Go, Rust, Swift, Kotlin, Java |
-| specialized | 31 | Legal, Finance, Healthcare, Workflow |
-| game-development | 20 | Unity, Unreal, Godot, Roblox, Blender |
-| infrastructure | 19 | Cloud, K8s, Terraform, Docker, SRE |
-| developer-experience | 13 | MCP Builder, LSP, Terminal, Rapid Prototyper |
-| data-ai | 13 | Data Engineer, ML, Database, ClickHouse |
-| specialized-domains | 12 | Supply Chain, Logistics, E-Commerce |
-| design | 11 | Brand, UI, UX, Visual Storytelling |
-| business-product | 11 | Product Manager, Growth, Analytics |
-| testing | 11 | API, Accessibility, Performance, E2E, QA |
-| sales | 8 | Deal strategy, pipeline, outbound |
-| paid-media | 7 | Google Ads, Meta Ads, Programmatic |
-| research-analysis | 7 | Trend, Market, Competitive Analysis |
-| project-management | 6 | Agile, Jira, workflows |
-| spatial-computing | 6 | XR, WebXR, AR/VR, visionOS |
-| support | 6 | Customer support, developer advocacy |
-| academic | 5 | Study abroad, corporate training |
-| product | 5 | Product management, UX research |
-| security | 5 | Penetration testing, compliance, audit |
+| Pack | Count | Agents |
+|------|------:|--------|
+| data-ai | 13 | ai-engineer, data-analyst, data-engineer, data-scientist, database-optimizer, llm-architect, machine-learning-engineer, ml-engineer, mlops-engineer, nlp-engineer, postgres-pro, prompt-engineer, reinforcement-learning-engineer |
+| llmops | 4 | ai-observability-engineer, eval-engineer, hallucination-investigator, prompt-regression-tester |
 
 </details>
 
 <details>
-<summary><strong>Skills — 200+ from 5 sources</strong></summary>
+<summary><strong>Skills — 123 from 4 sources</strong></summary>
+
+Curated per-skill allowlists live in `scripts/skill-allowlists.sh` — that file is the authority for what ships.
 
 | Source | Count | Key Skills |
 |--------|------:|------------|
-| [everything-claude-code](https://github.com/affaan-m/everything-claude-code) | 180+ | tdd-workflow, autopilot, security-review, coding-standards |
-| [oh-my-codex](https://github.com/Yeachan-Heo/oh-my-codex) | 36 | plan, team, trace, deep-dive, blueprint, ultrawork |
-| [gstack](https://github.com/garrytan/gstack) | 40 | /qa, /review, /ship, /cso, /investigate, /office-hours |
-| [superpowers](https://github.com/obra/superpowers) | 14 | brainstorming, systematic-debugging, TDD, parallel-agents |
-| [my-codex Core](https://github.com/sehoon787/my-codex) | 2 | boss-advanced, boss-briefing |
+| [everything-claude-code](https://github.com/affaan-m/everything-claude-code) | 79 | coding-standards, python-testing, api-design, deep-research |
+| [gstack](https://github.com/garrytan/gstack) | 27 | /qa, /review, /ship, /cso, /investigate, /office-hours |
+| [superpowers](https://github.com/obra/superpowers) | 13 | brainstorming, systematic-debugging, TDD, writing-plans |
+| [my-codex Core](https://github.com/sehoon787/my-codex) | 4 | boss-advanced, boss-briefing, briefing-vault, gstack-sprint |
+
+gstack is counted as 26 allowlisted skills plus the repo root entry; the whole gstack repo also lives at `~/.codex/skills/gstack` as its canonical runtime tree.
+
+Codex ships **no document skills** — there is no `pdf`, `docx`, `pptx`, or `xlsx` skill in this bundle.
 
 </details>
 
@@ -431,18 +380,19 @@ The Stop hook checks whether `/boss-briefing` has run today. If not, it blocks s
 
 ## Upstream Open-Source Sources
 
-my-codex bundles content from 9 upstream repositories:
+my-codex tracks **4 upstream submodules**, plus one vendored snapshot and two adapted/sister projects:
 
-| # | Source | What It Provides |
-|---|--------|-----------------|
-| 1 | <img src="https://github.com/sehoon787.png?size=32" width="20" height="20" align="center"/> **[my-claude](https://github.com/sehoon787/my-claude)** — sehoon787 | Sister project. Same Boss orchestration in native Claude `.md` agent format. Skills, rules, and briefing vault shared across both projects. |
-| 2 | <img src="https://github.com/VoltAgent.png?size=32" width="20" height="20" align="center"/> **[awesome-codex-subagents](https://github.com/VoltAgent/awesome-codex-subagents)** — VoltAgent | 136 production-grade agents in native TOML format. Already Codex-compatible, no conversion needed. All 136 ship as opt-in agent packs (`--with-packs`/`my-codex-packs`); none are auto-loaded by default. |
-| 3 | <img src="https://github.com/Yeachan-Heo.png?size=32" width="20" height="20" align="center"/> **[oh-my-codex](https://github.com/Yeachan-Heo/oh-my-codex)** — Yeachan Heo | 36 skills, hooks, HUD, and team pipelines for Codex CLI. Referenced as architectural inspiration. |
-| 4 | <img src="https://github.com/msitarzewski.png?size=32" width="20" height="20" align="center"/> **[agency-agents](https://github.com/msitarzewski/agency-agents)** — msitarzewski | 180+ business specialist agent personas across 14 categories. Converted from Markdown to native TOML via automated pipeline. |
-| 5 | <img src="https://github.com/affaan-m.png?size=32" width="20" height="20" align="center"/> **[everything-claude-code](https://github.com/affaan-m/everything-claude-code)** — affaan-m | 180+ skills across development workflows. Claude Code-specific content stripped; generic coding skills retained. |
-| 6 | <img src="https://github.com/obra.png?size=32" width="20" height="20" align="center"/> **[superpowers](https://github.com/obra/superpowers)** — Jesse Vincent | 14 skills + 1 agent covering brainstorming, TDD, parallel agents, and code review. |
-| 7 | <img src="https://github.com/code-yeongyu.png?size=32" width="20" height="20" align="center"/> **[oh-my-openagent](https://github.com/code-yeongyu/oh-my-openagent)** — code-yeongyu | 9 OMO agents (Sisyphus, Atlas, Oracle, etc.). Adapted to Codex-native TOML format. |
-| 8 | <img src="https://github.com/garrytan.png?size=32" width="20" height="20" align="center"/> **[gstack](https://github.com/garrytan/gstack)** — garrytan | 40 skills for code review, QA, security audit, deployment. Includes Playwright browser daemon. |
+| # | Source | Method | What It Provides |
+|---|--------|--------|-----------------|
+| 1 | <img src="https://github.com/affaan-m.png?size=32" width="20" height="20" align="center"/> **[everything-claude-code](https://github.com/affaan-m/everything-claude-code)** — affaan-m | submodule | 79 allowlisted skills across development workflows. Claude Code-specific content stripped; generic coding skills retained. |
+| 2 | <img src="https://github.com/garrytan.png?size=32" width="20" height="20" align="center"/> **[gstack](https://github.com/garrytan/gstack)** — garrytan | submodule | 27 skills for code review, QA, security audit, deployment. Includes Playwright browser daemon. |
+| 3 | <img src="https://github.com/Yeachan-Heo.png?size=32" width="20" height="20" align="center"/> **[oh-my-codex](https://github.com/Yeachan-Heo/oh-my-codex)** — Yeachan Heo | submodule | 7 allowlisted worker agents (executor, planner, architect, test-engineer, security-reviewer, code-reviewer, debugger), converted from Markdown prompts to Codex TOML. |
+| 4 | <img src="https://github.com/obra.png?size=32" width="20" height="20" align="center"/> **[superpowers](https://github.com/obra/superpowers)** — Jesse Vincent | submodule | 13 skills covering brainstorming, TDD, systematic debugging, and plan writing. No agents installed. |
+| 5 | <img src="https://github.com/VoltAgent.png?size=32" width="20" height="20" align="center"/> **[awesome-codex-subagents](https://github.com/VoltAgent/awesome-codex-subagents)** — VoltAgent | vendored (MIT) | 17 AI/LLM agents snapshotted into `codex-agents/packs/` as 2 opt-in packs (data-ai 13, llmops 4). Submodule removed 2026-07-27. |
+| 6 | <img src="https://github.com/code-yeongyu.png?size=32" width="20" height="20" align="center"/> **[oh-my-openagent](https://github.com/code-yeongyu/oh-my-openagent)** — code-yeongyu | adapted | 9 OMO agents (Sisyphus, Atlas, Oracle, etc.). Adapted to Codex-native TOML format and maintained in-repo. |
+| 7 | <img src="https://github.com/sehoon787.png?size=32" width="20" height="20" align="center"/> **[my-claude](https://github.com/sehoon787/my-claude)** — sehoon787 | sister project | Same Boss orchestration in native Claude `.md` agent format. Skills, rules, and briefing vault shared across both projects. |
+
+Every submodule is SHA-pinned in `upstream/SOURCES.json` (AI-BOM), which also records the two removed submodules (`agency-agents` — nothing vendored; `awesome-codex-subagents` — 17 agents vendored).
 
 ---
 
@@ -451,7 +401,8 @@ my-codex bundles content from 9 upstream repositories:
 | Workflow | Trigger | Purpose |
 |----------|---------|---------|
 | **CI** | push, PR | Validates TOML agent files, skill existence, and upstream file counts |
-| **Update Upstream** | weekly (Monday) / manual | Runs `git submodule update --remote` and creates auto-merge PR |
+| **Smoke Tests** | push, PR | `hooks`, `shell`, `drift`, and `routing-refs` jobs — hook wiring, shell syntax, model drift, and AGENTS.md routing references |
+| **Update Upstream** | every 3 days / manual | Security-gated `git submodule update --remote`, refreshes `upstream/SOURCES.json` pins, and creates an auto-merge PR |
 | **Auto Tag** | push to main | Reads version from `config.toml` and creates git tag if new |
 | **Pages** | push to main | Deploys `docs/index.html` to GitHub Pages |
 | **CLA** | PR | Contributor License Agreement check |
@@ -467,8 +418,8 @@ Features built specifically for this project, beyond what upstream sources provi
 |---------|-------------|
 | **Boss Meta-Orchestrator** | Dynamic capability discovery → intent classification → 4-priority routing → delegation → verification |
 | **3-Phase Sprint** | Design (interactive) → Execute (autonomous via executor) → Review (interactive vs design doc) |
-| **Agent Tier Priority** | core > omo > omc deduplication. awesome-codex-subagents packs are skipped if their name collides with a core agent. Most specialized agent wins. |
-| **Cost Optimization** | gpt-5.6-luna for advisory, gpt-5.6 for implementation — automatic model routing for 330+ agents |
+| **Agent Tier Priority** | core > omo > omx > opt-in packs. Pack agents are skipped if their name collides with an already-installed agent. Most specialized agent wins. |
+| **Cost Optimization** | gpt-5.6-luna for advisory, gpt-5.6 for implementation — automatic model routing across all 34 installed agents |
 | **Briefing Signals** | Wrapper/session logging feeds `.briefing/agents/agent-log.jsonl`, daily summaries, and routing/profile hints |
 | **Smart Packs** | Project-type detection recommends relevant agent packs at session start |
 | **Agent Pack System** | On-demand domain specialist activation via `--profile` and `my-codex-packs` helper |
@@ -491,13 +442,19 @@ Re-running the same command refreshes to the latest `main` build, replaces only 
 
 ### Agent Pack Profiles
 
-On first install, my-codex auto-activates a recommended `dev` set (`engineering`, `design`, `testing`, `marketing`, `support`) and records it in `~/.codex/enabled-agent-packs.txt`.
+Packs are installed but **inactive by default** — a fresh install enables none of them and records the empty set in `~/.codex/enabled-agent-packs.txt`. Opt in per pack, or pick a profile:
 
 ```bash
-# Minimal profile (core agents only, no packs)
+# Enable one pack immediately
+~/.codex/bin/my-codex-packs enable data-ai
+
+# Minimal profile (core agents only, no packs — the default)
 bash /tmp/my-codex/install.sh --profile minimal
 
-# Full profile (all 21 pack categories enabled)
+# Dev profile (data-ai + llmops)
+bash /tmp/my-codex/install.sh --profile dev
+
+# Full profile (all 2 installed pack categories enabled)
 bash /tmp/my-codex/install.sh --profile full
 ```
 
@@ -552,12 +509,11 @@ Upstream sources managed as git submodules. Pinned commits tracked in `.gitmodul
 
 | Source | Sync |
 |--------|------|
-| [agency-agents](https://github.com/msitarzewski/agency-agents) | submodule |
-| [everything-claude-code](https://github.com/affaan-m/everything-claude-code) | submodule |
-| [oh-my-codex](https://github.com/Yeachan-Heo/oh-my-codex) | submodule |
-| [awesome-codex-subagents](https://github.com/VoltAgent/awesome-codex-subagents) | submodule |
-| [gstack](https://github.com/garrytan/gstack) | submodule |
-| [superpowers](https://github.com/obra/superpowers) | submodule |
+| [everything-claude-code](https://github.com/affaan-m/everything-claude-code) | submodule (`upstream/ecc`) |
+| [gstack](https://github.com/garrytan/gstack) | submodule (`upstream/gstack`) |
+| [oh-my-codex](https://github.com/Yeachan-Heo/oh-my-codex) | submodule (`upstream/omx`) |
+| [superpowers](https://github.com/obra/superpowers) | submodule (`upstream/superpowers`) |
+| [awesome-codex-subagents](https://github.com/VoltAgent/awesome-codex-subagents) | vendored snapshot (submodule removed 2026-07-27) |
 
 ---
 
@@ -580,14 +536,14 @@ Yes. They install to separate directories (`~/.codex/` and `~/.claude/`) and do 
 <details>
 <summary><strong>How do agent packs work?</strong></summary>
 
-Agent packs are domain-specific agent collections installed to `~/.codex/agent-packs/`. On first install, a `dev` profile is auto-activated. Use `my-codex-packs enable <pack>` to activate additional packs, or reinstall with `--profile full` to enable all 21 categories.
+Agent packs are domain-specific agent collections installed to `~/.codex/agent-packs/`. Two packs ship today — `data-ai` (13) and `llmops` (4) — and **none is enabled on install**. Use `my-codex-packs enable <pack>` to activate one, or reinstall with `--profile full` to enable both categories.
 
 </details>
 
 <details>
 <summary><strong>How does upstream sync work?</strong></summary>
 
-A GitHub Actions workflow runs every Monday, pulling the latest commits from all upstream submodules and creating an auto-merge PR. You can also trigger it manually from the Actions tab.
+A GitHub Actions workflow runs every 3 days, pulling the latest commits from all 4 upstream submodules, refreshing the SHA pins in `upstream/SOURCES.json`, and creating a security-gated auto-merge PR. You can also trigger it manually from the Actions tab.
 
 </details>
 
@@ -624,7 +580,7 @@ Issues and PRs are welcome. When adding a new agent, add a `.toml` file to `code
 
 ## Credits
 
-Built on the work of: [my-claude](https://github.com/sehoon787/my-claude) (sehoon787), [awesome-codex-subagents](https://github.com/VoltAgent/awesome-codex-subagents) (VoltAgent), [oh-my-codex](https://github.com/Yeachan-Heo/oh-my-codex) (Yeachan Heo), [agency-agents](https://github.com/msitarzewski/agency-agents) (msitarzewski), [everything-claude-code](https://github.com/affaan-m/everything-claude-code) (affaan-m), [oh-my-openagent](https://github.com/code-yeongyu/oh-my-openagent) (code-yeongyu), [gstack](https://github.com/garrytan/gstack) (garrytan), [superpowers](https://github.com/obra/superpowers) (Jesse Vincent), [openai/skills](https://github.com/openai/skills) (OpenAI).
+Built on the work of: [my-claude](https://github.com/sehoon787/my-claude) (sehoon787), [everything-claude-code](https://github.com/affaan-m/everything-claude-code) (affaan-m), [gstack](https://github.com/garrytan/gstack) (garrytan), [oh-my-codex](https://github.com/Yeachan-Heo/oh-my-codex) (Yeachan Heo), [superpowers](https://github.com/obra/superpowers) (Jesse Vincent), [awesome-codex-subagents](https://github.com/VoltAgent/awesome-codex-subagents) (VoltAgent), [oh-my-openagent](https://github.com/code-yeongyu/oh-my-openagent) (code-yeongyu), [openai/skills](https://github.com/openai/skills) (OpenAI).
 
 ## License
 

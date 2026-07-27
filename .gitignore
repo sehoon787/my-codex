@@ -5,7 +5,9 @@ node_modules/
 .DS_Store
 *.log
 
-# Legacy vendored paths (now served via submodules in upstream/)
+# Legacy vendored paths — guards against install-time artifacts landing back here.
+# agency-agents and awesome-codex-subagents were dropped as submodules on 2026-07-27;
+# the 17 agents kept from awesome now live, tracked, in codex-agents/packs/.
 codex-agents/agency/
 codex-agents/awesome/
 codex-agents/awesome-core/

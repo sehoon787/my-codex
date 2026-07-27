@@ -4,9 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>my-codex — All-in-one agent harness for OpenAI Codex CLI</title>
-<meta name="description" content="All-in-one Codex CLI multi-agent orchestration. 330+ agents, 200+ skills, 3 MCP servers. Boss orchestrator with runtime discovery.">
+<meta name="description" content="All-in-one Codex CLI multi-agent orchestration. 17 curated agents, 123 skills, 3 MCP servers. Boss orchestrator with runtime discovery.">
 <meta property="og:title" content="my-codex — All-in-one agent harness for OpenAI Codex CLI">
-<meta property="og:description" content="Boss orchestrates 330+ agents, 200+ skills, 3 MCP servers. Dynamic runtime discovery. One install.">
+<meta property="og:description" content="Boss orchestrates 17 curated agents, 123 skills, 3 MCP servers. Dynamic runtime discovery. One install.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://sehoon787.github.io/my-codex/">
 <meta name="twitter:card" content="summary_large_image">
@@ -234,10 +234,10 @@ section{padding:80px 0}
 </div>
   <h1>my-codex</h1>
   <p class="tagline"><span class="lang" data-en="All-in-one agent harness for OpenAI Codex CLI" data-ko="OpenAI Codex CLI를 위한 올인원 에이전트 하네스"></span></p>
-  <p style="font-size:.88rem;color:var(--text2);margin-bottom:20px"><span class="lang" data-en="Install once, 330+ agents ready." data-ko="한 번 설치, 330+ 에이전트 준비 완료."></span></p>
+  <p style="font-size:.88rem;color:var(--text2);margin-bottom:20px"><span class="lang" data-en="Install once, 17 curated agents ready." data-ko="한 번 설치, 엄선된 17개 에이전트 준비 완료."></span></p>
   <div class="badges">
-    <span class="badge"><em>330+</em>&nbsp;agents</span>
-    <span class="badge"><em>200+</em>&nbsp;skills</span>
+    <span class="badge"><em>17</em>&nbsp;agents</span>
+    <span class="badge"><em>123</em>&nbsp;skills</span>
     <span class="badge"><em>3</em>&nbsp;MCP</span>
   </div>
   <div class="inst-tabs">
@@ -277,19 +277,19 @@ section{padding:80px 0}
       <h3 style="font-size:1rem;margin-bottom:12px;color:var(--primary)"><span class="lang" data-en="Priority Routing" data-ko="우선순위 라우팅"></span></h3>
       <table class="route-table">
         <tr><th><span class="lang" data-en="Priority" data-ko="우선순위"></span></th><th><span class="lang" data-en="Source" data-ko="소스"></span></th><th><span class="lang" data-en="Example" data-ko="예시"></span></th></tr>
-        <tr><td style="color:var(--accent)">P1 Skills</td><td><span class="lang" data-en="Skill match" data-ko="스킬 매칭"></span></td><td>tdd-workflow, autopilot</td></tr>
+        <tr><td style="color:var(--accent)">P1 Skills</td><td><span class="lang" data-en="Skill match" data-ko="스킬 매칭"></span></td><td>/review, security-scan</td></tr>
         <tr><td style="color:var(--primary)">P2 Specialist</td><td><span class="lang" data-en="Agent match" data-ko="에이전트 매칭"></span></td><td>architect, executor</td></tr>
         <tr><td style="color:var(--violet)">P3 Multi-Agent</td><td><span class="lang" data-en="Complex task" data-ko="복잡한 작업"></span></td><td>atlas, sisyphus</td></tr>
-        <tr><td style="color:var(--text2)">P4 Fallback</td><td><span class="lang" data-en="General purpose" data-ko="범용"></span></td><td>analyst, explore</td></tr>
+        <tr><td style="color:var(--text2)">P4 Fallback</td><td><span class="lang" data-en="General purpose" data-ko="범용"></span></td><td>hephaestus, oracle</td></tr>
       </table>
     </div>
     <div>
       <h3 style="font-size:1rem;margin-bottom:12px;color:var(--accent)"><span class="lang" data-en="Model Routing" data-ko="모델 라우팅"></span></h3>
       <table class="route-table">
         <tr><th><span class="lang" data-en="Complexity" data-ko="복잡도"></span></th><th><span class="lang" data-en="Model" data-ko="모델"></span></th></tr>
-        <tr><td style="color:var(--primary)"><span class="lang" data-en="Architecture, deep analysis" data-ko="아키텍처, 심층 분석"></span></td><td>opus</td></tr>
-        <tr><td style="color:var(--accent)"><span class="lang" data-en="Standard implementation" data-ko="표준 구현"></span></td><td>sonnet</td></tr>
-        <tr><td style="color:var(--green)"><span class="lang" data-en="Quick lookup, exploration" data-ko="빠른 조회, 탐색"></span></td><td>haiku</td></tr>
+        <tr><td style="color:var(--primary)"><span class="lang" data-en="Architecture, deep analysis" data-ko="아키텍처, 심층 분석"></span></td><td>gpt-5.6 (high)</td></tr>
+        <tr><td style="color:var(--accent)"><span class="lang" data-en="Standard implementation" data-ko="표준 구현"></span></td><td>gpt-5.6-terra (medium)</td></tr>
+        <tr><td style="color:var(--green)"><span class="lang" data-en="Quick lookup, exploration" data-ko="빠른 조회, 탐색"></span></td><td>gpt-5.6-luna (low)</td></tr>
       </table>
     </div>
   </div>
@@ -338,8 +338,8 @@ section{padding:80px 0}
     <div class="arch-layer"><h4><span class="lang" data-en="Behavioral Layer" data-ko="행동 규칙 레이어"></span></h4><p>Rules &middot; Hooks &middot; Briefing Vault</p></div>
     <div class="arch-conn"></div>
     <div class="arch-row" style="grid-template-columns:repeat(3,1fr)">
-      <div class="arch-layer"><h4><span class="lang" data-en="Agents" data-ko="에이전트"></span><span class="cnt">330+</span></h4></div>
-      <div class="arch-layer"><h4><span class="lang" data-en="Skills" data-ko="스킬"></span><span class="cnt">200+</span></h4></div>
+      <div class="arch-layer"><h4><span class="lang" data-en="Agents" data-ko="에이전트"></span><span class="cnt">17</span></h4></div>
+      <div class="arch-layer"><h4><span class="lang" data-en="Skills" data-ko="스킬"></span><span class="cnt">123</span></h4></div>
       <div class="arch-layer" style="border-color:var(--accent)"><h4 style="color:var(--accent)">MCP<span class="cnt">3</span></h4></div>
     </div>
   </div>
@@ -352,12 +352,12 @@ section{padding:80px 0}
   <h2 class="st"><span class="lang" data-en="What's Inside" data-ko="구성 요소"></span></h2>
   <p class="ss"><span class="lang" data-en="Everything bundled with a single install." data-ko="단 한 번의 설치로 함께 제공되는 모든 것."></span></p>
   <div class="inside-grid fade-in" style="margin-bottom:40px">
-    <div class="inside-card"><span class="inside-num">330+</span><span class="inside-label">Agents</span><span class="inside-desc">Core, OMO, OMC, Agency domain packs</span></div>
-    <div class="inside-card"><span class="inside-num">200+</span><span class="inside-label">Skills</span><span class="inside-desc"><span class="lang" data-en="Task-specific workflows and patterns" data-ko="작업별 워크플로우 및 패턴"></span></span></div>
-    <div class="inside-card"><span class="inside-num">87</span><span class="inside-label">Rules</span><span class="inside-desc"><span class="lang" data-en="Cross-language coding standards" data-ko="크로스 언어 코딩 표준"></span></span></div>
+    <div class="inside-card"><span class="inside-num">17</span><span class="inside-label">Agents</span><span class="inside-desc">Boss 1, OMO 9, OMX 7 &middot; +17 opt-in pack agents</span></div>
+    <div class="inside-card"><span class="inside-num">123</span><span class="inside-label">Skills</span><span class="inside-desc"><span class="lang" data-en="Task-specific workflows and patterns" data-ko="작업별 워크플로우 및 패턴"></span></span></div>
+    <div class="inside-card"><span class="inside-num">2</span><span class="inside-label">Agent Packs</span><span class="inside-desc"><span class="lang" data-en="data-ai, llmops — opt-in, off by default" data-ko="data-ai, llmops — 옵트인, 기본 비활성"></span></span></div>
     <div class="inside-card"><span class="inside-num">3</span><span class="inside-label">MCP</span><span class="inside-desc">context7, exa, grep_app</span></div>
-    <div class="inside-card"><span class="inside-num">7</span><span class="inside-label">Hooks</span><span class="inside-desc">SessionStart, PreToolUse, PostToolUse, SubagentStop, TeammateIdle, TaskCompleted, Stop</span></div>
-    <div class="inside-card"><span class="inside-num">6</span><span class="inside-label">Upstreams</span><span class="inside-desc"><span class="lang" data-en="Curated from 6 open-source repos" data-ko="6개 오픈소스 저장소에서 큐레이션"></span></span></div>
+    <div class="inside-card"><span class="inside-num">8</span><span class="inside-label">Hooks</span><span class="inside-desc">SessionStart, UserPromptSubmit, PreToolUse, PostToolUse, SubagentStop, TeammateIdle, TaskCompleted, Stop</span></div>
+    <div class="inside-card"><span class="inside-num">4</span><span class="inside-label">Upstreams</span><span class="inside-desc"><span class="lang" data-en="Curated from 4 open-source repos" data-ko="4개 오픈소스 저장소에서 큐레이션"></span></span></div>
   </div>
   <div class="catalog fade-in">
     <details>
@@ -379,39 +379,28 @@ section{padding:80px 0}
       </div>
     </details>
     <details>
-      <summary>OMC Agents <span class="cat-count">18 agents</span></summary>
+      <summary>OMX Agents <span class="cat-count">7 agents</span></summary>
       <div class="cat-grid">
-        <div class="cat-item"><strong>executor</strong><span class="role">Sonnet</span></div>
-        <div class="cat-item"><strong>architect</strong><span class="role">Opus</span></div>
-        <div class="cat-item"><strong>planner</strong><span class="role">Opus</span></div>
-        <div class="cat-item"><strong>code-reviewer</strong><span class="role">Opus</span></div>
-        <div class="cat-item"><strong>analyst</strong><span class="role">Opus</span></div>
-        <div class="cat-item"><strong>critic</strong><span class="role">Opus</span></div>
-        <div class="cat-item"><strong>debugger</strong><span class="role">Sonnet</span></div>
-        <div class="cat-item"><strong>designer</strong><span class="role">Sonnet</span></div>
-        <div class="cat-item"><strong>document-specialist</strong><span class="role">Sonnet</span></div>
-        <div class="cat-item"><strong>explore</strong><span class="role">Haiku</span></div>
-        <div class="cat-item"><strong>git-master</strong><span class="role">Sonnet</span></div>
-        <div class="cat-item"><strong>qa-tester</strong><span class="role">Sonnet</span></div>
-        <div class="cat-item"><strong>scientist</strong><span class="role">Sonnet</span></div>
-        <div class="cat-item"><strong>security-reviewer</strong><span class="role">Sonnet</span></div>
-        <div class="cat-item"><strong>test-engineer</strong><span class="role">Sonnet</span></div>
-        <div class="cat-item"><strong>tracer</strong><span class="role">Sonnet</span></div>
-        <div class="cat-item"><strong>verifier</strong><span class="role">Sonnet</span></div>
-        <div class="cat-item"><strong>writer</strong><span class="role">Haiku</span></div>
+        <div class="cat-item"><strong>executor</strong><span class="role">workspace-write</span></div>
+        <div class="cat-item"><strong>planner</strong><span class="role">workspace-write</span></div>
+        <div class="cat-item"><strong>architect</strong><span class="role">read-only</span></div>
+        <div class="cat-item"><strong>test-engineer</strong><span class="role">workspace-write</span></div>
+        <div class="cat-item"><strong>security-reviewer</strong><span class="role">read-only</span></div>
+        <div class="cat-item"><strong>code-reviewer</strong><span class="role">read-only</span></div>
+        <div class="cat-item"><strong>debugger</strong><span class="role">workspace-write</span></div>
       </div>
     </details>
     <details>
-      <summary>Agency Packs <span class="cat-count"><span class="lang" data-en="engineering, design, marketing, testing, etc." data-ko="엔지니어링, 디자인, 마케팅, 테스트 등"></span></span></summary>
-      <div class="cat-body"><span class="lang" data-en="Domain specialist agents organized by business function: Engineering, Design, Marketing, Testing, Sales, Support, Game Dev, Academic, Product, Project Management, and more. Activate packs on demand." data-ko="비즈니스 기능별로 조직된 도메인 전문 에이전트: 엔지니어링, 디자인, 마케팅, 테스트, 영업, 지원, 게임개발, 학술, 프로덕트, PM 등. 팩을 온디맨드로 활성화."></span></div>
+      <summary>Agent Packs <span class="cat-count"><span class="lang" data-en="data-ai 13, llmops 4 — opt-in" data-ko="data-ai 13, llmops 4 — 옵트인"></span></span></summary>
+      <div class="cat-body"><span class="lang" data-en="17 AI/LLM specialist agents vendored from awesome-codex-subagents into 2 packs: data-ai (13) and llmops (4). Installed but disabled by default — enable with `my-codex-packs enable data-ai`." data-ko="awesome-codex-subagents에서 벤더링한 AI/LLM 전문 에이전트 17개, 2개 팩 구성: data-ai(13), llmops(4). 설치되지만 기본 비활성 — `my-codex-packs enable data-ai`로 활성화."></span></div>
     </details>
     <details>
-      <summary>Skills <span class="cat-count">200+</span></summary>
-      <div class="cat-body"><span class="lang" data-en="Task-specific workflows organized by category: development patterns, testing workflows, deployment automation, code review, security scanning, documentation generation, and more. Native TOML format for Codex CLI." data-ko="카테고리별로 조직된 작업별 워크플로우: 개발 패턴, 테스트 워크플로우, 배포 자동화, 코드 리뷰, 보안 스캔, 문서 생성 등. Codex CLI용 네이티브 TOML 형식."></span></div>
+      <summary>Skills <span class="cat-count">123</span></summary>
+      <div class="cat-body"><span class="lang" data-en="Curated per-skill allowlists (scripts/skill-allowlists.sh): ECC 79, gstack 27, superpowers 13, my-codex core 4. Development patterns, testing workflows, deployment automation, code review, security scanning. No document skills (pdf/docx/pptx/xlsx) ship with Codex." data-ko="스킬 단위 큐레이션 허용목록(scripts/skill-allowlists.sh): ECC 79, gstack 27, superpowers 13, my-codex 코어 4. 개발 패턴, 테스트 워크플로우, 배포 자동화, 코드 리뷰, 보안 스캔. Codex에는 문서 스킬(pdf/docx/pptx/xlsx)이 없습니다."></span></div>
     </details>
     <details>
-      <summary>MCP + Hooks <span class="cat-count">3 MCP &middot; 7 hooks</span></summary>
-      <div class="cat-body"><strong>MCP:</strong> Context7 (docs), Exa (web search), grep.app (GitHub code search)<br><strong>Hooks:</strong> SessionStart, PreToolUse, PostToolUse, SubagentStop, TeammateIdle, TaskCompleted, Stop</div>
+      <summary>MCP + Hooks <span class="cat-count">3 MCP &middot; 9 hook files</span></summary>
+      <div class="cat-body"><strong>MCP:</strong> Context7 (docs), Exa (web search), grep.app (GitHub code search)<br><strong>Hooks:</strong> 9 files across 8 events — SessionStart, UserPromptSubmit, PreToolUse, PostToolUse, SubagentStop, TeammateIdle, TaskCompleted, Stop</div>
     </details>
   </div>
 </div>
@@ -489,15 +478,14 @@ section{padding:80px 0}
 <section id="credits" style="background:var(--bg2)">
 <div class="container">
   <h2 class="st"><span class="lang" data-en="Upstream Open-Source Sources" data-ko="업스트림 오픈소스 소스"></span></h2>
-  <p class="ss"><span class="lang" data-en="Built on the shoulders of open-source projects. Weekly auto-sync keeps everything current." data-ko="오픈소스 프로젝트의 기반 위에 구축됩니다. 매주 자동 동기화로 최신 상태를 유지합니다."></span></p>
+  <p class="ss"><span class="lang" data-en="Built on the shoulders of open-source projects. 4 SHA-pinned submodules auto-sync every 3 days." data-ko="오픈소스 프로젝트의 기반 위에 구축됩니다. SHA 고정된 4개 서브모듈이 3일마다 자동 동기화됩니다."></span></p>
   <div class="credits-grid fade-in">
     <a class="credit" href="https://sehoon787.github.io/my-claude/"><h4>my-claude</h4><p><span class="lang" data-en="Sister project — Claude Code orchestration" data-ko="자매 프로젝트 — Claude Code 오케스트레이션"></span></p></a>
-    <a class="credit" href="https://github.com/VoltAgent/awesome-codex-subagents"><h4>awesome-codex-subagents</h4><p>VoltAgent — Native TOML categories</p></a>
-    <a class="credit" href="https://github.com/Yeachan-Heo/oh-my-claudecode"><h4>oh-my-codex</h4><p>Yeachan Heo — Multi-agent orchestration</p></a>
-    <a class="credit" href="https://github.com/msitarzewski/agency-agents"><h4>agency-agents</h4><p>msitarzewski — 172 business specialist personas</p></a>
-    <a class="credit" href="https://github.com/affaan-m/everything-claude-code"><h4>everything-claude-code</h4><p>affaan-m — Skills, agents, commands</p></a>
-    <a class="credit" href="https://github.com/obra/superpowers"><h4>superpowers</h4><p>obra — Advanced agent skills</p></a>
-    <a class="credit" href="https://github.com/garrytan/gstack"><h4>gstack</h4><p>garrytan — QA, review, deployment skills</p></a>
+    <a class="credit" href="https://github.com/affaan-m/everything-claude-code"><h4>everything-claude-code</h4><p>affaan-m — 79 curated skills</p></a>
+    <a class="credit" href="https://github.com/garrytan/gstack"><h4>gstack</h4><p>garrytan — 27 QA, review, deployment skills</p></a>
+    <a class="credit" href="https://github.com/Yeachan-Heo/oh-my-codex"><h4>oh-my-codex</h4><p>Yeachan Heo — 7 worker agents</p></a>
+    <a class="credit" href="https://github.com/obra/superpowers"><h4>superpowers</h4><p>obra — 13 advanced agent skills</p></a>
+    <a class="credit" href="https://github.com/VoltAgent/awesome-codex-subagents"><h4>awesome-codex-subagents</h4><p>VoltAgent — 17 vendored pack agents (MIT)</p></a>
     <a class="credit" href="https://github.com/openai/codex"><h4>OpenAI Codex CLI</h4><p><span class="lang" data-en="Official Codex CLI platform" data-ko="공식 Codex CLI 플랫폼"></span></p></a>
   </div>
 </div>
@@ -507,14 +495,15 @@ section{padding:80px 0}
 <section id="ci">
 <div class="container">
   <h2 class="st">GitHub Actions</h2>
-  <p class="ss"><span class="lang" data-en="6 workflows keep my-codex tested, synced, and deployed." data-ko="6개 워크플로우가 my-codex를 테스트, 동기화, 배포합니다."></span></p>
+  <p class="ss"><span class="lang" data-en="7 workflows keep my-codex tested, synced, and deployed." data-ko="7개 워크플로우가 my-codex를 테스트, 동기화, 배포합니다."></span></p>
   <div class="actions-grid fade-in">
-    <div class="action-card"><div class="ac-name">CI Validation</div><div class="ac-trigger">push, pull_request</div><div class="ac-desc"><span class="lang" data-en="Lint, test, agent count verification" data-ko="린트, 테스트, 에이전트 수 검증"></span></div></div>
-    <div class="action-card"><div class="ac-name">Sync Upstream</div><div class="ac-trigger">schedule (Monday)</div><div class="ac-desc"><span class="lang" data-en="Weekly auto-sync from 6 upstream sources" data-ko="6개 업스트림 소스에서 매주 자동 동기화"></span></div></div>
+    <div class="action-card"><div class="ac-name">CI Validation</div><div class="ac-trigger">push, pull_request</div><div class="ac-desc"><span class="lang" data-en="TOML agent validation, skill existence, submodule checks" data-ko="TOML 에이전트 검증, 스킬 존재 확인, 서브모듈 점검"></span></div></div>
+    <div class="action-card"><div class="ac-name">Smoke Tests</div><div class="ac-trigger">push, pull_request</div><div class="ac-desc"><span class="lang" data-en="hooks, shell, drift, routing-refs jobs" data-ko="hooks, shell, drift, routing-refs 작업"></span></div></div>
+    <div class="action-card"><div class="ac-name">Sync Upstream</div><div class="ac-trigger"><span class="lang" data-en="schedule (every 3 days)" data-ko="스케줄 (3일마다)"></span></div><div class="ac-desc"><span class="lang" data-en="Security-gated sync from 4 upstream submodules + SOURCES.json pin refresh" data-ko="4개 업스트림 서브모듈에서 보안 게이트 동기화 + SOURCES.json 핀 갱신"></span></div></div>
     <div class="action-card"><div class="ac-name">Auto Tag</div><div class="ac-trigger">push (main)</div><div class="ac-desc"><span class="lang" data-en="Semantic versioning on main push" data-ko="메인 푸시 시 시맨틱 버전"></span></div></div>
     <div class="action-card"><div class="ac-name">GitHub Pages</div><div class="ac-trigger">push (main)</div><div class="ac-desc"><span class="lang" data-en="Deploy docs site automatically" data-ko="문서 사이트 자동 배포"></span></div></div>
-    <div class="action-card"><div class="ac-name">MD→TOML Convert</div><div class="ac-trigger">on sync</div><div class="ac-desc"><span class="lang" data-en="Convert upstream .md agents to native .toml" data-ko="업스트림 .md 에이전트를 네이티브 .toml로 변환"></span></div></div>
-    <div class="action-card"><div class="ac-name">Validate Counts</div><div class="ac-trigger">pull_request</div><div class="ac-desc"><span class="lang" data-en="Verify installed agent/skill counts match" data-ko="설치된 에이전트/스킬 수 일치 검증"></span></div></div>
+    <div class="action-card"><div class="ac-name">Lint Workflows</div><div class="ac-trigger">push, pull_request</div><div class="ac-desc"><span class="lang" data-en="Validate GitHub Actions workflow YAML" data-ko="GitHub Actions 워크플로우 YAML 검증"></span></div></div>
+    <div class="action-card"><div class="ac-name">CLA Assistant</div><div class="ac-trigger">pull_request</div><div class="ac-desc"><span class="lang" data-en="Contributor License Agreement check" data-ko="기여자 라이선스 동의 확인"></span></div></div>
   </div>
 </div>
 </section>
@@ -527,11 +516,11 @@ section{padding:80px 0}
   <div class="orig-grid fade-in">
     <div class="orig-card"><h4>Boss Meta-Orchestrator</h4><p><span class="lang" data-en="Runtime discovery, 5-phase delegation" data-ko="런타임 탐색, 5단계 위임"></span></p></div>
     <div class="orig-card"><h4>MD→TOML Pipeline</h4><p><span class="lang" data-en="Automated format conversion from upstream" data-ko="업스트림에서 자동 형식 변환"></span></p></div>
-    <div class="orig-card"><h4><span class="lang" data-en="Agent Tier Priority" data-ko="에이전트 계층 우선순위"></span></h4><p><span class="lang" data-en="Core > OMO > OMC > Agency dedup resolution" data-ko="Core > OMO > OMC > Agency 중복 해결"></span></p></div>
-    <div class="orig-card"><h4><span class="lang" data-en="Cost-Optimized Routing" data-ko="비용 최적화 라우팅"></span></h4><p><span class="lang" data-en="Haiku/Sonnet/Opus model selection" data-ko="Haiku/Sonnet/Opus 모델 선택"></span></p></div>
+    <div class="orig-card"><h4><span class="lang" data-en="Agent Tier Priority" data-ko="에이전트 계층 우선순위"></span></h4><p><span class="lang" data-en="Core > OMO > OMX > opt-in packs dedup resolution" data-ko="Core > OMO > OMX > 옵트인 팩 중복 해결"></span></p></div>
+    <div class="orig-card"><h4><span class="lang" data-en="Cost-Optimized Routing" data-ko="비용 최적화 라우팅"></span></h4><p><span class="lang" data-en="gpt-5.6 / gpt-5.6-terra / gpt-5.6-luna tier selection" data-ko="gpt-5.6 / gpt-5.6-terra / gpt-5.6-luna 티어 선택"></span></p></div>
     <div class="orig-card"><h4><span class="lang" data-en="Briefing Vault" data-ko="지식 금고"></span></h4><p><span class="lang" data-en="Obsidian-compatible project memory" data-ko="Obsidian 호환 프로젝트 메모리"></span></p></div>
-    <div class="orig-card"><h4><span class="lang" data-en="Agent Packs" data-ko="에이전트 팩"></span></h4><p><span class="lang" data-en="Domain specialist auto-activation profiles" data-ko="도메인 전문가 자동 활성화 프로파일"></span></p></div>
-    <div class="orig-card"><h4><span class="lang" data-en="Weekly Auto-Sync" data-ko="주간 자동 동기화"></span></h4><p><span class="lang" data-en="GitHub Actions upstream curation" data-ko="GitHub Actions 업스트림 큐레이션"></span></p></div>
+    <div class="orig-card"><h4><span class="lang" data-en="Agent Packs" data-ko="에이전트 팩"></span></h4><p><span class="lang" data-en="Opt-in domain specialist activation profiles" data-ko="옵트인 도메인 전문가 활성화 프로파일"></span></p></div>
+    <div class="orig-card"><h4><span class="lang" data-en="3-Day Auto-Sync" data-ko="3일 주기 자동 동기화"></span></h4><p><span class="lang" data-en="Security-gated GitHub Actions upstream curation" data-ko="보안 게이트 GitHub Actions 업스트림 큐레이션"></span></p></div>
     <div class="orig-card"><h4>Native TOML</h4><p><span class="lang" data-en="Zero-conversion agent format" data-ko="무변환 에이전트 형식"></span></p></div>
     <div class="orig-card"><h4>Dedup Guard</h4><p><span class="lang" data-en="Cross-source agent deduplication" data-ko="크로스 소스 에이전트 중복 제거"></span></p></div>
   </div>
@@ -581,7 +570,7 @@ section{padding:80px 0}
     </div>
     <div class="faq-item">
       <button class="faq-q" onclick="toggleFaq(this)"><span class="lang" data-en="How often are upstream sources synced?" data-ko="업스트림 소스는 얼마나 자주 동기화되나요?"></span><span></span></button>
-      <div class="faq-a"><div class="faq-a-inner"><span class="lang" data-en="Weekly via GitHub Actions every Monday. The sync workflow pulls from all 6 upstream sources, converts formats, deduplicates agents, and creates a PR for review." data-ko="매주 월요일 GitHub Actions를 통해 동기화됩니다. 동기화 워크플로우는 6개 업스트림 소스에서 가져와 형식을 변환하고, 에이전트를 중복 제거하고, 리뷰를 위한 PR을 생성합니다."></span></div></div>
+      <div class="faq-a"><div class="faq-a-inner"><span class="lang" data-en="Every 3 days via GitHub Actions. The security-gated sync workflow pulls from all 4 upstream submodules, refreshes the SHA pins in upstream/SOURCES.json, converts formats, deduplicates agents, and creates a PR for review." data-ko="GitHub Actions를 통해 3일마다 동기화됩니다. 보안 게이트가 적용된 동기화 워크플로우는 4개 업스트림 서브모듈에서 가져와 upstream/SOURCES.json의 SHA 핀을 갱신하고, 형식을 변환하고, 에이전트를 중복 제거하고, 리뷰를 위한 PR을 생성합니다."></span></div></div>
     </div>
     <div class="faq-item">
       <button class="faq-q" onclick="toggleFaq(this)"><span class="lang" data-en="Does it work offline?" data-ko="오프라인에서 작동하나요?"></span><span></span></button>
@@ -598,12 +587,11 @@ section{padding:80px 0}
   <p style="color:var(--text2);font-size:.88rem;max-width:600px;margin:0 auto 16px"><span class="lang" data-en="Built on open-source contributions from:" data-ko="다음 오픈소스 기여를 기반으로 구축:"></span></p>
   <p style="font-size:.84rem;color:var(--text2);line-height:2">
     <a href="https://sehoon787.github.io/my-claude/">my-claude</a> &middot;
-    <a href="https://github.com/VoltAgent/awesome-codex-subagents">awesome-codex-subagents</a> &middot;
-    <a href="https://github.com/Yeachan-Heo/oh-my-claudecode">oh-my-codex</a> &middot;
-    <a href="https://github.com/msitarzewski/agency-agents">agency-agents</a> &middot;
     <a href="https://github.com/affaan-m/everything-claude-code">everything-claude-code</a> &middot;
-    <a href="https://github.com/obra/superpowers">superpowers</a> &middot;
     <a href="https://github.com/garrytan/gstack">gstack</a> &middot;
+    <a href="https://github.com/Yeachan-Heo/oh-my-codex">oh-my-codex</a> &middot;
+    <a href="https://github.com/obra/superpowers">superpowers</a> &middot;
+    <a href="https://github.com/VoltAgent/awesome-codex-subagents">awesome-codex-subagents</a> &middot;
     <a href="https://github.com/openai/codex">OpenAI Codex CLI</a>
   </p>
 </div>

@@ -8,31 +8,32 @@ Thank you for contributing. This guide covers how to author agents for Codex CLI
 
 ```
 codex-agents/
-  core/                   # Self-owned core agents (always loaded)
-  omo/                    # Self-owned OMO agents (always loaded)
-upstream/                 # Git submodules (upstream sources)
-  agency-agents/          # Domain agent specialists (MD → TOML at install)
-  awesome/                # awesome-codex-subagents (native TOML)
+  core/                   # Self-owned core agent — boss (always loaded)
+  omo/                    # Self-owned OMO agents, 9 (always loaded)
+  packs/                  # Vendored opt-in agent packs (data-ai 13, llmops 4)
+upstream/                 # Git submodules (4 upstream sources)
   ecc/                    # everything-claude-code (skills)
   gstack/                 # gstack (sprint-process skills)
-  omx/                    # oh-my-codex (CLI runtime)
-  superpowers/            # superpowers (agent + skills)
+  omx/                    # oh-my-codex (worker agents, CLI runtime)
+  superpowers/            # superpowers (skills)
+  SOURCES.json            # AI-BOM — SHA pins, licenses, removed-source records
 skills/
-  core/                   # Self-owned skills
+  core/                   # Self-owned skills (4)
 ```
 
 ### Upstream Sources
 
-This repository aggregates agents and skills from six upstream sources:
+This repository aggregates agents and skills from four upstream submodules, plus one vendored snapshot. Every skill and upstream agent that ships is named in `scripts/skill-allowlists.sh` — nothing is copied wholesale.
 
-| Source | Origin | Format |
-|--------|--------|--------|
-| `agency-agents` | [agency-agents](https://github.com/msitarzewski/agency-agents) — domain agents | MD → TOML |
-| `awesome` | [awesome-codex-subagents](https://github.com/VoltAgent/awesome-codex-subagents) — native TOML agents | TOML |
-| `ecc` | [everything-claude-code](https://github.com/affaan-m/everything-claude-code) — skills and rules | MD |
-| `gstack` | [gstack](https://github.com/garrytan/gstack) — sprint-process skills | MD |
-| `omx` | [oh-my-codex](https://github.com/Yeachan-Heo/oh-my-codex) — CLI runtime, skills, hooks | N/A |
-| `superpowers` | [superpowers](https://github.com/obra/superpowers) — agent + skills | MD → TOML |
+| Source | Origin | Method | Format |
+|--------|--------|--------|--------|
+| `ecc` | [everything-claude-code](https://github.com/affaan-m/everything-claude-code) — 79 skills | submodule | MD |
+| `gstack` | [gstack](https://github.com/garrytan/gstack) — 27 sprint-process skills | submodule | MD |
+| `omx` | [oh-my-codex](https://github.com/Yeachan-Heo/oh-my-codex) — 7 worker agents, CLI runtime | submodule | MD → TOML |
+| `superpowers` | [superpowers](https://github.com/obra/superpowers) — 13 skills | submodule | MD |
+| `codex-agents/packs` | [awesome-codex-subagents](https://github.com/VoltAgent/awesome-codex-subagents) — 17 opt-in agents | vendored (MIT) | TOML |
+
+The `agency-agents` and `awesome-codex-subagents` submodules were removed on 2026-07-27; `upstream/SOURCES.json` records both removals.
 
 New contributions that originate from this repository go into `codex-agents/core/` (infrastructure) or `codex-agents/omo/` (OMO agents).
 

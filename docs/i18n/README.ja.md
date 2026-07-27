@@ -9,13 +9,13 @@
 # my-codex
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
-![Agents](https://img.shields.io/badge/agents-330%2B-blue)
-![Skills](https://img.shields.io/badge/skills-200%2B-purple)
+![Agents](https://img.shields.io/badge/agents-17_core_%2B_17_opt--in-blue)
+![Skills](https://img.shields.io/badge/skills-123-purple)
 ![MCP](https://img.shields.io/badge/MCP-3-green)
-![Auto Sync](https://img.shields.io/badge/upstream_sync-weekly-brightgreen)
+![Auto Sync](https://img.shields.io/badge/upstream_sync-every_3_days-brightgreen)
 
 **OpenAI Codex CLI 向けオールインワン・エージェントハーネス。**
-**一度インストールするだけで、330 以上のエージェントがすぐに使えます。**
+**一度インストールするだけで、厳選された 17 のエージェントがすぐに使えます。**
 
 Boss はランタイムですべてのエージェントとスキルを自動検出し、
 `spawn_agent` を通じて適切なスペシャリストにタスクをルーティングします。設定もボイラープレートも不要です。
@@ -94,7 +94,7 @@ Boss はすべてのリクエストを優先チェーンにカスケードし、
 
 | 優先度 | マッチタイプ | 条件 | 例 |
 |:--------:|-----------|------|---------|
-| **P1** | スキルマッチ | タスクが自己完結型スキルに対応する場合 | `"merge PDFs"` → pdf スキル |
+| **P1** | スキルマッチ | タスクが自己完結型スキルに対応する場合 | `"review this diff"` → /review スキル |
 | **P2** | スペシャリストエージェント | ドメイン固有のエージェントが存在する場合 | `"security audit"` → security-reviewer |
 | **P3a** | Boss ダイレクト | 2〜4 個の独立エージェント | `"fix 3 bugs"` → 並列スポーン |
 | **P3b** | サブオーケストレーター | 複雑なマルチステップワークフロー | `"refactor + test"` → Sisyphus |
@@ -143,13 +143,13 @@ Confirm "design done"   Architect verification  User: approve / improve
 │spawn │ │Atlas   │ │ Direct │ │toml    │
 └──────┘ └────────┘ └────────┘ └────────┘
 ┌─────────────────────────────────────────────────────┐
-│  Agent Layer (330+ installed TOML files)              │
-│  OMO 9 · OMX 33 · Awesome Core 54 · Superpowers 1   │
-│  + 20 domain agent-packs (on-demand)                  │
+│  Agent Layer (17 installed TOML files)                │
+│  Boss 1 · OMO 9 · OMX 7                               │
+│  + 2 opt-in agent packs (17 agents, off by default)   │
 ├─────────────────────────────────────────────────────┤
-│  Skills Layer (200+ from ECC + gstack + OMX + more)  │
-│  tdd-workflow · security-review · autopilot           │
-│  pdf · docx · pptx · xlsx · team                     │
+│  Skills Layer (123 from ECC + gstack + superpowers)   │
+│  coding-standards · security-scan · deep-research     │
+│  /review · /qa · /cso · /ship                         │
 ├─────────────────────────────────────────────────────┤
 │  MCP Layer                                            │
 │  Context7 · Exa · grep.app                            │
@@ -162,9 +162,9 @@ Confirm "design done"   Architect verification  User: approve / improve
 
 | カテゴリ | 数 | ソース |
 |----------|------:|--------|
-| **コアエージェント**（常時ロード） | 98 | Boss 1 + OMO 9 + OMX 33 + Awesome Core 54 + Superpowers 1 |
-| **エージェントパック**（オンデマンド） | 220+ | agency-agents + awesome-codex-subagents の 20 ドメインカテゴリ |
-| **スキル** | 200+ | ECC 180+ · gstack 40 · OMX 36 · Superpowers 14 · Core 1 |
+| **コアエージェント**（常時ロード） | 17 | Boss 1 + OMO 9 + OMX 7 |
+| **エージェントパック**（オプトイン、デフォルトでは無効） | 17 | ベンダリング済み 2 カテゴリ: data-ai 13 + llmops 4 |
+| **スキル** | 123 | ECC 79 · gstack 27 · Superpowers 13 · Core 4 |
 | **MCP サーバー** | 3 | Context7、Exa、grep.app |
 | **config.toml** | 1 | my-codex |
 | **AGENTS.md** | 1 | my-codex |
@@ -196,113 +196,62 @@ Confirm "design done"   Architect verification  User: approve / improve
 </details>
 
 <details>
-<summary><strong>OMC エージェント — スペシャリストワーカー (19)</strong></summary>
+<summary><strong>OMX エージェント — スペシャリストワーカー (7)</strong></summary>
 
-| エージェント | 役割 | ソース |
-|-------|------|--------|
-| analyst | 計画前の事前分析 | [oh-my-claudecode](https://github.com/Yeachan-Heo/oh-my-claudecode) |
-| architect | システム設計とアーキテクチャ | oh-my-claudecode |
-| code-reviewer | 集中的なコードレビュー | oh-my-claudecode |
-| code-simplifier | コードの簡略化とクリーンアップ | oh-my-claudecode |
-| critic | 批判的分析、代替案の提案 | oh-my-claudecode |
-| debugger | 集中的なデバッグ | oh-my-claudecode |
-| designer | UI/UX デザインガイダンス | oh-my-claudecode |
-| document-specialist | ドキュメント作成 | oh-my-claudecode |
-| executor | タスク実行 | oh-my-claudecode |
-| explore | コードベースの調査 | oh-my-claudecode |
-| git-master | Git ワークフロー管理 | oh-my-claudecode |
-| planner | 迅速な計画立案 | oh-my-claudecode |
-| qa-tester | 品質保証テスト | oh-my-claudecode |
-| scientist | リサーチと実験 | oh-my-claudecode |
-| security-reviewer | セキュリティレビュー | oh-my-claudecode |
-| test-engineer | テスト作成と保守 | oh-my-claudecode |
-| tracer | 実行トレースと分析 | oh-my-claudecode |
-| verifier | 最終検証 | oh-my-claudecode |
-| writer | コンテンツとドキュメント | oh-my-claudecode |
+[oh-my-codex](https://github.com/Yeachan-Heo/oh-my-codex) の `prompts/*.md` を Codex TOML に変換したものです。`templates/codex-AGENTS.md` が案内するレーンのみを変換し、許可リストは `scripts/skill-allowlists.sh` にあります。
+
+| エージェント | サンドボックス | 役割 | ソース |
+|-------|---------|------|--------|
+| executor | workspace-write | コード実装 | oh-my-codex |
+| planner | workspace-write | 実装計画 | oh-my-codex |
+| architect | read-only | システム設計とアーキテクチャ | oh-my-codex |
+| test-engineer | workspace-write | テスト戦略とカバレッジ | oh-my-codex |
+| security-reviewer | read-only | セキュリティ分析 | oh-my-codex |
+| code-reviewer | read-only | 集中的なコードレビュー | oh-my-codex |
+| debugger | workspace-write | 根本原因分析 | oh-my-codex |
 
 </details>
 
 <details>
-<summary><strong>Awesome Core エージェント (54) — awesome-codex-subagents より</strong></summary>
+<summary><strong>エージェントパック — オプトインの AI スペシャリスト (2 パック、17 エージェント)</strong></summary>
 
-`~/.codex/agents/` に 4 カテゴリをインストール:
-
-**01-core-development (12)**
-accessibility-tester, ad-security-reviewer, agent-installer, api-designer, code-documenter, code-reviewer, dependency-manager, full-stack-developer, monorepo-specialist, performance-optimizer, refactoring-specialist, tech-debt-analyzer
-
-**03-infrastructure (16)**
-azure-infra-engineer, cloud-architect, container-orchestrator, database-architect, disaster-recovery-planner, edge-computing-specialist, infrastructure-as-code, kubernetes-operator, load-balancer-specialist, message-queue-designer, microservices-architect, monitoring-specialist, network-engineer, serverless-architect, service-mesh-designer, storage-architect
-
-**04-quality-security (16)**
-api-security-tester, chaos-engineer, compliance-auditor, contract-tester, data-privacy-officer, e2e-test-architect, incident-responder, load-tester, mutation-tester, penetration-tester, regression-tester, security-scanner, soc-analyst, static-analyzer, threat-modeler, vulnerability-assessor
-
-**09-meta-orchestration (10)**
-agent-organizer, capability-assessor, conflict-resolver, context-manager, execution-planner, multi-agent-coordinator, priority-manager, resource-allocator, task-decomposer, workflow-orchestrator
-
-</details>
-
-<details>
-<summary><strong>Superpowers エージェント (1) — obra/superpowers より</strong></summary>
-
-| エージェント | 役割 | ソース |
-|-------|------|--------|
-| superpowers-code-reviewer | ブレインストーミングと TDD 検証を含む包括的なコードレビュー | [superpowers](https://github.com/obra/superpowers) |
-
-</details>
-
-<details>
-<summary><strong>エージェントパック — オンデマンドドメインスペシャリスト (21 カテゴリ)</strong></summary>
-
-`~/.codex/agent-packs/` にインストールされます。管理方法:
+[awesome-codex-subagents](https://github.com/VoltAgent/awesome-codex-subagents)（MIT）から `codex-agents/packs/` にベンダリングし、`~/.codex/agent-packs/` にインストールされます。**デフォルトで有効になるパックはありません** — 明示的にオプトインしてください:
 
 ```bash
 # 現在の状態を確認
 ~/.codex/bin/my-codex-packs status
 
 # パックを即時有効化
-~/.codex/bin/my-codex-packs enable marketing
+~/.codex/bin/my-codex-packs enable data-ai
 
 # インストール時にプロファイルを切り替え
-bash /tmp/my-codex/install.sh --profile minimal
-bash /tmp/my-codex/install.sh --profile full
+bash /tmp/my-codex/install.sh --profile minimal   # パックなし
+bash /tmp/my-codex/install.sh --profile dev       # data-ai + llmops
+bash /tmp/my-codex/install.sh --profile full      # インストール済みの全パック
 ```
 
-| パック | 数 | 例 |
+| パック | 数 | エージェント |
 |------|------:|---------|
-| engineering | 32 | バックエンド、フロントエンド、モバイル、DevOps、AI、データ |
-| marketing | 27 | Douyin、Xiaohongshu、WeChat OA、TikTok、SEO |
-| language-specialists | 27 | Python、Go、Rust、Swift、Kotlin、Java |
-| specialized | 31 | 法律、金融、医療、ワークフロー |
-| game-development | 20 | Unity、Unreal、Godot、Roblox、Blender |
-| infrastructure | 19 | クラウド、K8s、Terraform、Docker、SRE |
-| developer-experience | 13 | MCP Builder、LSP、ターミナル、Rapid Prototyper |
-| data-ai | 13 | Data Engineer、ML、データベース、ClickHouse |
-| specialized-domains | 12 | サプライチェーン、物流、E コマース |
-| design | 11 | ブランド、UI、UX、ビジュアルストーリーテリング |
-| business-product | 11 | プロダクトマネージャー、グロース、アナリティクス |
-| testing | 11 | API、アクセシビリティ、パフォーマンス、E2E、QA |
-| sales | 8 | ディール戦略、パイプライン、アウトバウンド |
-| paid-media | 7 | Google Ads、Meta Ads、プログラマティック |
-| research-analysis | 7 | トレンド、市場、競合分析 |
-| project-management | 6 | アジャイル、Jira、ワークフロー |
-| spatial-computing | 6 | XR、WebXR、AR/VR、visionOS |
-| support | 6 | カスタマーサポート、デベロッパーアドボカシー |
-| academic | 5 | 留学、企業研修 |
-| product | 5 | プロダクト管理、UX リサーチ |
-| security | 5 | ペネトレーションテスト、コンプライアンス、監査 |
+| data-ai | 13 | ai-engineer, data-analyst, data-engineer, data-scientist, database-optimizer, llm-architect, machine-learning-engineer, ml-engineer, mlops-engineer, nlp-engineer, postgres-pro, prompt-engineer, reinforcement-learning-engineer |
+| llmops | 4 | ai-observability-engineer, eval-engineer, hallucination-investigator, prompt-regression-tester |
 
 </details>
 
 <details>
-<summary><strong>スキル — 5 つのソースから 200 以上</strong></summary>
+<summary><strong>スキル — 4 つのソースから 123</strong></summary>
 
-| ソース | 数 | 主要スキル |
+スキル単位の許可リストは `scripts/skill-allowlists.sh` にあり、何がインストールされるかはこのファイルが基準です。
+
+| ソース | 数 | 主なスキル |
 |--------|------:|------------|
-| [everything-claude-code](https://github.com/affaan-m/everything-claude-code) | 180+ | tdd-workflow、autopilot、security-review、coding-standards |
-| [oh-my-codex](https://github.com/Yeachan-Heo/oh-my-codex) | 36 | plan、team、trace、deep-dive、blueprint、ultrawork |
-| [gstack](https://github.com/garrytan/gstack) | 40 | /qa、/review、/ship、/cso、/investigate、/office-hours |
-| [superpowers](https://github.com/obra/superpowers) | 14 | brainstorming、systematic-debugging、TDD、parallel-agents |
-| [my-codex Core](https://github.com/sehoon787/my-codex) | 1 | boss-advanced |
+| [everything-claude-code](https://github.com/affaan-m/everything-claude-code) | 79 | coding-standards, python-testing, api-design, deep-research |
+| [gstack](https://github.com/garrytan/gstack) | 27 | /qa, /review, /ship, /cso, /investigate, /office-hours |
+| [superpowers](https://github.com/obra/superpowers) | 13 | brainstorming, systematic-debugging, TDD, writing-plans |
+| [my-codex Core](https://github.com/sehoon787/my-codex) | 4 | boss-advanced, boss-briefing, briefing-vault, gstack-sprint |
+
+gstack は許可リストのスキル 26 個にリポジトリルートのエントリを加えて 27 として集計されます。gstack リポジトリ全体は `~/.codex/skills/gstack` に正規のランタイムツリーとしても配置されます。
+
+Codex には**ドキュメントスキルがありません** — このバンドルに `pdf`、`docx`、`pptx`、`xlsx` スキルは含まれません。
 
 </details>
 
@@ -403,18 +352,19 @@ BriefingVault v2 は 3 つの知識管理手法を統合しています：
 
 ## アップストリームのオープンソースソース
 
-my-codex は 9 つのアップストリームリポジトリのコンテンツをバンドルしています:
+my-codex は **4 つのアップストリームサブモジュール**に加え、ベンダリング済みスナップショット 1 件と、適応済み/姉妹プロジェクト 2 件で構成されています:
 
-| # | ソース | 提供内容 |
-|---|--------|-----------------|
-| 1 | <img src="https://github.com/sehoon787.png?size=32" width="20" height="20" align="center"/> **[my-claude](https://github.com/sehoon787/my-claude)** — sehoon787 | 姉妹プロジェクト。ネイティブ Claude `.md` エージェントフォーマットで同じ Boss オーケストレーションを実現。スキル、ルール、Briefing Vault を両プロジェクトで共有。 |
-| 2 | <img src="https://github.com/VoltAgent.png?size=32" width="20" height="20" align="center"/> **[awesome-codex-subagents](https://github.com/VoltAgent/awesome-codex-subagents)** — VoltAgent | ネイティブ TOML フォーマットの 136 のプロダクショングレードエージェント。Codex 互換のため変換不要。54 のコアエージェントが自動ロード。 |
-| 3 | <img src="https://github.com/Yeachan-Heo.png?size=32" width="20" height="20" align="center"/> **[oh-my-codex](https://github.com/Yeachan-Heo/oh-my-codex)** — Yeachan Heo | Codex CLI 向けの 36 スキル、フック、HUD、チームパイプライン。アーキテクチャのインスピレーションとして参照。 |
-| 4 | <img src="https://github.com/msitarzewski.png?size=32" width="20" height="20" align="center"/> **[agency-agents](https://github.com/msitarzewski/agency-agents)** — msitarzewski | 14 カテゴリにわたる 180 以上のビジネススペシャリストエージェントペルソナ。自動化パイプラインで Markdown からネイティブ TOML に変換済み。 |
-| 5 | <img src="https://github.com/affaan-m.png?size=32" width="20" height="20" align="center"/> **[everything-claude-code](https://github.com/affaan-m/everything-claude-code)** — affaan-m | 開発ワークフロー全般にわたる 180 以上のスキル。Claude Code 固有のコンテンツを除去し、汎用コーディングスキルを保持。 |
-| 6 | <img src="https://github.com/obra.png?size=32" width="20" height="20" align="center"/> **[superpowers](https://github.com/obra/superpowers)** — Jesse Vincent | ブレインストーミング、TDD、並列エージェント、コードレビューをカバーする 14 スキル + 1 エージェント。 |
-| 7 | <img src="https://github.com/code-yeongyu.png?size=32" width="20" height="20" align="center"/> **[oh-my-openagent](https://github.com/code-yeongyu/oh-my-openagent)** — code-yeongyu | 9 つの OMO エージェント（Sisyphus、Atlas、Oracle など）。Codex ネイティブ TOML フォーマットに適応済み。 |
-| 8 | <img src="https://github.com/garrytan.png?size=32" width="20" height="20" align="center"/> **[gstack](https://github.com/garrytan/gstack)** — garrytan | コードレビュー、QA、セキュリティ監査、デプロイメント向けの 40 スキル。Playwright ブラウザデーモンを含む。 |
+| # | ソース | 方式 | 提供内容 |
+|---|--------|------|-----------------|
+| 1 | <img src="https://github.com/affaan-m.png?size=32" width="20" height="20" align="center"/> **[everything-claude-code](https://github.com/affaan-m/everything-claude-code)** — affaan-m | サブモジュール | 開発ワークフロー全般にわたる許可リストのスキル 79 個。Claude Code 固有のコンテンツを除去し、汎用コーディングスキルを保持。 |
+| 2 | <img src="https://github.com/garrytan.png?size=32" width="20" height="20" align="center"/> **[gstack](https://github.com/garrytan/gstack)** — garrytan | サブモジュール | コードレビュー、QA、セキュリティ監査、デプロイメント向けの 27 スキル。Playwright ブラウザデーモンを含む。 |
+| 3 | <img src="https://github.com/Yeachan-Heo.png?size=32" width="20" height="20" align="center"/> **[oh-my-codex](https://github.com/Yeachan-Heo/oh-my-codex)** — Yeachan Heo | サブモジュール | 許可リストのワーカーエージェント 7 個（executor、planner、architect、test-engineer、security-reviewer、code-reviewer、debugger）。Markdown プロンプトから Codex TOML に変換。 |
+| 4 | <img src="https://github.com/obra.png?size=32" width="20" height="20" align="center"/> **[superpowers](https://github.com/obra/superpowers)** — Jesse Vincent | サブモジュール | ブレインストーミング、TDD、系統的デバッグ、計画作成をカバーする 13 スキル。インストールされるエージェントはありません。 |
+| 5 | <img src="https://github.com/VoltAgent.png?size=32" width="20" height="20" align="center"/> **[awesome-codex-subagents](https://github.com/VoltAgent/awesome-codex-subagents)** — VoltAgent | ベンダリング (MIT) | AI/LLM エージェント 17 個を `codex-agents/packs/` にスナップショットし、オプトインパック 2 個（data-ai 13、llmops 4）として提供。サブモジュールは 2026-07-27 に削除。 |
+| 6 | <img src="https://github.com/code-yeongyu.png?size=32" width="20" height="20" align="center"/> **[oh-my-openagent](https://github.com/code-yeongyu/oh-my-openagent)** — code-yeongyu | 適応 | 9 つの OMO エージェント（Sisyphus、Atlas、Oracle など）。Codex ネイティブ TOML フォーマットに適応し、本リポジトリで維持。 |
+| 7 | <img src="https://github.com/sehoon787.png?size=32" width="20" height="20" align="center"/> **[my-claude](https://github.com/sehoon787/my-claude)** — sehoon787 | 姉妹プロジェクト | ネイティブ Claude `.md` エージェントフォーマットで同じ Boss オーケストレーションを実現。スキル、ルール、Briefing Vault を両プロジェクトで共有。 |
+
+すべてのサブモジュールは `upstream/SOURCES.json`（AI-BOM）で SHA 固定されており、削除された 2 つのサブモジュール（`agency-agents` — ベンダリングなし、`awesome-codex-subagents` — エージェント 17 個をベンダリング）も記録されています。
 
 ---
 
@@ -423,7 +373,8 @@ my-codex は 9 つのアップストリームリポジトリのコンテンツ�
 | ワークフロー | トリガー | 目的 |
 |----------|---------|---------|
 | **CI** | push、PR | TOML エージェントファイル、スキルの存在、アップストリームファイル数を検証 |
-| **Update Upstream** | 週次（月曜）/ 手動 | `git submodule update --remote` を実行し、自動マージ PR を作成 |
+| **Smoke Tests** | push, PR | `hooks`、`shell`、`drift`、`routing-refs` ジョブ — フック配線、シェル構文、モデルドリフト、AGENTS.md のルーティング参照を検証 |
+| **Update Upstream** | 3 日ごと / 手動 | セキュリティゲート付きの `git submodule update --remote`、`upstream/SOURCES.json` のピン更新、自動マージ PR を作成 |
 | **Auto Tag** | main へのプッシュ | `config.toml` からバージョンを読み取り、新しい場合は git タグを作成 |
 | **Pages** | main へのプッシュ | `docs/index.html` を GitHub Pages にデプロイ |
 | **CLA** | PR | コントリビューターライセンス契約チェック |
@@ -439,8 +390,8 @@ my-codex は 9 つのアップストリームリポジトリのコンテンツ�
 |---------|-------------|
 | **Boss メタオーケストレーター** | ダイナミックケイパビリティ検出 → インテント分類 → 4 優先ルーティング → 委任 → 検証 |
 | **3 フェーズスプリント** | 設計（インタラクティブ）→ 実行（executor による自律）→ レビュー（設計書との比較インタラクティブ） |
-| **エージェント層優先度** | core > omo > omc > awesome-core 重複排除。最も特化したエージェントが優先。 |
-| **コスト最適化** | アドバイザリーには gpt-5.6-luna、実装には gpt-5.6 — 330 以上のエージェントへの自動モデルルーティング |
+| **エージェント層優先度** | core > omo > omx > オプトインパックの順で重複排除。既存エージェントと名前が衝突するパックエージェントはスキップ。最も特化したエージェントが優先。 |
+| **コスト最適化** | アドバイザリーには gpt-5.6-luna、実装には gpt-5.6 — インストール済み 34 エージェント全体への自動モデルルーティング |
 | **エージェントテレメトリー** | PostToolUse フックがエージェント使用状況を `agent-usage.jsonl` に記録 |
 | **スマートパック** | プロジェクトタイプ検出がセッション開始時に関連エージェントパックを推奨 |
 | **エージェントパックシステム** | `--profile` と `my-codex-packs` ヘルパーによるオンデマンドのドメインスペシャリスト有効化 |
@@ -463,13 +414,19 @@ rm -rf /tmp/my-codex
 
 ### エージェントパックプロファイル
 
-初回インストール時、my-codex は推奨の `dev` セット（`engineering`、`design`、`testing`、`marketing`、`support`）を自動有効化し、`~/.codex/enabled-agent-packs.txt` に記録します。
+パックはインストールされますが、**デフォルトでは無効**です。新規インストールは有効なパックのない空のセットを `~/.codex/enabled-agent-packs.txt` に記録します。パック単位でオプトインするか、プロファイルを選んでください:
 
 ```bash
-# Minimal プロファイル（コアエージェントのみ、パックなし）
+# パックを 1 つ即時有効化
+~/.codex/bin/my-codex-packs enable data-ai
+
+# Minimal プロファイル（コアエージェントのみ、パックなし — デフォルト）
 bash /tmp/my-codex/install.sh --profile minimal
 
-# Full プロファイル（全 21 パックカテゴリを有効化）
+# dev プロファイル（data-ai + llmops）
+bash /tmp/my-codex/install.sh --profile dev
+
+# Full プロファイル（インストール済みの 2 パックカテゴリをすべて有効化）
 bash /tmp/my-codex/install.sh --profile full
 ```
 
@@ -524,12 +481,11 @@ max_depth = 1
 
 | ソース | 同期 |
 |--------|------|
-| [agency-agents](https://github.com/msitarzewski/agency-agents) | submodule |
-| [everything-claude-code](https://github.com/affaan-m/everything-claude-code) | submodule |
-| [oh-my-codex](https://github.com/Yeachan-Heo/oh-my-codex) | submodule |
-| [awesome-codex-subagents](https://github.com/VoltAgent/awesome-codex-subagents) | submodule |
-| [gstack](https://github.com/garrytan/gstack) | submodule |
-| [superpowers](https://github.com/obra/superpowers) | submodule |
+| [everything-claude-code](https://github.com/affaan-m/everything-claude-code) | サブモジュール (`upstream/ecc`) |
+| [gstack](https://github.com/garrytan/gstack) | サブモジュール (`upstream/gstack`) |
+| [oh-my-codex](https://github.com/Yeachan-Heo/oh-my-codex) | サブモジュール (`upstream/omx`) |
+| [superpowers](https://github.com/obra/superpowers) | サブモジュール (`upstream/superpowers`) |
+| [awesome-codex-subagents](https://github.com/VoltAgent/awesome-codex-subagents) | ベンダリング済みスナップショット（サブモジュールは 2026-07-27 に削除） |
 
 ---
 
@@ -552,14 +508,14 @@ my-codex と my-claude は同じ Boss オーケストレーションアーキテ
 <details>
 <summary><strong>エージェントパックはどのように機能しますか？</strong></summary>
 
-エージェントパックは `~/.codex/agent-packs/` にインストールされるドメイン固有のエージェントコレクションです。初回インストール時に `dev` プロファイルが自動有効化されます。`my-codex-packs enable <pack>` で追加パックを有効化するか、`--profile full` で再インストールして全 21 カテゴリを有効化できます。
+エージェントパックは `~/.codex/agent-packs/` にインストールされるドメイン固有のエージェントコレクションです。現在は `data-ai`（13）と `llmops`（4）の 2 パックがあり、**インストール時に有効化されるパックはありません**。`my-codex-packs enable <pack>` で有効化するか、`--profile full` で再インストールして両カテゴリを有効化できます。
 
 </details>
 
 <details>
 <summary><strong>アップストリーム同期はどのように機能しますか？</strong></summary>
 
-GitHub Actions ワークフローが毎週月曜日に実行され、すべてのアップストリームサブモジュールから最新のコミットを取得し、自動マージ PR を作成します。Actions タブから手動でトリガーすることもできます。
+GitHub Actions ワークフローが 3 日ごとに実行され、4 つのアップストリームサブモジュールから最新のコミットを取得し、`upstream/SOURCES.json` の SHA ピンを更新したうえで、セキュリティゲート付きの自動マージ PR を作成します。Actions タブから手動でトリガーすることもできます。
 
 </details>
 
@@ -594,7 +550,7 @@ Issues と PR を歓迎します。新しいエージェントを追加する際
 
 ## クレジット
 
-以下の成果物の上に構築されています: [my-claude](https://github.com/sehoon787/my-claude) (sehoon787)、[awesome-codex-subagents](https://github.com/VoltAgent/awesome-codex-subagents) (VoltAgent)、[oh-my-codex](https://github.com/Yeachan-Heo/oh-my-codex) (Yeachan Heo)、[agency-agents](https://github.com/msitarzewski/agency-agents) (msitarzewski)、[everything-claude-code](https://github.com/affaan-m/everything-claude-code) (affaan-m)、[oh-my-openagent](https://github.com/code-yeongyu/oh-my-openagent) (code-yeongyu)、[gstack](https://github.com/garrytan/gstack) (garrytan)、[superpowers](https://github.com/obra/superpowers) (Jesse Vincent)、[openai/skills](https://github.com/openai/skills) (OpenAI)。
+以下の成果物の上に構築されています: [my-claude](https://github.com/sehoon787/my-claude) (sehoon787)、[everything-claude-code](https://github.com/affaan-m/everything-claude-code) (affaan-m)、[gstack](https://github.com/garrytan/gstack) (garrytan)、[oh-my-codex](https://github.com/Yeachan-Heo/oh-my-codex) (Yeachan Heo)、[superpowers](https://github.com/obra/superpowers) (Jesse Vincent)、[awesome-codex-subagents](https://github.com/VoltAgent/awesome-codex-subagents) (VoltAgent)、[oh-my-openagent](https://github.com/code-yeongyu/oh-my-openagent) (code-yeongyu)、[openai/skills](https://github.com/openai/skills) (OpenAI)。
 
 ## ライセンス
 

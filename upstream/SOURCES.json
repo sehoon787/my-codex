@@ -6,8 +6,12 @@
   },
   "everything-claude-code": {
     "repo": "https://github.com/affaan-m/everything-claude-code",
+    "path": "upstream/ecc",
     "method": "submodule",
-    "note": "ECC skills + rules"
+    "note": "ECC skills + rules",
+    "pinned_sha": "40927950c49f6e742d341e20ff7b9b7e1e7bfff5",
+    "pinned_date": "2026-07-27",
+    "license": "MIT"
   },
   "awesome-codex-subagents": {
     "repo": "https://github.com/VoltAgent/awesome-codex-subagents",
@@ -16,17 +20,30 @@
   },
   "oh-my-codex": {
     "repo": "https://github.com/Yeachan-Heo/oh-my-codex",
+    "path": "upstream/omx",
     "method": "submodule + npm-cli",
-    "package": "oh-my-codex-sisyphus"
+    "package": "oh-my-codex-sisyphus",
+    "pinned_sha": "fce27bfd6c17c7665a6f1505b6b8384cc2c8edd5",
+    "pinned_date": "2026-07-27",
+    "license": "MIT",
+    "license_source": "package.json (no LICENSE file at repo root)"
   },
   "gstack": {
     "repo": "https://github.com/garrytan/gstack",
+    "path": "upstream/gstack",
     "method": "submodule + setup",
     "supersedes": ["benchmark", "canary-watch", "safety-guard", "browser-qa",
-                   "verification-loop", "security-review", "design-system"]
+                   "verification-loop", "security-review", "design-system"],
+    "pinned_sha": "7c9df1c568a9ea745508f679a329332b2c338063",
+    "pinned_date": "2026-07-27",
+    "license": "MIT"
   },
   "superpowers": {
     "repo": "https://github.com/obra/superpowers",
-    "method": "submodule"
+    "path": "upstream/superpowers",
+    "method": "submodule",
+    "pinned_sha": "3dcbd5c4b48e02263fbf4a3c01e3fe4f81d584d9",
+    "pinned_date": "2026-07-27",
+    "license": "MIT"
   }
 }

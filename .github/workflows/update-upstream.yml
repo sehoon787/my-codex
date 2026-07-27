@@ -30,14 +30,29 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
       - name: Update submodules
+        env:
+          # Passed through env, never interpolated into the script body: a
+          # workflow_dispatch input inlined as ${{ }} is shell-injectable.
+          SUBMODULE: ${{ github.event.inputs.submodule }}
         run: |
-          if [ -n "${{ github.event.inputs.submodule }}" ]; then
-            git -C "upstream/${{ github.event.inputs.submodule }}" pull origin HEAD
-            git add "upstream/${{ github.event.inputs.submodule }}"
+          if [ -n "$SUBMODULE" ]; then
+            git -C "upstream/$SUBMODULE" pull origin HEAD
+            git add "upstream/$SUBMODULE"
           else
             git submodule update --remote
             git add upstream/
           fi
+
+      # Keep the AI-BOM pins in upstream/SOURCES.json in step with the pointers
+      # this PR is bumping, so the manifest never lags the submodules it describes.
+      - name: Refresh SOURCES.json pins
+        run: |
+          # Manifest metadata only. This is the one step in the job that needs
+          # node, so it degrades to a warning rather than failing the job and
+          # blocking a security-gated submodule update from opening its PR.
+          node scripts/refresh-sources-pins.js \
+            || echo "::warning::SOURCES.json pin refresh skipped; pins may lag the submodule pointers"
+          git add upstream/SOURCES.json
 
       - name: Check for changes
         id: check

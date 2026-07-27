@@ -10,10 +10,6 @@
 #
 # Excluded by design:
 #   - upstream/                    : vendored third-party submodules, not ours to police.
-#   - codex-agents/packs/          : vendored third-party agent TOMLs kept verbatim from
-#                                    their upstream snapshot; install.sh's
-#                                    normalize_agent_models() rewrites their model IDs
-#                                    to the current tier at install time.
 #   - .git/                        : object store.
 #   - scripts/model-tiers.sh       : single source of truth for model tiers; holds
 #                                    the legacy-model normalization mapping (old IDs
@@ -32,7 +28,7 @@ set -uo pipefail
 OLD_MODEL_PATTERN="${OLD_MODEL_PATTERN:-gpt-5\.[0-5]([.-]|$| )|gpt-4|gpt-3|\bo1\b|\bo3\b|\bo4-mini\b|codex-spark}"
 
 # Path fragments to exclude from the scan (grep -E, matched against file path).
-EXCLUDE_PATHS="${EXCLUDE_PATHS:-(^|/)upstream/|(^|/)codex-agents/packs/|(^|/)\.git/|(^|/)scripts/model-tiers\.sh$|(^|/)scripts/check-model-drift\.sh$}"
+EXCLUDE_PATHS="${EXCLUDE_PATHS:-(^|/)upstream/|(^|/)\.git/|(^|/)scripts/model-tiers\.sh$|(^|/)scripts/check-model-drift\.sh$}"
 
 repo_root="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$repo_root"

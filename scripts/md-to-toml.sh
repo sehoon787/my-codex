@@ -43,6 +43,22 @@ map_model() {
   esac
 }
 
+# Map an agent name to its sandbox_mode (role-based). Applies to the 7
+# omx-allowlisted agents (scripts/skill-allowlists.sh OMX_AGENT_ALLOWLIST);
+# reviewer/advisor roles are read-only, everything else defaults to
+# workspace-write (executor, test-engineer, debugger included).
+map_sandbox_mode() {
+  local n="$1"
+  case "$n" in
+    security-reviewer|code-reviewer|planner|architect)
+      echo "read-only"
+      ;;
+    *)
+      echo "workspace-write"
+      ;;
+  esac
+}
+
 strip_wrapping_quotes() {
   local value="$1"
   if [[ "$value" == \"*\" && "$value" == *\" ]]; then
@@ -166,6 +182,9 @@ process_file() {
   local model_lines
   model_lines=$(map_model "$model")
 
+  local sandbox_mode
+  sandbox_mode=$(map_sandbox_mode "$name")
+
   # Escape double quotes in name/description for TOML basic strings
   name=$(echo "$name" | sed 's/"/\\"/g')
   description=$(echo "$description" | sed 's/"/\\"/g')
@@ -175,6 +194,7 @@ process_file() {
     printf 'name = "%s"\n' "$name"
     printf 'description = "%s"\n' "$description"
     echo "$model_lines"
+    printf 'sandbox_mode = "%s"\n' "$sandbox_mode"
     printf 'developer_instructions = """\n'
     printf '%s\n' "$body"
     printf '"""\n'

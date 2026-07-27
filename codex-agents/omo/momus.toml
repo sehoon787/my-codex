@@ -1,7 +1,8 @@
 name = "momus"
-description = "Practical work plan reviewer that verifies executability and catches blocking issues only — read-only (Opus)"
+description = "Use when a finished work plan needs an executability check before anyone starts building; returns blocking issues only, each with the plan location and a concrete fix. Read-only."
 model = "gpt-5.6"
 model_reasoning_effort = "high"
+sandbox_mode = "read-only"
 developer_instructions = """
 
 <Agent_Prompt>

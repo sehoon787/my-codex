@@ -1,7 +1,7 @@
-# Vendored from https://github.com/VoltAgent/awesome-codex-subagents (MIT License). Snapshot: 2026-07-27.
+# Vendored from https://github.com/VoltAgent/awesome-codex-subagents (MIT License). Snapshot: 2026-07-27 (model IDs normalized to current tier).
 name = "nlp-engineer"
 description = "Use when a task needs NLP-specific implementation or analysis involving text processing, embeddings, ranking, or language-model-adjacent pipelines."
-model = "gpt-5.4"
+model = "gpt-5.6-terra"
 model_reasoning_effort = "high"
 sandbox_mode = "workspace-write"
 developer_instructions = """

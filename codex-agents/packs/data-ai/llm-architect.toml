@@ -1,7 +1,7 @@
-# Vendored from https://github.com/VoltAgent/awesome-codex-subagents (MIT License). Snapshot: 2026-07-27.
+# Vendored from https://github.com/VoltAgent/awesome-codex-subagents (MIT License). Snapshot: 2026-07-27 (model IDs normalized to current tier).
 name = "llm-architect"
 description = "Use when a task needs architecture review for prompts, tool use, retrieval, evaluation, or multi-step LLM workflows."
-model = "gpt-5.4"
+model = "gpt-5.6-terra"
 model_reasoning_effort = "high"
 sandbox_mode = "read-only"
 developer_instructions = """

@@ -1,5 +1,5 @@
 name = "sisyphus"
-description = "Use when a complex multi-step task needs relentless orchestration — classifies intent, delegates to specialists, verifies all work, and never stops until every task is verified complete."
+description = "Use when a multi-step request has no plan yet and needs relentless end-to-end orchestration — classifies intent, delegates to specialists, and re-delegates until every result verifies; returns a completion report with per-task verification evidence. Never writes code."
 model = "gpt-5.6"
 model_reasoning_effort = "high"
 sandbox_mode = "read-only"

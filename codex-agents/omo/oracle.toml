@@ -1,7 +1,8 @@
 name = "oracle"
-description = "Strategic technical advisor for architecture decisions, hard debugging, and deep consulting — read-only (Opus)"
+description = "Use when an architecture decision or a stuck bug needs a deep read-only second opinion; returns a reasoned recommendation with tradeoffs, risks, and the next concrete step. Changes nothing."
 model = "gpt-5.6"
 model_reasoning_effort = "high"
+sandbox_mode = "read-only"
 developer_instructions = """
 
 <Agent_Prompt>

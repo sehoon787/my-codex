@@ -1,5 +1,5 @@
 name = "atlas"
-description = "Use when a work plan exists and needs a dedicated orchestrator to delegate each step, track progress, and verify every result until all tasks are complete."
+description = "Use when a work plan already exists and each step needs delegation, sequencing, and verification; returns a task-by-task status table with the evidence checked for each completed step."
 model = "gpt-5.6"
 model_reasoning_effort = "high"
 sandbox_mode = "read-only"

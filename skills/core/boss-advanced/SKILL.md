@@ -6,6 +6,24 @@ user-invocable: false
 
 # Boss Advanced Orchestration Patterns
 
+## Capability Lanes
+
+Boss discovers capabilities at runtime. This is the ownership map for resolving overlaps between what it finds — one owner per lane, no cross-lane duplicates.
+
+| Lane | Owner | Contents |
+|------|-------|----------|
+| Core orchestration | this repo (`skills/core/`) | boss-advanced, boss-briefing, briefing-vault, gstack-sprint (4) |
+| P0 workflows | gstack | 26 skills + the `gstack` root router (27) — see the domain routing table in boss.toml |
+| Dev discipline | superpowers | test-driven-development, systematic-debugging, brainstorming, writing-plans, executing-plans, requesting/receiving-code-review, verification-before-completion, using-git-worktrees, subagent-driven-development, writing-skills, using-superpowers, finishing-a-development-branch (13) |
+| Stack + AI knowledge | ECC | 79 skills — language/framework patterns, agent and LLM engineering, codebase tooling |
+| Document deliverables | Anthropic doc skills | pdf, docx, pptx, xlsx |
+| Execution modes | OMC (`ralph`, `autopilot`, `ultrawork`, `team`) | referenced by `codex-AGENTS.md` and `gstack-sprint`, but installed only when the OMC skill set is also present under `~/.codex/skills` — confirm in the registry before routing |
+| Agents | this repo + omx | 17 active: boss (core) + omo 9 + omx 7. Agent packs (data-ai 13, llmops 4) are opt-in — enable with `~/.codex/bin/my-codex-packs enable <pack>` before delegating |
+
+A name outside these lanes is not installed. Never route to a capability the Phase 0 scan did not discover.
+
+---
+
 ## Skill vs Agent Conflict Resolution
 
 When both a skill and an agent could handle the request, evaluate three dimensions:
@@ -22,7 +40,7 @@ When both a skill and an agent could handle the request, evaluate three dimensio
 - Tie -> ask the user one clarifying question
 
 **Special cases:**
-- **File-format deliverable** (the output IS a pdf/docx/xlsx/pptx) -> Skill always wins, regardless of dimensions
+- **File-format deliverable** (the output IS a PDF/DOCX/XLSX/PPTX document) -> Codex ships no bundled document skills; route to executor with native tooling
 - **Visual design deliverable** (landing page, component, UI) where the primary output is rendered HTML/CSS -> Skill wins (one-shot generation); **design consultation** (evaluate existing design, propose improvements iteratively) -> Agent wins (iterative exploration)
 - **Single-file security review** -> If scope is exactly 1 file, prefer gstack `/cso` Skill (checklist-based review is more thorough for single files); if multi-file -> gstack `/cso` also preferred
 - **Security audit cadence** -> gstack `/cso` is the representative Skill for periodic/scheduled security audits (threat modeling, broader review); `security-scan` is the representative Skill for pre-commit/pre-push diff-scoped scans (fast, blocking gate). Do not conflate the two roles.
@@ -60,7 +78,7 @@ Q1. Are the subtasks fully independent? (no file overlap)
 For end-to-end feature or deployment requests, Boss follows the 3-Phase Sprint sequence:
 
 - **Phase 1: Design (interactive)** — `/plan-ceo-review` → `/plan-eng-review`. User confirms design before Phase 2.
-- **Phase 2: Execute (autonomous)** — Delegate to ralphinho. gstack `/review` is attempted non-blocking (skip silently if unavailable). Architect/critic verification always runs after.
+- **Phase 2: Execute (autonomous)** — Delegate to `ralph`. gstack `/review` is attempted non-blocking (skip silently if unavailable). Architect/critic verification always runs after.
 - **Phase 3: Review (interactive)** — Re-read design doc from `~/.gstack/projects/`. Compare vs implementation. If improvements needed, re-enter Phase 2. On approval: `/ship` or manual commit.
 
 Phase transitions are sequential. If gstack is not installed, fall back to standard Priority 1–4 routing.
@@ -263,7 +281,7 @@ The `name` parameter in the Agent() call must match the canonical agent type bei
 
 **CONTEXT**:
 [Relevant code snippets, file paths, patterns to follow]
-Recommended skills: [skills matched in Phase 2, e.g. /tdd-workflow, /security-review]
+Recommended skills: [skills matched in Phase 2, e.g. test-driven-development, gstack /cso]
 Recommended agents: [agents matched in Phase 2, e.g. test-engineer (sonnet)]
 ```
 

@@ -7,12 +7,10 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$SCRIPT_DIR"
 
-# shellcheck source=scripts/model-tiers.sh
-source "$SCRIPT_DIR/scripts/model-tiers.sh"
-
-# Which upstream skills/agents this installer copies — see scripts/skill-allowlists.sh
-# shellcheck source=scripts/skill-allowlists.sh
-source "$SCRIPT_DIR/scripts/skill-allowlists.sh"
+# NOTE: scripts/model-tiers.sh and scripts/skill-allowlists.sh are sourced AFTER
+# the bootstrap check below — in pipe mode (bash < install.sh) SCRIPT_DIR is the
+# caller's cwd, and the bootstrap re-exec from a real checkout must run before
+# any repo file is read.
 
 resolve_windows_home() {
   local raw_path="${1:-}" drive rest candidate
@@ -76,6 +74,12 @@ bootstrap_into_real_repo() {
 if [ ! -f "$REPO_ROOT/scripts/agent-pack-manager.sh" ] || [ ! -f "$REPO_ROOT/templates/codex-AGENTS.md" ]; then
   bootstrap_into_real_repo "$@"
 fi
+
+# shellcheck source=scripts/model-tiers.sh
+source "$REPO_ROOT/scripts/model-tiers.sh"
+# Which upstream skills/agents this installer copies — see scripts/skill-allowlists.sh
+# shellcheck source=scripts/skill-allowlists.sh
+source "$REPO_ROOT/scripts/skill-allowlists.sh"
 
 CODEX_ROOT="$HOME/.codex"
 MANIFEST_FILE="$CODEX_ROOT/.my-codex-manifest.txt"

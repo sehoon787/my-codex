@@ -493,6 +493,11 @@ current_install_version() {
   fi
 }
 
+# Manifest entries are either single files (agents/*.toml, hooks/*.js) or whole
+# directories (skills/<name>, vendor/my-codex). `rm -rf` handles both, so a
+# directory copy tracked as one directory entry is removed completely — no husk
+# files survive. Only the per-file entries can leave an emptied parent behind,
+# which the prune pass below collects.
 remove_manifest_paths() {
   local manifest="$1"
   [ -f "$manifest" ] || return 1
@@ -501,6 +506,21 @@ remove_manifest_paths() {
     [ -n "$rel_path" ] || continue
     rm -rf "$CODEX_ROOT/$rel_path" 2>/dev/null || true
   done < "$manifest"
+
+  # Prune directories the deletions above emptied (e.g. an agent pack whose
+  # every agent-packs/<pack>/*.toml entry was just removed). Scoped strictly to
+  # directories derived from manifest entries — never a blanket prune of
+  # ~/.codex — and deepest-first (longest path first) so nested husks collapse
+  # before their parents. Top-level roots (agents/, skills/, agent-packs/, ...)
+  # are deliberately excluded: later install steps write into them. rmdir only
+  # succeeds on an already-empty directory, so custom files sitting alongside
+  # managed ones keep their directory alive.
+  awk -F/ 'NF>1 { p=$1; for (i=2;i<NF;i++) { p=p"/"$i; print p } }' "$manifest" \
+    | sort -u \
+    | awk '{ print length($0) "\t" $0 }' | sort -rn -k1,1 | cut -f2- \
+    | while IFS= read -r rel_dir; do
+        rmdir "$CODEX_ROOT/$rel_dir" 2>/dev/null || true
+      done
 }
 
 copy_toml_dir() {
@@ -545,6 +565,11 @@ normalize_agent_models() {
   echo "  Normalized $dir: $legacy_workhorse $LEGACY_WORKHORSE_MODEL -> $MODEL_TIER_MEDIUM, $legacy_spark $LEGACY_SPARK_MODEL -> $MODEL_TIER_LOW"
 }
 
+# Records one directory entry ("skills/<name>") per copied tree, not one line
+# per file. remove_manifest_paths() deletes entries with `rm -rf`, so the whole
+# subtree — nested references/, scripts/, everything cp -R placed — is removed
+# on the next update. Do not "improve" this into a per-file listing; the
+# directory entry is what makes the copy fully reversible.
 copy_skill_dirs() {
   local skill_src="$1"
   local skill_dir dest_dir rel_path
@@ -622,6 +647,8 @@ patch_gstack_openclaw_skills() {
   done
 }
 
+# Same provenance contract as copy_skill_dirs(): one directory manifest entry
+# covers the entire copied tree, removed wholesale by `rm -rf` on update.
 install_skill_copy() {
   local src_dir="$1"
   local dest_name="$2"
@@ -1055,6 +1082,12 @@ if [ "$SKIP_GSTACK" = "0" ]; then
   echo "  [gstack] Initializing gstack..."
   if init_upstream gstack https://github.com/garrytan/gstack; then
     GSTACK_DIR="$CODEX_ROOT/skills/gstack"
+    # Deliberately manifest-exempt: this is gstack's canonical runtime tree,
+    # refreshed in place by `git pull` / `git checkout` and by `./setup` (which
+    # builds the browser binary into it). Tracking it would make cleanup
+    # `rm -rf` it on every update, discarding the checkout and forcing a full
+    # re-clone plus rebuild. Left fully untracked rather than half-tracked;
+    # the depth-1 surfaced copies derived from it below ARE tracked.
     if [ -d "$GSTACK_DIR/.git" ]; then
       git -C "$GSTACK_DIR" pull --ff-only 2>/dev/null || true
     else
@@ -1104,6 +1137,12 @@ if [ "$SKIP_GSTACK" = "0" ]; then
             MINGW*|MSYS*|CYGWIN*) cp -r "$skill_dir" "$target" ;;
             *) ln -s "$(cd "$skill_dir" && pwd)" "$target" 2>/dev/null || cp -r "$skill_dir" "$target" ;;
           esac
+          # Recorded only when this run actually created the path, so a
+          # pre-existing custom skill of the same name is never claimed. The
+          # directory entry makes the Windows `cp -r` copy fully reversible
+          # (previously untracked, which is why dropped allowlist entries had
+          # to be swept by hand — see the connect-chrome removal above).
+          add_manifest_entry "skills/$skill_name"
         fi
       done
     fi

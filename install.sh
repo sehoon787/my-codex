@@ -10,6 +10,10 @@ REPO_ROOT="$SCRIPT_DIR"
 # shellcheck source=scripts/model-tiers.sh
 source "$SCRIPT_DIR/scripts/model-tiers.sh"
 
+# Which upstream skills/agents this installer copies — see scripts/skill-allowlists.sh
+# shellcheck source=scripts/skill-allowlists.sh
+source "$SCRIPT_DIR/scripts/skill-allowlists.sh"
+
 resolve_windows_home() {
   local raw_path="${1:-}" drive rest candidate
   [ -n "$raw_path" ] || return 1
@@ -633,7 +637,6 @@ install_skill_copy() {
 
 fix_windows_gstack_skill_aliases() {
   local gstack_root="$1"
-  local connect_skill
 
   case "$(uname -s)" in
     MINGW*|MSYS*|CYGWIN*) ;;
@@ -642,44 +645,10 @@ fix_windows_gstack_skill_aliases() {
 
   install_skill_copy "$gstack_root/benchmark" "benchmark"
 
+  # connect-chrome aliased gstack's open-gstack-browser, which is no longer
+  # surfaced at depth 1 ($GSTACK_SKILL_ALLOWLIST). Clear stale copies left by
+  # pre-allowlist installs; the skill stays reachable inside $gstack_root.
   rm -rf "$CODEX_ROOT/skills/connect-chrome" 2>/dev/null || true
-  if [ -d "$gstack_root/open-gstack-browser" ]; then
-    install_skill_copy "$gstack_root/open-gstack-browser" "connect-chrome"
-    connect_skill="$CODEX_ROOT/skills/connect-chrome/SKILL.md"
-    if [ -f "$connect_skill" ]; then
-      awk '
-        NR == 1 {
-          sub(/^\xef\xbb\xbf/, "", $0)
-        }
-        BEGIN { name_done = 0; desc_done = 0; skipping_desc = 0 }
-        /^name:[[:space:]]/ && name_done == 0 {
-          print "name: connect-chrome"
-          name_done = 1
-          next
-        }
-        /^description:[[:space:]]/ && desc_done == 0 {
-          print "description: |"
-          print "  Backward-compatible alias for open-gstack-browser."
-          print "  Launch GStack Browser ??AI-controlled Chromium with the sidebar extension baked in."
-          print "  Opens a visible browser window where you can watch every action in real time."
-          print "  The sidebar shows a live activity feed and chat. Anti-bot stealth built in."
-          print "  Use when asked to \"open gstack browser\", \"launch browser\", \"connect chrome\","
-          print "  \"open chrome\", \"real browser\", \"launch chrome\", \"side panel\", or \"control my browser\"."
-          print "  Voice triggers (speech-to-text aliases): \"show me the browser\"."
-          desc_done = 1
-          skipping_desc = 1
-          next
-        }
-        skipping_desc == 1 {
-          if ($0 ~ /^  / || $0 ~ /^$/) {
-            next
-          }
-          skipping_desc = 0
-        }
-        { print }
-      ' "$connect_skill" > "$connect_skill.tmp" && mv "$connect_skill.tmp" "$connect_skill"
-    fi
-  fi
 }
 
 count_managed_skills() {
@@ -939,10 +908,14 @@ if [ "$SKIP_OMX" = "0" ]; then
     if [ -d "$UPSTREAM_DIR/prompts" ] && [ -f "$REPO_ROOT/scripts/md-to-toml.sh" ]; then
       omc_staging="$CLONE_TMPDIR/omc-staging"
       mkdir -p "$omc_staging/omc"
+      # Allowlisted agents only — $OMX_AGENT_ALLOWLIST (scripts/skill-allowlists.sh).
+      # shellcheck disable=SC2086  # deliberate re-split: newline list -> " a b " for case matching
+      _omx_allow=" $(echo $OMX_AGENT_ALLOWLIST) "
       for md_file in "$UPSTREAM_DIR/prompts/"*.md; do
         [ -f "$md_file" ] || continue
         bname="$(basename "$md_file")"
         fname="${bname%.md}"
+        case "$_omx_allow" in *" $fname "*) ;; *) continue ;; esac
         # Check if file has YAML frontmatter at all
         first_line="$(head -1 "$md_file" | tr -d '\r')"
         if [ "$first_line" != "---" ]; then
@@ -993,49 +966,12 @@ for pack_dir in "$REPO_ROOT/codex-agents/packs/"*/; do
 done
 
 # ── 1d. Upstream: superpowers ──
+# Agents: none. superpowers ships a single code-reviewer.md, which duplicates the
+# omx code-reviewer agent installed above and was never spawned; only its skills
+# are installed (step 2c).
 if [ "$SKIP_SUPERPOWERS" = "0" ]; then
   echo "  [superpowers] Initializing superpowers..."
-  if init_upstream superpowers https://github.com/obra/superpowers; then
-    # superpowers has a single agent (code-reviewer.md) — convert at install time
-    _sp_cr_src=""
-    if [ -f "$UPSTREAM_DIR/agents/code-reviewer.md" ]; then
-      _sp_cr_src="$UPSTREAM_DIR/agents/code-reviewer.md"
-    elif [ -f "$UPSTREAM_DIR/skills/requesting-code-review/code-reviewer.md" ]; then
-      _sp_cr_src="$UPSTREAM_DIR/skills/requesting-code-review/code-reviewer.md"
-    fi
-    _sp_cr_done=0
-    if [ -n "$_sp_cr_src" ] && [ -f "$REPO_ROOT/scripts/md-to-toml.sh" ]; then
-      local_staging="$CLONE_TMPDIR/superpowers-staging"
-      mkdir -p "$local_staging/agents"
-      cp "$_sp_cr_src" "$local_staging/agents/code-reviewer.md"
-      local_toml_out="$CLONE_TMPDIR/superpowers-toml"
-      mkdir -p "$local_toml_out"
-      bash "$REPO_ROOT/scripts/md-to-toml.sh" "$local_staging" "$local_toml_out" 2>/dev/null || true
-      # Rename to superpowers-code-reviewer to avoid collision with other code-reviewer agents
-      if [ -f "$local_toml_out/agents/code-reviewer.toml" ]; then
-        sed -i 's/^name = "code-reviewer"$/name = "superpowers-code-reviewer"/' \
-          "$local_toml_out/agents/code-reviewer.toml" 2>/dev/null || true
-        cp "$local_toml_out/agents/code-reviewer.toml" "$CODEX_ROOT/agents/superpowers-code-reviewer.toml"
-        add_manifest_entry "agents/superpowers-code-reviewer.toml"
-        _sp_cr_done=1
-      fi
-    fi
-    # Fallback: if md-to-toml failed (e.g. no frontmatter in newer superpowers), create minimal TOML
-    if [ "$_sp_cr_done" = "0" ] && [ -n "$_sp_cr_src" ]; then
-      cat > "$CODEX_ROOT/agents/superpowers-code-reviewer.toml" << 'TOML'
-name = "superpowers-code-reviewer"
-description = "Senior code reviewer from superpowers — reviews completed work against requirements and code quality standards"
-
-[developer_instructions]
-content = """
-You are a Senior Code Reviewer with expertise in software architecture, design patterns, and best practices.
-Review completed work against its plan or requirements and identify issues before they cascade.
-Focus on correctness, security, performance, and maintainability.
-"""
-TOML
-      add_manifest_entry "agents/superpowers-code-reviewer.toml"
-    fi
-  fi
+  init_upstream superpowers https://github.com/obra/superpowers || true
 fi
 
 echo "  Core agents: $(find "$CODEX_ROOT/agents" -maxdepth 1 -name '*.toml' | wc -l | tr -d ' ') installed"
@@ -1081,8 +1017,12 @@ if [ "$SKIP_ECC" = "0" ]; then
   echo "  [ecc] Initializing everything-claude-code..."
   if init_upstream ecc https://github.com/affaan-m/everything-claude-code; then
     if [ -d "$UPSTREAM_DIR/skills" ]; then
-      copy_skill_dirs "$UPSTREAM_DIR/skills"
-      # continuous-learning v1 is self-declared deprecated in favor of v2; exclude from install
+      # Allowlisted skills only — $ECC_SKILL_ALLOWLIST (scripts/skill-allowlists.sh)
+      for ecc_skill in $ECC_SKILL_ALLOWLIST; do
+        install_skill_copy "$UPSTREAM_DIR/skills/$ecc_skill" "$ecc_skill"
+      done
+      # continuous-learning v1 is self-declared deprecated in favor of v2; never
+      # allowlisted — this also clears copies left by pre-allowlist installs.
       rm -rf "$CODEX_ROOT/skills/continuous-learning"
       grep -v '^skills/continuous-learning$' "$TMP_MANIFEST" > "$TMP_MANIFEST.tmp" 2>/dev/null && mv "$TMP_MANIFEST.tmp" "$TMP_MANIFEST"
     fi
@@ -1098,7 +1038,15 @@ if [ "$SKIP_SUPERPOWERS" = "0" ]; then
   fi
   if [ -d "$sp_dir/skills" ]; then
     echo "  [superpowers] Installing superpowers skills..."
-    copy_skill_dirs "$sp_dir/skills"
+    # All skills except $SUPERPOWERS_SKILL_EXCLUDE (scripts/skill-allowlists.sh)
+    # shellcheck disable=SC2086  # deliberate re-split: newline list -> " a b " for case matching
+    _sp_exclude=" $(echo $SUPERPOWERS_SKILL_EXCLUDE) "
+    for sp_skill_dir in "$sp_dir/skills/"*/; do
+      [ -d "$sp_skill_dir" ] || continue
+      sp_skill_name="$(basename "$sp_skill_dir")"
+      case "$_sp_exclude" in *" $sp_skill_name "*) continue ;; esac
+      install_skill_copy "${sp_skill_dir%/}" "$sp_skill_name"
+    done
   fi
 fi
 
@@ -1142,12 +1090,14 @@ if [ "$SKIP_GSTACK" = "0" ]; then
     patch_gstack_openclaw_skills "$GSTACK_DIR"
     fix_windows_gstack_skill_aliases "$GSTACK_DIR"
 
-    # Fallback: ensure individual gstack skills are accessible at depth 1
+    # Fallback: ensure allowlisted gstack skills are accessible at depth 1.
+    # The whole gstack repo stays at $GSTACK_DIR (canonical runtime tree); this
+    # only controls which subdirs are surfaced as ~/.codex/skills/<name> —
+    # $GSTACK_SKILL_ALLOWLIST (scripts/skill-allowlists.sh).
     if [ -d "$GSTACK_DIR" ]; then
-      for skill_dir in "$GSTACK_DIR"/*/; do
+      for skill_name in $GSTACK_SKILL_ALLOWLIST; do
+        skill_dir="$GSTACK_DIR/$skill_name"
         [ -f "$skill_dir/SKILL.md" ] || continue
-        skill_name=$(basename "$skill_dir")
-        case "$skill_name" in .git|bin|node_modules|agents) continue ;; esac
         target="$CODEX_ROOT/skills/$skill_name"
         if [ ! -e "$target" ] && [ ! -L "$target" ]; then
           case "$(uname -s)" in

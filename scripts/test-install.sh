@@ -253,9 +253,15 @@ test "$actual_active_pack_links" -ge 1
 test "$actual_packs" -ge 100
 test "$actual_skills" -ge 50
 test -f "$TEST_HOME/.codex/AGENTS.md"
-test -f "$TEST_HOME/.codex/agents/analyst.toml"
-test -f "$TEST_HOME/.codex/agents/superpowers-code-reviewer.toml"
 test -f "$TEST_HOME/.codex/agent-packs/engineering/engineering-ai-engineer.toml"
+# Allowlists (scripts/skill-allowlists.sh): kept entries land, dropped ones do not.
+test -f "$TEST_HOME/.codex/agents/executor.toml"
+test ! -e "$TEST_HOME/.codex/agents/analyst.toml"
+test ! -e "$TEST_HOME/.codex/agents/superpowers-code-reviewer.toml"
+test -f "$TEST_HOME/.codex/skills/react-patterns/SKILL.md"
+test ! -e "$TEST_HOME/.codex/skills/laravel-patterns"
+test -f "$TEST_HOME/.codex/skills/brainstorming/SKILL.md"
+test ! -e "$TEST_HOME/.codex/skills/dispatching-parallel-agents"
 test -f "$TEST_HOME/.codex/enabled-agent-packs.txt"
 test -x "$TEST_HOME/.codex/bin/codex"
 test -x "$TEST_HOME/.codex/bin/codex-mark-used"
@@ -269,25 +275,11 @@ grep -q 'child_agents_md = true' "$TEST_HOME/.codex/config.toml"
 grep -q 'max_threads = 8' "$TEST_HOME/.codex/config.toml"
 case "$(uname -s)" in
   MINGW*|MSYS*|CYGWIN*)
-    test -f "$TEST_HOME/.codex/skills/connect-chrome/SKILL.md"
-    grep -q '^name: connect-chrome$' "$TEST_HOME/.codex/skills/connect-chrome/SKILL.md"
-    grep -q '^description: |$' "$TEST_HOME/.codex/skills/connect-chrome/SKILL.md"
-    grep -q 'open gstack browser' "$TEST_HOME/.codex/skills/connect-chrome/SKILL.md"
-    python - <<'PY' "$TEST_HOME/.codex/skills/connect-chrome/SKILL.md"
-import sys
-from pathlib import Path
-
-raw = Path(sys.argv[1]).read_bytes()
-assert not raw.startswith(b"\xef\xbb\xbf"), "skill file still starts with a UTF-8 BOM"
-skill = raw.decode("utf-8")
-parts = skill.split("---", 2)
-assert len(parts) >= 3, "missing frontmatter delimiters"
-frontmatter = parts[1]
-assert skill.startswith("---\n") or skill.startswith("---\r\n"), "frontmatter must start at byte 0"
-assert 'description: "' not in frontmatter, "description was rewritten as a quoted scalar"
-assert 'description: |' in frontmatter, "description block scalar missing"
-assert "allowed-tools:" in frontmatter, "frontmatter truncated before allowed-tools"
-PY
+    # Windows has no usable symlinks, so gstack's benchmark is copied by
+    # fix_windows_gstack_skill_aliases after the supersede sweep removes it.
+    test -f "$TEST_HOME/.codex/skills/benchmark/SKILL.md"
+    # connect-chrome aliased open-gstack-browser, which is no longer allowlisted.
+    test ! -e "$TEST_HOME/.codex/skills/connect-chrome"
     ;;
 esac
 test "$(HOME="$TEST_HOME" git config --global --get core.hooksPath)" = "$TEST_HOME/.codex/git-hooks"

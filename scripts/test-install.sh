@@ -248,12 +248,15 @@ actual_skills=$(find "$TEST_HOME/.codex/skills" -name 'SKILL.md' | wc -l | tr -d
 
 
 
-test "$actual_core" -ge 10
-test "$actual_active_pack_links" -ge 1
-test "$actual_packs" -ge 100
-test "$actual_skills" -ge 50
+# Post-dedup contract (2026-07-27): 17 auto-loaded agents (10 core/omo + 7 omx),
+# 17 vendored pack agents (data-ai 13 + llmops 4), packs disabled by default,
+# 123 allowlisted skills.
+test "$actual_core" -ge 17
+test "$actual_active_pack_links" -eq 0
+test "$actual_packs" -eq 17
+test "$actual_skills" -ge 100
 test -f "$TEST_HOME/.codex/AGENTS.md"
-test -f "$TEST_HOME/.codex/agent-packs/engineering/engineering-ai-engineer.toml"
+test -f "$TEST_HOME/.codex/agent-packs/data-ai/llm-architect.toml"
 # Allowlists (scripts/skill-allowlists.sh): kept entries land, dropped ones do not.
 test -f "$TEST_HOME/.codex/agents/executor.toml"
 test ! -e "$TEST_HOME/.codex/agents/analyst.toml"
@@ -286,11 +289,9 @@ test "$(HOME="$TEST_HOME" git config --global --get core.hooksPath)" = "$TEST_HO
 test "$(HOME="$TEST_HOME" git config --global --get my-codex.codexAttribution)" = "true"
 test -f "$TEST_HOME/.codex/.my-codex-manifest.txt"
 test "$(cat "$TEST_HOME/.codex/.my-codex-version")" = "$expected_version"
-grep -q '^engineering$' "$TEST_HOME/.codex/enabled-agent-packs.txt"
-grep -q '^design$' "$TEST_HOME/.codex/enabled-agent-packs.txt"
-grep -q '^testing$' "$TEST_HOME/.codex/enabled-agent-packs.txt"
-grep -q '^marketing$' "$TEST_HOME/.codex/enabled-agent-packs.txt"
-grep -q '^support$' "$TEST_HOME/.codex/enabled-agent-packs.txt"
+# Post-dedup contract: no packs enabled by default (opt-in only).
+test -f "$TEST_HOME/.codex/enabled-agent-packs.txt"
+! grep -q '^[a-z]' "$TEST_HOME/.codex/enabled-agent-packs.txt"
 grep -q 'mcp add context7' "$LOG_FILE"
 grep -q 'mcp add exa' "$LOG_FILE"
 grep -q 'mcp add grep_app' "$LOG_FILE"
@@ -305,8 +306,8 @@ HOME="$TEST_HOME" PATH="$BIN_DIR:$PATH" MY_CODEX_TEST_LOG="$LOG_FILE" \
   bash "$REPO_ROOT/install.sh" --profile minimal > "$TMP_ROOT/install-minimal.out"
 test "$(find "$TEST_HOME/.codex/agents" -maxdepth 1 -type l -name '*.toml' | wc -l | tr -d ' ')" = "0"
 
-HOME="$TEST_HOME" "$TEST_HOME/.codex/bin/my-codex-packs" enable marketing
-grep -q '^marketing$' "$TEST_HOME/.codex/enabled-agent-packs.txt"
+HOME="$TEST_HOME" "$TEST_HOME/.codex/bin/my-codex-packs" enable data-ai
+grep -q '^data-ai$' "$TEST_HOME/.codex/enabled-agent-packs.txt"
 test "$(find "$TEST_HOME/.codex/agents" -maxdepth 1 -type f -name '*.toml' | wc -l | tr -d ' ')" -ge 10
 
 mkdir -p "$TEST_HOME/.codex/agent-packs/custom" "$TEST_HOME/.codex/skills/custom-skill"

@@ -403,9 +403,7 @@ PROFILE_OVERRIDE=""
 WITH_PACKS=""
 
 # ── Argument parsing ──
-SKIP_AGENCY=0
 SKIP_ECC=0
-SKIP_AWESOME=0
 SKIP_OMX=0
 SKIP_GSTACK=0
 SKIP_SUPERPOWERS=0
@@ -420,14 +418,12 @@ while [ "$#" -gt 0 ]; do
       WITH_PACKS="${1#*=}"
       shift
       ;;
-    --skip-agency)     SKIP_AGENCY=1; shift ;;
     --skip-ecc)        SKIP_ECC=1; shift ;;
-    --skip-awesome)    SKIP_AWESOME=1; shift ;;
     --skip-omx)        SKIP_OMX=1; shift ;;
     --skip-gstack)     SKIP_GSTACK=1; shift ;;
     --skip-superpowers) SKIP_SUPERPOWERS=1; shift ;;
     --self-only)
-      SKIP_AGENCY=1; SKIP_ECC=1; SKIP_AWESOME=1
+      SKIP_ECC=1
       SKIP_OMX=1; SKIP_GSTACK=1; SKIP_SUPERPOWERS=1
       shift
       ;;
@@ -440,9 +436,7 @@ Usage:
 
 Options:
   --with-packs=<packs>  Comma-separated list of agent packs to symlink into ~/.codex/agents/
-  --skip-agency         Skip agency-agents upstream install
   --skip-ecc            Skip everything-claude-code upstream install
-  --skip-awesome        Skip awesome-codex-subagents upstream install
   --skip-omx            Skip oh-my-codex upstream install
   --skip-gstack         Skip gstack upstream install
   --skip-superpowers    Skip superpowers upstream install
@@ -521,29 +515,10 @@ copy_toml_dir() {
   done
 }
 
-# Like copy_toml_dir but skips files whose basename already exists in agents/
-copy_toml_dir_dedup() {
-  local src_dir="$1"
-  local dest_dir="$2"
-  local file_name bname dest_file rel_path
-  [ -d "$src_dir" ] || return 0
-
-  mkdir -p "$dest_dir"
-  for file_name in "$src_dir"/*.toml; do
-    [ -f "$file_name" ] || continue
-    bname="$(basename "$file_name")"
-    [ -f "$CODEX_ROOT/agents/$bname" ] && continue
-    dest_file="$dest_dir/$bname"
-    cp "$file_name" "$dest_file"
-    rel_path="${dest_file#"$CODEX_ROOT"/}"
-    add_manifest_entry "$rel_path"
-  done
-}
-
 # Normalize legacy/upstream-native model values to current tiers (see
-# scripts/model-tiers.sh). Some upstream sources (e.g. awesome-codex-subagents)
-# ship native .toml agents with their own model value, bypassing
-# md-to-toml.sh's map_model tiering.
+# scripts/model-tiers.sh). Some sources (e.g. the vendored agent packs in
+# codex-agents/packs/) ship native .toml agents with their own model value,
+# bypassing md-to-toml.sh's map_model tiering.
 normalize_agent_models() {
   local dir="$1"
   local legacy_workhorse legacy_spark
@@ -1009,23 +984,13 @@ name: $fname
   fi
 fi
 
-# ── 1c. Upstream: awesome-codex-subagents ──
-if [ "$SKIP_AWESOME" = "0" ]; then
-  echo "  [awesome] Initializing awesome-codex-subagents..."
-  if init_upstream awesome https://github.com/VoltAgent/awesome-codex-subagents; then
-    # All categories are optional agent packs (opt-in via --with-packs /
-    # agent-pack-manager), not auto-loaded core agents — matches the other
-    # awesome categories and agency-agents' pack treatment.
-    if [ -d "$UPSTREAM_DIR/categories" ]; then
-      for cat_dir in "$UPSTREAM_DIR/categories/"*/; do
-        [ -d "$cat_dir" ] || continue
-        raw_name="$(basename "$cat_dir")"
-        cat_name="${raw_name#[0-9][0-9]-}"
-        copy_toml_dir_dedup "$cat_dir" "$CODEX_ROOT/agent-packs/$cat_name"
-      done
-    fi
-  fi
-fi
+# ── 1c. Vendored agent packs (opt-in via --with-packs / agent-pack-manager) ──
+echo "  [packs] Installing vendored agent packs..."
+for pack_dir in "$REPO_ROOT/codex-agents/packs/"*/; do
+  [ -d "$pack_dir" ] || continue
+  pack_name="$(basename "$pack_dir")"
+  copy_toml_dir "$pack_dir" "$CODEX_ROOT/agent-packs/$pack_name"
+done
 
 # ── 1d. Upstream: superpowers ──
 if [ "$SKIP_SUPERPOWERS" = "0" ]; then
@@ -1069,43 +1034,6 @@ Focus on correctness, security, performance, and maintainability.
 """
 TOML
       add_manifest_entry "agents/superpowers-code-reviewer.toml"
-    fi
-  fi
-fi
-
-# ── 1e. Upstream: agency-agents (MD → TOML conversion) ──
-if [ "$SKIP_AGENCY" = "0" ]; then
-  echo "  [agency] Initializing agency-agents..."
-  if init_upstream agency-agents https://github.com/msitarzewski/agency-agents; then
-    # Agency agents are in MD format — need staging + conversion
-    agency_staging="$CLONE_TMPDIR/agency-staging"
-    mkdir -p "$agency_staging"
-    for cat in engineering design testing product game-development marketing \
-               sales academic project-management specialized spatial-computing \
-               support strategy paid-media; do
-      if [ -d "$UPSTREAM_DIR/$cat" ]; then
-        mkdir -p "$agency_staging/$cat"
-        cp "$UPSTREAM_DIR/$cat/"*.md "$agency_staging/$cat/" 2>/dev/null || true
-      fi
-    done
-    # Add model field to agents missing it
-    find "$agency_staging" -name '*.md' | while read f; do
-      if ! grep -q '^model:' "$f" 2>/dev/null; then
-        sed -i "/^description:/a model: $MODEL_TIER_HIGH" "$f" 2>/dev/null || true
-      fi
-    done
-    # Convert MD → TOML
-    agency_toml_out="$CLONE_TMPDIR/agency-toml"
-    if [ -f "$REPO_ROOT/scripts/md-to-toml.sh" ]; then
-      bash "$REPO_ROOT/scripts/md-to-toml.sh" "$agency_staging" "$agency_toml_out" 2>/dev/null || true
-    fi
-    # Copy converted TOML to agent-packs (agency agents are domain specialists)
-    if [ -d "$agency_toml_out" ]; then
-      for cat_dir in "$agency_toml_out/"*/; do
-        [ -d "$cat_dir" ] || continue
-        cat_name="$(basename "$cat_dir")"
-        copy_toml_dir "$cat_dir" "$CODEX_ROOT/agent-packs/$cat_name"
-      done
     fi
   fi
 fi

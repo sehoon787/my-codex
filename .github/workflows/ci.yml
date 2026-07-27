@@ -73,20 +73,18 @@ jobs:
           "
       - name: Validate upstream submodules exist
         run: |
-          for sub in agency-agents ecc awesome omx gstack superpowers; do
+          for sub in ecc omx gstack superpowers; do
             test -d "upstream/$sub" || (echo "Missing submodule: upstream/$sub" && exit 1)
           done
-          echo "All 6 upstream submodules present"
+          echo "All 4 upstream submodules present"
 
           # Verify upstream repos have expected content
-          test -d upstream/agency-agents/engineering || echo "WARN: agency-agents/engineering not found"
           test -d upstream/ecc/skills || echo "WARN: ecc/skills not found"
-          test -d upstream/awesome/categories || echo "WARN: awesome/categories not found"
           test -d upstream/gstack || echo "WARN: gstack root not found"
           test -d upstream/superpowers/skills || echo "WARN: superpowers/skills not found"
 
-          AWESOME_COUNT=$(find upstream/awesome/categories -name '*.toml' 2>/dev/null | wc -l)
-          echo "Awesome upstream agents: $AWESOME_COUNT"
+          PACK_COUNT=$(find codex-agents/packs -name '*.toml' 2>/dev/null | wc -l)
+          echo "Vendored pack agents: $PACK_COUNT"
           ECC_SKILLS=$(find upstream/ecc/skills -name 'SKILL.md' 2>/dev/null | wc -l)
           echo "ECC upstream skills: $ECC_SKILLS"
       - name: Validate self-owned skills

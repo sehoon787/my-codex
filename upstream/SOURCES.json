@@ -1,8 +1,8 @@
 {
   "agency-agents": {
     "repo": "https://github.com/msitarzewski/agency-agents",
-    "method": "submodule",
-    "note": "engineering/ -> core tier, domain categories -> agent-packs"
+    "method": "removed-2026-07-27",
+    "note": "Submodule removed — no agent from these packs was ever spawned. Nothing vendored."
   },
   "everything-claude-code": {
     "repo": "https://github.com/affaan-m/everything-claude-code",
@@ -11,8 +11,8 @@
   },
   "awesome-codex-subagents": {
     "repo": "https://github.com/VoltAgent/awesome-codex-subagents",
-    "method": "submodule",
-    "note": "awesome/ agents + awesome-core/"
+    "method": "removed-2026-07-27",
+    "note": "Submodule removed — 17 agents vendored into codex-agents/packs/ (data-ai 13, llmops 4) under MIT attribution."
   },
   "oh-my-codex": {
     "repo": "https://github.com/Yeachan-Heo/oh-my-codex",

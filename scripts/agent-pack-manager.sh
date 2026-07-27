@@ -6,12 +6,11 @@ CODEX_DIR="${HOME}/.codex"
 AGENTS_DIR="${CODEX_DIR}/agents"
 PACKS_DIR="${CODEX_DIR}/agent-packs"
 STATE_FILE="${CODEX_DIR}/enabled-agent-packs.txt"
-DEFAULT_PACKS=(
-  engineering
-  design
-  testing
-  marketing
-  support
+# No packs are enabled by default — opt in with `my-codex-packs enable <pack>`.
+DEFAULT_PACKS=()
+DEV_PROFILE_PACKS=(
+  data-ai
+  llmops
 )
 
 usage() {
@@ -115,7 +114,7 @@ ensure_state_file() {
     return 0
   fi
 
-  write_state_file "${DEFAULT_PACKS[@]}"
+  write_state_file "${DEFAULT_PACKS[@]:-}"
 }
 
 activate_configured_packs() {
@@ -179,7 +178,7 @@ set_profile() {
       write_state_file
       ;;
     dev)
-      write_state_file "${DEFAULT_PACKS[@]}"
+      write_state_file "${DEV_PROFILE_PACKS[@]}"
       ;;
     full)
       collect_lines_into_array all_packs < <(list_available_packs)

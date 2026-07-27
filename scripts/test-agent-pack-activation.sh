@@ -43,25 +43,23 @@ first_home="$TMP_ROOT/home-defaults"
 mkdir -p "$first_home"
 HOME="$first_home" PATH="$BIN_DIR:$PATH" bash "$REPO_ROOT/install.sh" > "$TMP_ROOT/defaults.out"
 
-grep -q '^engineering$' "$first_home/.codex/enabled-agent-packs.txt"
-grep -q '^design$' "$first_home/.codex/enabled-agent-packs.txt"
-grep -q '^testing$' "$first_home/.codex/enabled-agent-packs.txt"
-grep -q '^marketing$' "$first_home/.codex/enabled-agent-packs.txt"
-test "$(find "$first_home/.codex/agents" -maxdepth 1 -type l -name '*.toml' | wc -l | tr -d ' ')" -ge 1
+# No packs are enabled by default — the state file is written with no pack lines
+# and nothing is symlinked into agents/.
+if grep -qvE '^[[:space:]]*(#|$)' "$first_home/.codex/enabled-agent-packs.txt"; then
+  echo "no packs should be enabled by default" >&2
+  exit 1
+fi
+test "$(find "$first_home/.codex/agents" -maxdepth 1 -type l -name '*.toml' | wc -l | tr -d ' ')" -eq 0
 
 cat > "$first_home/.codex/enabled-agent-packs.txt" <<'EOF'
-marketing
+data-ai
 EOF
 HOME="$first_home" PATH="$BIN_DIR:$PATH" bash "$REPO_ROOT/install.sh" > "$TMP_ROOT/custom.out"
 
-grep -q '^marketing$' "$first_home/.codex/enabled-agent-packs.txt"
-if grep -q '^engineering$' "$first_home/.codex/enabled-agent-packs.txt"; then
-  echo "engineering should not remain after replacing the active set" >&2
-  exit 1
-fi
-test -L "$first_home/.codex/agents/marketing-seo-specialist.toml"
-if [ -e "$first_home/.codex/agents/engineering-ai-engineer.toml" ]; then
-  echo "engineering link should be removed after switching to marketing only" >&2
+grep -q '^data-ai$' "$first_home/.codex/enabled-agent-packs.txt"
+test -L "$first_home/.codex/agents/ai-engineer.toml"
+if [ -e "$first_home/.codex/agents/eval-engineer.toml" ]; then
+  echo "llmops link should not exist when only data-ai is enabled" >&2
   exit 1
 fi
 

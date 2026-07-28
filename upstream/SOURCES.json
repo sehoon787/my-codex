@@ -9,8 +9,8 @@
     "path": "upstream/ecc",
     "method": "submodule",
     "note": "ECC skills + rules",
-    "pinned_sha": "6a9f075cd97c139a5f7e84e1e3f2c9ab095adf64",
-    "pinned_date": "2026-07-27",
+    "pinned_sha": "4e973d3eaf92d97f8d2e2d8abb39d8bdc8711b38",
+    "pinned_date": "2026-07-28",
     "license": "MIT"
   },
   "awesome-codex-subagents": {

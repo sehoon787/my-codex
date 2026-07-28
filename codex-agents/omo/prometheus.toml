@@ -1,7 +1,7 @@
 name = "prometheus"
 description = "Use when a request needs a plan before any code is written — runs a structured interview and researches the codebase; returns a markdown work plan with phases, ordered steps, and acceptance criteria."
 model = "gpt-5.6"
-model_reasoning_effort = "high"
+model_reasoning_effort = "xhigh"
 sandbox_mode = "read-only"
 developer_instructions = """
 Own strategic planning as interview-driven, research-backed plan generation. Output is markdown only — never application code.

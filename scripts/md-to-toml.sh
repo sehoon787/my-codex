@@ -19,19 +19,23 @@ OUTPUT_DIR="${2%/}"
 # Files to skip by basename
 SKIP_FILES=("agent-teams-reference.md")
 
-# Map a Claude model string to toml model + reasoning effort lines.
+# Map a Claude model string OR a Codex-native tier ID to toml model +
+# reasoning effort lines. The Codex-native cases let install.sh's omx
+# staging round-trip cleanly: it injects $MODEL_TIER_HIGH (etc.) directly
+# into the .md frontmatter when a file has no model: field, and that value
+# must map back to its own tier here instead of falling through to default.
 map_model() {
   local m="$1"
   case "$m" in
-    claude-opus-4-5|claude-opus-4-6)
+    claude-opus-4-5|claude-opus-4-6|"$MODEL_TIER_HIGH")
       echo "model = \"$MODEL_TIER_HIGH\""
       echo "model_reasoning_effort = \"$MODEL_TIER_HIGH_EFFORT\""
       ;;
-    claude-sonnet-4-6|claude-sonnet-4-5)
+    claude-sonnet-4-6|claude-sonnet-4-5|"$MODEL_TIER_MEDIUM")
       echo "model = \"$MODEL_TIER_MEDIUM\""
       echo "model_reasoning_effort = \"$MODEL_TIER_MEDIUM_EFFORT\""
       ;;
-    claude-haiku-4-5)
+    claude-haiku-4-5|"$MODEL_TIER_LOW")
       echo "model = \"$MODEL_TIER_LOW\""
       echo "model_reasoning_effort = \"$MODEL_TIER_LOW_EFFORT\""
       ;;
@@ -55,6 +59,34 @@ map_sandbox_mode() {
       ;;
     *)
       echo "workspace-write"
+      ;;
+  esac
+}
+
+# Map an agent name to a role-based model + reasoning-effort override
+# (replaces map_model()'s tier-based lines entirely when it matches).
+# Applies to the 7 omx-allowlisted agents (scripts/skill-allowlists.sh
+# OMX_AGENT_ALLOWLIST), mirroring the Claude-side role tiering: workers run
+# sonnet-class/medium, advisors run opus-class/high, and architect runs
+# opus-class/xhigh for its deeper analysis role. Empty output means no
+# override — caller falls through to map_model()'s tier-based value.
+map_role_override() {
+  local n="$1"
+  case "$n" in
+    executor|test-engineer|debugger)
+      echo "model = \"$MODEL_TIER_MEDIUM\""
+      echo "model_reasoning_effort = \"medium\""
+      ;;
+    planner|security-reviewer|code-reviewer)
+      echo "model = \"$MODEL_TIER_HIGH\""
+      echo "model_reasoning_effort = \"high\""
+      ;;
+    architect)
+      echo "model = \"$MODEL_TIER_HIGH\""
+      echo "model_reasoning_effort = \"xhigh\""
+      ;;
+    *)
+      echo ""
       ;;
   esac
 }
@@ -178,9 +210,13 @@ process_file() {
   out_dir="$(dirname "$out_path")"
   mkdir -p "$out_dir"
 
-  # Build model lines
+  # Build model lines (role-based override wins when it matches; otherwise
+  # fall through to the tier-based value from map_model())
   local model_lines
-  model_lines=$(map_model "$model")
+  model_lines=$(map_role_override "$name")
+  if [[ -z "$model_lines" ]]; then
+    model_lines=$(map_model "$model")
+  fi
 
   local sandbox_mode
   sandbox_mode=$(map_sandbox_mode "$name")

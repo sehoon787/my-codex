@@ -9,8 +9,8 @@
     "path": "upstream/ecc",
     "method": "submodule",
     "note": "ECC skills + rules",
-    "pinned_sha": "ae303fb6c19e3f7cb88cb9fd9f15ddcf235294b6",
-    "pinned_date": "2026-08-10",
+    "pinned_sha": "eb4970265169fec82371c92f615e2e133d875e27",
+    "pinned_date": "2026-08-13",
     "license": "MIT"
   },
   "awesome-codex-subagents": {
@@ -34,16 +34,16 @@
     "method": "submodule + setup",
     "supersedes": ["benchmark", "canary-watch", "safety-guard", "browser-qa",
                    "verification-loop", "security-review", "design-system"],
-    "pinned_sha": "94993f74012782fd94416dd44b8314f6363a13a4",
-    "pinned_date": "2026-08-10",
+    "pinned_sha": "d078622b73539fc1a7a27e709861e9b6b058ae98",
+    "pinned_date": "2026-08-13",
     "license": "MIT"
   },
   "superpowers": {
     "repo": "https://github.com/obra/superpowers",
     "path": "upstream/superpowers",
     "method": "submodule",
-    "pinned_sha": "44c9b2d6e889982ac18c27d05a19fefe335194e1",
-    "pinned_date": "2026-08-10",
+    "pinned_sha": "b36e0829c6d0140e93cfef2ca599b1b07d4a7797",
+    "pinned_date": "2026-08-13",
     "license": "MIT"
   }
 }

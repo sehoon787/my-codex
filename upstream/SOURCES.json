@@ -9,8 +9,8 @@
     "path": "upstream/ecc",
     "method": "submodule",
     "note": "ECC skills + rules",
-    "pinned_sha": "ae303fb6c19e3f7cb88cb9fd9f15ddcf235294b6",
-    "pinned_date": "2026-08-10",
+    "pinned_sha": "06c5e118c4d3e6c3b7f9445f973a2194c82de193",
+    "pinned_date": "2026-08-19",
     "license": "MIT"
   },
   "awesome-codex-subagents": {
@@ -23,8 +23,8 @@
     "path": "upstream/omx",
     "method": "submodule + npm-cli",
     "package": "oh-my-codex-sisyphus",
-    "pinned_sha": "b30127a0979c96046c8cd6312a8cd922c3516cad",
-    "pinned_date": "2026-08-10",
+    "pinned_sha": "e94437fd141b4623d12a7c712d6f318e7aa47439",
+    "pinned_date": "2026-08-19",
     "license": "MIT",
     "license_source": "package.json (no LICENSE file at repo root)"
   },
@@ -34,16 +34,16 @@
     "method": "submodule + setup",
     "supersedes": ["benchmark", "canary-watch", "safety-guard", "browser-qa",
                    "verification-loop", "security-review", "design-system"],
-    "pinned_sha": "94993f74012782fd94416dd44b8314f6363a13a4",
-    "pinned_date": "2026-08-10",
+    "pinned_sha": "60e51342b54553cf4347ce7a786cae508125053e",
+    "pinned_date": "2026-08-19",
     "license": "MIT"
   },
   "superpowers": {
     "repo": "https://github.com/obra/superpowers",
     "path": "upstream/superpowers",
     "method": "submodule",
-    "pinned_sha": "44c9b2d6e889982ac18c27d05a19fefe335194e1",
-    "pinned_date": "2026-08-10",
+    "pinned_sha": "b36e0829c6d0140e93cfef2ca599b1b07d4a7797",
+    "pinned_date": "2026-08-19",
     "license": "MIT"
   }
 }

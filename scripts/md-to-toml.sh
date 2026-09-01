@@ -24,23 +24,38 @@ SKIP_FILES=("agent-teams-reference.md")
 # staging round-trip cleanly: it injects $MODEL_TIER_HIGH (etc.) directly
 # into the .md frontmatter when a file has no model: field, and that value
 # must map back to its own tier here instead of falling through to default.
+# Three input shapes reach this function and all three must be handled:
+#   1. Pinned Claude IDs   — this repo's own agents (claude-opus-5, ...)
+#   2. Bare tier aliases   — upstream oh-my-claudecode writes `model: opus`
+#   3. Codex-native tiers  — install.sh's omx staging injects $MODEL_TIER_*
+#
+# Shapes 1 and 2 were previously absent for the current Claude generation, so
+# `claude-opus-5`, `claude-fable-5`, and the bare `opus` / `haiku` aliases all
+# fell through to default and were silently rewritten to MEDIUM — an opus-class
+# agent demoted, a haiku-class agent promoted. Keep every generation listed:
+# an unrecognised model here is a silent tier change, never an error.
 map_model() {
   local m="$1"
   case "$m" in
-    claude-opus-4-5|claude-opus-4-6|"$MODEL_TIER_HIGH")
+    # Top tier: Fable/Opus class and the bare `opus` alias.
+    claude-fable-5|claude-mythos-5|claude-opus-5|claude-opus-4-8|claude-opus-4-7|claude-opus-4-6|claude-opus-4-5|opus|"$MODEL_TIER_HIGH")
       echo "model = \"$MODEL_TIER_HIGH\""
       echo "model_reasoning_effort = \"$MODEL_TIER_HIGH_EFFORT\""
       ;;
-    claude-sonnet-4-6|claude-sonnet-4-5|"$MODEL_TIER_MEDIUM")
+    # Workhorse tier: Sonnet class and the bare `sonnet` alias.
+    claude-sonnet-5|claude-sonnet-4-6|claude-sonnet-4-5|sonnet|"$MODEL_TIER_MEDIUM")
       echo "model = \"$MODEL_TIER_MEDIUM\""
       echo "model_reasoning_effort = \"$MODEL_TIER_MEDIUM_EFFORT\""
       ;;
-    claude-haiku-4-5|"$MODEL_TIER_LOW")
+    # Cheap tier: Haiku class and the bare `haiku` alias.
+    claude-haiku-4-5|haiku|"$MODEL_TIER_LOW")
       echo "model = \"$MODEL_TIER_LOW\""
       echo "model_reasoning_effort = \"$MODEL_TIER_LOW_EFFORT\""
       ;;
     *)
-      # default / unknown
+      # Unknown model: fall back to the workhorse tier, but say so on stderr.
+      # Silence here is how the demotions above went unnoticed.
+      echo "[md-to-toml] warning: unrecognised model '$m'; defaulting to $MODEL_TIER_MEDIUM" >&2
       echo "model = \"$MODEL_TIER_MEDIUM\""
       echo "model_reasoning_effort = \"$MODEL_TIER_MEDIUM_EFFORT\""
       ;;

@@ -24,6 +24,18 @@ flagged=0
 
 emit() { printf '%s\n' "$1" >> "$REPORT"; }
 
+# True for files that are documentation — never executed, so a suspicious
+# string in one is prose, not behaviour. Used to scope the PATTERN scan only;
+# see the call site for why the executable/binary checks stay unfiltered.
+is_doc_path() {
+  case "$1" in
+    *.md|*.md.tmpl|*.markdown|*.mdx|*.txt|*.rst|*.adoc) return 0 ;;
+    docs/*|*/docs/*) return 0 ;;
+    LICENSE|*/LICENSE|CHANGELOG|*/CHANGELOG) return 0 ;;
+  esac
+  return 1
+}
+
 emit "## Upstream sync security scan"
 emit ""
 
@@ -42,12 +54,21 @@ PATTERNS=(
   "Network exfil (curl/wget to URL)|(curl|wget)([[:space:]]|.)*https?://"
   "Network exfil (fetch to URL)|fetch\\(['\"\`]?https?://"
   "base64 decode piped to shell|base64[[:space:]]+(-d|--decode|-D)([[:space:]]|.)*(bash|sh|zsh|node|python|eval)"
-  "base64 decode + eval (JS)|(atob|Buffer\\.from)\\(([[:space:]]|.)*(eval|Function)"
+  # Matches both nestings. The original only caught decode-then-eval
+  # (`atob(s); eval(x)`) and missed the far more common obfuscation form
+  # where the decode is the argument: `eval(atob(p))`, `new Function(atob(p))`.
+  "base64 decode + eval (JS)|((atob|Buffer\\.from)\\(([[:space:]]|.)*(eval|Function)|(eval|Function)\\(([[:space:]]|.)*(atob|Buffer\\.from)\\()"
   "Dynamic shell eval|(^|[[:space:];&|])eval[[:space:]]"
   "bash -c with variable expansion|bash[[:space:]]+-c([[:space:]]|.)*\\\$"
   "Destructive rm of HOME/root|rm[[:space:]]+-[a-zA-Z]*[rf][a-zA-Z]*[[:space:]]+(\\\$HOME|~|/([[:space:]]|\$|\\*))"
-  "SSH key / credential access|(\\.ssh/|id_rsa|id_ed25519|/\\.aws/|credentials|\\.env\\b|/\\.netrc)"
-  "Token/secret assignment or read|(api[_-]?key|secret|token|password)[[:space:]]*[:=]"
+  # Anchored to real credential paths. A bare "credentials" matched prose
+  # ("needs real credentials") and, worse, `persist-credentials: false` — a
+  # hardening flag. A bare "\.env\b" matched every `process.env` in the diff.
+  "SSH key / credential access|(\\.ssh/|id_rsa|id_ed25519|/\\.aws/|/\\.netrc|credentials\\.(json|ya?ml|ini)|(^|[^A-Za-z_.])\\.env([[:space:].\"'/]|\$))"
+  # Only a literal value assigned inline counts. Indirection through a secret
+  # store or the environment (\${{ secrets.X }}, process.env.X, \$VAR) is the
+  # correct way to handle a token, so flagging it buried the real signal.
+  "Token/secret assignment or read|(api[_-]?key|secret|token|password)[[:space:]]*[:=][[:space:]]*[\"'][A-Za-z0-9_+/=.-]{16,}[\"']"
   "Writes to settings.json / config.toml|>[[:space:]]*[^[:space:]]*(settings\\.json|config\\.toml)"
 )
 
@@ -94,6 +115,18 @@ for sub in "${subs[@]}"; do
 
   # Pattern scan over ADDED lines only.
   for f in "${files[@]}"; do
+    # Prose is not a payload. A `curl … | sh` in a README is an example or a
+    # warning about that exact attack; "eval" in a doc is usually the word
+    # "evaluation". These files are never executed, and their hits dominated
+    # every report to the point where the gate flagged 100% of syncs and no
+    # one could see the real signal.
+    #
+    # Scoped deliberately: this skips only the PATTERN scan. The new-executable
+    # and new-binary checks above still run over EVERY path, docs included, so
+    # a payload cannot hide behind a .md extension.
+    if is_doc_path "$f"; then
+      continue
+    fi
     # Extract added lines (strip leading +), skip file headers.
     added=$(git -C "$sub" diff "$old" "$new" -- "$f" 2>/dev/null \
       | grep -E '^\+' | grep -vE '^\+\+\+' | sed 's/^\+//')

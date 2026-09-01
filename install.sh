@@ -543,30 +543,67 @@ copy_toml_dir() {
   done
 }
 
+# Portable in-place sed.
+#
+# GNU sed takes `-i` with no argument; BSD sed (the /usr/bin/sed on macOS)
+# requires an explicit backup suffix, so bare `sed -i "s/x/y/" f` there eats
+# the script as the suffix and dies with "unescaped newline inside substitute
+# pattern" — silently leaving the file untouched. Every in-place edit in this
+# script MUST go through this wrapper.
+sed_inplace() {
+  if sed --version >/dev/null 2>&1; then
+    sed -i "$@"        # GNU
+  else
+    sed -i '' "$@"     # BSD / macOS
+  fi
+}
+
+# Portable "insert LINE after the first line matching PATTERN".
+#
+# sed's append is the one command whose syntax genuinely differs between
+# implementations (GNU takes `a text` inline; BSD demands `a\` then the text
+# on the next line), so neither form is portable even through sed_inplace.
+# awk behaves identically on both.
+#   $1 = ERE pattern, $2 = line to insert, $3 = file
+insert_after() {
+  local _tmp="$3.tmp.$$"
+  awk -v pat="$1" -v ins="$2" '
+    { print }
+    !inserted && $0 ~ pat { print ins; inserted = 1 }
+  ' "$3" > "$_tmp" && mv "$_tmp" "$3"
+}
+
 # Normalize legacy/upstream-native model values to current tiers (see
 # scripts/model-tiers.sh). Some sources (e.g. the vendored agent packs in
 # codex-agents/packs/) ship native .toml agents with their own model value,
 # bypassing md-to-toml.sh's map_model tiering.
 normalize_agent_models() {
   local dir="$1"
-  local legacy_workhorse legacy_spark
+  local entry from tier to count summary=""
   [ -d "$dir" ] || return 0
 
-  legacy_workhorse=$({ grep -rl "^model = \"$LEGACY_WORKHORSE_MODEL\"\$" "$dir" --include='*.toml' 2>/dev/null || true; } | wc -l | tr -d ' ')
-  if [ "$legacy_workhorse" -gt 0 ]; then
-    grep -rl "^model = \"$LEGACY_WORKHORSE_MODEL\"\$" "$dir" --include='*.toml' 2>/dev/null | while IFS= read -r f; do
-      sed -i "s/^model = \"$LEGACY_WORKHORSE_MODEL\"\$/model = \"$MODEL_TIER_MEDIUM\"/" "$f"
-    done
-  fi
+  for entry in "${LEGACY_MODEL_MAP[@]}"; do
+    from="${entry%:*}"
+    tier="${entry##*:}"
+    case "$tier" in
+      HIGH)   to="$MODEL_TIER_HIGH" ;;
+      MEDIUM) to="$MODEL_TIER_MEDIUM" ;;
+      LOW)    to="$MODEL_TIER_LOW" ;;
+      *)      continue ;;
+    esac
+    # A tier promoted to its own current value has nothing to rewrite.
+    [ "$from" = "$to" ] && continue
 
-  legacy_spark=$({ grep -rl "^model = \"$LEGACY_SPARK_MODEL\"\$" "$dir" --include='*.toml' 2>/dev/null || true; } | wc -l | tr -d ' ')
-  if [ "$legacy_spark" -gt 0 ]; then
-    grep -rl "^model = \"$LEGACY_SPARK_MODEL\"\$" "$dir" --include='*.toml' 2>/dev/null | while IFS= read -r f; do
-      sed -i "s/^model = \"$LEGACY_SPARK_MODEL\"\$/model = \"$MODEL_TIER_LOW\"/" "$f"
-    done
-  fi
+    count=$({ grep -rl "^model = \"$from\"\$" "$dir" --include='*.toml' 2>/dev/null || true; } | wc -l | tr -d ' ')
+    if [ "$count" -gt 0 ]; then
+      grep -rl "^model = \"$from\"\$" "$dir" --include='*.toml' 2>/dev/null | while IFS= read -r f; do
+        sed_inplace "s/^model = \"$from\"\$/model = \"$to\"/" "$f"
+      done
+    fi
+    summary="$summary ${count} ${from}->${to};"
+  done
 
-  echo "  Normalized $dir: $legacy_workhorse $LEGACY_WORKHORSE_MODEL -> $MODEL_TIER_MEDIUM, $legacy_spark $LEGACY_SPARK_MODEL -> $MODEL_TIER_LOW"
+  echo "  Normalized $dir:$summary"
 }
 
 # Records one directory entry ("skills/<name>") per copied tree, not one line
@@ -966,15 +1003,13 @@ if [ "$SKIP_OMX" = "0" ]; then
         if ! grep -q '^name:' "$md_file" 2>/dev/null; then
           cp "$md_file" "$omc_staging/omc/$bname"
           # Insert name: after first ---
-          sed -i "1,/^---$/{/^---$/a\\
-name: $fname
-}" "$omc_staging/omc/$bname" 2>/dev/null || true
+          insert_after '^---$' "name: $fname" "$omc_staging/omc/$bname" 2>/dev/null || true
         else
           cp "$md_file" "$omc_staging/omc/$bname"
         fi
         # Add model: if missing
         if ! grep -q '^model:' "$omc_staging/omc/$bname" 2>/dev/null; then
-          sed -i "/^description:/a model: $MODEL_TIER_HIGH" "$omc_staging/omc/$bname" 2>/dev/null || true
+          insert_after '^description:' "model: $MODEL_TIER_HIGH" "$omc_staging/omc/$bname" 2>/dev/null || true
         fi
       done
       omc_toml_out="$CLONE_TMPDIR/omc-toml"

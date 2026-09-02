@@ -175,7 +175,7 @@ Codex CLI uses OpenAI reasoning models. Route tasks by complexity:
 
 | Model | Reasoning Effort | Use For |
 |---|---|---|
-| gpt-5.6 (high) | Deep | Architecture, complex analysis, security review |
+| gpt-5.6-sol (high) | Deep | Architecture, complex analysis, security review |
 | gpt-5.6-terra (medium) | Standard | Implementation, code review, debugging |
 | gpt-5.6-luna (low) | Fast | Quick lookups, exploration, trivial changes |
 
@@ -188,7 +188,7 @@ multi_agent = true
 
 Override per-session:
 ```bash
-codex --model gpt-5.6 --reasoning-effort high "Design the auth system"
+codex --model gpt-5.6-sol --reasoning-effort high "Design the auth system"
 ```
 
 ---
@@ -223,7 +223,7 @@ to dependent tasks.
 
 ```
 You are boss. The goal is to add OAuth2 support.
-1. Use architect to design the approach (spawn with model=gpt-5.6, effort=high)
+1. Use architect to design the approach (spawn with model=gpt-5.6-sol, effort=high)
 2. Use planner to create task breakdown
 3. Spawn executor agents for each implementation task (parallel where safe)
 4. Use code-reviewer to review all changes

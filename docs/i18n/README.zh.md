@@ -104,7 +104,7 @@ Boss 对每个请求按优先级链逐级匹配，直到找到最佳方案：
 
 | 复杂度 | 模型 | 用途 |
 |-----------|-------|----------|
-| 深度分析、架构 | gpt-5.6（high reasoning） | Boss、Oracle、Sisyphus、Atlas |
+| 深度分析、架构 | gpt-5.6-sol（high reasoning） | Boss、Oracle、Sisyphus、Atlas |
 | 标准实现 | gpt-5.6-terra（medium） | executor、debugger、security-reviewer |
 | 快速查询、探索 | gpt-5.6-luna（low） | explore、简单咨询 |
 
@@ -131,7 +131,7 @@ Confirm "design done"   Architect verification  User: approve / improve
 └───────────────────────┬─────────────────────────────┘
                         ▼
 ┌─────────────────────────────────────────────────────┐
-│  Boss · Meta-Orchestrator (gpt-5.6 high)              │
+│  Boss · Meta-Orchestrator (gpt-5.6-sol high)              │
 │  Discovery → Classification → Matching → Delegation  │
 └──┬──────────┬──────────┬──────────┬─────────────────┘
    │          │          │          │
@@ -174,7 +174,7 @@ Confirm "design done"   Architect verification  User: approve / improve
 
 | Agent | 模型 | 角色 | 来源 |
 |-------|-------|------|--------|
-| Boss | gpt-5.6 high | 动态运行时发现 → 能力匹配 → 最优路由。从不编写代码。 | my-codex |
+| Boss | gpt-5.6-sol high | 动态运行时发现 → 能力匹配 → 最优路由。从不编写代码。 | my-codex |
 
 </details>
 
@@ -183,13 +183,13 @@ Confirm "design done"   Architect verification  User: approve / improve
 
 | Agent | 模型 | 角色 | 来源 |
 |-------|-------|------|--------|
-| Sisyphus | gpt-5.6 high | 意图分类 → 专家委派 → 验证 | [oh-my-openagent](https://github.com/code-yeongyu/oh-my-openagent) |
-| Hephaestus | gpt-5.6 high | 自主探索 → 规划 → 执行 → 验证 | oh-my-openagent |
-| Atlas | gpt-5.6 high | 任务分解 + 四阶段 QA 验证 | oh-my-openagent |
-| Oracle | gpt-5.6 high | 战略技术咨询（只读） | oh-my-openagent |
-| Metis | gpt-5.6 high | 意图分析、歧义检测 | oh-my-openagent |
-| Momus | gpt-5.6 high | 计划可行性评审 | oh-my-openagent |
-| Prometheus | gpt-5.6 high | 基于访谈的详细规划 | oh-my-openagent |
+| Sisyphus | gpt-5.6-sol high | 意图分类 → 专家委派 → 验证 | [oh-my-openagent](https://github.com/code-yeongyu/oh-my-openagent) |
+| Hephaestus | gpt-5.6-sol high | 自主探索 → 规划 → 执行 → 验证 | oh-my-openagent |
+| Atlas | gpt-5.6-sol high | 任务分解 + 四阶段 QA 验证 | oh-my-openagent |
+| Oracle | gpt-5.6-sol high | 战略技术咨询（只读） | oh-my-openagent |
+| Metis | gpt-5.6-sol high | 意图分析、歧义检测 | oh-my-openagent |
+| Momus | gpt-5.6-sol high | 计划可行性评审 | oh-my-openagent |
+| Prometheus | gpt-5.6-sol high | 基于访谈的详细规划 | oh-my-openagent |
 | Librarian | gpt-5.6-terra medium | 通过 MCP 搜索开源文档 | oh-my-openagent |
 | Multimodal-Looker | gpt-5.6-terra medium | 图像 / 截图 / 图表分析 | oh-my-openagent |
 
@@ -391,7 +391,7 @@ my-codex 由 **4 个上游子模块**，加上 1 份内置快照与 2 个适配/
 | **Boss 元编排器** | 动态能力发现 → 意图分类 → 4 级优先路由 → 委派 → 验证 |
 | **三阶段冲刺** | 设计（交互式）→ 执行（通过 executor 自主进行）→ 审查（交互式对比设计文档） |
 | **Agent 层级优先级** | core > omo > omx > 可选包 依次去重。与已安装 Agent 同名的包内 Agent 会被跳过。最专业的 Agent 优先。 |
-| **成本优化** | 咨询用 gpt-5.6-luna，实现用 gpt-5.6——覆盖全部 34 个已安装 Agent 的自动模型路由 |
+| **成本优化** | 咨询用 gpt-5.6-luna，实现用 gpt-5.6-sol——覆盖全部 34 个已安装 Agent 的自动模型路由 |
 | **Agent 遥测** | PostToolUse hook 将 Agent 使用情况记录到 `agent-usage.jsonl` |
 | **智能包** | 项目类型检测在会话开始时推荐相关 Agent 包 |
 | **Agent 包系统** | 通过 `--profile` 和 `my-codex-packs` 助手按需激活领域专家 |
@@ -522,7 +522,7 @@ GitHub Actions 工作流每 3 天运行一次，从 4 个上游子模块拉取�
 <details>
 <summary><strong>my-codex 使用哪些模型？</strong></summary>
 
-Boss 和子编排器（Sisyphus、Atlas、Oracle）使用 gpt-5.6 高推理强度。标准工作者使用 gpt-5.6-terra 中等推理强度。轻量级咨询 Agent 使用 gpt-5.6-luna。
+Boss 和子编排器（Sisyphus、Atlas、Oracle）使用 gpt-5.6-sol 高推理强度。标准工作者使用 gpt-5.6-terra 中等推理强度。轻量级咨询 Agent 使用 gpt-5.6-luna。
 
 </details>
 

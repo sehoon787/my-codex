@@ -108,7 +108,7 @@ Boss cascade chaque requête dans une chaîne de priorités jusqu'à trouver la 
 
 | Complexité | Modèle | Utilisé pour |
 |-----------|-------|----------|
-| Analyse approfondie, architecture | gpt-5.6 (raisonnement élevé) | Boss, Oracle, Sisyphus, Atlas |
+| Analyse approfondie, architecture | gpt-5.6-sol (raisonnement élevé) | Boss, Oracle, Sisyphus, Atlas |
 | Implémentation standard | gpt-5.6-terra (moyen) | executor, debugger, security-reviewer |
 | Recherche rapide, exploration | gpt-5.6-luna (faible) | explore, conseil simple |
 
@@ -138,7 +138,7 @@ terminée"                                       User : approuver /
 └───────────────────────┬─────────────────────────────┘
                         ▼
 ┌─────────────────────────────────────────────────────┐
-│  Boss · Méta-Orchestrateur (gpt-5.6 high)             │
+│  Boss · Méta-Orchestrateur (gpt-5.6-sol high)             │
 │  Découverte → Classification → Correspondance →       │
 │  Délégation                                           │
 └──┬──────────┬──────────┬──────────┬─────────────────┘
@@ -184,7 +184,7 @@ terminée"                                       User : approuver /
 
 | Agent | Modèle | Rôle | Source |
 |-------|-------|------|--------|
-| Boss | gpt-5.6 high | Découverte dynamique à l'exécution → correspondance de capacités → routage optimal. N'écrit jamais de code. | my-codex |
+| Boss | gpt-5.6-sol high | Découverte dynamique à l'exécution → correspondance de capacités → routage optimal. N'écrit jamais de code. | my-codex |
 
 </details>
 
@@ -193,13 +193,13 @@ terminée"                                       User : approuver /
 
 | Agent | Modèle | Rôle | Source |
 |-------|-------|------|--------|
-| Sisyphus | gpt-5.6 high | Classification d'intention → délégation aux spécialistes → vérification | [oh-my-openagent](https://github.com/code-yeongyu/oh-my-openagent) |
-| Hephaestus | gpt-5.6 high | Exploration autonome → planification → exécution → vérification | oh-my-openagent |
-| Atlas | gpt-5.6 high | Décomposition de tâches + vérification QA en 4 étapes | oh-my-openagent |
-| Oracle | gpt-5.6 high | Conseil technique stratégique (lecture seule) | oh-my-openagent |
-| Metis | gpt-5.6 high | Analyse d'intention, détection d'ambiguïté | oh-my-openagent |
-| Momus | gpt-5.6 high | Révision de faisabilité des plans | oh-my-openagent |
-| Prometheus | gpt-5.6 high | Planification détaillée par entretien | oh-my-openagent |
+| Sisyphus | gpt-5.6-sol high | Classification d'intention → délégation aux spécialistes → vérification | [oh-my-openagent](https://github.com/code-yeongyu/oh-my-openagent) |
+| Hephaestus | gpt-5.6-sol high | Exploration autonome → planification → exécution → vérification | oh-my-openagent |
+| Atlas | gpt-5.6-sol high | Décomposition de tâches + vérification QA en 4 étapes | oh-my-openagent |
+| Oracle | gpt-5.6-sol high | Conseil technique stratégique (lecture seule) | oh-my-openagent |
+| Metis | gpt-5.6-sol high | Analyse d'intention, détection d'ambiguïté | oh-my-openagent |
+| Momus | gpt-5.6-sol high | Révision de faisabilité des plans | oh-my-openagent |
+| Prometheus | gpt-5.6-sol high | Planification détaillée par entretien | oh-my-openagent |
 | Librarian | gpt-5.6-terra medium | Recherche de documentation open source via MCP | oh-my-openagent |
 | Multimodal-Looker | gpt-5.6-terra medium | Analyse d'images, captures d'écran et diagrammes | oh-my-openagent |
 
@@ -401,7 +401,7 @@ Fonctionnalités construites spécifiquement pour ce projet, au-delà de ce que 
 | **Boss Méta-Orchestrateur** | Découverte dynamique des capacités → classification d'intention → routage à 4 priorités → délégation → vérification |
 | **Sprint 3 phases** | Conception (interactive) → Exécution (autonome via executor) → Révision (interactive vs doc de conception) |
 | **Priorité par niveau d'agent** | core > omo > omx > packs optionnels. Un agent de pack dont le nom entre en collision avec un agent déjà installé est ignoré. L'agent le plus spécialisé l'emporte. |
-| **Optimisation des coûts** | gpt-5.6-luna pour le conseil, gpt-5.6 pour l'implémentation — routage de modèle automatique sur les 34 agents installés |
+| **Optimisation des coûts** | gpt-5.6-luna pour le conseil, gpt-5.6-sol pour l'implémentation — routage de modèle automatique sur les 34 agents installés |
 | **Télémétrie des agents** | Le hook PostToolUse enregistre l'utilisation des agents dans `agent-usage.jsonl` |
 | **Smart Packs** | La détection du type de projet recommande les packs d'agents pertinents au démarrage de session |
 | **Système de packs d'agents** | Activation de spécialistes de domaine à la demande via `--profile` et l'aide `my-codex-packs` |
@@ -532,7 +532,7 @@ Un workflow GitHub Actions s'exécute tous les 3 jours, récupérant les dernier
 <details>
 <summary><strong>Quels modèles utilise my-codex ?</strong></summary>
 
-Boss et les sous-orchestrateurs (Sisyphus, Atlas, Oracle) utilisent gpt-5.6 avec un niveau de raisonnement élevé. Les agents de travail standard utilisent gpt-5.6-terra avec un raisonnement moyen. Les agents de conseil légers utilisent gpt-5.6-luna.
+Boss et les sous-orchestrateurs (Sisyphus, Atlas, Oracle) utilisent gpt-5.6-sol avec un niveau de raisonnement élevé. Les agents de travail standard utilisent gpt-5.6-terra avec un raisonnement moyen. Les agents de conseil légers utilisent gpt-5.6-luna.
 
 </details>
 

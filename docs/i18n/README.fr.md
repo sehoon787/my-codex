@@ -128,6 +128,20 @@ terminée"                                       User : approuver /
                                                 améliorer
 ```
 
+### Rapport final structuré
+
+Boss clôt chaque tour de travail — tout tour ayant édité ou créé des fichiers, produit des commits/PR/merges, modifié la configuration ou exécuté une vérification — par un rapport final structuré lisible sans ouvrir de diff. Le rapport est assemblé à partir de cinq tableaux fixes, chacun n'étant émis que si sa situation s'est réellement produite (jamais de tableau vide) :
+
+| Situation | Tableau | Colonnes |
+|-----------|-------|---------|
+| Fichiers/paramètres modifiés | 변경 대조 (Changes) | 대상 / Before / After / 근거 |
+| Plusieurs tâches terminées | 작업 요약 (Work summary) | 항목 / 결과 / 근거 |
+| Vérification exécutée | 검증 결과 (Verification) | 항목 / 기대 / 실제 / 판정 |
+| Commits/PR produits | 산출물 (Deliverables) | PR / 저장소 / 내용 / 상태 |
+| Éléments non résolus | 남은 것 (Remaining) | 항목 / 상태 / 다음 조치 |
+
+Il ne se déclenche qu'à la toute fin du raisonnement — jamais comme point d'étape en cours de tâche — et les tours de simple Q&R se terminent normalement sans lui. La spécification est livrée dans les developer instructions de `boss.toml`. (Dans le projet frère [my-claude](https://github.com/sehoon787/my-claude), un hook Stop la fait en plus respecter ; la Codex CLI n'a pas de point d'application équivalent, la spécification reste donc au niveau du prompt.)
+
 ---
 
 ## Architecture
@@ -362,7 +376,7 @@ BriefingVault v2 intègre trois méthodologies de gestion des connaissances :
 
 ## Sources open source en amont
 
-my-codex suit **4 sous-modules upstream**, plus un instantané intégré et deux projets adaptés ou sœurs :
+my-codex suit **4 sous-modules upstream**, plus un instantané intégré deux projets adaptés ou sœurs et une CLI compagnon :
 
 | # | Source | Méthode | Ce qu'elle fournit |
 |---|--------|---------|-----------------|
@@ -373,8 +387,9 @@ my-codex suit **4 sous-modules upstream**, plus un instantané intégré et deux
 | 5 | <img src="https://github.com/VoltAgent.png?size=32" width="20" height="20" align="center"/> **[awesome-codex-subagents](https://github.com/VoltAgent/awesome-codex-subagents)** — VoltAgent | intégré (MIT) | 17 agents IA/LLM capturés dans `codex-agents/packs/` sous forme de 2 packs optionnels (data-ai 13, llmops 4). Sous-module supprimé le 2026-07-27. |
 | 6 | <img src="https://github.com/code-yeongyu.png?size=32" width="20" height="20" align="center"/> **[oh-my-openagent](https://github.com/code-yeongyu/oh-my-openagent)** — code-yeongyu | adapté | 9 agents OMO (Sisyphus, Atlas, Oracle, etc.). Adaptés au format TOML natif Codex et maintenus dans ce dépôt. |
 | 7 | <img src="https://github.com/sehoon787.png?size=32" width="20" height="20" align="center"/> **[my-claude](https://github.com/sehoon787/my-claude)** — sehoon787 | projet sœur | Même orchestration Boss au format natif Claude `.md`. Skills, règles et Briefing Vault partagés entre les deux projets. |
+| 8 | <img src="https://github.com/getagentseal.png?size=32" width="20" height="20" align="center"/> **[codeburn](https://github.com/getagentseal/codeburn)** — getagentseal | CLI npm (MIT) | Suivi local-first des tokens et des coûts. Lit `~/.codex/sessions` en lecture seule — pas de proxy, pas d'upload. Installé par `install.sh` (épinglé `codeburn@0.9.23`), enregistré dans `upstream/SOURCES.json` en `method: npm-cli`. Aucun hook sur Codex. |
 
-Chaque sous-module est épinglé par SHA dans `upstream/SOURCES.json` (AI-BOM), qui consigne aussi les deux sous-modules supprimés (`agency-agents` — rien d'intégré ; `awesome-codex-subagents` — 17 agents intégrés).
+Chaque sous-module est épinglé par SHA dans `upstream/SOURCES.json` (AI-BOM) — les CLI compagnons (ast-grep, codeburn) y sont également épinglées par version —, qui consigne aussi les deux sous-modules supprimés (`agency-agents` — rien d'intégré ; `awesome-codex-subagents` — 17 agents intégrés).
 
 ---
 

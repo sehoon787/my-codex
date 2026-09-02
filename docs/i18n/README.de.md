@@ -121,6 +121,20 @@ Engineering review      Auto code review        Present comparison table
 Confirm "design done"   Architect verification  User: approve / improve
 ```
 
+### Strukturierter Abschlussbericht
+
+Boss schließt jeden Arbeits-Turn — jeden Turn, in dem Dateien bearbeitet oder erstellt, Commits/PRs/Merges gemacht, Konfiguration geändert oder Verifikation ausgeführt wurde — mit einem strukturierten Abschlussbericht ab, den man ohne Öffnen eines Diffs überfliegen kann. Der Bericht besteht aus fünf festen Tabellen, die jeweils nur ausgegeben werden, wenn ihre Situation tatsächlich eingetreten ist (niemals eine leere Tabelle):
+
+| Situation | Tabelle | Spalten |
+|-----------|-------|---------|
+| Dateien/Einstellungen geändert | 변경 대조 (Changes) | 대상 / Before / After / 근거 |
+| Mehrere Aufgaben abgeschlossen | 작업 요약 (Work summary) | 항목 / 결과 / 근거 |
+| Verifikation ausgeführt | 검증 결과 (Verification) | 항목 / 기대 / 실제 / 판정 |
+| Commits/PRs erzeugt | 산출물 (Deliverables) | PR / 저장소 / 내용 / 상태 |
+| Etwas ungelöst | 남은 것 (Remaining) | 항목 / 상태 / 다음 조치 |
+
+Er wird nur ganz am Ende des Reasonings ausgelöst — niemals als Fortschrittsmeldung mitten in der Aufgabe — und reine Q&A-Turns enden normal ohne ihn. Die Spezifikation liegt in den developer instructions von `boss.toml`. (Im Schwesterprojekt [my-claude](https://github.com/sehoon787/my-claude) setzt zusätzlich ein Stop-Hook sie durch; die Codex CLI hat keinen vergleichbaren Durchsetzungspunkt, daher ist die Spezifikation hier auf Prompt-Ebene.)
+
 ---
 
 ## Architektur
@@ -352,7 +366,7 @@ BriefingVault v2 integriert drei Wissensmanagement-Methoden:
 
 ## Upstream Open-Source-Quellen
 
-my-codex verfolgt **4 Upstream-Submodule**, dazu einen eingebundenen Snapshot und zwei angepasste bzw. Schwesterprojekte:
+my-codex verfolgt **4 Upstream-Submodule**, dazu einen eingebundenen Snapshot zwei angepasste bzw. Schwesterprojekte und eine Companion-CLI:
 
 | # | Quelle | Methode | Was bereitgestellt wird |
 |---|--------|---------|------------------------|
@@ -363,8 +377,9 @@ my-codex verfolgt **4 Upstream-Submodule**, dazu einen eingebundenen Snapshot un
 | 5 | <img src="https://github.com/VoltAgent.png?size=32" width="20" height="20" align="center"/> **[awesome-codex-subagents](https://github.com/VoltAgent/awesome-codex-subagents)** — VoltAgent | eingebunden (MIT) | 17 KI/LLM-Agenten als Snapshot in `codex-agents/packs/`, ausgeliefert als 2 Opt-in-Packs (data-ai 13, llmops 4). Submodul am 2026-07-27 entfernt. |
 | 6 | <img src="https://github.com/code-yeongyu.png?size=32" width="20" height="20" align="center"/> **[oh-my-openagent](https://github.com/code-yeongyu/oh-my-openagent)** — code-yeongyu | angepasst | 9 OMO-Agenten (Sisyphus, Atlas, Oracle usw.). Für das native Codex-TOML-Format angepasst und im Repository gepflegt. |
 | 7 | <img src="https://github.com/sehoon787.png?size=32" width="20" height="20" align="center"/> **[my-claude](https://github.com/sehoon787/my-claude)** — sehoon787 | Schwesterprojekt | Dieselbe Boss-Orchestrierung im nativen Claude `.md`-Agentenformat. Skills, Regeln und Briefing Vault werden zwischen beiden Projekten geteilt. |
+| 8 | <img src="https://github.com/getagentseal.png?size=32" width="20" height="20" align="center"/> **[codeburn](https://github.com/getagentseal/codeburn)** — getagentseal | npm CLI (MIT) | Local-first Token-/Kosten-Tracker. Liest `~/.codex/sessions` nur lesend — kein Proxy, kein Upload. Von `install.sh` installiert (gepinnt auf `codeburn@0.9.23`), in `upstream/SOURCES.json` als `method: npm-cli` geführt. Keine Hooks unter Codex. |
 
-Jedes Submodul ist in `upstream/SOURCES.json` (AI-BOM) per SHA gepinnt; dort sind auch die beiden entfernten Submodule vermerkt (`agency-agents` — nichts eingebunden; `awesome-codex-subagents` — 17 Agenten eingebunden).
+Jedes Submodul ist in `upstream/SOURCES.json` (AI-BOM) — Companion-CLIs (ast-grep, codeburn) sind dort ebenfalls versionsgepinnt eingetragen — per SHA gepinnt; dort sind auch die beiden entfernten Submodule vermerkt (`agency-agents` — nichts eingebunden; `awesome-codex-subagents` — 17 Agenten eingebunden).
 
 ---
 

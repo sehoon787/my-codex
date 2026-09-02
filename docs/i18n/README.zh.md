@@ -121,6 +121,20 @@ Engineering review      Auto code review        Present comparison table
 Confirm "design done"   Architect verification  User: approve / improve
 ```
 
+### 结构化最终报告
+
+Boss 会以一份无需打开 diff 即可浏览的结构化最终报告来结束每个有实际工作的回合 — 即编辑/创建了文件、进行了提交/PR/合并、更改了配置或执行了验证的回合。报告由 5 个固定表格组成，每个表格仅在对应情况确实发生时才输出（绝不输出空表）:
+
+| 情况 | 表格 | 列 |
+|-----------|-------|---------|
+| 文件/设置变更 | 변경 대조 (Changes) | 대상 / Before / After / 근거 |
+| 完成多项任务 | 작업 요약 (Work summary) | 항목 / 결과 / 근거 |
+| 执行了验证 | 검증 결과 (Verification) | 항목 / 기대 / 실제 / 판정 |
+| 产出提交/PR | 산출물 (Deliverables) | PR / 저장소 / 내용 / 상태 |
+| 存在未解决项 | 남은 것 (Remaining) | 항목 / 상태 / 다음 조치 |
+
+该报告仅在推理的最末尾触发 — 绝不会作为任务中途的进度更新输出 — 纯问答回合则正常结束、不生成报告。规范随 `boss.toml` 的 developer instructions 一起提供。（在姊妹项目 [my-claude](https://github.com/sehoon787/my-claude) 中还有一个 Stop 钩子额外强制执行；Codex CLI 没有等效的强制点，因此这里的规范是提示词级别的。）
+
 ---
 
 ## 架构
@@ -352,7 +366,7 @@ BriefingVault v2 整合了三种知识管理方法论：
 
 ## 上游开源来源
 
-my-codex 由 **4 个上游子模块**，加上 1 份内置快照与 2 个适配/姊妹项目组成：
+my-codex 由 **4 个上游子模块**，加上 1 份内置快照、2 个适配/姊妹项目与 1 个 companion CLI 组成：
 
 | # | 来源 | 方式 | 提供的内容 |
 |---|--------|------|-----------------|
@@ -363,8 +377,9 @@ my-codex 由 **4 个上游子模块**，加上 1 份内置快照与 2 个适配/
 | 5 | <img src="https://github.com/VoltAgent.png?size=32" width="20" height="20" align="center"/> **[awesome-codex-subagents](https://github.com/VoltAgent/awesome-codex-subagents)** — VoltAgent | 内置快照 (MIT) | 17 个 AI/LLM Agent 快照到 `codex-agents/packs/`，作为 2 个可选启用的包（data-ai 13、llmops 4）。子模块已于 2026-07-27 移除。 |
 | 6 | <img src="https://github.com/code-yeongyu.png?size=32" width="20" height="20" align="center"/> **[oh-my-openagent](https://github.com/code-yeongyu/oh-my-openagent)** — code-yeongyu | 适配 | 9 个 OMO Agent（Sisyphus、Atlas、Oracle 等）。适配为 Codex 原生 TOML 格式并在本仓库维护。 |
 | 7 | <img src="https://github.com/sehoon787.png?size=32" width="20" height="20" align="center"/> **[my-claude](https://github.com/sehoon787/my-claude)** — sehoon787 | 姊妹项目 | 同样的 Boss 编排架构，原生 Claude `.md` Agent 格式。Skills、规则和 Briefing Vault 在两个项目间共享。 |
+| 8 | <img src="https://github.com/getagentseal.png?size=32" width="20" height="20" align="center"/> **[codeburn](https://github.com/getagentseal/codeburn)** — getagentseal | npm CLI (MIT) | 本地优先的 token/成本追踪器。只读解析 `~/.codex/sessions` — 无代理、不上传。由 `install.sh` 安装（固定 `codeburn@0.9.23`），在 `upstream/SOURCES.json` 中以 `method: npm-cli` 登记。Codex 上没有钩子。 |
 
-所有子模块均在 `upstream/SOURCES.json`（AI-BOM）中以 SHA 固定，该文件同时记录了两个已移除的子模块（`agency-agents` — 未内置任何内容；`awesome-codex-subagents` — 内置 17 个 Agent）。
+所有子模块均在 `upstream/SOURCES.json`（AI-BOM）（companion CLI（ast-grep、codeburn）也在同一文件中以固定版本登记）中以 SHA 固定，该文件同时记录了两个已移除的子模块（`agency-agents` — 未内置任何内容；`awesome-codex-subagents` — 内置 17 个 Agent）。
 
 ---
 

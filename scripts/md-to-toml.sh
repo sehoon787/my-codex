@@ -30,7 +30,7 @@ SKIP_FILES=("agent-teams-reference.md")
 #   3. Codex-native tiers  — install.sh's omx staging injects $MODEL_TIER_*
 #
 # Shapes 1 and 2 were previously absent for the current Claude generation, so
-# `claude-opus-5`, `claude-fable-5`, and the bare `opus` / `haiku` aliases all
+# `claude-opus-5`, `claude-fable-5-1`, and the bare `opus` / `haiku` aliases all
 # fell through to default and were silently rewritten to MEDIUM — an opus-class
 # agent demoted, a haiku-class agent promoted. Keep every generation listed:
 # an unrecognised model here is a silent tier change, never an error.
@@ -38,7 +38,9 @@ map_model() {
   local m="$1"
   case "$m" in
     # Top tier: Fable/Opus class and the bare `opus` alias.
-    claude-fable-5|claude-mythos-5|claude-opus-5|claude-opus-4-8|claude-opus-4-7|claude-opus-4-6|claude-opus-4-5|opus|"$MODEL_TIER_HIGH")
+    # Superseded IDs stay listed — an agent still pinning claude-fable-5 should
+    # land on the top tier, not fall through to the MEDIUM default.
+    claude-fable-5-1|claude-fable-5|claude-mythos-5|claude-opus-5|claude-opus-4-8|claude-opus-4-7|claude-opus-4-6|claude-opus-4-5|opus|"$MODEL_TIER_HIGH")
       echo "model = \"$MODEL_TIER_HIGH\""
       echo "model_reasoning_effort = \"$MODEL_TIER_HIGH_EFFORT\""
       ;;

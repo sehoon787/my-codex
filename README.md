@@ -394,7 +394,7 @@ The Stop hook checks whether `/boss-briefing` has run today. If not, it blocks s
 
 ## Upstream Open-Source Sources
 
-my-codex tracks **4 upstream submodules**, plus one vendored snapshot and two adapted/sister projects:
+my-codex tracks **4 upstream submodules**, plus one vendored snapshot, two adapted/sister projects, and one companion CLI:
 
 | # | Source | Method | What It Provides |
 |---|--------|--------|-----------------|
@@ -405,8 +405,9 @@ my-codex tracks **4 upstream submodules**, plus one vendored snapshot and two ad
 | 5 | <img src="https://github.com/VoltAgent.png?size=32" width="20" height="20" align="center"/> **[awesome-codex-subagents](https://github.com/VoltAgent/awesome-codex-subagents)** — VoltAgent | vendored (MIT) | 17 AI/LLM agents snapshotted into `codex-agents/packs/` as 2 opt-in packs (data-ai 13, llmops 4). Submodule removed 2026-07-27. |
 | 6 | <img src="https://github.com/code-yeongyu.png?size=32" width="20" height="20" align="center"/> **[oh-my-openagent](https://github.com/code-yeongyu/oh-my-openagent)** — code-yeongyu | adapted | 9 OMO agents (Sisyphus, Atlas, Oracle, etc.). Adapted to Codex-native TOML format and maintained in-repo. |
 | 7 | <img src="https://github.com/sehoon787.png?size=32" width="20" height="20" align="center"/> **[my-claude](https://github.com/sehoon787/my-claude)** — sehoon787 | sister project | Same Boss orchestration in native Claude `.md` agent format. Skills, rules, and briefing vault shared across both projects. |
+| 8 | <img src="https://github.com/getagentseal.png?size=32" width="20" height="20" align="center"/> **[codeburn](https://github.com/getagentseal/codeburn)** — getagentseal | npm CLI (MIT) | Local-first token/cost tracker. Parses `~/.codex/sessions` read-only — no proxy, no upload. Installed by `install.sh` (pinned `codeburn@0.9.23`), registered in `upstream/SOURCES.json` as `method: npm-cli`. No hooks on Codex. |
 
-Every submodule is SHA-pinned in `upstream/SOURCES.json` (AI-BOM), which also records the two removed submodules (`agency-agents` — nothing vendored; `awesome-codex-subagents` — 17 agents vendored).
+Every submodule is SHA-pinned in `upstream/SOURCES.json` (AI-BOM) — companion CLIs (ast-grep, codeburn) are version-pinned there too — which also records the two removed submodules (`agency-agents` — nothing vendored; `awesome-codex-subagents` — 17 agents vendored).
 
 ---
 

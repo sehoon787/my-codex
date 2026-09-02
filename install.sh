@@ -1400,6 +1400,12 @@ if command -v ast-grep >/dev/null 2>&1; then
 else
   npm i -g @ast-grep/cli@0.42.0 2>/dev/null || echo "    WARNING: ast-grep install failed"
 fi
+echo "  [6b] codeburn (AI token/cost tracker; reads ~/.codex/sessions read-only)..."
+if command -v codeburn >/dev/null 2>&1; then
+  echo "    codeburn already installed"
+else
+  npm i -g codeburn@0.9.23 2>/dev/null || echo "    WARNING: codeburn install failed"
+fi
 
 LC_ALL=C sort -u "$TMP_MANIFEST" > "$MANIFEST_FILE"
 printf '%s\n' "$INSTALLING_VERSION" > "$VERSION_FILE"
@@ -1421,6 +1427,7 @@ echo "  hooksPath:     $(git config --global --get core.hooksPath 2>/dev/null ||
 echo "  Codex attr:    $(git config --global --get my-codex.codexAttribution 2>/dev/null || echo 'UNSET')"
 echo "  version:       $(cat "$VERSION_FILE" 2>/dev/null || echo 'unknown')"
 echo "  codex:         $(command -v codex >/dev/null 2>&1 && echo "OK ($(codex --version 2>/dev/null))" || echo 'NOT INSTALLED')"
+echo "  codeburn:      $(command -v codeburn >/dev/null 2>&1 && echo 'OK' || echo 'MISSING')"
 echo ""
 echo "=== Install complete ==="
 echo ""

@@ -206,6 +206,7 @@ rm -rf /tmp/my-codex
 ```bash
 # AST tools for code intelligence
 npm i -g @ast-grep/cli@0.42.0
+npm i -g codeburn@0.9.23
 ```
 
 ## Step 3: Customize active agent packs (optional)

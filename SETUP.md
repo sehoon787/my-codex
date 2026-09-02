@@ -20,7 +20,7 @@ Give this document to an AI coding agent to reproduce the exact same environment
 
 ## 1. Prerequisites
 
-- **Node.js** v20+
+- **Node.js** v22.13+ (required by codeburn)
 - **npm**
 - **Git**
 - **Codex CLI** — install from [https://github.com/openai/codex](https://github.com/openai/codex) or:

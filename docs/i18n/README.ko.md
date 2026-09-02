@@ -121,6 +121,20 @@ Engineering review      Auto code review        Present comparison table
 Confirm "design done"   Architect verification  User: approve / improve
 ```
 
+### 정형화된 최종 보고
+
+Boss는 작업이 있던 모든 턴 — 파일 편집·생성, 커밋/PR/머지, 설정 변경, 검증 실행이 있었던 턴 — 을 diff를 열지 않고도 훑어볼 수 있는 정형화된 최종 보고로 마무리합니다. 보고는 고정된 표 5종으로 구성되며, 각 표는 해당 상황이 실제로 발생했을 때만 출력됩니다(빈 표는 만들지 않음):
+
+| 상황 | 표 | 컬럼 |
+|-----------|-------|---------|
+| 파일/설정 변경 | 변경 대조 (Changes) | 대상 / Before / After / 근거 |
+| 여러 작업 완료 | 작업 요약 (Work summary) | 항목 / 결과 / 근거 |
+| 검증 실행 | 검증 결과 (Verification) | 항목 / 기대 / 실제 / 판정 |
+| 커밋/PR 산출 | 산출물 (Deliverables) | PR / 저장소 / 내용 / 상태 |
+| 미해결 존재 | 남은 것 (Remaining) | 항목 / 상태 / 다음 조치 |
+
+이 보고는 추론의 맨 마지막에만 발동하며 — 작업 중간의 진행 상황 보고로는 절대 출력되지 않음 — 순수 질답 턴은 보고 없이 정상 종료됩니다. 규격은 `boss.toml`의 developer instructions에 담겨 있습니다. (자매 프로젝트 [my-claude](https://github.com/sehoon787/my-claude)에서는 Stop 훅이 추가로 이를 강제하지만, Codex CLI에는 동등한 강제 지점이 없어 여기서는 프롬프트 수준의 규격입니다.)
+
 ---
 
 ## 아키텍처
@@ -352,7 +366,7 @@ BriefingVault v2는 세 가지 지식 관리 방법론을 통합합니다:
 
 ## 업스트림 오픈소스 출처
 
-my-codex는 **4개의 업스트림 서브모듈**과 벤더링된 스냅샷 1개, 적용/자매 프로젝트 2개로 구성됩니다:
+my-codex는 **4개의 업스트림 서브모듈**과 벤더링된 스냅샷 1개, 적용/자매 프로젝트 2개, companion CLI 1개로 구성됩니다:
 
 | # | 출처 | 방식 | 제공 내용 |
 |---|--------|------|-----------------|
@@ -363,8 +377,9 @@ my-codex는 **4개의 업스트림 서브모듈**과 벤더링된 스냅샷 1개
 | 5 | <img src="https://github.com/VoltAgent.png?size=32" width="20" height="20" align="center"/> **[awesome-codex-subagents](https://github.com/VoltAgent/awesome-codex-subagents)** — VoltAgent | 벤더링 (MIT) | AI/LLM 에이전트 17개를 `codex-agents/packs/`에 스냅샷하여 옵트인 팩 2개(data-ai 13, llmops 4)로 제공. 서브모듈은 2026-07-27에 제거되었습니다. |
 | 6 | <img src="https://github.com/code-yeongyu.png?size=32" width="20" height="20" align="center"/> **[oh-my-openagent](https://github.com/code-yeongyu/oh-my-openagent)** — code-yeongyu | 적용 | OMO 에이전트 9개 (Sisyphus, Atlas, Oracle 등). Codex 네이티브 TOML 형식으로 적용하여 저장소에서 관리합니다. |
 | 7 | <img src="https://github.com/sehoon787.png?size=32" width="20" height="20" align="center"/> **[my-claude](https://github.com/sehoon787/my-claude)** — sehoon787 | 자매 프로젝트 | 네이티브 Claude `.md` 에이전트 형식의 동일한 Boss 오케스트레이션. 스킬, 규칙, Briefing Vault를 두 프로젝트가 공유합니다. |
+| 8 | <img src="https://github.com/getagentseal.png?size=32" width="20" height="20" align="center"/> **[codeburn](https://github.com/getagentseal/codeburn)** — getagentseal | npm CLI (MIT) | 로컬 우선 토큰/비용 추적기. `~/.codex/sessions`를 읽기 전용으로 파싱 — 프록시·업로드 없음. `install.sh`가 설치(`codeburn@0.9.23` 고정), `upstream/SOURCES.json`에 `method: npm-cli`로 등재. Codex에는 훅 없음. |
 
-모든 서브모듈은 `upstream/SOURCES.json`(AI-BOM)에 SHA로 고정되어 있으며, 제거된 서브모듈 2개(`agency-agents` — 벤더링 없음, `awesome-codex-subagents` — 에이전트 17개 벤더링)도 함께 기록됩니다.
+모든 서브모듈은 `upstream/SOURCES.json`(AI-BOM) — companion CLI(ast-grep, codeburn)도 같은 파일에 버전 고정으로 등재됩니다 —에 SHA로 고정되어 있으며, 제거된 서브모듈 2개(`agency-agents` — 벤더링 없음, `awesome-codex-subagents` — 에이전트 17개 벤더링)도 함께 기록됩니다.
 
 ---
 

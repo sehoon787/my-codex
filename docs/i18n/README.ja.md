@@ -121,6 +121,20 @@ Engineering review      Auto code review        Present comparison table
 Confirm "design done"   Architect verification  User: approve / improve
 ```
 
+### 構造化された最終レポート
+
+Boss は作業が発生したすべてのターン — ファイルの編集・作成、コミット/PR/マージ、設定変更、検証の実行があったターン — を、diff を開かなくても読み取れる構造化された最終レポートで締めくくります。レポートは固定された 5 つのテーブルから組み立てられ、各テーブルはその状況が実際に発生した場合にのみ出力されます（空のテーブルは決して出力しません）:
+
+| 状況 | テーブル | 列 |
+|-----------|-------|---------|
+| ファイル/設定の変更 | 변경 대조 (Changes) | 대상 / Before / After / 근거 |
+| 複数タスクの完了 | 작업 요약 (Work summary) | 항목 / 결과 / 근거 |
+| 検証を実行 | 검증 결과 (Verification) | 항목 / 기대 / 실제 / 판정 |
+| コミット/PR を作成 | 산출물 (Deliverables) | PR / 저장소 / 내용 / 상태 |
+| 未解決事項あり | 남은 것 (Remaining) | 항목 / 상태 / 다음 조치 |
+
+このレポートは推論の最後にのみ発動し — タスク途中の進捗報告としては決して出力されず — 純粋な Q&A のターンはレポートなしで通常どおり終了します。仕様は `boss.toml` の developer instructions に含まれています。（姉妹プロジェクトの [my-claude](https://github.com/sehoon787/my-claude) では Stop フックがさらにこれを強制しますが、Codex CLI には同等の強制ポイントがないため、ここではプロンプトレベルの仕様です。）
+
 ---
 
 ## アーキテクチャ
@@ -352,7 +366,7 @@ BriefingVault v2 は 3 つの知識管理手法を統合しています：
 
 ## アップストリームのオープンソースソース
 
-my-codex は **4 つのアップストリームサブモジュール**に加え、ベンダリング済みスナップショット 1 件と、適応済み/姉妹プロジェクト 2 件で構成されています:
+my-codex は **4 つのアップストリームサブモジュール**に加え、ベンダリング済みスナップショット 1 件と、適応済み/姉妹プロジェクト 2 件で構成されています、companion CLI 1 件で構成されます:
 
 | # | ソース | 方式 | 提供内容 |
 |---|--------|------|-----------------|
@@ -363,8 +377,9 @@ my-codex は **4 つのアップストリームサブモジュール**に加え�
 | 5 | <img src="https://github.com/VoltAgent.png?size=32" width="20" height="20" align="center"/> **[awesome-codex-subagents](https://github.com/VoltAgent/awesome-codex-subagents)** — VoltAgent | ベンダリング (MIT) | AI/LLM エージェント 17 個を `codex-agents/packs/` にスナップショットし、オプトインパック 2 個（data-ai 13、llmops 4）として提供。サブモジュールは 2026-07-27 に削除。 |
 | 6 | <img src="https://github.com/code-yeongyu.png?size=32" width="20" height="20" align="center"/> **[oh-my-openagent](https://github.com/code-yeongyu/oh-my-openagent)** — code-yeongyu | 適応 | 9 つの OMO エージェント（Sisyphus、Atlas、Oracle など）。Codex ネイティブ TOML フォーマットに適応し、本リポジトリで維持。 |
 | 7 | <img src="https://github.com/sehoon787.png?size=32" width="20" height="20" align="center"/> **[my-claude](https://github.com/sehoon787/my-claude)** — sehoon787 | 姉妹プロジェクト | ネイティブ Claude `.md` エージェントフォーマットで同じ Boss オーケストレーションを実現。スキル、ルール、Briefing Vault を両プロジェクトで共有。 |
+| 8 | <img src="https://github.com/getagentseal.png?size=32" width="20" height="20" align="center"/> **[codeburn](https://github.com/getagentseal/codeburn)** — getagentseal | npm CLI (MIT) | ローカルファーストのトークン/コストトラッカー。`~/.codex/sessions` を読み取り専用で解析 — プロキシ・アップロード不要。`install.sh` がインストール（`codeburn@0.9.23` に固定）、`upstream/SOURCES.json` に `method: npm-cli` として登録。Codex にはフックなし。 |
 
-すべてのサブモジュールは `upstream/SOURCES.json`（AI-BOM）で SHA 固定されており、削除された 2 つのサブモジュール（`agency-agents` — ベンダリングなし、`awesome-codex-subagents` — エージェント 17 個をベンダリング）も記録されています。
+すべてのサブモジュールは `upstream/SOURCES.json`（AI-BOM）（companion CLI（ast-grep、codeburn）も同じファイルにバージョン固定で登録されています）で SHA 固定されており、削除された 2 つのサブモジュール（`agency-agents` — ベンダリングなし、`awesome-codex-subagents` — エージェント 17 個をベンダリング）も記録されています。
 
 ---
 

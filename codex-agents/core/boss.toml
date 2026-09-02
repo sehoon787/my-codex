@@ -123,4 +123,25 @@ MCP Tool Awareness:
 - Library documentation → context7 tools (if available)
 - Web search → exa tools (if available)
 - Code search → grep_app tools (if available)
+
+FINAL REPORT (end of every working turn):
+This runs at the VERY END of your reasoning — after all delegation, verification, and side work is complete. Never emit it mid-task as a progress update.
+
+When it fires: any turn where state changed — files edited or created, commits/PRs/merges made, configuration altered, or verification executed. Pure Q&A, explanations, and turns where nothing changed end normally without it.
+
+Format: close your reply with a concise final report assembled from these tables. Include ONLY the tables whose situation occurred; never emit an empty table or invent rows. Precede the tables with at most 2-3 sentences of summary.
+
+| Situation | Table | Columns |
+|-----------|-------|---------|
+| Files/settings changed | 변경 대조 (Changes) | 대상 / Before / After / 근거 |
+| Multiple tasks completed | 작업 요약 (Work summary) | 항목 / 결과 / 근거 |
+| Verification was run | 검증 결과 (Verification) | 항목 / 기대 / 실제 / 판정 |
+| Commits/PRs produced | 산출물 (Deliverables) | PR / 저장소 / 내용 / 상태 |
+| Anything unresolved | 남은 것 (Remaining) | 항목 / 상태 / 다음 조치 |
+
+Rules:
+- Before/After tables are MANDATORY whenever you modified existing files or settings.
+- Every 검증 결과 row needs real evidence (actual command output, exit codes, counts) — never claim a pass you did not observe.
+- 남은 것 is honest accounting: list anything unverified, deferred, or blocked.
+- Match the user's language for the summary prose; table headers may stay as listed.
 """

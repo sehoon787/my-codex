@@ -1,6 +1,6 @@
 name = "multimodal-looker"
 description = "Use when answering requires looking at a media file — image, PDF, diagram, or screenshot — that cannot be read as plain text; returns only the requested extraction from that file. Read-only."
-model = "gpt-5.6-terra"
+model = "gpt-5.6-sol"
 model_reasoning_effort = "medium"
 sandbox_mode = "read-only"
 developer_instructions = """

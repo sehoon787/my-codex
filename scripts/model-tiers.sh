@@ -18,11 +18,12 @@
 #   using Codex with a ChatGPT account.
 # Verify against `~/.codex/models_cache.json` (visibility="list") before
 # rolling these forward. gpt-6-astra verified 2026-09-05 (efforts low..ultra;
-# high/xhigh probed OK). No gpt-6 mid/low slugs exist yet, so MEDIUM/LOW stay
-# on the 5.6 generation.
+# high/xhigh probed OK). No gpt-6 mid/low slugs exist yet, so MEDIUM/LOW use
+# the top two 5.6 slugs: sol ("reliable agentic workhorse for everyday tasks")
+# and terra ("balanced agentic coding model"). luna is retired from the tiers.
 MODEL_TIER_HIGH="gpt-6-astra"
-MODEL_TIER_MEDIUM="gpt-5.6-terra"
-MODEL_TIER_LOW="gpt-5.6-luna"
+MODEL_TIER_MEDIUM="gpt-5.6-sol"
+MODEL_TIER_LOW="gpt-5.6-terra"
 
 # model_reasoning_effort per tier.
 MODEL_TIER_HIGH_EFFORT="high"
@@ -39,8 +40,8 @@ LEGACY_SPARK_MODEL="gpt-5.3-codex-spark"  # -> MODEL_TIER_LOW
 # where TIER is HIGH|MEDIUM|LOW, resolved against MODEL_TIER_* above.
 #
 # Two distinct classes live here:
-#   1. Superseded-but-still-served slugs (gpt-5.4, gpt-5.5, gpt-5.6-sol) —
-#      promoted so the install tracks the current generation.
+#   1. Superseded-but-still-served slugs (gpt-5.4, gpt-5.5, gpt-5.6-luna) —
+#      promoted so the install tracks the current tiers.
 #   2. Slugs that were never valid (bare gpt-5.6, bare gpt-6) — these HARD FAIL
 #      at request time, so rewriting them repairs installs made while that
 #      value shipped as MODEL_TIER_HIGH.
@@ -50,6 +51,6 @@ LEGACY_MODEL_MAP=(
   "gpt-5.5:HIGH"
   "gpt-5.5-codex:HIGH"
   "gpt-5.6:HIGH"
-  "gpt-5.6-sol:HIGH"
+  "gpt-5.6-luna:LOW"
   "gpt-6:HIGH"
 )

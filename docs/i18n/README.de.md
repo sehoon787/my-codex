@@ -105,7 +105,7 @@ Boss leitet jede Anfrage durch eine Prioritätskette, bis die beste Übereinstim
 | Komplexität | Modell | Verwendet für |
 |-------------|--------|---------------|
 | Tiefgehende Analyse, Architektur | gpt-6-astra (high/xhigh reasoning) | Boss, Oracle, Sisyphus, Atlas |
-| Standardimplementierung | gpt-5.6-sol (medium) | executor, debugger, security-reviewer |
+| Standardimplementierung | gpt-5.6-sol (medium) | executor, debugger, test-engineer |
 | Schnelle Suche, Erkundung | gpt-5.6-terra (low) | explore, einfache Beratung |
 
 ### 3-Phasen-Sprint-Workflow

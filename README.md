@@ -114,7 +114,7 @@ Boss cascades every request through a priority chain until the best match is fou
 | Complexity | Model | Used For |
 |-----------|-------|----------|
 | Deep analysis, architecture | gpt-6-astra (high/xhigh reasoning) | Boss, Oracle, Sisyphus, Atlas |
-| Standard implementation | gpt-5.6-sol (medium) | executor, debugger, security-reviewer |
+| Standard implementation | gpt-5.6-sol (medium) | executor, debugger, test-engineer |
 | Quick lookup, exploration | gpt-5.6-terra (low) | explore, simple advisory |
 
 ### 3-Phase Sprint Workflow

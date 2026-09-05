@@ -105,7 +105,7 @@ Boss는 가장 적합한 매칭을 찾을 때까지 모든 요청을 우선순�
 | 복잡도 | 모델 | 사용 대상 |
 |-----------|-------|----------|
 | 심층 분석, 아키텍처 | gpt-6-astra (high/xhigh reasoning) | Boss, Oracle, Sisyphus, Atlas |
-| 표준 구현 | gpt-5.6-sol (medium) | executor, debugger, security-reviewer |
+| 표준 구현 | gpt-5.6-sol (medium) | executor, debugger, test-engineer |
 | 빠른 조회, 탐색 | gpt-5.6-terra (low) | explore, 간단한 자문 |
 
 ### 3단계 스프린트 워크플로

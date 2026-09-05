@@ -4,9 +4,12 @@
 # Sourced (not executed) by scripts/md-to-toml.sh and install.sh so both
 # scripts stay in sync on which Codex model backs each Claude/legacy tier.
 #
-# To roll forward on the next Codex model generation, edit ONLY the three
-# MODEL_TIER_* values below. Nothing else in this repo should hardcode a
-# model ID outside of this file (see scripts/check-model-drift.sh).
+# To roll forward on the next Codex model generation: (1) edit the three
+# MODEL_TIER_* values below and LEGACY_MODEL_MAP, (2) update OLD_MODEL_PATTERN
+# in scripts/check-model-drift.sh, (3) bump the model line in the committed
+# codex-agents/**/*.toml files and the docs (README, SETUP, CONTRIBUTING,
+# docs/, i18n). Script logic never hardcodes a model ID outside this file
+# (scripts/check-model-drift.sh enforces that); agent TOMLs and docs do.
 
 # Codex model ID per tier.
 #

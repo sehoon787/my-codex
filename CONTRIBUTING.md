@@ -59,7 +59,7 @@ developer_instructions = """
 
 | Field | Values | Notes |
 |-------|--------|-------|
-| `model` | `"gpt-5.6-sol"`, `"gpt-5.6-luna"` | Defaults to `gpt-5.6-sol` if omitted |
+| `model` | `"gpt-6-astra"`, `"gpt-5.6-luna"` | Defaults to `gpt-6-astra` if omitted |
 | `model_reasoning_effort` | `"high"`, `"medium"`, `"low"` | Applies when model supports reasoning |
 | `sandbox_mode` | `"read-only"`, `"workspace-write"` | Use `read-only` for reviewers; `workspace-write` for implementers |
 | `nickname_candidates` | array of strings | Short invocation aliases |
@@ -68,7 +68,7 @@ developer_instructions = """
 
 | Model | Use For |
 |-------|---------|
-| `gpt-5.6-sol` | Standard development work, analysis, orchestration |
+| `gpt-6-astra` | Standard development work, analysis, orchestration |
 | `gpt-5.6-luna` | Fast lookups, lightweight agents, frequent invocation |
 
 **Sandbox mode guidance:**

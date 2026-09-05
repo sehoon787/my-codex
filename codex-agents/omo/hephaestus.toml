@@ -1,6 +1,6 @@
 name = "hephaestus"
 description = "Use when one agent should finish a task end-to-end without check-ins or delegation — explores, plans, implements, and verifies on its own; returns the implemented changes plus test and verification output."
-model = "gpt-5.6-sol"
+model = "gpt-6-astra"
 model_reasoning_effort = "high"
 sandbox_mode = "workspace-write"
 developer_instructions = """

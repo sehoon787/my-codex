@@ -104,7 +104,7 @@ Boss はすべてのリクエストを優先チェーンにカスケードし、
 
 | 複雑度 | モデル | 使用場面 |
 |-----------|-------|----------|
-| 深い分析、アーキテクチャ | gpt-5.6-sol (high reasoning) | Boss、Oracle、Sisyphus、Atlas |
+| 深い分析、アーキテクチャ | gpt-6-astra (high/xhigh reasoning) | Boss、Oracle、Sisyphus、Atlas |
 | 標準的な実装 | gpt-5.6-terra (medium) | executor、debugger、security-reviewer |
 | 簡単な検索、調査 | gpt-5.6-luna (low) | explore、簡易アドバイザリー |
 
@@ -145,7 +145,7 @@ Boss は作業が発生したすべてのターン — ファイルの編集・�
 └───────────────────────┬─────────────────────────────┘
                         ▼
 ┌─────────────────────────────────────────────────────┐
-│  Boss · Meta-Orchestrator (gpt-5.6-sol high)              │
+│  Boss · Meta-Orchestrator (gpt-6-astra xhigh)              │
 │  Discovery → Classification → Matching → Delegation  │
 └──┬──────────┬──────────┬──────────┬─────────────────┘
    │          │          │          │
@@ -188,7 +188,7 @@ Boss は作業が発生したすべてのターン — ファイルの編集・�
 
 | エージェント | モデル | 役割 | ソース |
 |-------|-------|------|--------|
-| Boss | gpt-5.6-sol high | ダイナミックランタイム検出 → ケイパビリティマッチング → 最適ルーティング。コードは書かない。 | my-codex |
+| Boss | gpt-6-astra xhigh | ダイナミックランタイム検出 → ケイパビリティマッチング → 最適ルーティング。コードは書かない。 | my-codex |
 
 </details>
 
@@ -197,13 +197,13 @@ Boss は作業が発生したすべてのターン — ファイルの編集・�
 
 | エージェント | モデル | 役割 | ソース |
 |-------|-------|------|--------|
-| Sisyphus | gpt-5.6-sol high | インテント分類 → スペシャリスト委任 → 検証 | [oh-my-openagent](https://github.com/code-yeongyu/oh-my-openagent) |
-| Hephaestus | gpt-5.6-sol high | 自律的な調査 → 計画 → 実行 → 検証 | oh-my-openagent |
-| Atlas | gpt-5.6-sol high | タスク分解 + 4 ステージ QA 検証 | oh-my-openagent |
-| Oracle | gpt-5.6-sol high | 戦略的技術コンサルティング（読み取り専用） | oh-my-openagent |
-| Metis | gpt-5.6-sol high | インテント分析、曖昧さ検出 | oh-my-openagent |
-| Momus | gpt-5.6-sol high | 計画実現可能性レビュー | oh-my-openagent |
-| Prometheus | gpt-5.6-sol high | インタビューベースの詳細計画立案 | oh-my-openagent |
+| Sisyphus | gpt-6-astra high | インテント分類 → スペシャリスト委任 → 検証 | [oh-my-openagent](https://github.com/code-yeongyu/oh-my-openagent) |
+| Hephaestus | gpt-6-astra high | 自律的な調査 → 計画 → 実行 → 検証 | oh-my-openagent |
+| Atlas | gpt-6-astra high | タスク分解 + 4 ステージ QA 検証 | oh-my-openagent |
+| Oracle | gpt-6-astra xhigh | 戦略的技術コンサルティング（読み取り専用） | oh-my-openagent |
+| Metis | gpt-6-astra high | インテント分析、曖昧さ検出 | oh-my-openagent |
+| Momus | gpt-6-astra high | 計画実現可能性レビュー | oh-my-openagent |
+| Prometheus | gpt-6-astra xhigh | インタビューベースの詳細計画立案 | oh-my-openagent |
 | Librarian | gpt-5.6-terra medium | MCP 経由のオープンソースドキュメント検索 | oh-my-openagent |
 | Multimodal-Looker | gpt-5.6-terra medium | 画像・スクリーンショット・図の分析 | oh-my-openagent |
 
@@ -406,7 +406,7 @@ my-codex は **4 つのアップストリームサブモジュール**に加え�
 | **Boss メタオーケストレーター** | ダイナミックケイパビリティ検出 → インテント分類 → 4 優先ルーティング → 委任 → 検証 |
 | **3 フェーズスプリント** | 設計（インタラクティブ）→ 実行（executor による自律）→ レビュー（設計書との比較インタラクティブ） |
 | **エージェント層優先度** | core > omo > omx > オプトインパックの順で重複排除。既存エージェントと名前が衝突するパックエージェントはスキップ。最も特化したエージェントが優先。 |
-| **コスト最適化** | アドバイザリーには gpt-5.6-luna、実装には gpt-5.6-sol — インストール済み 34 エージェント全体への自動モデルルーティング |
+| **コスト最適化** | アドバイザリーには gpt-5.6-luna、実装には gpt-6-astra — インストール済み 34 エージェント全体への自動モデルルーティング |
 | **エージェントテレメトリー** | PostToolUse フックがエージェント使用状況を `agent-usage.jsonl` に記録 |
 | **スマートパック** | プロジェクトタイプ検出がセッション開始時に関連エージェントパックを推奨 |
 | **エージェントパックシステム** | `--profile` と `my-codex-packs` ヘルパーによるオンデマンドのドメインスペシャリスト有効化 |
@@ -537,7 +537,7 @@ GitHub Actions ワークフローが 3 日ごとに実行され、4 つのアッ
 <details>
 <summary><strong>my-codex が使用するモデルは何ですか？</strong></summary>
 
-Boss とサブオーケストレーター（Sisyphus、Atlas、Oracle）は高い推論努力で gpt-5.6-sol を使用します。標準ワーカーは中程度の推論で gpt-5.6-terra を使用します。軽量アドバイザリーエージェントは gpt-5.6-luna を使用します。
+Boss とサブオーケストレーター（Sisyphus、Atlas、Oracle）は高い推論努力で gpt-6-astra を使用します。標準ワーカーは中程度の推論で gpt-5.6-terra を使用します。軽量アドバイザリーエージェントは gpt-5.6-luna を使用します。
 
 </details>
 

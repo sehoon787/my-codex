@@ -113,7 +113,7 @@ Boss cascades every request through a priority chain until the best match is fou
 
 | Complexity | Model | Used For |
 |-----------|-------|----------|
-| Deep analysis, architecture | gpt-5.6-sol (high reasoning) | Boss, Oracle, Sisyphus, Atlas |
+| Deep analysis, architecture | gpt-6-astra (high/xhigh reasoning) | Boss, Oracle, Sisyphus, Atlas |
 | Standard implementation | gpt-5.6-terra (medium) | executor, debugger, security-reviewer |
 | Quick lookup, exploration | gpt-5.6-luna (low) | explore, simple advisory |
 
@@ -154,7 +154,7 @@ It fires only at the very end of reasoning — never as a mid-task progress upda
 └───────────────────────┬─────────────────────────────┘
                         ▼
 ┌─────────────────────────────────────────────────────┐
-│  Boss · Meta-Orchestrator (gpt-5.6-sol high)              │
+│  Boss · Meta-Orchestrator (gpt-6-astra xhigh)              │
 │  Discovery → Classification → Matching → Delegation  │
 └──┬──────────┬──────────┬──────────┬─────────────────┘
    │          │          │          │
@@ -197,7 +197,7 @@ It fires only at the very end of reasoning — never as a mid-task progress upda
 
 | Agent | Model | Role | Source |
 |-------|-------|------|--------|
-| Boss | gpt-5.6-sol high | Dynamic runtime discovery → capability matching → optimal routing. Never writes code. | my-codex |
+| Boss | gpt-6-astra xhigh | Dynamic runtime discovery → capability matching → optimal routing. Never writes code. | my-codex |
 
 </details>
 
@@ -206,13 +206,13 @@ It fires only at the very end of reasoning — never as a mid-task progress upda
 
 | Agent | Model | Role | Source |
 |-------|-------|------|--------|
-| Sisyphus | gpt-5.6-sol high | Intent classification → specialist delegation → verification | [oh-my-openagent](https://github.com/code-yeongyu/oh-my-openagent) |
-| Hephaestus | gpt-5.6-sol high | Autonomous explore → plan → execute → verify | oh-my-openagent |
-| Atlas | gpt-5.6-sol high | Task decomposition + 4-stage QA verification | oh-my-openagent |
-| Oracle | gpt-5.6-sol high | Strategic technical consulting (read-only) | oh-my-openagent |
-| Metis | gpt-5.6-sol high | Intent analysis, ambiguity detection | oh-my-openagent |
-| Momus | gpt-5.6-sol high | Plan feasibility review | oh-my-openagent |
-| Prometheus | gpt-5.6-sol high | Interview-based detailed planning | oh-my-openagent |
+| Sisyphus | gpt-6-astra high | Intent classification → specialist delegation → verification | [oh-my-openagent](https://github.com/code-yeongyu/oh-my-openagent) |
+| Hephaestus | gpt-6-astra high | Autonomous explore → plan → execute → verify | oh-my-openagent |
+| Atlas | gpt-6-astra high | Task decomposition + 4-stage QA verification | oh-my-openagent |
+| Oracle | gpt-6-astra xhigh | Strategic technical consulting (read-only) | oh-my-openagent |
+| Metis | gpt-6-astra high | Intent analysis, ambiguity detection | oh-my-openagent |
+| Momus | gpt-6-astra high | Plan feasibility review | oh-my-openagent |
+| Prometheus | gpt-6-astra xhigh | Interview-based detailed planning | oh-my-openagent |
 | Librarian | gpt-5.6-terra medium | Open-source documentation search via MCP | oh-my-openagent |
 | Multimodal-Looker | gpt-5.6-terra medium | Image/screenshot/diagram analysis | oh-my-openagent |
 
@@ -434,7 +434,7 @@ Features built specifically for this project, beyond what upstream sources provi
 | **Boss Meta-Orchestrator** | Dynamic capability discovery → intent classification → 4-priority routing → delegation → verification |
 | **3-Phase Sprint** | Design (interactive) → Execute (autonomous via executor) → Review (interactive vs design doc) |
 | **Agent Tier Priority** | core > omo > omx > opt-in packs. Pack agents are skipped if their name collides with an already-installed agent. Most specialized agent wins. |
-| **Cost Optimization** | gpt-5.6-luna for advisory, gpt-5.6-sol for implementation — automatic model routing across all 34 installed agents |
+| **Cost Optimization** | gpt-5.6-luna for advisory, gpt-6-astra for implementation — automatic model routing across all 34 installed agents |
 | **Briefing Signals** | Wrapper/session logging feeds `.briefing/agents/agent-log.jsonl`, daily summaries, and routing/profile hints |
 | **Smart Packs** | Project-type detection recommends relevant agent packs at session start |
 | **Agent Pack System** | On-demand domain specialist activation via `--profile` and `my-codex-packs` helper |
@@ -565,7 +565,7 @@ A GitHub Actions workflow runs every 3 days, pulling the latest commits from all
 <details>
 <summary><strong>What models does my-codex use?</strong></summary>
 
-Boss and sub-orchestrators (Sisyphus, Atlas, Oracle) use gpt-5.6-sol with high reasoning effort. Standard workers use gpt-5.6-terra with medium reasoning. Lightweight advisory agents use gpt-5.6-luna.
+Boss and sub-orchestrators (Sisyphus, Atlas, Oracle) use gpt-6-astra with high reasoning effort (Boss, Oracle, and Prometheus at xhigh). Standard workers use gpt-5.6-terra with medium reasoning. Lightweight advisory agents use gpt-5.6-luna.
 
 Skills consume the SKILL.md standard as-is with no transformation; only agents are converted to Codex TOML, and the model tier for that conversion is managed from a single file, `scripts/model-tiers.sh`. When Codex ships its next model generation, update only that file — `scripts/md-to-toml.sh` and `install.sh` both source it.
 

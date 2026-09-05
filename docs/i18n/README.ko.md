@@ -104,7 +104,7 @@ Boss는 가장 적합한 매칭을 찾을 때까지 모든 요청을 우선순�
 
 | 복잡도 | 모델 | 사용 대상 |
 |-----------|-------|----------|
-| 심층 분석, 아키텍처 | gpt-5.6-sol (high reasoning) | Boss, Oracle, Sisyphus, Atlas |
+| 심층 분석, 아키텍처 | gpt-6-astra (high/xhigh reasoning) | Boss, Oracle, Sisyphus, Atlas |
 | 표준 구현 | gpt-5.6-terra (medium) | executor, debugger, security-reviewer |
 | 빠른 조회, 탐색 | gpt-5.6-luna (low) | explore, 간단한 자문 |
 
@@ -145,7 +145,7 @@ Boss는 작업이 있던 모든 턴 — 파일 편집·생성, 커밋/PR/머지,
 └───────────────────────┬─────────────────────────────┘
                         ▼
 ┌─────────────────────────────────────────────────────┐
-│  Boss · Meta-Orchestrator (gpt-5.6-sol high)              │
+│  Boss · Meta-Orchestrator (gpt-6-astra xhigh)              │
 │  Discovery → Classification → Matching → Delegation  │
 └──┬──────────┬──────────┬──────────┬─────────────────┘
    │          │          │          │
@@ -188,7 +188,7 @@ Boss는 작업이 있던 모든 턴 — 파일 편집·생성, 커밋/PR/머지,
 
 | 에이전트 | 모델 | 역할 | 출처 |
 |-------|-------|------|--------|
-| Boss | gpt-5.6-sol high | 동적 런타임 탐색 → 역량 매칭 → 최적 라우팅. 코드를 직접 작성하지 않습니다. | my-codex |
+| Boss | gpt-6-astra xhigh | 동적 런타임 탐색 → 역량 매칭 → 최적 라우팅. 코드를 직접 작성하지 않습니다. | my-codex |
 
 </details>
 
@@ -197,13 +197,13 @@ Boss는 작업이 있던 모든 턴 — 파일 편집·생성, 커밋/PR/머지,
 
 | 에이전트 | 모델 | 역할 | 출처 |
 |-------|-------|------|--------|
-| Sisyphus | gpt-5.6-sol high | 의도 분류 → 전문가 위임 → 검증 | [oh-my-openagent](https://github.com/code-yeongyu/oh-my-openagent) |
-| Hephaestus | gpt-5.6-sol high | 자율적 탐색 → 계획 → 실행 → 검증 | oh-my-openagent |
-| Atlas | gpt-5.6-sol high | 작업 분해 + 4단계 QA 검증 | oh-my-openagent |
-| Oracle | gpt-5.6-sol high | 전략적 기술 컨설팅 (읽기 전용) | oh-my-openagent |
-| Metis | gpt-5.6-sol high | 의도 분석, 모호성 탐지 | oh-my-openagent |
-| Momus | gpt-5.6-sol high | 계획 실현 가능성 검토 | oh-my-openagent |
-| Prometheus | gpt-5.6-sol high | 인터뷰 기반 세부 계획 수립 | oh-my-openagent |
+| Sisyphus | gpt-6-astra high | 의도 분류 → 전문가 위임 → 검증 | [oh-my-openagent](https://github.com/code-yeongyu/oh-my-openagent) |
+| Hephaestus | gpt-6-astra high | 자율적 탐색 → 계획 → 실행 → 검증 | oh-my-openagent |
+| Atlas | gpt-6-astra high | 작업 분해 + 4단계 QA 검증 | oh-my-openagent |
+| Oracle | gpt-6-astra xhigh | 전략적 기술 컨설팅 (읽기 전용) | oh-my-openagent |
+| Metis | gpt-6-astra high | 의도 분석, 모호성 탐지 | oh-my-openagent |
+| Momus | gpt-6-astra high | 계획 실현 가능성 검토 | oh-my-openagent |
+| Prometheus | gpt-6-astra xhigh | 인터뷰 기반 세부 계획 수립 | oh-my-openagent |
 | Librarian | gpt-5.6-terra medium | MCP를 통한 오픈소스 문서 검색 | oh-my-openagent |
 | Multimodal-Looker | gpt-5.6-terra medium | 이미지/스크린샷/다이어그램 분석 | oh-my-openagent |
 
@@ -406,7 +406,7 @@ my-codex는 **4개의 업스트림 서브모듈**과 벤더링된 스냅샷 1개
 | **Boss 메타 오케스트레이터** | 동적 역량 탐색 → 의도 분류 → 4단계 우선순위 라우팅 → 위임 → 검증 |
 | **3단계 스프린트** | 설계 (대화형) → 실행 (executor를 통한 자율) → 리뷰 (설계 문서와 대화형 비교) |
 | **에이전트 티어 우선순위** | core > omo > omx > 옵트인 팩 순으로 중복 제거. 이미 설치된 에이전트와 이름이 겹치는 팩 에이전트는 건너뜁니다. 가장 특화된 에이전트가 선택됩니다. |
-| **비용 최적화** | 자문에는 gpt-5.6-luna, 구현에는 gpt-5.6-sol — 설치된 34개 에이전트 전체에 대한 자동 모델 라우팅 |
+| **비용 최적화** | 자문에는 gpt-5.6-luna, 구현에는 gpt-6-astra — 설치된 34개 에이전트 전체에 대한 자동 모델 라우팅 |
 | **에이전트 텔레메트리** | PostToolUse 훅이 에이전트 사용량을 `agent-usage.jsonl`에 기록 |
 | **Smart Packs** | 프로젝트 유형 감지로 세션 시작 시 관련 에이전트 팩 추천 |
 | **에이전트 팩 시스템** | `--profile` 및 `my-codex-packs` 헬퍼를 통한 온디맨드 도메인 전문가 활성화 |
@@ -537,7 +537,7 @@ GitHub Actions 워크플로가 3일마다 실행되어 4개 업스트림 서브�
 <details>
 <summary><strong>my-codex는 어떤 모델을 사용하나요?</strong></summary>
 
-Boss와 서브 오케스트레이터(Sisyphus, Atlas, Oracle)는 high reasoning effort의 gpt-5.6-sol를 사용합니다. 표준 작업자는 medium reasoning의 gpt-5.6-terra를 사용합니다. 경량 자문 에이전트는 gpt-5.6-luna를 사용합니다.
+Boss와 서브 오케스트레이터(Sisyphus, Atlas, Oracle)는 high reasoning effort의 gpt-6-astra를 사용합니다. 표준 작업자는 medium reasoning의 gpt-5.6-terra를 사용합니다. 경량 자문 에이전트는 gpt-5.6-luna를 사용합니다.
 
 </details>
 

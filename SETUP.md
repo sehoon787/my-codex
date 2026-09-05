@@ -176,12 +176,12 @@ Codex CLI uses OpenAI reasoning models. Route tasks by complexity:
 | Model | Reasoning Effort | Use For |
 |---|---|---|
 | gpt-6-astra (high) | Deep | Architecture, complex analysis, security review |
-| gpt-5.6-terra (medium) | Standard | Implementation, code review, debugging |
-| gpt-5.6-luna (low) | Fast | Quick lookups, exploration, trivial changes |
+| gpt-5.6-sol (medium) | Standard | Implementation, code review, debugging |
+| gpt-5.6-terra (low) | Fast | Quick lookups, exploration, trivial changes |
 
 Set default model in `~/.codex/config.toml`:
 ```toml
-model = "gpt-5.6-terra"
+model = "gpt-5.6-sol"
 model_reasoning_effort = "medium"
 multi_agent = true
 ```

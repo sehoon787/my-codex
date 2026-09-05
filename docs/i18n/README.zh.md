@@ -105,8 +105,8 @@ Boss 对每个请求按优先级链逐级匹配，直到找到最佳方案：
 | 复杂度 | 模型 | 用途 |
 |-----------|-------|----------|
 | 深度分析、架构 | gpt-6-astra （high/xhigh reasoning） | Boss、Oracle、Sisyphus、Atlas |
-| 标准实现 | gpt-5.6-terra（medium） | executor、debugger、security-reviewer |
-| 快速查询、探索 | gpt-5.6-luna（low） | explore、简单咨询 |
+| 标准实现 | gpt-5.6-sol（medium） | executor、debugger、security-reviewer |
+| 快速查询、探索 | gpt-5.6-terra（low） | explore、简单咨询 |
 
 ### 三阶段冲刺工作流
 
@@ -204,8 +204,8 @@ Boss 会以一份无需打开 diff 即可浏览的结构化最终报告来结束
 | Metis | gpt-6-astra high | 意图分析、歧义检测 | oh-my-openagent |
 | Momus | gpt-6-astra high | 计划可行性评审 | oh-my-openagent |
 | Prometheus | gpt-6-astra xhigh | 基于访谈的详细规划 | oh-my-openagent |
-| Librarian | gpt-5.6-terra medium | 通过 MCP 搜索开源文档 | oh-my-openagent |
-| Multimodal-Looker | gpt-5.6-terra medium | 图像 / 截图 / 图表分析 | oh-my-openagent |
+| Librarian | gpt-5.6-sol medium | 通过 MCP 搜索开源文档 | oh-my-openagent |
+| Multimodal-Looker | gpt-5.6-sol medium | 图像 / 截图 / 图表分析 | oh-my-openagent |
 
 </details>
 
@@ -406,7 +406,7 @@ my-codex 由 **4 个上游子模块**，加上 1 份内置快照、2 个适配/�
 | **Boss 元编排器** | 动态能力发现 → 意图分类 → 4 级优先路由 → 委派 → 验证 |
 | **三阶段冲刺** | 设计（交互式）→ 执行（通过 executor 自主进行）→ 审查（交互式对比设计文档） |
 | **Agent 层级优先级** | core > omo > omx > 可选包 依次去重。与已安装 Agent 同名的包内 Agent 会被跳过。最专业的 Agent 优先。 |
-| **成本优化** | 咨询用 gpt-5.6-luna，实现用 gpt-6-astra——覆盖全部 34 个已安装 Agent 的自动模型路由 |
+| **成本优化** | 查询用 gpt-5.6-terra，实现用 gpt-5.6-sol，架构与评审用 gpt-6-astra——覆盖全部 34 个已安装 Agent 的自动模型路由 |
 | **Agent 遥测** | PostToolUse hook 将 Agent 使用情况记录到 `agent-usage.jsonl` |
 | **智能包** | 项目类型检测在会话开始时推荐相关 Agent 包 |
 | **Agent 包系统** | 通过 `--profile` 和 `my-codex-packs` 助手按需激活领域专家 |
@@ -462,7 +462,7 @@ bash /tmp/my-codex/install.sh --profile full
 ```toml
 name = "debugger"
 description = "Focused debugging specialist — traces failures to root cause"
-model = "gpt-5.6-terra"
+model = "gpt-5.6-sol"
 model_reasoning_effort = "medium"
 
 [developer_instructions]
@@ -537,7 +537,7 @@ GitHub Actions 工作流每 3 天运行一次，从 4 个上游子模块拉取�
 <details>
 <summary><strong>my-codex 使用哪些模型？</strong></summary>
 
-Boss 和子编排器（Sisyphus、Atlas、Oracle）使用 gpt-6-astra 高推理强度。标准工作者使用 gpt-5.6-terra 中等推理强度。轻量级咨询 Agent 使用 gpt-5.6-luna。
+Boss 和子编排器（Sisyphus、Atlas、Oracle）使用 gpt-6-astra 高推理强度。标准工作者使用 gpt-5.6-sol 中等推理强度。轻量级咨询 Agent 使用 gpt-5.6-terra。
 
 </details>
 

@@ -105,8 +105,8 @@ Boss はすべてのリクエストを優先チェーンにカスケードし、
 | 複雑度 | モデル | 使用場面 |
 |-----------|-------|----------|
 | 深い分析、アーキテクチャ | gpt-6-astra (high/xhigh reasoning) | Boss、Oracle、Sisyphus、Atlas |
-| 標準的な実装 | gpt-5.6-terra (medium) | executor、debugger、security-reviewer |
-| 簡単な検索、調査 | gpt-5.6-luna (low) | explore、簡易アドバイザリー |
+| 標準的な実装 | gpt-5.6-sol (medium) | executor、debugger、security-reviewer |
+| 簡単な検索、調査 | gpt-5.6-terra (low) | explore、簡易アドバイザリー |
 
 ### 3 フェーズスプリントワークフロー
 
@@ -204,8 +204,8 @@ Boss は作業が発生したすべてのターン — ファイルの編集・�
 | Metis | gpt-6-astra high | インテント分析、曖昧さ検出 | oh-my-openagent |
 | Momus | gpt-6-astra high | 計画実現可能性レビュー | oh-my-openagent |
 | Prometheus | gpt-6-astra xhigh | インタビューベースの詳細計画立案 | oh-my-openagent |
-| Librarian | gpt-5.6-terra medium | MCP 経由のオープンソースドキュメント検索 | oh-my-openagent |
-| Multimodal-Looker | gpt-5.6-terra medium | 画像・スクリーンショット・図の分析 | oh-my-openagent |
+| Librarian | gpt-5.6-sol medium | MCP 経由のオープンソースドキュメント検索 | oh-my-openagent |
+| Multimodal-Looker | gpt-5.6-sol medium | 画像・スクリーンショット・図の分析 | oh-my-openagent |
 
 </details>
 
@@ -406,7 +406,7 @@ my-codex は **4 つのアップストリームサブモジュール**に加え�
 | **Boss メタオーケストレーター** | ダイナミックケイパビリティ検出 → インテント分類 → 4 優先ルーティング → 委任 → 検証 |
 | **3 フェーズスプリント** | 設計（インタラクティブ）→ 実行（executor による自律）→ レビュー（設計書との比較インタラクティブ） |
 | **エージェント層優先度** | core > omo > omx > オプトインパックの順で重複排除。既存エージェントと名前が衝突するパックエージェントはスキップ。最も特化したエージェントが優先。 |
-| **コスト最適化** | アドバイザリーには gpt-5.6-luna、実装には gpt-6-astra — インストール済み 34 エージェント全体への自動モデルルーティング |
+| **コスト最適化** | 参照には gpt-5.6-terra、実装には gpt-5.6-sol、アーキテクチャとレビューには gpt-6-astra — インストール済み 34 エージェント全体への自動モデルルーティング |
 | **エージェントテレメトリー** | PostToolUse フックがエージェント使用状況を `agent-usage.jsonl` に記録 |
 | **スマートパック** | プロジェクトタイプ検出がセッション開始時に関連エージェントパックを推奨 |
 | **エージェントパックシステム** | `--profile` と `my-codex-packs` ヘルパーによるオンデマンドのドメインスペシャリスト有効化 |
@@ -462,7 +462,7 @@ bash /tmp/my-codex/install.sh --profile full
 ```toml
 name = "debugger"
 description = "Focused debugging specialist — traces failures to root cause"
-model = "gpt-5.6-terra"
+model = "gpt-5.6-sol"
 model_reasoning_effort = "medium"
 
 [developer_instructions]
@@ -537,7 +537,7 @@ GitHub Actions ワークフローが 3 日ごとに実行され、4 つのアッ
 <details>
 <summary><strong>my-codex が使用するモデルは何ですか？</strong></summary>
 
-Boss とサブオーケストレーター（Sisyphus、Atlas、Oracle）は高い推論努力で gpt-6-astra を使用します。標準ワーカーは中程度の推論で gpt-5.6-terra を使用します。軽量アドバイザリーエージェントは gpt-5.6-luna を使用します。
+Boss とサブオーケストレーター（Sisyphus、Atlas、Oracle）は高い推論努力で gpt-6-astra を使用します。標準ワーカーは中程度の推論で gpt-5.6-sol を使用します。軽量アドバイザリーエージェントは gpt-5.6-terra を使用します。
 
 </details>
 

@@ -1,6 +1,6 @@
 name = "librarian"
 description = "Use when a question about an open-source library must be answered from its real source or docs, not memory; returns the answer with GitHub permalinks to the exact lines."
-model = "gpt-5.6-terra"
+model = "gpt-5.6-sol"
 model_reasoning_effort = "medium"
 sandbox_mode = "read-only"
 developer_instructions = """

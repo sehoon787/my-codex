@@ -105,8 +105,8 @@ Boss leitet jede Anfrage durch eine Prioritätskette, bis die beste Übereinstim
 | Komplexität | Modell | Verwendet für |
 |-------------|--------|---------------|
 | Tiefgehende Analyse, Architektur | gpt-6-astra (high/xhigh reasoning) | Boss, Oracle, Sisyphus, Atlas |
-| Standardimplementierung | gpt-5.6-terra (medium) | executor, debugger, security-reviewer |
-| Schnelle Suche, Erkundung | gpt-5.6-luna (low) | explore, einfache Beratung |
+| Standardimplementierung | gpt-5.6-sol (medium) | executor, debugger, security-reviewer |
+| Schnelle Suche, Erkundung | gpt-5.6-terra (low) | explore, einfache Beratung |
 
 ### 3-Phasen-Sprint-Workflow
 
@@ -204,8 +204,8 @@ Er wird nur ganz am Ende des Reasonings ausgelöst — niemals als Fortschrittsm
 | Metis | gpt-6-astra high | Absichtsanalyse, Mehrdeutigkeitserkennung | oh-my-openagent |
 | Momus | gpt-6-astra high | Überprüfung der Planumsetzbarkeit | oh-my-openagent |
 | Prometheus | gpt-6-astra xhigh | Interviewbasierte detaillierte Planung | oh-my-openagent |
-| Librarian | gpt-5.6-terra medium | Open-Source-Dokumentationssuche über MCP | oh-my-openagent |
-| Multimodal-Looker | gpt-5.6-terra medium | Bild-/Screenshot-/Diagrammanalyse | oh-my-openagent |
+| Librarian | gpt-5.6-sol medium | Open-Source-Dokumentationssuche über MCP | oh-my-openagent |
+| Multimodal-Looker | gpt-5.6-sol medium | Bild-/Screenshot-/Diagrammanalyse | oh-my-openagent |
 
 </details>
 
@@ -406,7 +406,7 @@ Funktionen, die speziell für dieses Projekt entwickelt wurden und über das hin
 | **Boss Meta-Orchestrator** | Dynamische Fähigkeitsentdeckung → Absichtsklassifizierung → 4-Prioritäten-Routing → Delegation → Verifikation |
 | **3-Phasen-Sprint** | Design (interaktiv) → Ausführung (autonom über executor) → Review (interaktiv vs. Design-Dokument) |
 | **Agenten-Tier-Priorität** | core > omo > omx > Opt-in-Packs. Pack-Agenten mit Namenskollision zu einem bereits installierten Agenten werden übersprungen. Der speziellste Agent gewinnt. |
-| **Kostenoptimierung** | gpt-5.6-luna für Beratung, gpt-6-astra für Implementierung — automatisches Modell-Routing über alle 34 installierten Agenten |
+| **Kostenoptimierung** | gpt-5.6-terra für Nachschlagen, gpt-5.6-sol für Implementierung, gpt-6-astra für Architektur und Review — automatisches Modell-Routing über alle 34 installierten Agenten |
 | **Agenten-Telemetrie** | PostToolUse-Hook protokolliert Agentennutzung in `agent-usage.jsonl` |
 | **Smart Packs** | Projekttypenerkennung empfiehlt relevante Agenten-Packs beim Sitzungsstart |
 | **Agenten-Pack-System** | On-demand-Domänenspezialisten-Aktivierung über `--profile` und `my-codex-packs`-Hilfsprogramm |
@@ -462,7 +462,7 @@ Jeder Agent ist eine native TOML-Datei in `~/.codex/agents/`:
 ```toml
 name = "debugger"
 description = "Focused debugging specialist — traces failures to root cause"
-model = "gpt-5.6-terra"
+model = "gpt-5.6-sol"
 model_reasoning_effort = "medium"
 
 [developer_instructions]
@@ -537,7 +537,7 @@ Ein GitHub Actions-Workflow läuft alle 3 Tage, zieht die neuesten Commits aus a
 <details>
 <summary><strong>Welche Modelle verwendet my-codex?</strong></summary>
 
-Boss und Sub-Orchestratoren (Sisyphus, Atlas, Oracle) verwenden gpt-6-astra mit hohem Reasoning-Aufwand. Standard-Worker verwenden gpt-5.6-terra mit mittlerem Reasoning. Leichtgewichtige Beratungsagenten verwenden gpt-5.6-luna.
+Boss und Sub-Orchestratoren (Sisyphus, Atlas, Oracle) verwenden gpt-6-astra mit hohem Reasoning-Aufwand. Standard-Worker verwenden gpt-5.6-sol mit mittlerem Reasoning. Leichtgewichtige Beratungsagenten verwenden gpt-5.6-terra.
 
 </details>
 

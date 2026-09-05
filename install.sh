@@ -992,6 +992,8 @@ if [ "$SKIP_OMX" = "0" ]; then
             printf 'name = "%s"\n' "$fname"
             printf 'description = "Team orchestration specialist"\n'
             printf 'model = "%s"\n' "$MODEL_TIER_HIGH"
+            # Deliberately medium (not $MODEL_TIER_HIGH_EFFORT): these frontmatter-less
+            # omx prompts are team-orchestration relays, not deep-reasoning agents.
             printf 'model_reasoning_effort = "medium"\n'
             printf 'developer_instructions = """\n'
             tr -d '\r' < "$md_file"

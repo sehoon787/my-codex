@@ -105,7 +105,7 @@ Boss 对每个请求按优先级链逐级匹配，直到找到最佳方案：
 | 复杂度 | 模型 | 用途 |
 |-----------|-------|----------|
 | 深度分析、架构 | gpt-6-astra （high/xhigh reasoning） | Boss、Oracle、Sisyphus、Atlas |
-| 标准实现 | gpt-5.6-sol（medium） | executor、debugger、security-reviewer |
+| 标准实现 | gpt-5.6-sol（medium） | executor、debugger、test-engineer |
 | 快速查询、探索 | gpt-5.6-terra（low） | explore、简单咨询 |
 
 ### 三阶段冲刺工作流

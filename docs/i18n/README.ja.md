@@ -105,7 +105,7 @@ Boss はすべてのリクエストを優先チェーンにカスケードし、
 | 複雑度 | モデル | 使用場面 |
 |-----------|-------|----------|
 | 深い分析、アーキテクチャ | gpt-6-astra (high/xhigh reasoning) | Boss、Oracle、Sisyphus、Atlas |
-| 標準的な実装 | gpt-5.6-sol (medium) | executor、debugger、security-reviewer |
+| 標準的な実装 | gpt-5.6-sol (medium) | executor、debugger、test-engineer |
 | 簡単な検索、調査 | gpt-5.6-terra (low) | explore、簡易アドバイザリー |
 
 ### 3 フェーズスプリントワークフロー

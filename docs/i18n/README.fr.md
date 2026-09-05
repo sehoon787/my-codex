@@ -109,7 +109,7 @@ Boss cascade chaque requête dans une chaîne de priorités jusqu'à trouver la 
 | Complexité | Modèle | Utilisé pour |
 |-----------|-------|----------|
 | Analyse approfondie, architecture | gpt-6-astra (raisonnement high/xhigh) | Boss, Oracle, Sisyphus, Atlas |
-| Implémentation standard | gpt-5.6-sol (moyen) | executor, debugger, security-reviewer |
+| Implémentation standard | gpt-5.6-sol (moyen) | executor, debugger, test-engineer |
 | Recherche rapide, exploration | gpt-5.6-terra (faible) | explore, conseil simple |
 
 ### Workflow en sprint 3 phases

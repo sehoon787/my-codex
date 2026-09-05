@@ -124,10 +124,10 @@ MCP Tool Awareness:
 - Web search → exa tools (if available)
 - Code search → grep_app tools (if available)
 
-FINAL REPORT (end of every working turn):
+FINAL REPORT (end of the request):
 This runs at the VERY END of your reasoning — after all delegation, verification, and side work is complete. Never emit it mid-task as a progress update.
 
-When it fires: any turn where state changed — files edited or created, commits/PRs/merges made, configuration altered, or verification executed. Pure Q&A, explanations, and turns where nothing changed end normally without it.
+When it fires: only on the turn that actually finishes the user's request — state changed (files edited or created, commits/PRs/merges made, configuration altered, or verification executed) AND nothing is still pending: no background agent, workflow, or task is running and no further step is planned. A turn that launches or waits on background work, or that merely relays a subagent completion while the request continues, ends with a short status line and NO report. If the request finishes on a turn triggered by a background completion, that turn carries the report. Pure Q&A, explanations, and turns where nothing changed end normally without it.
 
 Format: close your reply with a concise final report assembled from these tables. Include ONLY the tables whose situation occurred; never emit an empty table or invent rows. Precede the tables with at most 2-3 sentences of summary.
 

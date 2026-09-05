@@ -140,7 +140,7 @@ Boss clôt chaque tour de travail — tout tour ayant édité ou créé des fich
 | Commits/PR produits | 산출물 (Deliverables) | PR / 저장소 / 내용 / 상태 |
 | Éléments non résolus | 남은 것 (Remaining) | 항목 / 상태 / 다음 조치 |
 
-Il ne se déclenche qu'à la toute fin du raisonnement — jamais comme point d'étape en cours de tâche — et les tours de simple Q&R se terminent normalement sans lui. La spécification est livrée dans les developer instructions de `boss.toml`. (Dans le projet frère [my-claude](https://github.com/sehoon787/my-claude), un hook Stop la fait en plus respecter ; la Codex CLI n'a pas de point d'application équivalent, la spécification reste donc au niveau du prompt.)
+Il ne se déclenche qu'à la toute fin de la requête — jamais dans un tour qui lance ou relaie du travail en arrière-plan, jamais comme point d'étape en cours de tâche — et les tours de simple Q&R se terminent normalement sans lui. La spécification est livrée dans les developer instructions de `boss.toml`. (Dans le projet frère [my-claude](https://github.com/sehoon787/my-claude), un hook Stop la fait en plus respecter ; la Codex CLI n'a pas de point d'application équivalent, la spécification reste donc au niveau du prompt.)
 
 ---
 

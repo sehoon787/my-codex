@@ -133,7 +133,7 @@ Boss schließt jeden Arbeits-Turn — jeden Turn, in dem Dateien bearbeitet oder
 | Commits/PRs erzeugt | 산출물 (Deliverables) | PR / 저장소 / 내용 / 상태 |
 | Etwas ungelöst | 남은 것 (Remaining) | 항목 / 상태 / 다음 조치 |
 
-Er wird nur ganz am Ende des Reasonings ausgelöst — niemals als Fortschrittsmeldung mitten in der Aufgabe — und reine Q&A-Turns enden normal ohne ihn. Die Spezifikation liegt in den developer instructions von `boss.toml`. (Im Schwesterprojekt [my-claude](https://github.com/sehoon787/my-claude) setzt zusätzlich ein Stop-Hook sie durch; die Codex CLI hat keinen vergleichbaren Durchsetzungspunkt, daher ist die Spezifikation hier auf Prompt-Ebene.)
+Er wird nur ganz am Ende der Anfrage ausgelöst — niemals in einem Turn, der Hintergrundarbeit startet oder weiterreicht, und niemals als Fortschrittsmeldung mitten in der Aufgabe — und reine Q&A-Turns enden normal ohne ihn. Die Spezifikation liegt in den developer instructions von `boss.toml`. (Im Schwesterprojekt [my-claude](https://github.com/sehoon787/my-claude) setzt zusätzlich ein Stop-Hook sie durch; die Codex CLI hat keinen vergleichbaren Durchsetzungspunkt, daher ist die Spezifikation hier auf Prompt-Ebene.)
 
 ---
 

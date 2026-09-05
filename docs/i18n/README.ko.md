@@ -133,7 +133,7 @@ Boss는 작업이 있던 모든 턴 — 파일 편집·생성, 커밋/PR/머지,
 | 커밋/PR 산출 | 산출물 (Deliverables) | PR / 저장소 / 내용 / 상태 |
 | 미해결 존재 | 남은 것 (Remaining) | 항목 / 상태 / 다음 조치 |
 
-이 보고는 추론의 맨 마지막에만 발동하며 — 작업 중간의 진행 상황 보고로는 절대 출력되지 않음 — 순수 질답 턴은 보고 없이 정상 종료됩니다. 규격은 `boss.toml`의 developer instructions에 담겨 있습니다. (자매 프로젝트 [my-claude](https://github.com/sehoon787/my-claude)에서는 Stop 훅이 추가로 이를 강제하지만, Codex CLI에는 동등한 강제 지점이 없어 여기서는 프롬프트 수준의 규격입니다.)
+이 보고는 요청의 맨 마지막에만 발동하며 — 백그라운드 작업을 띄우거나 그 완료를 중계하는 턴, 작업 중간의 진행 상황 보고로는 절대 출력되지 않음 — 순수 질답 턴은 보고 없이 정상 종료됩니다. 규격은 `boss.toml`의 developer instructions에 담겨 있습니다. (자매 프로젝트 [my-claude](https://github.com/sehoon787/my-claude)에서는 Stop 훅이 추가로 이를 강제하지만, Codex CLI에는 동등한 강제 지점이 없어 여기서는 프롬프트 수준의 규격입니다.)
 
 ---
 

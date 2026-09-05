@@ -142,7 +142,7 @@ Boss closes every working turn — any turn that edited files, made commits/PRs,
 | Commits/PRs produced | Deliverables | PR / Repo / Content / Status |
 | Anything unresolved | Remaining | Item / Status / Next step |
 
-It fires only at the very end of reasoning — never as a mid-task progress update — and pure Q&A turns end normally without it. The spec ships in `boss.toml`'s developer instructions. (In the sibling [my-claude](https://github.com/sehoon787/my-claude), a Stop hook additionally enforces it; the Codex CLI has no equivalent enforcement point, so here the spec is prompt-level.)
+It fires only at the very end of the request — never on a turn that launches or relays background work, never as a mid-task progress update — and pure Q&A turns end normally without it. The spec ships in `boss.toml`'s developer instructions. (In the sibling [my-claude](https://github.com/sehoon787/my-claude), a Stop hook additionally enforces it; the Codex CLI has no equivalent enforcement point, so here the spec is prompt-level.)
 
 ---
 

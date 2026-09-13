@@ -99,7 +99,8 @@ elif [ "$MODE" = "installed" ]; then
   SKILL_COUNT=$(find "$HOME/.codex/skills" -maxdepth 1 -mindepth 1 -type d 2>/dev/null | wc -l | tr -d ' ')
   [ "$SKILL_COUNT" -ge 5 ] && echo "OK: skills — $SKILL_COUNT installed" || { echo "FAIL: skills has $SKILL_COUNT (expected >= 5)"; ERRORS=$((ERRORS + 1)); }
 
-  [ -f "$HOME/.codex/hooks/hooks.json" ] && echo "OK: hooks.json present" || { echo "FAIL: hooks.json missing"; ERRORS=$((ERRORS + 1)); }
+  [ -f "$HOME/.codex/hooks.json" ] && echo "OK: hooks.json present at CODEX root" || { echo "FAIL: hooks.json missing at CODEX root"; ERRORS=$((ERRORS + 1)); }
+  [ ! -f "$HOME/.codex/hooks/hooks.json" ] && echo "OK: no stale hooks/hooks.json" || { echo "FAIL: stale hooks/hooks.json present"; ERRORS=$((ERRORS + 1)); }
   [ -f "$HOME/.codex/.my-codex-manifest.txt" ] && echo "OK: manifest present" || { echo "FAIL: manifest missing"; ERRORS=$((ERRORS + 1)); }
 
   # Agent packs

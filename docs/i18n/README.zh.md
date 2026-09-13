@@ -133,7 +133,7 @@ Boss 会以一份无需打开 diff 即可浏览的结构化最终报告来结束
 | 产出提交/PR | 산출물 (Deliverables) | PR / 저장소 / 내용 / 상태 |
 | 存在未解决项 | 남은 것 (Remaining) | 항목 / 상태 / 다음 조치 |
 
-该报告仅在请求的最末尾触发 — 绝不会在启动或转达后台任务的回合、或作为任务中途的进度更新输出 — 纯问答回合则正常结束、不生成报告。规范随 `boss.toml` 的 developer instructions 一起提供。（在姊妹项目 [my-claude](https://github.com/sehoon787/my-claude) 中还有一个 Stop 钩子额外强制执行；Codex CLI 没有等效的强制点，因此这里的规范是提示词级别的。）
+该报告仅在请求的最末尾触发 — 绝不会在启动或转达后台任务的回合、或作为任务中途的进度更新输出 — 纯问答回合则正常结束、不生成报告。规范同时随 `boss.toml` 的 developer instructions 和 `~/.codex/AGENTS.md` 提供，因此主会话也能看到。与姊妹项目 [my-claude](https://github.com/sehoon787/my-claude) 一样，一个 Stop 钩子（`hooks/stop-final-report.js`）会强制执行它：当某个回合改变了状态却没有输出报告表格时，钩子会将该回合阻断一次并要求补上报告。
 
 ---
 

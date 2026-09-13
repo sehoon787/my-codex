@@ -59,7 +59,9 @@ What gets installed:
 | `~/.codex/skills/` | 123 skills (ECC 79 + gstack 27 + superpowers 13 + core 4) |
 | `~/.codex/AGENTS.md` | Agent catalog and routing instructions |
 | `~/.codex/enabled-agent-packs.txt` | Persisted active pack set; first install writes an empty set (packs are opt-in) |
-| `~/.codex/config.toml` | `multi_agent = true` + model defaults |
+| `~/.codex/config.toml` | `multi_agent = true`, `hooks = true` under `[features]`, + model defaults |
+| `~/.codex/hooks.json` | Lifecycle hook registry — Codex reads it only from this path, not from `hooks/` |
+| `~/.codex/hooks/` | Hook scripts referenced by `hooks.json` |
 | `~/.codex/git-hooks/` | `prepare-commit-msg` + `commit-msg` + `post-commit` hooks for Codex attribution |
 | `~/.codex/bin/codex` | Wrapper that records Codex-touched files for commit attribution |
 | MCP servers | 3 servers registered via `codex mcp add`: context7, exa, grep_app |
@@ -75,6 +77,7 @@ echo "Agent packs:  $(find ~/.codex/agent-packs -name '*.toml' | wc -l)"
 echo "Skills:       $(find ~/.codex/skills -name 'SKILL.md' | wc -l)"
 echo "AGENTS.md:    $(test -f ~/.codex/AGENTS.md && echo OK || echo MISSING)"
 echo "config.toml:  $(grep -q multi_agent ~/.codex/config.toml && echo OK || echo MISSING)"
+echo "hooks.json:   $(test -f ~/.codex/hooks.json && echo OK || echo MISSING)"
 echo "Enabled set:  $(grep -Ev '^(#|$)' ~/.codex/enabled-agent-packs.txt | paste -sd ', ' -)"
 ```
 
@@ -86,7 +89,10 @@ Agent packs:  17
 Skills:       123
 AGENTS.md:    OK
 config.toml:  OK
+hooks.json:   OK
 ```
+
+Hooks note: `install.sh` sets `hooks = true` under `[features]` in `config.toml` and writes the registry to `~/.codex/hooks.json`. Codex asks once, on your next interactive start, to review and trust these hooks — choose "Trust all and continue". Until you do, no my-codex hook runs.
 
 Note: agents and skills come from curated allowlists (`scripts/skill-allowlists.sh`), not bulk copies. `install.sh` verifies the installed footprint above.
 

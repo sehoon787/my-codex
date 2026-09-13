@@ -190,7 +190,9 @@ if [ "$_vc_today" != "$_vc_last" ]; then
         _pull_result=$(cd "$_repo_dir" && git pull --ff-only 2>&1) || true
 
         if [ -d "$_repo_dir/hooks" ]; then
-          cp "$_repo_dir/hooks/hooks.json" "$HOME/.codex/hooks/hooks.json" 2>/dev/null || true
+          # Codex reads lifecycle hooks from $CODEX_HOME/hooks.json (root), not hooks/.
+          rm -f "$HOME/.codex/hooks/hooks.json" 2>/dev/null || true
+          cp "$_repo_dir/hooks/hooks.json" "$HOME/.codex/hooks.json" 2>/dev/null || true
           for _hf in "$_repo_dir/hooks/"*.js; do
             [ -f "$_hf" ] && cp "$_hf" "$HOME/.codex/hooks/" 2>/dev/null || true
           done
@@ -204,7 +206,7 @@ if [ "$_vc_today" != "$_vc_last" ]; then
         fi
 
         if [ -f "$_repo_dir/scripts/merge-hooks.js" ]; then
-          node "$_repo_dir/scripts/merge-hooks.js" "$HOME/.codex/hooks/hooks.json" 2>/dev/null || true
+          node "$_repo_dir/scripts/merge-hooks.js" 2>/dev/null || true
         fi
 
         _new_sha=$(cd "$_repo_dir" && git rev-parse --short=12 HEAD 2>/dev/null)

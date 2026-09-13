@@ -1362,11 +1362,16 @@ fi
 # this flag existed keep their [features] table, so insert the key directly under that
 # header -- appending at EOF would land it inside whichever table comes last
 # (typically an [mcp_servers.*] table) and silently do nothing.
+# $2 = "true" restricts the match to an enabled flag; omitted, any value matches.
+# The insert guard wants mere presence (an explicit `hooks = false` is a user
+# opt-out, not something to silently overwrite); the status line wants the value.
 features_table_has_hooks() {
-  awk '
+  awk -v want="${2:-}" '
     /^[[:space:]]*\[features\][[:space:]]*$/ { in_features = 1; next }
     /^[[:space:]]*\[/ { in_features = 0 }
-    in_features && /^[[:space:]]*hooks[[:space:]]*=/ { found = 1 }
+    in_features && /^[[:space:]]*hooks[[:space:]]*=/ {
+      if (want == "" || $0 ~ "^[[:space:]]*hooks[[:space:]]*=[[:space:]]*" want) found = 1
+    }
     END { exit(found ? 0 : 1) }
   ' "$1"
 }
@@ -1483,7 +1488,7 @@ if [ "$extra_skills" -gt 0 ]; then
 fi
 echo "  AGENTS.md:     $(test -f "$CODEX_ROOT/AGENTS.md" && echo 'OK' || echo 'MISSING')"
 echo "  config.toml:   $(grep -q 'multi_agent' "$CODEX_ROOT/config.toml" 2>/dev/null && echo 'OK' || echo 'NEEDS CONFIG')"
-echo "  features.hooks: $(features_table_has_hooks "$CODEX_ROOT/config.toml" 2>/dev/null && echo 'OK' || echo 'NEEDS CONFIG')"
+echo "  features.hooks: $(features_table_has_hooks "$CODEX_ROOT/config.toml" true 2>/dev/null && echo 'OK' || echo 'NEEDS CONFIG')"
 echo "  hooksPath:     $(git config --global --get core.hooksPath 2>/dev/null || echo 'UNSET')"
 echo "  Codex attr:    $(git config --global --get my-codex.codexAttribution 2>/dev/null || echo 'UNSET')"
 echo "  version:       $(cat "$VERSION_FILE" 2>/dev/null || echo 'unknown')"

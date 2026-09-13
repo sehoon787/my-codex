@@ -69,33 +69,6 @@
             "type": "command",
             "command": "node \"$HOME/.codex/hooks/session-sync.js\" subagent",
             "timeout": 5000
-          },
-          {
-            "type": "command",
-            "command": "node -e \"console.log(JSON.stringify({hookSpecificOutput:{additionalContext:'VERIFICATION REQUIRED: Subagent finished. (1) Read changed files yourself, (2) Run tests/diagnostics to verify, (3) Only then mark task complete. Agent execution auto-logged to .briefing/agents/agent-log.jsonl.'}}))\"",
-            "timeout": 5000
-          }
-        ]
-      }
-    ],
-    "TeammateIdle": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node -e \"console.log(JSON.stringify({hookSpecificOutput:{additionalContext:'Teammate idle. Check TaskList — if all tasks done, send shutdown_request. If tasks remain, send next instructions.'}}))\"",
-            "timeout": 5000
-          }
-        ]
-      }
-    ],
-    "TaskCompleted": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node -e \"console.log(JSON.stringify({hookSpecificOutput:{additionalContext:'Task completed. Verify deliverable exists and check quality before accepting.'}}))\"",
-            "timeout": 5000
           }
         ]
       }

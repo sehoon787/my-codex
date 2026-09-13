@@ -388,8 +388,6 @@ The Stop hook checks whether `/boss-briefing` has run today. If not, it blocks s
 | Vault Reminder | UserPromptSubmit | Suggests /boss-briefing after 5+ messages |
 | Completion Check | Stop | Runs profile fallback + guards /boss-briefing |
 | Final Report Gate | Stop | Blocks the turn once if work happened but no final-report table was emitted |
-| Teammate Guide | TeammateIdle | Prompts leader on idle teammates |
-| Quality Gate | TaskCompleted | Verifies deliverable quality |
 
 Codex loads these from `~/.codex/hooks.json` and only when `features.hooks = true`, so `install.sh` writes the file at that path and sets the flag under `[features]` in `config.toml`. On the next interactive Codex start you are asked once to review and trust the hooks — choose "Trust all and continue". Until you do, none of them run.
 

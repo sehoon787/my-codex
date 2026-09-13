@@ -62,7 +62,9 @@ pack_agents="$(ls codex-agents/packs/*/ 2>/dev/null)"
 # source list into one clean space-joined string (same idiom install.sh uses
 # for SUPERPOWERS_SKILL_EXCLUDE matching). Strip .toml so basenames compare
 # clean against routing-file references.
-INSTALLABLE="$(echo $ECC_SKILL_ALLOWLIST $GSTACK_SKILL_ALLOWLIST \
+# $ECC_SKILL_OPTIONAL_WEB is included: those skills are installable, just behind
+# `install.sh --skills=web`, so referencing one is not a dangling reference.
+INSTALLABLE="$(echo $ECC_SKILL_ALLOWLIST $ECC_SKILL_OPTIONAL_WEB $GSTACK_SKILL_ALLOWLIST \
   $skills_core gstack $superpowers \
   $agents_core $agents_omo $OMX_AGENT_ALLOWLIST $pack_agents | sed 's/\.toml//g')"
 

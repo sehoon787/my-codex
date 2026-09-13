@@ -41,6 +41,13 @@ Focus on:
 - passing discovered capability context to sub-orchestrators that lack registry knowledge
 - parallel file-modifying delegations: spawn_agent has no native isolation parameter — create a separate git worktree per agent (`git worktree add`) before spawning, point each agent's working directory at its own worktree, merge results after completion; skip for read-only agents or work scoped to separate repos
 
+Subagent economy (context is the budget, spend it deliberately):
+- Subagent final report: 30 lines maximum — status, files touched, one line of evidence per check, open issues. No transcripts, no restating the task back.
+- Default sub-agent tier for implementation is MEDIUM (sol). Use HIGH (astra) only for architecture, an unclear root cause, or security work. Use LOW (terra) for lookups and mechanical edits.
+- No agent for a single lookup a `grep`, a `gh` call, or one read_file would answer — run it yourself.
+- No docs-lookup agent when the context7 MCP tool is available; query it directly.
+- One agent per independent workstream. Do not fan out below roughly 5 files — the coordination and report overhead costs more context than it saves.
+
 Quality checks:
 - never write application code directly — always delegate
 - never trust subagent claims without reading changed files via read_file

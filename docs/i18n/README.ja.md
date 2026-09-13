@@ -10,7 +10,7 @@
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 ![Agents](https://img.shields.io/badge/agents-17_core_%2B_17_opt--in-blue)
-![Skills](https://img.shields.io/badge/skills-123-purple)
+![Skills](https://img.shields.io/badge/skills-105-purple)
 ![MCP](https://img.shields.io/badge/MCP-3-green)
 ![Auto Sync](https://img.shields.io/badge/upstream_sync-every_3_days-brightgreen)
 
@@ -161,7 +161,7 @@ Boss は作業が発生したすべてのターン — ファイルの編集・�
 │  Boss 1 · OMO 9 · OMX 7                               │
 │  + 2 opt-in agent packs (17 agents, off by default)   │
 ├─────────────────────────────────────────────────────┤
-│  Skills Layer (123 from ECC + gstack + superpowers)   │
+│  Skills Layer (105 from ECC + gstack + superpowers)   │
 │  coding-standards · security-scan · deep-research     │
 │  /review · /qa · /cso · /ship                         │
 ├─────────────────────────────────────────────────────┤
@@ -178,7 +178,7 @@ Boss は作業が発生したすべてのターン — ファイルの編集・�
 |----------|------:|--------|
 | **コアエージェント**（常時ロード） | 17 | Boss 1 + OMO 9 + OMX 7 |
 | **エージェントパック**（オプトイン、デフォルトでは無効） | 17 | ベンダリング済み 2 カテゴリ: data-ai 13 + llmops 4 |
-| **スキル** | 123 | ECC 79 · gstack 27 · Superpowers 13 · Core 4 |
+| **スキル** | 105 | ECC 61 · gstack 27 · Superpowers 13 · Core 4 |
 | **MCP サーバー** | 3 | Context7、Exa、grep.app |
 | **config.toml** | 1 | my-codex |
 | **AGENTS.md** | 1 | my-codex |
@@ -252,13 +252,13 @@ bash /tmp/my-codex/install.sh --profile full      # インストール済みの�
 </details>
 
 <details>
-<summary><strong>スキル — 4 つのソースから 123</strong></summary>
+<summary><strong>スキル — 4 つのソースから 105</strong></summary>
 
 スキル単位の許可リストは `scripts/skill-allowlists.sh` にあり、何がインストールされるかはこのファイルが基準です。
 
 | ソース | 数 | 主なスキル |
 |--------|------:|------------|
-| [everything-claude-code](https://github.com/affaan-m/everything-claude-code) | 79 | coding-standards, python-testing, api-design, deep-research |
+| [everything-claude-code](https://github.com/affaan-m/everything-claude-code) | 61 | coding-standards, python-testing, api-design, deep-research |
 | [gstack](https://github.com/garrytan/gstack) | 27 | /qa, /review, /ship, /cso, /investigate, /office-hours |
 | [superpowers](https://github.com/obra/superpowers) | 13 | brainstorming, systematic-debugging, TDD, writing-plans |
 | [my-codex Core](https://github.com/sehoon787/my-codex) | 4 | boss-advanced, boss-briefing, briefing-vault, gstack-sprint |
@@ -370,7 +370,7 @@ my-codex は **4 つのアップストリームサブモジュール**に加え�
 
 | # | ソース | 方式 | 提供内容 |
 |---|--------|------|-----------------|
-| 1 | <img src="https://github.com/affaan-m.png?size=32" width="20" height="20" align="center"/> **[everything-claude-code](https://github.com/affaan-m/everything-claude-code)** — affaan-m | サブモジュール | 開発ワークフロー全般にわたる許可リストのスキル 79 個。Claude Code 固有のコンテンツを除去し、汎用コーディングスキルを保持。 |
+| 1 | <img src="https://github.com/affaan-m.png?size=32" width="20" height="20" align="center"/> **[everything-claude-code](https://github.com/affaan-m/everything-claude-code)** — affaan-m | サブモジュール | 開発ワークフロー全般にわたる許可リストのスキル 61 個。Claude Code 固有のコンテンツを除去し、汎用コーディングスキルを保持。 |
 | 2 | <img src="https://github.com/garrytan.png?size=32" width="20" height="20" align="center"/> **[gstack](https://github.com/garrytan/gstack)** — garrytan | サブモジュール | コードレビュー、QA、セキュリティ監査、デプロイメント向けの 27 スキル。Playwright ブラウザデーモンを含む。 |
 | 3 | <img src="https://github.com/Yeachan-Heo.png?size=32" width="20" height="20" align="center"/> **[oh-my-codex](https://github.com/Yeachan-Heo/oh-my-codex)** — Yeachan Heo | サブモジュール | 許可リストのワーカーエージェント 7 個（executor、planner、architect、test-engineer、security-reviewer、code-reviewer、debugger）。Markdown プロンプトから Codex TOML に変換。 |
 | 4 | <img src="https://github.com/obra.png?size=32" width="20" height="20" align="center"/> **[superpowers](https://github.com/obra/superpowers)** — Jesse Vincent | サブモジュール | ブレインストーミング、TDD、系統的デバッグ、計画作成をカバーする 13 スキル。インストールされるエージェントはありません。 |

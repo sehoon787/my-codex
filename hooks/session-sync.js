@@ -79,13 +79,33 @@ function updateProfileIfNeeded(payload, force) {
   });
 }
 
-function emitAdditionalContext(message) {
-  if (!message) return;
+function emitAdditionalContext(messages) {
+  const text = [].concat(messages).filter(Boolean).join('\n');
+  if (!text) return;
   process.stdout.write(JSON.stringify({
     hookSpecificOutput: {
-      additionalContext: message
+      additionalContext: text
     }
   }) + '\n');
+}
+
+// How many UserPromptSubmit turns may pass before the session is nudged to
+// compact. A long transcript is the single largest fixed cost in every later
+// request, and /compact keeps the working set that a fresh session would have
+// to rediscover. Counter resets on the PostCompact hook.
+const DEFAULT_COMPACT_EVERY = 40;
+
+function compactEvery() {
+  const raw = parseInt(process.env.MY_CODEX_COMPACT_EVERY, 10);
+  return Number.isFinite(raw) && raw > 0 ? raw : DEFAULT_COMPACT_EVERY;
+}
+
+function contextBudgetText(promptsSinceCompaction) {
+  const every = compactEvery();
+  if (promptsSinceCompaction <= 0) return '';
+  if (promptsSinceCompaction % every !== 0) return '';
+  return `[ContextBudget] ${promptsSinceCompaction} prompts since the last compaction — ` +
+    'at the next task boundary run /compact and keep: current task, decisions, open items, file paths.';
 }
 
 function readLanguage() {
@@ -229,6 +249,13 @@ function main() {
     return;
   }
 
+  if (mode === 'compact') {
+    state.promptsSinceCompaction = 0;
+    state.lastCompactionAt = runtime.isoNow();
+    runtime.writeState(state);
+    return;
+  }
+
   if (mode === 'subagent') {
     state.subagentCount = (state.subagentCount || 0) + 1;
     state.lastUpdatedBy = 'subagent';
@@ -239,6 +266,7 @@ function main() {
 
   state.promptCount = (state.promptCount || 0) + 1;
   state.sessionMessageCount = (state.sessionMessageCount || 0) + 1;
+  state.promptsSinceCompaction = (parseInt(state.promptsSinceCompaction, 10) || 0) + 1;
   const promptEntry = promptEntryFromPayload(payload, state.promptCount);
   if (promptEntry) {
     state.prompts = runtime.appendUniqueEntry(state.prompts || [], promptEntry, 'ts', 12);
@@ -249,7 +277,11 @@ function main() {
   runtime.writeState(state);
   updateProfileIfNeeded({ agent_id: 'user-prompt-submit', agent_type: 'throttled-update' }, false);
   updateScaffolds({ agent_id: 'user-prompt-submit', agent_type: 'mid-session-sync' });
-  emitAdditionalContext(reminderText(runtime.readState()));
+  const finalState = runtime.readState();
+  emitAdditionalContext([
+    reminderText(finalState),
+    contextBudgetText(parseInt(finalState.promptsSinceCompaction, 10) || 0)
+  ]);
 }
 
 main();

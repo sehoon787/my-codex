@@ -410,6 +410,15 @@ PACK_MANAGER="$SCRIPT_DIR/scripts/agent-pack-manager.sh"
 PROFILE_OVERRIDE=""
 WITH_PACKS=""
 
+# Optional skill lanes (see $ECC_SKILL_OPTIONAL_WEB in scripts/skill-allowlists.sh).
+# Empty = default lane only. Set by --skills=/--full-skills, else $MY_CODEX_SKILLS,
+# else whatever a previous install persisted in ~/.codex/enabled-skill-lanes.txt.
+SKILL_LANES_FILE=""
+SKILL_LANES=""
+SKILL_LANES_OVERRIDE=""
+SKILL_LANES_SOURCE="default"
+KNOWN_SKILL_LANES="web"
+
 # ── Argument parsing ──
 SKIP_ECC=0
 SKIP_OMX=0
@@ -424,6 +433,14 @@ while [ "$#" -gt 0 ]; do
       ;;
     --with-packs=*)
       WITH_PACKS="${1#*=}"
+      shift
+      ;;
+    --skills=*)
+      SKILL_LANES_OVERRIDE="${1#*=}"
+      shift
+      ;;
+    --full-skills)
+      SKILL_LANES_OVERRIDE="$KNOWN_SKILL_LANES"
       shift
       ;;
     --skip-ecc)        SKIP_ECC=1; shift ;;
@@ -441,9 +458,15 @@ Usage:
   bash install.sh
   bash install.sh --profile minimal|dev|full
   bash install.sh --with-packs <pack1,pack2,...>
+  bash install.sh --skills=web
 
 Options:
   --with-packs=<packs>  Comma-separated list of agent packs to symlink into ~/.codex/agents/
+  --skills=<lanes>      Optional skill lanes to install on top of the default set.
+                        Known lanes: web (18 front-end/UI skills). Use "none" for
+                        the default set only. Also settable via MY_CODEX_SKILLS.
+                        The choice persists in ~/.codex/enabled-skill-lanes.txt.
+  --full-skills         Install every optional skill lane (same as --skills=web today)
   --skip-ecc            Skip everything-claude-code upstream install
   --skip-omx            Skip oh-my-codex upstream install
   --skip-gstack         Skip gstack upstream install
@@ -487,6 +510,73 @@ format_enabled_packs() {
       }
     }
   ' "$state_file"
+}
+
+# ── Optional skill lanes ──
+# Same persistence contract as enabled-agent-packs.txt: a comment-headed,
+# one-name-per-line state file that install.sh rewrites on every run, so a lane
+# chosen once survives later installs without repeating the flag.
+read_skill_lanes_file() {
+  [ -f "$SKILL_LANES_FILE" ] || return 0
+  awk '
+    /^[[:space:]]*#/ { next }
+    /^[[:space:]]*$/ { next }
+    { gsub(/^[[:space:]]+|[[:space:]]+$/, "", $0); print $0 }
+  ' "$SKILL_LANES_FILE"
+}
+
+write_skill_lanes_file() {
+  mkdir -p "$CODEX_ROOT"
+  {
+    echo "# One optional skill lane name per line."
+    echo "# This file is managed by my-codex and preserved across reinstalls."
+    for lane_name in $1; do
+      [ -n "$lane_name" ] || continue
+      printf '%s\n' "$lane_name"
+    done
+  } > "$SKILL_LANES_FILE"
+}
+
+# Normalizes a comma/space separated lane request into a validated, space-joined
+# list. "none"/"default" clear the set; unknown lanes are rejected loudly rather
+# than silently dropped, so a typo never looks like a successful opt-in.
+normalize_skill_lanes() {
+  local raw="$1" lane out=""
+  raw="$(printf '%s' "$raw" | tr ',' ' ')"
+  for lane in $raw; do
+    case "$lane" in
+      none|default|"") continue ;;
+      full|all) lane="$KNOWN_SKILL_LANES" ;;
+    esac
+    for one in $lane; do
+      case " $KNOWN_SKILL_LANES " in
+        *" $one "*) ;;
+        *) echo "ERROR: unknown skill lane: $one (known: $KNOWN_SKILL_LANES)" >&2; return 1 ;;
+      esac
+      case " $out " in *" $one "*) ;; *) out="$out $one" ;; esac
+    done
+  done
+  printf '%s' "${out# }"
+}
+
+resolve_skill_lanes() {
+  SKILL_LANES_FILE="$CODEX_ROOT/enabled-skill-lanes.txt"
+  if [ -n "$SKILL_LANES_OVERRIDE" ]; then
+    SKILL_LANES="$(normalize_skill_lanes "$SKILL_LANES_OVERRIDE")" || exit 1
+    SKILL_LANES_SOURCE="flag"
+  elif [ -n "${MY_CODEX_SKILLS:-}" ]; then
+    SKILL_LANES="$(normalize_skill_lanes "$MY_CODEX_SKILLS")" || exit 1
+    SKILL_LANES_SOURCE="env"
+  else
+    SKILL_LANES="$(normalize_skill_lanes "$(read_skill_lanes_file | tr '\n' ' ')")" || exit 1
+    SKILL_LANES_SOURCE="persisted"
+  fi
+  [ -n "$SKILL_LANES" ] || SKILL_LANES_SOURCE="default"
+  write_skill_lanes_file "$SKILL_LANES"
+}
+
+skill_lane_enabled() {
+  case " $SKILL_LANES " in *" $1 "*) return 0 ;; *) return 1 ;; esac
 }
 
 current_install_version() {
@@ -924,9 +1014,14 @@ if [ -f "$VERSION_FILE" ]; then
   INSTALLED_VERSION="$(cat "$VERSION_FILE")"
 fi
 
+resolve_skill_lanes
+
 echo "=== my-codex installer ==="
 echo ""
-echo "Install footprint: 17 core agents + 17 opt-in AI agents (2 packs), 123 curated skills from 4 upstream sources"
+echo "Install footprint: 17 core agents + 17 opt-in AI agents (2 packs), 105 curated skills from 4 upstream sources"
+if [ -n "$SKILL_LANES" ]; then
+  echo "Optional skill lanes: ${SKILL_LANES} (+18 with web)"
+fi
 if [ "$INSTALLED_VERSION" = "none" ]; then
   echo "Install mode: fresh (${INSTALLING_VERSION})"
 elif [ "$INSTALLED_VERSION" = "$INSTALLING_VERSION" ]; then
@@ -1089,6 +1184,14 @@ if [ "$SKIP_ECC" = "0" ]; then
       for ecc_skill in $ECC_SKILL_ALLOWLIST; do
         install_skill_copy "$UPSTREAM_DIR/skills/$ecc_skill" "$ecc_skill"
       done
+      # Optional lanes. Skills from a lane that is off are simply not copied;
+      # the manifest cleanup at [0.5/7] removes any copy a previous install left
+      # behind, which is what makes turning a lane off actually shrink context.
+      if skill_lane_enabled web; then
+        for ecc_skill in $ECC_SKILL_OPTIONAL_WEB; do
+          install_skill_copy "$UPSTREAM_DIR/skills/$ecc_skill" "$ecc_skill"
+        done
+      fi
       # continuous-learning v1 is self-declared deprecated in favor of v2; never
       # allowlisted — this also clears copies left by pre-allowlist installs.
       rm -rf "$CODEX_ROOT/skills/continuous-learning"
@@ -1208,6 +1311,11 @@ managed_skills="$(count_managed_skills)"
 total_skills="$(find "$CODEX_ROOT/skills" -name 'SKILL.md' 2>/dev/null | wc -l | tr -d ' ')"
 extra_skills=$((total_skills - managed_skills))
 echo "  Skills: ${managed_skills} installed"
+if [ -n "$SKILL_LANES" ]; then
+  echo "  Optional skill lanes: ${SKILL_LANES} (source: ${SKILL_LANES_SOURCE})"
+else
+  echo "  Optional skill lanes: none (default set only; enable with --skills=web)"
+fi
 if [ "$extra_skills" -gt 0 ]; then
   echo "  Preserved custom ~/.codex skills: ${extra_skills}"
 fi
@@ -1249,6 +1357,7 @@ if [ ! -f "$CODEX_ROOT/AGENTS.md" ]; then
 else
   append_agents_section "## Calibrated Response (mandatory)" "<!-- my-codex:calibrated-response -->"
   append_agents_section "## Final Report (end of the request)" "<!-- my-codex:final-report -->"
+  append_agents_section "## Context Hygiene" "<!-- my-codex:context-hygiene -->"
   echo "  AGENTS.md already exists -- skipping (delete to regenerate)"
 fi
 
@@ -1391,6 +1500,28 @@ if grep -qE '^[[:space:]]*\[[[:space:]]*features[[:space:]]*\][[:space:]]*(#.*)?
 else
   printf '\n[features]\nhooks = true\n' >> "$CONFIG_FILE"
   echo "  config.toml: added [features] with hooks = true"
+fi
+
+# Codex's own compaction prompt. The default summary keeps a lot of tool
+# transcript; this one keeps the working set a resumed turn actually needs and
+# drops the rest, which is what makes /compact cheaper than a fresh session.
+# Set only when absent (an existing value is a user choice), and prepended
+# above the first table header because compact_prompt is a top-level key —
+# appending at EOF would land it inside whichever table comes last.
+# model_auto_compact_token_limit is deliberately NOT set: it is model-specific
+# and a wrong value truncates good context.
+CODEX_COMPACT_PROMPT='Summarize the conversation so far so work can continue without re-reading it. Keep: the current task and its acceptance criteria, decisions already taken and why, open items and blockers, paths of files created or changed, and the obligation to close the request with the Final Report tables. Drop tool transcripts, raw command output, and file contents that have already been applied.'
+if ! grep -qE '^[[:space:]]*compact_prompt[[:space:]]*=' "$CONFIG_FILE" 2>/dev/null; then
+  CONFIG_TMP="$(mktemp)"
+  # Write back through the original file so its mode and inode survive.
+  {
+    printf 'compact_prompt = "%s"\n\n' "$CODEX_COMPACT_PROMPT"
+    cat "$CONFIG_FILE"
+  } > "$CONFIG_TMP" && cat "$CONFIG_TMP" > "$CONFIG_FILE"
+  rm -f "$CONFIG_TMP"
+  echo "  config.toml: set compact_prompt"
+else
+  echo "  config.toml: compact_prompt already set"
 fi
 
 echo "[4.5/7] Installing Codex attribution defaults..."

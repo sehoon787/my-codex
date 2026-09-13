@@ -58,6 +58,13 @@ Rules:
 - Remaining is honest accounting: list anything unverified, deferred, or blocked.
 - Match the user's language for the prose AND the table names and headers alike — translate them; never leave English table headers in a non-English reply.
 
+## Context Hygiene
+<!-- my-codex:context-hygiene -->
+- At a task boundary, run `/compact` with a focus phrase (current task, decisions taken, open items, file paths) instead of starting a new session — a fresh session pays to rediscover everything.
+- Cap tool output: `head`/`-n`/`--limit` on reads, `grep` for the lines you need. Never dump a whole file, a full log, or a process list into the transcript.
+- Do not re-read a file already in context; re-read only after it changed.
+- Subagent final reports stay at 30 lines or fewer.
+
 ## Available Agents
 
 Use `spawn_agent` with `agent_type` to delegate work. Tier priority when several match: core > omo > omx > opt-in packs.

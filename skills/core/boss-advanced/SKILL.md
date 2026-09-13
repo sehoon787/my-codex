@@ -15,7 +15,7 @@ Boss discovers capabilities at runtime. This is the ownership map for resolving 
 | Core orchestration | this repo (`skills/core/`) | boss-advanced, boss-briefing, briefing-vault, gstack-sprint (4) |
 | P0 workflows | gstack | 26 skills + the `gstack` root router (27) — see the domain routing table in boss.toml |
 | Dev discipline | superpowers | test-driven-development, systematic-debugging, brainstorming, writing-plans, executing-plans, requesting/receiving-code-review, verification-before-completion, using-git-worktrees, subagent-driven-development, writing-skills, using-superpowers, finishing-a-development-branch (13) |
-| Stack + AI knowledge | ECC | 79 skills — language/framework patterns, agent and LLM engineering, codebase tooling |
+| Stack + AI knowledge | ECC | 61 skills — language/framework patterns, agent and LLM engineering, codebase tooling |
 | Document deliverables | Anthropic doc skills | pdf, docx, pptx, xlsx |
 | Execution modes | OMC (`ralph`, `autopilot`, `ultrawork`, `team`) | referenced by `codex-AGENTS.md` and `gstack-sprint`, but installed only when the OMC skill set is also present under `~/.codex/skills` — confirm in the registry before routing |
 | Agents | this repo + omx | 17 active: boss (core) + omo 9 + omx 7. Agent packs (data-ai 13, llmops 4) are opt-in — enable with `~/.codex/bin/my-codex-packs enable <pack>` before delegating |

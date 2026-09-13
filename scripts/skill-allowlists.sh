@@ -26,8 +26,12 @@
 #   3. Generic codebase tooling — onboarding, tours, ADRs, research, lookup.
 # Everything else upstream (mobile, other languages, ops/marketing/domain packs,
 # and orchestration skills that duplicate omx/gstack) stays out.
+#
+# This is the DEFAULT lane (61 skills). The web/UI lane lives separately in
+# $ECC_SKILL_OPTIONAL_WEB below and is installed only when asked for, because
+# every installed skill spends fixed context on its description in every
+# session — Codex truncates the descriptions once the skills budget is hit.
 ECC_SKILL_ALLOWLIST="
-accessibility
 agent-architecture-audit
 agent-harness-construction
 agent-introspection-debugging
@@ -38,7 +42,6 @@ api-design
 architecture-decision-records
 backend-patterns
 benchmark-optimization-loop
-bun-runtime
 click-path-audit
 code-tour
 codebase-onboarding
@@ -57,13 +60,10 @@ django-tdd
 django-verification
 docker-patterns
 documentation-lookup
-e2e-testing
 error-handling
 eval-harness
 exa-search
 fastapi-patterns
-frontend-a11y
-frontend-patterns
 generating-python-installer
 github-ops
 hexagonal-architecture
@@ -79,21 +79,12 @@ kotlin-testing
 kubernetes-patterns
 latency-critical-systems
 mcp-server-patterns
-motion-advanced
-motion-foundations
-motion-patterns
 mysql-patterns
-nestjs-patterns
-nextjs-turbopack
-nuxt4-patterns
 postgres-patterns
 prisma-patterns
 prompt-optimizer
 python-patterns
 python-testing
-react-patterns
-react-performance
-react-testing
 redis-patterns
 regex-vs-llm-structured-text
 repo-scan
@@ -102,6 +93,29 @@ springboot-patterns
 springboot-security
 springboot-tdd
 springboot-verification
+"
+
+# ── ECC optional lane: web / UI front-end ──
+# Installed only with `install.sh --skills=web` (or MY_CODEX_SKILLS=web); the
+# choice is persisted in ~/.codex/enabled-skill-lanes.txt so re-running the
+# installer keeps it. Split out of $ECC_SKILL_ALLOWLIST because a Codex CLI
+# session pays for every skill description up front, and a backend/agent-work
+# install never routes to these.
+ECC_SKILL_OPTIONAL_WEB="
+accessibility
+bun-runtime
+e2e-testing
+frontend-a11y
+frontend-patterns
+motion-advanced
+motion-foundations
+motion-patterns
+nestjs-patterns
+nextjs-turbopack
+nuxt4-patterns
+react-patterns
+react-performance
+react-testing
 ui-to-vue
 vite-patterns
 vue-patterns

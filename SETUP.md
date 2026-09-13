@@ -56,9 +56,10 @@ What gets installed:
 |---|---|
 | `~/.codex/agents/` | 17 core agents (Boss 1 + OMO 9 + OMX 7), deduplicated by tier |
 | `~/.codex/agent-packs/` | 17 opt-in pack agents across 2 packs (data-ai 13, llmops 4) |
-| `~/.codex/skills/` | 123 skills (ECC 79 + gstack 27 + superpowers 13 + core 4) |
+| `~/.codex/skills/` | 105 skills (ECC 61 + gstack 27 + superpowers 13 + core 4) |
 | `~/.codex/AGENTS.md` | Agent catalog and routing instructions |
 | `~/.codex/enabled-agent-packs.txt` | Persisted active pack set; first install writes an empty set (packs are opt-in) |
+| `~/.codex/enabled-skill-lanes.txt` | Persisted optional skill lanes; first install writes an empty set (default lane only) |
 | `~/.codex/config.toml` | `multi_agent = true`, `hooks = true` under `[features]`, + model defaults |
 | `~/.codex/hooks.json` | Lifecycle hook registry — Codex reads it only from this path, not from `hooks/` |
 | `~/.codex/hooks/` | Hook scripts referenced by `hooks.json` |
@@ -86,7 +87,7 @@ Expected output:
 Core agents:  17
 Active packs: 0
 Agent packs:  17
-Skills:       123
+Skills:       105
 AGENTS.md:    OK
 config.toml:  OK
 hooks.json:   OK
@@ -95,6 +96,18 @@ hooks.json:   OK
 Hooks note: `install.sh` sets `hooks = true` under `[features]` in `config.toml` and writes the registry to `~/.codex/hooks.json`. Codex asks once, on your next interactive start, to review and trust these hooks — choose "Trust all and continue". Until you do, no my-codex hook runs.
 
 Note: agents and skills come from curated allowlists (`scripts/skill-allowlists.sh`), not bulk copies. `install.sh` verifies the installed footprint above.
+
+### Optional skill lanes
+
+Every installed skill costs context in every session — Codex truncates skill descriptions once its skills budget is exceeded. The 18 web/UI front-end skills (React, Vue, Nuxt, Nest, motion, a11y, E2E) are therefore a separate lane that is **off by default**:
+
+```bash
+bash install.sh --skills=web     # add the web/UI lane
+bash install.sh --full-skills    # add every optional lane
+bash install.sh --skills=none    # back to the default 105
+```
+
+The choice is written to `~/.codex/enabled-skill-lanes.txt`, so later `install.sh` runs keep it without repeating the flag. `MY_CODEX_SKILLS=web` does the same for a one-off non-interactive install. Turning a lane off removes its skills through the install manifest; skills you created yourself in `~/.codex/skills/` are never touched.
 
 ---
 

@@ -114,6 +114,12 @@
             "command": "node \"$HOME/.codex/hooks/stop-session-enforcement.js\"",
             "timeout": 30000,
             "description": "BriefingVault: auto-create session summary and learnings if missing at session end"
+          },
+          {
+            "type": "command",
+            "command": "node \"$HOME/.codex/hooks/stop-final-report.js\"",
+            "timeout": 30000,
+            "description": "Final report gate: blocks once if work happened but no final-report table was emitted"
           }
         ]
       }

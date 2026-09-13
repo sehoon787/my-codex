@@ -10,7 +10,7 @@
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 ![Agents](https://img.shields.io/badge/agents-17_core_%2B_17_opt--in-blue)
-![Skills](https://img.shields.io/badge/skills-123-purple)
+![Skills](https://img.shields.io/badge/skills-105-purple)
 ![MCP](https://img.shields.io/badge/MCP-3-green)
 ![Auto Sync](https://img.shields.io/badge/upstream_sync-every_3_days-brightgreen)
 
@@ -161,7 +161,7 @@ Er wird nur ganz am Ende der Anfrage ausgelöst — niemals in einem Turn, der H
 │  Boss 1 · OMO 9 · OMX 7                               │
 │  + 2 opt-in agent packs (17 agents, off by default)   │
 ├─────────────────────────────────────────────────────┤
-│  Skills Layer (123 from ECC + gstack + superpowers)   │
+│  Skills Layer (105 from ECC + gstack + superpowers)   │
 │  coding-standards · security-scan · deep-research     │
 │  /review · /qa · /cso · /ship                         │
 ├─────────────────────────────────────────────────────┤
@@ -178,7 +178,7 @@ Er wird nur ganz am Ende der Anfrage ausgelöst — niemals in einem Turn, der H
 |-----------|-------:|--------|
 | **Kern-Agenten** (immer geladen) | 17 | Boss 1 + OMO 9 + OMX 7 |
 | **Agenten-Packs** (Opt-in, standardmäßig keines aktiv) | 17 | 2 eingebundene Kategorien: data-ai 13 + llmops 4 |
-| **Skills** | 123 | ECC 79 · gstack 27 · Superpowers 13 · Core 4 |
+| **Skills** | 105 | ECC 61 · gstack 27 · Superpowers 13 · Core 4 |
 | **MCP-Server** | 3 | Context7, Exa, grep.app |
 | **config.toml** | 1 | my-codex |
 | **AGENTS.md** | 1 | my-codex |
@@ -252,13 +252,13 @@ bash /tmp/my-codex/install.sh --profile full      # alle installierten Packs
 </details>
 
 <details>
-<summary><strong>Skills — 123 aus 4 Quellen</strong></summary>
+<summary><strong>Skills — 105 aus 4 Quellen</strong></summary>
 
 Die kuratierten Allowlists pro Skill stehen in `scripts/skill-allowlists.sh` — diese Datei ist maßgeblich dafür, was ausgeliefert wird.
 
 | Quelle | Anzahl | Wichtige Skills |
 |--------|------:|------------|
-| [everything-claude-code](https://github.com/affaan-m/everything-claude-code) | 79 | coding-standards, python-testing, api-design, deep-research |
+| [everything-claude-code](https://github.com/affaan-m/everything-claude-code) | 61 | coding-standards, python-testing, api-design, deep-research |
 | [gstack](https://github.com/garrytan/gstack) | 27 | /qa, /review, /ship, /cso, /investigate, /office-hours |
 | [superpowers](https://github.com/obra/superpowers) | 13 | brainstorming, systematic-debugging, TDD, writing-plans |
 | [my-codex Core](https://github.com/sehoon787/my-codex) | 4 | boss-advanced, boss-briefing, briefing-vault, gstack-sprint |
@@ -370,7 +370,7 @@ my-codex verfolgt **4 Upstream-Submodule**, dazu einen eingebundenen Snapshot zw
 
 | # | Quelle | Methode | Was bereitgestellt wird |
 |---|--------|---------|------------------------|
-| 1 | <img src="https://github.com/affaan-m.png?size=32" width="20" height="20" align="center"/> **[everything-claude-code](https://github.com/affaan-m/everything-claude-code)** — affaan-m | Submodul | 79 Allowlist-Skills für Entwicklungsworkflows. Claude Code-spezifische Inhalte entfernt; generische Coding-Skills beibehalten. |
+| 1 | <img src="https://github.com/affaan-m.png?size=32" width="20" height="20" align="center"/> **[everything-claude-code](https://github.com/affaan-m/everything-claude-code)** — affaan-m | Submodul | 61 Allowlist-Skills für Entwicklungsworkflows. Claude Code-spezifische Inhalte entfernt; generische Coding-Skills beibehalten. |
 | 2 | <img src="https://github.com/garrytan.png?size=32" width="20" height="20" align="center"/> **[gstack](https://github.com/garrytan/gstack)** — garrytan | Submodul | 27 Skills für Code-Review, QA, Sicherheits-Audit und Deployment. Enthält Playwright-Browser-Daemon. |
 | 3 | <img src="https://github.com/Yeachan-Heo.png?size=32" width="20" height="20" align="center"/> **[oh-my-codex](https://github.com/Yeachan-Heo/oh-my-codex)** — Yeachan Heo | Submodul | 7 Allowlist-Worker-Agenten (executor, planner, architect, test-engineer, security-reviewer, code-reviewer, debugger), aus Markdown-Prompts nach Codex-TOML konvertiert. |
 | 4 | <img src="https://github.com/obra.png?size=32" width="20" height="20" align="center"/> **[superpowers](https://github.com/obra/superpowers)** — Jesse Vincent | Submodul | 13 Skills zu Brainstorming, TDD, systematischem Debugging und Planerstellung. Es werden keine Agenten installiert. |

@@ -10,7 +10,7 @@
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 ![Agents](https://img.shields.io/badge/agents-17_core_%2B_17_opt--in-blue)
-![Skills](https://img.shields.io/badge/skills-123-purple)
+![Skills](https://img.shields.io/badge/skills-105-purple)
 ![MCP](https://img.shields.io/badge/MCP-3-green)
 ![Auto Sync](https://img.shields.io/badge/upstream_sync-every_3_days-brightgreen)
 
@@ -170,7 +170,7 @@ It fires only at the very end of the request — never on a turn that launches o
 │  Boss 1 · OMO 9 · OMX 7                               │
 │  + 2 opt-in agent packs (17 agents, off by default)   │
 ├─────────────────────────────────────────────────────┤
-│  Skills Layer (123 from ECC + gstack + superpowers)   │
+│  Skills Layer (105 from ECC + gstack + superpowers)   │
 │  coding-standards · security-scan · deep-research     │
 │  /review · /qa · /cso · /ship                         │
 ├─────────────────────────────────────────────────────┤
@@ -187,7 +187,7 @@ It fires only at the very end of the request — never on a turn that launches o
 |----------|------:|--------|
 | **Core agents** (always loaded) | 17 | Boss 1 + OMO 9 + OMX 7 |
 | **Agent packs** (opt-in, none enabled by default) | 17 | 2 vendored categories: data-ai 13 + llmops 4 |
-| **Skills** | 123 | ECC 79 · gstack 27 · Superpowers 13 · Core 4 |
+| **Skills** | 105 | ECC 61 · gstack 27 · Superpowers 13 · Core 4 |
 | **MCP Servers** | 3 | Context7, Exa, grep.app |
 | **config.toml** | 1 | my-codex |
 | **AGENTS.md** | 1 | my-codex |
@@ -261,18 +261,20 @@ bash /tmp/my-codex/install.sh --profile full      # every installed pack
 </details>
 
 <details>
-<summary><strong>Skills — 123 from 4 sources</strong></summary>
+<summary><strong>Skills — 105 from 4 sources</strong></summary>
 
 Curated per-skill allowlists live in `scripts/skill-allowlists.sh` — that file is the authority for what ships.
 
 | Source | Count | Key Skills |
 |--------|------:|------------|
-| [everything-claude-code](https://github.com/affaan-m/everything-claude-code) | 79 | coding-standards, python-testing, api-design, deep-research |
+| [everything-claude-code](https://github.com/affaan-m/everything-claude-code) | 61 | coding-standards, python-testing, api-design, deep-research |
 | [gstack](https://github.com/garrytan/gstack) | 27 | /qa, /review, /ship, /cso, /investigate, /office-hours |
 | [superpowers](https://github.com/obra/superpowers) | 13 | brainstorming, systematic-debugging, TDD, writing-plans |
 | [my-codex Core](https://github.com/sehoon787/my-codex) | 4 | boss-advanced, boss-briefing, briefing-vault, gstack-sprint |
 
 gstack is counted as 26 allowlisted skills plus the repo root entry; the whole gstack repo also lives at `~/.codex/skills/gstack` as its canonical runtime tree.
+
+A further 18 ECC web/UI skills (React, Vue, Nuxt, Nest, motion, a11y, E2E) sit in an **optional lane that is off by default**, because every installed skill spends context in every session. Add them with `bash install.sh --skills=web`; the choice persists in `~/.codex/enabled-skill-lanes.txt`.
 
 Codex ships **no document skills** — there is no `pdf`, `docx`, `pptx`, or `xlsx` skill in this bundle.
 
@@ -399,7 +401,7 @@ my-codex tracks **4 upstream submodules**, plus one vendored snapshot, two adapt
 
 | # | Source | Method | What It Provides |
 |---|--------|--------|-----------------|
-| 1 | <img src="https://github.com/affaan-m.png?size=32" width="20" height="20" align="center"/> **[everything-claude-code](https://github.com/affaan-m/everything-claude-code)** — affaan-m | submodule | 79 allowlisted skills across development workflows. Claude Code-specific content stripped; generic coding skills retained. |
+| 1 | <img src="https://github.com/affaan-m.png?size=32" width="20" height="20" align="center"/> **[everything-claude-code](https://github.com/affaan-m/everything-claude-code)** — affaan-m | submodule | 61 allowlisted skills across development workflows. Claude Code-specific content stripped; generic coding skills retained. |
 | 2 | <img src="https://github.com/garrytan.png?size=32" width="20" height="20" align="center"/> **[gstack](https://github.com/garrytan/gstack)** — garrytan | submodule | 27 skills for code review, QA, security audit, deployment. Includes Playwright browser daemon. |
 | 3 | <img src="https://github.com/Yeachan-Heo.png?size=32" width="20" height="20" align="center"/> **[oh-my-codex](https://github.com/Yeachan-Heo/oh-my-codex)** — Yeachan Heo | submodule | 7 allowlisted worker agents (executor, planner, architect, test-engineer, security-reviewer, code-reviewer, debugger), converted from Markdown prompts to Codex TOML. |
 | 4 | <img src="https://github.com/obra.png?size=32" width="20" height="20" align="center"/> **[superpowers](https://github.com/obra/superpowers)** — Jesse Vincent | submodule | 13 skills covering brainstorming, TDD, systematic debugging, and plan writing. No agents installed. |

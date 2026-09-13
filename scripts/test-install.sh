@@ -262,21 +262,27 @@ actual_skills=$(find "$TEST_HOME/.codex/skills" -name 'SKILL.md' | wc -l | tr -d
 
 # Post-dedup contract (2026-07-27): 17 auto-loaded agents (10 core/omo + 7 omx),
 # 17 vendored pack agents (data-ai 13 + llmops 4), packs disabled by default,
-# 123 allowlisted skills on a real install. In this sandboxed harness the
-# gstack network clone is unavailable, so the floor is ECC 79 + superpowers 13
-# + core 4 = 96.
+# 105 allowlisted skills on a real install. In this sandboxed harness the
+# gstack network clone is unavailable, so the floor is ECC 61 + superpowers 13
+# + core 4 = 78. ECC 61 is the default lane; the 18 web/UI skills in
+# $ECC_SKILL_OPTIONAL_WEB only arrive with --skills=web (exercised below).
 test "$actual_core" -ge 17
 test "$actual_active_pack_links" -eq 0
 test "$actual_packs" -eq 17
-test "$actual_skills" -ge 90
+test "$actual_skills" -ge 75
 test -f "$TEST_HOME/.codex/AGENTS.md"
 test -f "$TEST_HOME/.codex/agent-packs/data-ai/llm-architect.toml"
 # Allowlists (scripts/skill-allowlists.sh): kept entries land, dropped ones do not.
 test -f "$TEST_HOME/.codex/agents/executor.toml"
 test ! -e "$TEST_HOME/.codex/agents/analyst.toml"
 test ! -e "$TEST_HOME/.codex/agents/superpowers-code-reviewer.toml"
-test -f "$TEST_HOME/.codex/skills/react-patterns/SKILL.md"
+test -f "$TEST_HOME/.codex/skills/api-design/SKILL.md"
 test ! -e "$TEST_HOME/.codex/skills/laravel-patterns"
+# Default lane only: the web/UI lane stays out until asked for.
+test ! -e "$TEST_HOME/.codex/skills/react-patterns"
+test ! -e "$TEST_HOME/.codex/skills/vue-patterns"
+test -f "$TEST_HOME/.codex/enabled-skill-lanes.txt"
+! grep -q '^web$' "$TEST_HOME/.codex/enabled-skill-lanes.txt"
 test -f "$TEST_HOME/.codex/skills/brainstorming/SKILL.md"
 test ! -e "$TEST_HOME/.codex/skills/dispatching-parallel-agents"
 test -f "$TEST_HOME/.codex/enabled-agent-packs.txt"
@@ -299,7 +305,10 @@ test ! -f "$TEST_HOME/.codex/hooks/hooks.json"
 assert_features_hooks_enabled "$TEST_HOME/.codex/config.toml"
 grep -q '<!-- my-codex:calibrated-response -->' "$TEST_HOME/.codex/AGENTS.md"
 grep -q '<!-- my-codex:final-report -->' "$TEST_HOME/.codex/AGENTS.md"
-test "$(grep -c 'my-codex:' "$TEST_HOME/.codex/AGENTS.md")" = "2"
+grep -q '<!-- my-codex:context-hygiene -->' "$TEST_HOME/.codex/AGENTS.md"
+test "$(grep -c 'my-codex:' "$TEST_HOME/.codex/AGENTS.md")" = "3"
+grep -q '^compact_prompt = ' "$TEST_HOME/.codex/config.toml"
+test "$(grep -c '^compact_prompt = ' "$TEST_HOME/.codex/config.toml")" = "1"
 case "$(uname -s)" in
   MINGW*|MSYS*|CYGWIN*)
     # Windows has no usable symlinks, so gstack's benchmark is copied by
@@ -358,6 +367,50 @@ test -f "$TEST_HOME/.codex/agents/custom-user-agent.toml"
 test -f "$TEST_HOME/.codex/agent-packs/custom/custom-pack-agent.toml"
 test -f "$TEST_HOME/.codex/skills/custom-skill/SKILL.md"
 test "$(cat "$TEST_HOME/.codex/.my-codex-version")" = "$expected_version"
+
+# ── Optional skill lane (--skills=web) ──
+# The 18 web/UI skills are the context diet's payload: off by default, added on
+# request, persisted so the flag is needed once, and removed again through the
+# manifest when the lane is turned off. A skill the user created themselves is
+# unmanaged and must survive every one of those transitions.
+mkdir -p "$TEST_HOME/.codex/skills/unmanaged-web-note"
+printf -- '---\nname: unmanaged-web-note\n---\n' > "$TEST_HOME/.codex/skills/unmanaged-web-note/SKILL.md"
+skills_default_count=$(find "$TEST_HOME/.codex/skills" -name 'SKILL.md' | wc -l | tr -d ' ')
+
+HOME="$TEST_HOME" PATH="$BIN_DIR:$PATH" MY_CODEX_TEST_LOG="$LOG_FILE" \
+  bash "$REPO_ROOT/install.sh" --skills=web > "$TMP_ROOT/install-skills-web.out"
+test -f "$TEST_HOME/.codex/skills/react-patterns/SKILL.md"
+test -f "$TEST_HOME/.codex/skills/vue-patterns/SKILL.md"
+test -f "$TEST_HOME/.codex/skills/accessibility/SKILL.md"
+grep -q '^web$' "$TEST_HOME/.codex/enabled-skill-lanes.txt"
+skills_web_count=$(find "$TEST_HOME/.codex/skills" -name 'SKILL.md' | wc -l | tr -d ' ')
+test "$((skills_web_count - skills_default_count))" -eq 18
+
+# The lane persists: a plain re-run keeps it without repeating the flag.
+HOME="$TEST_HOME" PATH="$BIN_DIR:$PATH" MY_CODEX_TEST_LOG="$LOG_FILE" \
+  bash "$REPO_ROOT/install.sh" > "$TMP_ROOT/install-skills-persist.out"
+test -f "$TEST_HOME/.codex/skills/react-patterns/SKILL.md"
+grep -q '^web$' "$TEST_HOME/.codex/enabled-skill-lanes.txt"
+
+# Upgrade path: turning the lane off removes every managed copy (this is the
+# same manifest mechanism that drops the 18 from an existing install) and
+# leaves unmanaged user skills alone.
+HOME="$TEST_HOME" PATH="$BIN_DIR:$PATH" MY_CODEX_TEST_LOG="$LOG_FILE" \
+  bash "$REPO_ROOT/install.sh" --skills=none > "$TMP_ROOT/install-skills-none.out"
+test ! -e "$TEST_HOME/.codex/skills/react-patterns"
+test ! -e "$TEST_HOME/.codex/skills/vue-patterns"
+test ! -e "$TEST_HOME/.codex/skills/accessibility"
+! grep -q '^web$' "$TEST_HOME/.codex/enabled-skill-lanes.txt"
+test -f "$TEST_HOME/.codex/skills/unmanaged-web-note/SKILL.md"
+test -f "$TEST_HOME/.codex/skills/custom-skill/SKILL.md"
+test "$(find "$TEST_HOME/.codex/skills" -name 'SKILL.md' | wc -l | tr -d ' ')" = "$skills_default_count"
+
+# An unknown lane fails loudly instead of silently installing nothing.
+if HOME="$TEST_HOME" PATH="$BIN_DIR:$PATH" MY_CODEX_TEST_LOG="$LOG_FILE" \
+     bash "$REPO_ROOT/install.sh" --skills=nope > "$TMP_ROOT/install-skills-bad.out" 2>&1; then
+  echo "FAIL: --skills=nope should have exited non-zero" >&2
+  exit 1
+fi
 
 PIPE_HOME="$TMP_ROOT/pipe-home"
 mkdir -p "$PIPE_HOME" "$PIPE_HOME/.agents/skills" "$PIPE_HOME/.claude/skills"

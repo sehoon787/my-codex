@@ -10,7 +10,7 @@
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 ![Agents](https://img.shields.io/badge/agents-17_core_%2B_17_opt--in-blue)
-![Skills](https://img.shields.io/badge/skills-123-purple)
+![Skills](https://img.shields.io/badge/skills-105-purple)
 ![MCP](https://img.shields.io/badge/MCP-3-green)
 ![Auto Sync](https://img.shields.io/badge/upstream_sync-every_3_days-brightgreen)
 
@@ -161,7 +161,7 @@ Boss 会以一份无需打开 diff 即可浏览的结构化最终报告来结束
 │  Boss 1 · OMO 9 · OMX 7                               │
 │  + 2 opt-in agent packs (17 agents, off by default)   │
 ├─────────────────────────────────────────────────────┤
-│  Skills Layer (123 from ECC + gstack + superpowers)   │
+│  Skills Layer (105 from ECC + gstack + superpowers)   │
 │  coding-standards · security-scan · deep-research     │
 │  /review · /qa · /cso · /ship                         │
 ├─────────────────────────────────────────────────────┤
@@ -178,7 +178,7 @@ Boss 会以一份无需打开 diff 即可浏览的结构化最终报告来结束
 |----------|------:|--------|
 | **核心 Agent**（始终加载） | 17 | Boss 1 + OMO 9 + OMX 7 |
 | **Agent 包**（可选启用，默认全部关闭） | 17 | 2 个内置分类：data-ai 13 + llmops 4 |
-| **Skills** | 123 | ECC 79 · gstack 27 · Superpowers 13 · Core 4 |
+| **Skills** | 105 | ECC 61 · gstack 27 · Superpowers 13 · Core 4 |
 | **MCP 服务器** | 3 | Context7、Exa、grep.app |
 | **config.toml** | 1 | my-codex |
 | **AGENTS.md** | 1 | my-codex |
@@ -252,13 +252,13 @@ bash /tmp/my-codex/install.sh --profile full      # 已安装的全部包
 </details>
 
 <details>
-<summary><strong>Skills — 123 个，来自 4 个来源</strong></summary>
+<summary><strong>Skills — 105 个，来自 4 个来源</strong></summary>
 
 按技能逐项筛选的允许列表位于 `scripts/skill-allowlists.sh`，该文件决定实际安装内容。
 
 | 来源 | 数量 | 主要 Skills |
 |--------|------:|------------|
-| [everything-claude-code](https://github.com/affaan-m/everything-claude-code) | 79 | coding-standards, python-testing, api-design, deep-research |
+| [everything-claude-code](https://github.com/affaan-m/everything-claude-code) | 61 | coding-standards, python-testing, api-design, deep-research |
 | [gstack](https://github.com/garrytan/gstack) | 27 | /qa, /review, /ship, /cso, /investigate, /office-hours |
 | [superpowers](https://github.com/obra/superpowers) | 13 | brainstorming, systematic-debugging, TDD, writing-plans |
 | [my-codex Core](https://github.com/sehoon787/my-codex) | 4 | boss-advanced, boss-briefing, briefing-vault, gstack-sprint |
@@ -370,7 +370,7 @@ my-codex 由 **4 个上游子模块**，加上 1 份内置快照、2 个适配/�
 
 | # | 来源 | 方式 | 提供的内容 |
 |---|--------|------|-----------------|
-| 1 | <img src="https://github.com/affaan-m.png?size=32" width="20" height="20" align="center"/> **[everything-claude-code](https://github.com/affaan-m/everything-claude-code)** — affaan-m | 子模块 | 覆盖开发工作流的 79 个允许列表 skills。移除 Claude Code 专属内容，保留通用编码 skills。 |
+| 1 | <img src="https://github.com/affaan-m.png?size=32" width="20" height="20" align="center"/> **[everything-claude-code](https://github.com/affaan-m/everything-claude-code)** — affaan-m | 子模块 | 覆盖开发工作流的 61 个允许列表 skills。移除 Claude Code 专属内容，保留通用编码 skills。 |
 | 2 | <img src="https://github.com/garrytan.png?size=32" width="20" height="20" align="center"/> **[gstack](https://github.com/garrytan/gstack)** — garrytan | 子模块 | 27 个用于代码审查、QA、安全审计、部署的 skills。包含 Playwright 浏览器守护进程。 |
 | 3 | <img src="https://github.com/Yeachan-Heo.png?size=32" width="20" height="20" align="center"/> **[oh-my-codex](https://github.com/Yeachan-Heo/oh-my-codex)** — Yeachan Heo | 子模块 | 7 个允许列表工作 Agent（executor、planner、architect、test-engineer、security-reviewer、code-reviewer、debugger），由 Markdown 提示词转换为 Codex TOML。 |
 | 4 | <img src="https://github.com/obra.png?size=32" width="20" height="20" align="center"/> **[superpowers](https://github.com/obra/superpowers)** — Jesse Vincent | 子模块 | 13 个 skills，覆盖头脑风暴、TDD、系统化调试与计划撰写。不安装任何 Agent。 |

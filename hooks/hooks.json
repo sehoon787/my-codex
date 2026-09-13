@@ -97,6 +97,18 @@
         ]
       }
     ],
+    "PostCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$HOME/.codex/hooks/session-sync.js\" compact",
+            "timeout": 5000,
+            "description": "ContextBudget: reset the prompts-since-compaction counter after a compaction"
+          }
+        ]
+      }
+    ],
     "UserPromptSubmit": [
       {
         "hooks": [

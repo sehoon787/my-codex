@@ -10,7 +10,7 @@
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 ![Agents](https://img.shields.io/badge/agents-17_core_%2B_17_opt--in-blue)
-![Skills](https://img.shields.io/badge/skills-123-purple)
+![Skills](https://img.shields.io/badge/skills-105-purple)
 ![MCP](https://img.shields.io/badge/MCP-3-green)
 ![Auto Sync](https://img.shields.io/badge/upstream_sync-every_3_days-brightgreen)
 
@@ -161,7 +161,7 @@ Boss는 작업이 있던 모든 턴 — 파일 편집·생성, 커밋/PR/머지,
 │  Boss 1 · OMO 9 · OMX 7                               │
 │  + 2 opt-in agent packs (17 agents, off by default)   │
 ├─────────────────────────────────────────────────────┤
-│  Skills Layer (123 from ECC + gstack + superpowers)   │
+│  Skills Layer (105 from ECC + gstack + superpowers)   │
 │  coding-standards · security-scan · deep-research     │
 │  /review · /qa · /cso · /ship                         │
 ├─────────────────────────────────────────────────────┤
@@ -178,7 +178,7 @@ Boss는 작업이 있던 모든 턴 — 파일 편집·생성, 커밋/PR/머지,
 |----------|------:|--------|
 | **핵심 에이전트** (항상 로드됨) | 17 | Boss 1 + OMO 9 + OMX 7 |
 | **에이전트 팩** (옵트인, 기본 비활성) | 17 | 벤더링된 2개 카테고리: data-ai 13 + llmops 4 |
-| **스킬** | 123 | ECC 79 · gstack 27 · Superpowers 13 · Core 4 |
+| **스킬** | 105 | ECC 61 · gstack 27 · Superpowers 13 · Core 4 |
 | **MCP 서버** | 3 | Context7, Exa, grep.app |
 | **config.toml** | 1 | my-codex |
 | **AGENTS.md** | 1 | my-codex |
@@ -252,13 +252,13 @@ bash /tmp/my-codex/install.sh --profile full      # 설치된 모든 팩
 </details>
 
 <details>
-<summary><strong>스킬 — 4개 출처에서 123개</strong></summary>
+<summary><strong>스킬 — 4개 출처에서 105개</strong></summary>
 
 스킬 단위 큐레이션 허용목록은 `scripts/skill-allowlists.sh`에 있으며, 이 파일이 무엇을 설치할지 결정하는 기준입니다.
 
 | 출처 | 수량 | 주요 스킬 |
 |--------|------:|------------|
-| [everything-claude-code](https://github.com/affaan-m/everything-claude-code) | 79 | coding-standards, python-testing, api-design, deep-research |
+| [everything-claude-code](https://github.com/affaan-m/everything-claude-code) | 61 | coding-standards, python-testing, api-design, deep-research |
 | [gstack](https://github.com/garrytan/gstack) | 27 | /qa, /review, /ship, /cso, /investigate, /office-hours |
 | [superpowers](https://github.com/obra/superpowers) | 13 | brainstorming, systematic-debugging, TDD, writing-plans |
 | [my-codex Core](https://github.com/sehoon787/my-codex) | 4 | boss-advanced, boss-briefing, briefing-vault, gstack-sprint |
@@ -370,7 +370,7 @@ my-codex는 **4개의 업스트림 서브모듈**과 벤더링된 스냅샷 1개
 
 | # | 출처 | 방식 | 제공 내용 |
 |---|--------|------|-----------------|
-| 1 | <img src="https://github.com/affaan-m.png?size=32" width="20" height="20" align="center"/> **[everything-claude-code](https://github.com/affaan-m/everything-claude-code)** — affaan-m | 서브모듈 | 개발 워크플로 전반의 허용목록 스킬 79개. Claude Code 전용 콘텐츠는 제거, 범용 코딩 스킬만 유지. |
+| 1 | <img src="https://github.com/affaan-m.png?size=32" width="20" height="20" align="center"/> **[everything-claude-code](https://github.com/affaan-m/everything-claude-code)** — affaan-m | 서브모듈 | 개발 워크플로 전반의 허용목록 스킬 61개. Claude Code 전용 콘텐츠는 제거, 범용 코딩 스킬만 유지. |
 | 2 | <img src="https://github.com/garrytan.png?size=32" width="20" height="20" align="center"/> **[gstack](https://github.com/garrytan/gstack)** — garrytan | 서브모듈 | 코드 리뷰, QA, 보안 감사, 배포를 위한 스킬 27개. Playwright 브라우저 데몬 포함. |
 | 3 | <img src="https://github.com/Yeachan-Heo.png?size=32" width="20" height="20" align="center"/> **[oh-my-codex](https://github.com/Yeachan-Heo/oh-my-codex)** — Yeachan Heo | 서브모듈 | 허용목록 작업자 에이전트 7개(executor, planner, architect, test-engineer, security-reviewer, code-reviewer, debugger). Markdown 프롬프트를 Codex TOML로 변환. |
 | 4 | <img src="https://github.com/obra.png?size=32" width="20" height="20" align="center"/> **[superpowers](https://github.com/obra/superpowers)** — Jesse Vincent | 서브모듈 | 브레인스토밍, TDD, 체계적 디버깅, 계획 작성을 다루는 스킬 13개. 설치되는 에이전트는 없습니다. |

@@ -1221,30 +1221,45 @@ else
   echo "  WARNING: agent pack manager missing; no packs were activated"
 fi
 
+# Append one template section to an existing AGENTS.md, keyed by its HTML marker.
+# The section is everything from <heading> up to the next "## " line in the template.
+# No-op when the marker is already there, so re-running the installer is a no-diff.
+append_agents_section() {
+  local heading="$1"
+  local marker="$2"
+  local target="$CODEX_ROOT/AGENTS.md"
+
+  grep -qF "$marker" "$target" 2>/dev/null && return 0
+
+  {
+    echo ""
+    awk -v heading="$heading" '
+      $0 == heading { in_section = 1; print; next }
+      in_section && /^## / { exit }
+      in_section { print }
+    ' "$REPO_ROOT/templates/codex-AGENTS.md"
+  } >> "$target"
+  echo "  AGENTS.md: appended $heading"
+}
+
 echo "[3/7] Setting up AGENTS.md..."
 if [ ! -f "$CODEX_ROOT/AGENTS.md" ]; then
   cp "$REPO_ROOT/templates/codex-AGENTS.md" "$CODEX_ROOT/AGENTS.md"
   echo "  AGENTS.md created"
 else
-  if ! grep -q '<!-- my-codex:calibrated-response -->' "$CODEX_ROOT/AGENTS.md" 2>/dev/null; then
-    {
-      echo ""
-      awk '
-        /^## Calibrated Response \(mandatory\)/ { in_section=1 }
-        in_section && /^## / && !/^## Calibrated Response \(mandatory\)/ { exit }
-        in_section { print }
-      ' "$REPO_ROOT/templates/codex-AGENTS.md"
-    } >> "$CODEX_ROOT/AGENTS.md"
-    echo "  AGENTS.md: appended Calibrated Response section"
-  fi
+  append_agents_section "## Calibrated Response (mandatory)" "<!-- my-codex:calibrated-response -->"
+  append_agents_section "## Final Report (end of the request)" "<!-- my-codex:final-report -->"
   echo "  AGENTS.md already exists -- skipping (delete to regenerate)"
 fi
 
 echo "[3.5/7] Installing hooks..."
 mkdir -p "$CODEX_ROOT/hooks"
+# Codex loads lifecycle hooks only from $CODEX_HOME/hooks.json (root), never from hooks/.
+# Older my-codex installs wrote hooks/hooks.json; remove that stale copy on upgrade.
+rm -f "$CODEX_ROOT/hooks/hooks.json"
 if [ -f "$REPO_ROOT/hooks/hooks.json" ]; then
-  cp "$REPO_ROOT/hooks/hooks.json" "$CODEX_ROOT/hooks/hooks.json"
-  add_manifest_entry "hooks/hooks.json"
+  cp "$REPO_ROOT/hooks/hooks.json" "$CODEX_ROOT/hooks.json"
+  add_manifest_entry "hooks.json"
 fi
 if [ -f "$REPO_ROOT/hooks/session-start.sh" ]; then
   cp "$REPO_ROOT/hooks/session-start.sh" "$CODEX_ROOT/hooks/session-start.sh"
@@ -1262,6 +1277,10 @@ fi
 if [ -f "$REPO_ROOT/hooks/stop-profile-update.js" ]; then
   cp "$REPO_ROOT/hooks/stop-profile-update.js" "$CODEX_ROOT/hooks/stop-profile-update.js"
   add_manifest_entry "hooks/stop-profile-update.js"
+fi
+if [ -f "$REPO_ROOT/hooks/stop-final-report.js" ]; then
+  cp "$REPO_ROOT/hooks/stop-final-report.js" "$CODEX_ROOT/hooks/stop-final-report.js"
+  add_manifest_entry "hooks/stop-final-report.js"
 fi
 if [ -f "$REPO_ROOT/hooks/session-end.js" ]; then
   cp "$REPO_ROOT/hooks/session-end.js" "$CODEX_ROOT/hooks/session-end.js"
@@ -1329,13 +1348,41 @@ if ! grep -q 'multi_agent' "$CONFIG_FILE" 2>/dev/null; then
 [features]
 multi_agent = true
 child_agents_md = true
+hooks = true
 
 [agents]
 max_threads = 8
 TOML
-  echo "  config.toml updated (multi_agent enabled, max_threads=8)"
+  echo "  config.toml updated (multi_agent + hooks enabled, max_threads=8)"
 else
   echo "  config.toml already configured"
+fi
+
+# Codex runs lifecycle hooks only when features.hooks is on. Configs written before
+# this flag existed keep their [features] table, so insert the key directly under that
+# header -- appending at EOF would land it inside whichever table comes last
+# (typically an [mcp_servers.*] table) and silently do nothing.
+features_table_has_hooks() {
+  awk '
+    /^[[:space:]]*\[features\][[:space:]]*$/ { in_features = 1; next }
+    /^[[:space:]]*\[/ { in_features = 0 }
+    in_features && /^[[:space:]]*hooks[[:space:]]*=/ { found = 1 }
+    END { exit(found ? 0 : 1) }
+  ' "$1"
+}
+
+if grep -qE '^[[:space:]]*\[features\][[:space:]]*$' "$CONFIG_FILE" 2>/dev/null; then
+  if ! features_table_has_hooks "$CONFIG_FILE"; then
+    CONFIG_TMP="$(mktemp)"
+    awk '
+      { print }
+      !inserted && /^[[:space:]]*\[features\][[:space:]]*$/ { print "hooks = true"; inserted = 1 }
+    ' "$CONFIG_FILE" > "$CONFIG_TMP" && mv "$CONFIG_TMP" "$CONFIG_FILE"
+    echo "  config.toml: enabled features.hooks"
+  fi
+else
+  printf '\n[features]\nhooks = true\n' >> "$CONFIG_FILE"
+  echo "  config.toml: added [features] with hooks = true"
 fi
 
 echo "[4.5/7] Installing Codex attribution defaults..."
@@ -1436,6 +1483,7 @@ if [ "$extra_skills" -gt 0 ]; then
 fi
 echo "  AGENTS.md:     $(test -f "$CODEX_ROOT/AGENTS.md" && echo 'OK' || echo 'MISSING')"
 echo "  config.toml:   $(grep -q 'multi_agent' "$CODEX_ROOT/config.toml" 2>/dev/null && echo 'OK' || echo 'NEEDS CONFIG')"
+echo "  features.hooks: $(features_table_has_hooks "$CODEX_ROOT/config.toml" 2>/dev/null && echo 'OK' || echo 'NEEDS CONFIG')"
 echo "  hooksPath:     $(git config --global --get core.hooksPath 2>/dev/null || echo 'UNSET')"
 echo "  Codex attr:    $(git config --global --get my-codex.codexAttribution 2>/dev/null || echo 'UNSET')"
 echo "  version:       $(cat "$VERSION_FILE" 2>/dev/null || echo 'unknown')"

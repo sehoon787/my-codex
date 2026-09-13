@@ -142,7 +142,7 @@ Boss closes every working turn — any turn that edited files, made commits/PRs,
 | Commits/PRs produced | Deliverables | PR / Repo / Content / Status |
 | Anything unresolved | Remaining | Item / Status / Next step |
 
-It fires only at the very end of the request — never on a turn that launches or relays background work, never as a mid-task progress update — and pure Q&A turns end normally without it. The spec ships in `boss.toml`'s developer instructions. (In the sibling [my-claude](https://github.com/sehoon787/my-claude), a Stop hook additionally enforces it; the Codex CLI has no equivalent enforcement point, so here the spec is prompt-level.)
+It fires only at the very end of the request — never on a turn that launches or relays background work, never as a mid-task progress update — and pure Q&A turns end normally without it. The spec ships in `boss.toml`'s developer instructions and in `~/.codex/AGENTS.md`, so the main session sees it too. A Stop hook (`hooks/stop-final-report.js`) enforces it, mirroring the sibling [my-claude](https://github.com/sehoon787/my-claude): when a turn changed state but closed without a report table, the hook blocks that turn once and asks for the report.
 
 ---
 
@@ -387,8 +387,11 @@ The Stop hook checks whether `/boss-briefing` has run today. If not, it blocks s
 | Subagent Logger | SubagentStop | Logs agent execution to Briefing Vault |
 | Vault Reminder | UserPromptSubmit | Suggests /boss-briefing after 5+ messages |
 | Completion Check | Stop | Runs profile fallback + guards /boss-briefing |
+| Final Report Gate | Stop | Blocks the turn once if work happened but no final-report table was emitted |
 | Teammate Guide | TeammateIdle | Prompts leader on idle teammates |
 | Quality Gate | TaskCompleted | Verifies deliverable quality |
+
+Codex loads these from `~/.codex/hooks.json` and only when `features.hooks = true`, so `install.sh` writes the file at that path and sets the flag under `[features]` in `config.toml`. On the next interactive Codex start you are asked once to review and trust the hooks — choose "Trust all and continue". Until you do, none of them run.
 
 ---
 

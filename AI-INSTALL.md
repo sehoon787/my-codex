@@ -249,7 +249,7 @@ Setup complete. Multi-agent orchestration is ready.
 
 Windows note:
 - `install.sh` patches the npm-managed `codex`, `codex.cmd`, and `codex.ps1` shims when present. This keeps the my-codex vault pipeline active even when `%APPDATA%\\npm` resolves before `~/.codex/bin`.
-- The Codex plugin auto-loads `hooks/hooks.json` by convention; do not declare a `hooks` field in `.codex-plugin/plugin.json`.
+- The Codex plugin auto-loads `hooks/hooks.json` from the plugin root by convention; do not declare a `hooks` field in `.codex-plugin/plugin.json`. The user-level registry is separate: it lives at `~/.codex/hooks.json` (root, not `hooks/`) and runs only when `hooks = true` is set under `[features]` in `config.toml`. `install.sh` does both, and Codex asks once on the next interactive start to trust the hooks ("Trust all and continue").
 - Briefing Vault updates now happen both during the session (`UserPromptSubmit`, `PostToolUse`) and at stop, with wrapper fallback for session continuity.
 - Reading `AI-INSTALL.md` does not install anything. Use `install.sh` for unattended agent setup.
 

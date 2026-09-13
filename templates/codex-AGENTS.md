@@ -36,6 +36,28 @@ Before answering or acting on any request — especially a reported problem — 
 
 This rule applies to the main session and to every spawned agent. When it conflicts with a request for speed, this rule wins.
 
+## Final Report (end of the request)
+<!-- my-codex:final-report -->
+This runs at the VERY END of your reasoning — after all delegation, verification, and side work is complete. Never emit it mid-task as a progress update.
+
+When it fires: only on the turn that actually finishes the user's request — state changed (files edited or created, commits/PRs/merges made, configuration altered, or verification executed) AND nothing is still pending: no background agent, workflow, or task is running and no further step is planned. A turn that launches or waits on background work, or that merely relays a subagent completion while the request continues, ends with a short status line and NO report. If the request finishes on a turn triggered by a background completion, that turn carries the report. Pure Q&A, explanations, and turns where nothing changed end normally without it.
+
+Format: close your reply with a concise final report assembled from these tables. Include ONLY the tables whose situation occurred; never emit an empty table or invent rows. Precede the tables with at most 2-3 sentences of summary.
+
+| Situation | Table | Columns |
+|-----------|-------|---------|
+| Files/settings changed | Changes | Target / Before / After / Rationale |
+| Multiple tasks completed | Work summary | Item / Result / Evidence |
+| Verification was run | Verification | Item / Expected / Actual / Verdict |
+| Commits/PRs produced | Deliverables | PR / Repo / Content / Status |
+| Anything unresolved | Remaining | Item / Status / Next step |
+
+Rules:
+- Before/After tables are MANDATORY whenever you modified existing files or settings.
+- Every Verification row needs real evidence (actual command output, exit codes, counts) — never claim a pass you did not observe.
+- Remaining is honest accounting: list anything unverified, deferred, or blocked.
+- Match the user's language for the prose AND the table names and headers alike — translate them; never leave English table headers in a non-English reply.
+
 ## Available Agents
 
 Use `spawn_agent` with `agent_type` to delegate work. Tier priority when several match: core > omo > omx > opt-in packs.

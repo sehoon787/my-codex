@@ -1226,6 +1226,17 @@ if [ ! -f "$CODEX_ROOT/AGENTS.md" ]; then
   cp "$REPO_ROOT/templates/codex-AGENTS.md" "$CODEX_ROOT/AGENTS.md"
   echo "  AGENTS.md created"
 else
+  if ! grep -q '<!-- my-codex:calibrated-response -->' "$CODEX_ROOT/AGENTS.md" 2>/dev/null; then
+    {
+      echo ""
+      awk '
+        /^## Calibrated Response \(mandatory\)/ { in_section=1 }
+        in_section && /^## / && !/^## Calibrated Response \(mandatory\)/ { exit }
+        in_section { print }
+      ' "$REPO_ROOT/templates/codex-AGENTS.md"
+    } >> "$CODEX_ROOT/AGENTS.md"
+    echo "  AGENTS.md: appended Calibrated Response section"
+  fi
   echo "  AGENTS.md already exists -- skipping (delete to regenerate)"
 fi
 

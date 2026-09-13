@@ -206,7 +206,7 @@ if [ "$_vc_today" != "$_vc_last" ]; then
         fi
 
         if [ -f "$_repo_dir/scripts/merge-hooks.js" ]; then
-          node "$_repo_dir/scripts/merge-hooks.js" "$HOME/.codex/hooks.json" 2>/dev/null || true
+          node "$_repo_dir/scripts/merge-hooks.js" 2>/dev/null || true
         fi
 
         _new_sha=$(cd "$_repo_dir" && git rev-parse --short=12 HEAD 2>/dev/null)

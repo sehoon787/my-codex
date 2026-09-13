@@ -54,7 +54,7 @@ to_git_bash_path() {
 # Codex never reads it -- so assert placement, not mere presence.
 assert_features_hooks_enabled() {
   awk '
-    /^[[:space:]]*\[features\][[:space:]]*$/ { in_features = 1; next }
+    /^[[:space:]]*\[[[:space:]]*features[[:space:]]*\][[:space:]]*(#.*)?$/ { in_features = 1; next }
     /^[[:space:]]*\[/ { in_features = 0 }
     in_features && /^[[:space:]]*hooks[[:space:]]*=[[:space:]]*true/ { found = 1 }
     END { exit(found ? 0 : 1) }
@@ -480,10 +480,13 @@ grep -q 'Only wrapper/session-level signals have been observed so far.\|Insuffic
 # Upgrade path: a config.toml that already has [features] (so the fresh-config
 # heredoc is skipped) and a trailing [mcp_servers.*] table. hooks = true has to land
 # under [features], not at EOF where it would belong to the mcp_servers table.
+# The header carries a trailing comment, which is legal TOML. A tighter regex
+# misses it, takes the "no [features] table" branch, and appends a second one --
+# tomllib then refuses the file with "Cannot declare ('features',) twice".
 LEGACY_HOME="$TMP_ROOT/legacy-home"
 mkdir -p "$LEGACY_HOME/.codex" "$LEGACY_HOME/.agents/skills" "$LEGACY_HOME/.claude/skills"
 cat > "$LEGACY_HOME/.codex/config.toml" << 'LEGACY_TOML'
-[features]
+[features]  # my flags
 multi_agent = true
 child_agents_md = true
 
@@ -495,20 +498,36 @@ command = "npx"
 LEGACY_TOML
 mkdir -p "$LEGACY_HOME/.codex/hooks"
 printf '{}' > "$LEGACY_HOME/.codex/hooks/hooks.json"
+# AGENTS.md without either marker exercises append_agents_section's append branch.
+printf '# Legacy AGENTS\n\n## Something\ntext\n' > "$LEGACY_HOME/.codex/AGENTS.md"
 
 HOME="$LEGACY_HOME" PATH="$BIN_DIR:$PATH" MY_CODEX_TEST_LOG="$LOG_FILE" \
   bash "$REPO_ROOT/install.sh" > "$TMP_ROOT/install-legacy.out"
 
 assert_features_hooks_enabled "$LEGACY_HOME/.codex/config.toml"
-test "$(awk 'f && /^\[/ { exit } /^\[features\]$/ { f = 1 } f' "$LEGACY_HOME/.codex/config.toml" | grep -c '^hooks = true$')" = "1"
+test "$(awk 'f && /^\[/ { exit } /^[[:space:]]*\[[[:space:]]*features[[:space:]]*\][[:space:]]*(#.*)?$/ { f = 1 } f' "$LEGACY_HOME/.codex/config.toml" | grep -c '^hooks = true$')" = "1"
+test "$(grep -cE '^[[:space:]]*\[[[:space:]]*features[[:space:]]*\][[:space:]]*(#.*)?$' "$LEGACY_HOME/.codex/config.toml")" = "1"
+python3 -c "import sys,tomllib; tomllib.load(open(sys.argv[1],'rb'))" "$LEGACY_HOME/.codex/config.toml"
 grep -q '^command = "npx"$' "$LEGACY_HOME/.codex/config.toml"
 test "$(tail -n 1 "$LEGACY_HOME/.codex/config.toml")" = 'command = "npx"'
 test -f "$LEGACY_HOME/.codex/hooks.json"
 test ! -f "$LEGACY_HOME/.codex/hooks/hooks.json"
+test "$(grep -c '<!-- my-codex:calibrated-response -->' "$LEGACY_HOME/.codex/AGENTS.md")" = "1"
+test "$(grep -c '<!-- my-codex:final-report -->' "$LEGACY_HOME/.codex/AGENTS.md")" = "1"
 
 cp "$LEGACY_HOME/.codex/config.toml" "$TMP_ROOT/legacy-config-before.toml"
+cp "$LEGACY_HOME/.codex/AGENTS.md" "$TMP_ROOT/legacy-agents-before.md"
 HOME="$LEGACY_HOME" PATH="$BIN_DIR:$PATH" MY_CODEX_TEST_LOG="$LOG_FILE" \
   bash "$REPO_ROOT/install.sh" > "$TMP_ROOT/install-legacy-2.out"
 diff -u "$TMP_ROOT/legacy-config-before.toml" "$LEGACY_HOME/.codex/config.toml"
+diff -u "$TMP_ROOT/legacy-agents-before.md" "$LEGACY_HOME/.codex/AGENTS.md"
+
+# Daily self-heal: merge-hooks.js must refresh the hook scripts without restoring
+# the stale hooks/hooks.json that Codex never reads.
+printf '{"stale":true}' > "$LEGACY_HOME/.codex/hooks/hooks.json"
+HOME="$LEGACY_HOME" node "$REPO_ROOT/scripts/merge-hooks.js" > "$TMP_ROOT/merge-hooks.out"
+test -f "$LEGACY_HOME/.codex/hooks.json"
+test ! -f "$LEGACY_HOME/.codex/hooks/hooks.json"
+diff -u "$REPO_ROOT/hooks/hooks.json" "$LEGACY_HOME/.codex/hooks.json"
 
 echo "Install smoke test passed"

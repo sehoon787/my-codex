@@ -1367,7 +1367,7 @@ fi
 # opt-out, not something to silently overwrite); the status line wants the value.
 features_table_has_hooks() {
   awk -v want="${2:-}" '
-    /^[[:space:]]*\[features\][[:space:]]*$/ { in_features = 1; next }
+    /^[[:space:]]*\[[[:space:]]*features[[:space:]]*\][[:space:]]*(#.*)?$/ { in_features = 1; next }
     /^[[:space:]]*\[/ { in_features = 0 }
     in_features && /^[[:space:]]*hooks[[:space:]]*=/ {
       if (want == "" || $0 ~ "^[[:space:]]*hooks[[:space:]]*=[[:space:]]*" want) found = 1
@@ -1376,13 +1376,16 @@ features_table_has_hooks() {
   ' "$1"
 }
 
-if grep -qE '^[[:space:]]*\[features\][[:space:]]*$' "$CONFIG_FILE" 2>/dev/null; then
+if grep -qE '^[[:space:]]*\[[[:space:]]*features[[:space:]]*\][[:space:]]*(#.*)?$' "$CONFIG_FILE" 2>/dev/null; then
   if ! features_table_has_hooks "$CONFIG_FILE"; then
     CONFIG_TMP="$(mktemp)"
+    # Write back through the original file so its mode and inode survive; mv from
+    # mktemp would leave config.toml at 600. rm runs either way so nothing leaks.
     awk '
       { print }
-      !inserted && /^[[:space:]]*\[features\][[:space:]]*$/ { print "hooks = true"; inserted = 1 }
-    ' "$CONFIG_FILE" > "$CONFIG_TMP" && mv "$CONFIG_TMP" "$CONFIG_FILE"
+      !inserted && /^[[:space:]]*\[[[:space:]]*features[[:space:]]*\][[:space:]]*(#.*)?$/ { print "hooks = true"; inserted = 1 }
+    ' "$CONFIG_FILE" > "$CONFIG_TMP" && cat "$CONFIG_TMP" > "$CONFIG_FILE"
+    rm -f "$CONFIG_TMP"
     echo "  config.toml: enabled features.hooks"
   fi
 else
@@ -1488,7 +1491,7 @@ if [ "$extra_skills" -gt 0 ]; then
 fi
 echo "  AGENTS.md:     $(test -f "$CODEX_ROOT/AGENTS.md" && echo 'OK' || echo 'MISSING')"
 echo "  config.toml:   $(grep -q 'multi_agent' "$CODEX_ROOT/config.toml" 2>/dev/null && echo 'OK' || echo 'NEEDS CONFIG')"
-echo "  features.hooks: $(features_table_has_hooks "$CODEX_ROOT/config.toml" true 2>/dev/null && echo 'OK' || echo 'NEEDS CONFIG')"
+echo "  hooks flag:    $(features_table_has_hooks "$CODEX_ROOT/config.toml" true 2>/dev/null && echo 'OK' || echo 'NEEDS CONFIG')"
 echo "  hooksPath:     $(git config --global --get core.hooksPath 2>/dev/null || echo 'UNSET')"
 echo "  Codex attr:    $(git config --global --get my-codex.codexAttribution 2>/dev/null || echo 'UNSET')"
 echo "  version:       $(cat "$VERSION_FILE" 2>/dev/null || echo 'unknown')"

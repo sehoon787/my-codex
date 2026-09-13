@@ -405,12 +405,18 @@ test -f "$TEST_HOME/.codex/skills/unmanaged-web-note/SKILL.md"
 test -f "$TEST_HOME/.codex/skills/custom-skill/SKILL.md"
 test "$(find "$TEST_HOME/.codex/skills" -name 'SKILL.md' | wc -l | tr -d ' ')" = "$skills_default_count"
 
-# An unknown lane fails loudly instead of silently installing nothing.
+# An unknown lane fails loudly instead of silently installing nothing. Assert
+# the reason, not just the exit code: a bare non-zero check would also pass if
+# the installer died for some unrelated reason.
 if HOME="$TEST_HOME" PATH="$BIN_DIR:$PATH" MY_CODEX_TEST_LOG="$LOG_FILE" \
      bash "$REPO_ROOT/install.sh" --skills=nope > "$TMP_ROOT/install-skills-bad.out" 2>&1; then
   echo "FAIL: --skills=nope should have exited non-zero" >&2
   exit 1
 fi
+grep -q 'unknown skill lane: nope' "$TMP_ROOT/install-skills-bad.out"
+# ...and it rejects before touching anything: the persisted set stays empty.
+! grep -q '^web$' "$TEST_HOME/.codex/enabled-skill-lanes.txt"
+test ! -e "$TEST_HOME/.codex/skills/react-patterns"
 
 PIPE_HOME="$TMP_ROOT/pipe-home"
 mkdir -p "$PIPE_HOME" "$PIPE_HOME/.agents/skills" "$PIPE_HOME/.claude/skills"

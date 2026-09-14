@@ -79,11 +79,12 @@ function updateProfileIfNeeded(payload, force) {
   });
 }
 
-function emitAdditionalContext(messages) {
+function emitAdditionalContext(messages, eventName) {
   const text = [].concat(messages).filter(Boolean).join('\n');
   if (!text) return;
   process.stdout.write(JSON.stringify({
     hookSpecificOutput: {
+      hookEventName: eventName,
       additionalContext: text
     }
   }) + '\n');
@@ -281,7 +282,7 @@ function main() {
   emitAdditionalContext([
     reminderText(finalState),
     contextBudgetText(parseInt(finalState.promptsSinceCompaction, 10) || 0)
-  ]);
+  ], 'UserPromptSubmit');
 }
 
 main();

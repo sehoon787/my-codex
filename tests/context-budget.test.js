@@ -127,6 +127,20 @@ results.push(run('6. hooks.json registers PostCompact against session-sync compa
   );
 }));
 
+results.push(run('7. ContextBudget line carries hookEventName UserPromptSubmit', () => {
+  const dir = makeWorkspace(true);
+  writeState(dir, { promptsSinceCompaction: 4 });
+  const stdout = runSync(dir, 'prompt', 5);
+  const lines = stdout.split('\n').filter((line) => line.trim());
+  assert.strictEqual(lines.length, 1, `expected exactly one JSON document, got ${JSON.stringify(stdout)}`);
+  const payload = JSON.parse(lines[0]);
+  assert.strictEqual(
+    payload.hookSpecificOutput.hookEventName,
+    'UserPromptSubmit',
+    `missing/wrong hookEventName: ${JSON.stringify(payload)}`
+  );
+}));
+
 const failed = results.filter((ok) => !ok).length;
 console.log(failed ? `${failed} FAILED` : 'ALL PASSED');
 process.exit(failed ? 1 : 0);

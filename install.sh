@@ -1693,16 +1693,23 @@ append_path_once "$HOME/.local/bin" || true
 # `uv tool install` is idempotent by itself, but it still resolves and reports
 # on every run; the `uv tool list` guard keeps a re-install quiet and offline.
 # $2 is the DISTRIBUTION name, not the command name: `uv tool list` prints the
-# distribution at the start of a line (`serena-agent v1.7.0`) and indents the
-# commands it provides below it (`- serena`). Matching on a command name would
-# never hit, and the tool would be reinstalled on every run.
+# distribution and its pinned version at the start of a line
+# (`serena-agent v1.7.0`) and indents the commands it provides below it
+# (`- serena`). Matching on a command name would never hit, and the tool would
+# be reinstalled on every run. The guard is version-aware: it derives the
+# pinned version from $3 (the text after the last `==` in the spec) and only
+# skips when that exact version is already installed, so bumping the pin
+# (e.g. serena-agent==1.7.0 -> 1.8.0) upgrades an existing install instead of
+# being silently skipped because the distribution name alone still matched.
 ensure_uv_tool() {
   local label="$1" dist="$2" spec="$3"
   if ! command -v uv >/dev/null 2>&1; then
     echo "    WARNING: uv unavailable; skipping ${label}"
     return
   fi
-  if uv tool list 2>/dev/null | grep -qE "^${dist}[[:space:]]"; then
+  local version="${spec##*==}"
+  local version_re="${version//./\\.}"
+  if uv tool list 2>/dev/null | grep -qE "^${dist} v${version_re}\$"; then
     echo "    ${label} already installed"
     return
   fi

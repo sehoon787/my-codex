@@ -400,7 +400,7 @@ my-codex는 **5개의 업스트림 서브모듈**과 벤더링된 스냅샷 1개
 | **codeburn** | 작업·도구·모델·프로젝트별 토큰/비용 집계 | `codeburn`(대화형 대시보드), `codeburn report`, `codeburn overview`, `codeburn status` | 터미널 TUI, 파일로는 `codeburn export --format json`. `~/.codex/sessions`를 읽기 전용으로 읽고 공개 정가로 계산하므로 금액은 청구서가 아닌 추정치입니다. |
 | **Serena** | MCP를 통한 심볼 단위 코드 탐색·편집 | Codex가 `[mcp_servers.serena]`로 기동. 도구는 `get_symbols_overview`, `find_symbol`, `find_referencing_symbols`, `replace_symbol_body`, `insert_after_symbol` | 서버 실행 중 <http://localhost:24282/dashboard/index.html> 에서 대시보드와 도구 호출 통계 확인. 프로젝트별 인덱스·메모리는 `<저장소>/.serena/`. 브라우저는 자동으로 열리지 않습니다(`--open-web-dashboard False`). |
 | **Headroom** | 과대한 도구 출력을 압축하고 필요할 때 원본을 회수 | Codex가 `[mcp_servers.headroom]`(`headroom mcp serve`)로 기동. 도구는 `headroom_compress`, `headroom_retrieve`, `headroom_stats` | 세션 안에서는 `headroom_stats`, 셸에서는 `headroom doctor`와 `headroom perf`. `headroom wrap` 프록시 모드는 의도적으로 사용하지 않습니다 — OAuth 구독으로 모델 트래픽을 우회시키기 때문입니다. |
-| **Archify** | 아키텍처·워크플로·시퀀스·데이터 흐름·라이프사이클 다이어그램 | `~/.codex/skills/archify`에서 `node bin/archify.mjs render <type> <input>.json <output>.html` 실행 후 `node bin/archify.mjs check <output>.html` | 지정한 `<output>.html` 한 파일 — 인라인 SVG, 다크/라이트 토글, PNG/JPEG/WebP/SVG 내보내기 포함. 브라우저로 엽니다. `node bin/archify.mjs examples`로 예제를 확인합니다. |
+| **Archify** | 아키텍처·워크플로·시퀀스·데이터 흐름·라이프사이클 다이어그램 | `~/.codex/skills/archify`에서 `node bin/archify.mjs render <type> <input>.json <output>.html` 실행 후 `node bin/archify.mjs check <output>.html` | 지정한 `<output>.html` 한 파일 — 인라인 SVG, 다크/라이트 토글, PNG/JPEG/WebP/SVG 내보내기 포함. 브라우저로 엽니다. 스킬에 함께 설치되는 `examples/*.json`이 그대로 베껴 쓸 수 있는 완성된 입력 예제입니다. |
 
 
 ## GitHub Actions

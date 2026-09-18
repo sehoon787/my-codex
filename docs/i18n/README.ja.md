@@ -400,7 +400,7 @@ my-codex は **5 つのアップストリームサブモジュール**に加え�
 | **codeburn** | タスク・ツール・モデル・プロジェクト別のトークン/コスト集計 | `codeburn`（対話型ダッシュボード）、`codeburn report`、`codeburn overview`、`codeburn status` | ターミナル TUI。ファイル出力は `codeburn export --format json`。`~/.codex/sessions` を読み取り専用で読み、公開価格で換算するため、金額は請求書ではなく概算です。 |
 | **Serena** | MCP 経由のシンボル単位のコードナビゲーションと編集 | Codex が `[mcp_servers.serena]` から起動。ツールは `get_symbols_overview`、`find_symbol`、`find_referencing_symbols`、`replace_symbol_body`、`insert_after_symbol` | サーバー稼働中は <http://localhost:24282/dashboard/index.html> でダッシュボードとツール呼び出し統計を確認。プロジェクトごとのインデックスとメモリは `<リポジトリ>/.serena/`。ブラウザは自動では開きません（`--open-web-dashboard False`）。 |
 | **Headroom** | 巨大なツール出力を圧縮し、必要に応じて原文を取り戻す | Codex が `[mcp_servers.headroom]`（`headroom mcp serve`）から起動。ツールは `headroom_compress`、`headroom_retrieve`、`headroom_stats` | セッション内では `headroom_stats`、シェルからは `headroom doctor` と `headroom perf`。`headroom wrap` プロキシモードは意図的に使いません — モデルのトラフィックを OAuth サブスクリプション経由にするためです。 |
-| **Archify** | アーキテクチャ・ワークフロー・シーケンス・データフロー・ライフサイクル図 | `~/.codex/skills/archify` で `node bin/archify.mjs render <type> <input>.json <output>.html`、続けて `node bin/archify.mjs check <output>.html` | 指定した `<output>.html` の 1 ファイル — インライン SVG、ダーク/ライト切替、PNG/JPEG/WebP/SVG エクスポート付き。ブラウザで開きます。`node bin/archify.mjs examples` で用意された例を確認できます。 |
+| **Archify** | アーキテクチャ・ワークフロー・シーケンス・データフロー・ライフサイクル図 | `~/.codex/skills/archify` で `node bin/archify.mjs render <type> <input>.json <output>.html`、続けて `node bin/archify.mjs check <output>.html` | 指定した `<output>.html` の 1 ファイル — インライン SVG、ダーク/ライト切替、PNG/JPEG/WebP/SVG エクスポート付き。ブラウザで開きます。スキルに同梱された `examples/*.json` が、そのまま写せる完成済みの入力例です。 |
 
 
 ## GitHub Actions

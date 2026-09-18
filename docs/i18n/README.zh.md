@@ -400,7 +400,7 @@ my-codex 由 **5 个上游子模块**，加上 1 份内置快照、2 个适配/�
 | **codeburn** | 按任务、工具、模型与项目统计 token 与花费 | `codeburn`（交互式面板）、`codeburn report`、`codeburn overview`、`codeburn status` | 终端 TUI；导出文件用 `codeburn export --format json`。以只读方式读取 `~/.codex/sessions` 并按公开价目表计价，因此金额是估算而非账单。 |
 | **Serena** | 通过 MCP 进行符号级代码导航与编辑 | 由 Codex 从 `[mcp_servers.serena]` 启动；工具为 `get_symbols_overview`、`find_symbol`、`find_referencing_symbols`、`replace_symbol_body`、`insert_after_symbol` | 服务器运行时可在 <http://localhost:24282/dashboard/index.html> 查看面板与工具调用统计；按项目的索引与记忆位于 `<仓库>/.serena/`。浏览器不会自动打开（`--open-web-dashboard False`）。 |
 | **Headroom** | 压缩过大的工具输出，并在需要时取回原文 | 由 Codex 从 `[mcp_servers.headroom]`（`headroom mcp serve`）启动；工具为 `headroom_compress`、`headroom_retrieve`、`headroom_stats` | 会话内用 `headroom_stats`，命令行用 `headroom doctor` 与 `headroom perf`。刻意不使用 `headroom wrap` 代理模式 —— 它会让模型流量走 OAuth 订阅。 |
-| **Archify** | 架构 / 工作流 / 时序 / 数据流 / 生命周期图 | 在 `~/.codex/skills/archify` 下执行 `node bin/archify.mjs render <type> <input>.json <output>.html`，再执行 `node bin/archify.mjs check <output>.html` | 你指定的 `<output>.html` —— 单个自包含文件，含内嵌 SVG、明暗主题切换与 PNG/JPEG/WebP/SVG 导出。用浏览器打开。`node bin/archify.mjs examples` 可列出示例。 |
+| **Archify** | 架构 / 工作流 / 时序 / 数据流 / 生命周期图 | 在 `~/.codex/skills/archify` 下执行 `node bin/archify.mjs render <type> <input>.json <output>.html`，再执行 `node bin/archify.mjs check <output>.html` | 你指定的 `<output>.html` —— 单个自包含文件，含内嵌 SVG、明暗主题切换与 PNG/JPEG/WebP/SVG 导出。用浏览器打开。技能自带的 `examples/*.json` 就是可直接照抄的完整输入示例。 |
 
 
 ## GitHub Actions

@@ -105,8 +105,11 @@ cleanup_clone() { rm -rf "$CLONE_TMPDIR"; rm -f "$TMP_MANIFEST"; if [ -n "$NODEJ
 trap cleanup_clone EXIT
 
 UPSTREAM_DIR=""
+# $3 (optional) — git ref to pin the clone fallback to. Only consulted when the
+# submodule is unavailable and the tree has to be cloned fresh; a tag-pinned
+# upstream must not land on the tip of its default branch.
 init_upstream() {
-  local name="$1" url="$2"
+  local name="$1" url="$2" pinned_ref="${3:-}"
   local submod_path="$REPO_ROOT/upstream/$name"
   if [ -d "$submod_path/.git" ] || [ -f "$submod_path/.git" ]; then
     # Use the checked-out (pinned) submodule SHA as-is. Upstream updates land
@@ -121,7 +124,11 @@ init_upstream() {
   fi
   echo "  WARNING: submodule init failed for $name, falling back to git clone..."
   UPSTREAM_DIR="$CLONE_TMPDIR/$name"
-  git clone --depth 1 "$url" "$UPSTREAM_DIR" 2>/dev/null || return 1
+  if [ -n "$pinned_ref" ]; then
+    git clone --depth 1 --branch "$pinned_ref" "$url" "$UPSTREAM_DIR" 2>/dev/null || return 1
+  else
+    git clone --depth 1 "$url" "$UPSTREAM_DIR" 2>/dev/null || return 1
+  fi
 }
 
 append_path_once() {
@@ -424,6 +431,7 @@ SKIP_ECC=0
 SKIP_OMX=0
 SKIP_GSTACK=0
 SKIP_SUPERPOWERS=0
+SKIP_ARCHIFY=0
 
 while [ "$#" -gt 0 ]; do
   case "$1" in
@@ -447,9 +455,10 @@ while [ "$#" -gt 0 ]; do
     --skip-omx)        SKIP_OMX=1; shift ;;
     --skip-gstack)     SKIP_GSTACK=1; shift ;;
     --skip-superpowers) SKIP_SUPERPOWERS=1; shift ;;
+    --skip-archify)    SKIP_ARCHIFY=1; shift ;;
     --self-only)
       SKIP_ECC=1
-      SKIP_OMX=1; SKIP_GSTACK=1; SKIP_SUPERPOWERS=1
+      SKIP_OMX=1; SKIP_GSTACK=1; SKIP_SUPERPOWERS=1; SKIP_ARCHIFY=1
       shift
       ;;
     -h|--help)
@@ -471,6 +480,7 @@ Options:
   --skip-omx            Skip oh-my-codex upstream install
   --skip-gstack         Skip gstack upstream install
   --skip-superpowers    Skip superpowers upstream install
+  --skip-archify        Skip archify diagram skill install
   --self-only           Install only self-owned files (implies all --skip-* flags)
 EOF
       exit 0
@@ -1307,6 +1317,24 @@ if [ "$SKIP_GSTACK" = "0" ]; then
   fi
 fi
 
+# ── 2e. Upstream: archify (diagram skill) ──
+# Tag-pinned (v2.9.0), not branch-tracked: the skill's renderer CLI and schema
+# shapes are what boss.toml routes to, so it moves on a deliberate bump only.
+# The installable unit is the repo's top-level archify/ directory (the same one
+# `npx skills add tt-a1i/archify -g` installs); the rest of the repo is docs,
+# examples, and experiments this install does not need.
+if [ "$SKIP_ARCHIFY" = "0" ]; then
+  echo "  [archify] Initializing archify..."
+  if init_upstream archify https://github.com/tt-a1i/archify "$ARCHIFY_PINNED_TAG"; then
+    if [ -f "$UPSTREAM_DIR/$ARCHIFY_SKILL_SUBDIR/SKILL.md" ]; then
+      install_skill_copy "$UPSTREAM_DIR/$ARCHIFY_SKILL_SUBDIR" "$ARCHIFY_SKILL_NAME"
+      echo "  [archify] Installed skill: $ARCHIFY_SKILL_NAME"
+    else
+      echo "  [archify] WARNING: $ARCHIFY_SKILL_SUBDIR/SKILL.md not found; skill not installed"
+    fi
+  fi
+fi
+
 managed_skills="$(count_managed_skills)"
 total_skills="$(find "$CODEX_ROOT/skills" -name 'SKILL.md' 2>/dev/null | wc -l | tr -d ' ')"
 extra_skills=$((total_skills - managed_skills))
@@ -1358,6 +1386,7 @@ else
   append_agents_section "## Calibrated Response (mandatory)" "<!-- my-codex:calibrated-response -->"
   append_agents_section "## Final Report (end of the request)" "<!-- my-codex:final-report -->"
   append_agents_section "## Context Hygiene" "<!-- my-codex:context-hygiene -->"
+  append_agents_section "## Tooling (MCP + skills)" "<!-- my-codex:tooling-mcp -->"
   echo "  AGENTS.md already exists -- skipping (delete to regenerate)"
 fi
 
@@ -1592,6 +1621,49 @@ else
   echo "  codex not found -- MCP servers will be registered when codex is installed"
 fi
 
+# Serena and Headroom are stdio servers, registered as config.toml tables rather
+# than through `codex mcp add`: the CLI's add subcommand has no flag for
+# startup_timeout_sec, and Serena's first launch (language-server boot) routinely
+# exceeds the default. Writing the tables directly also means registration lands
+# on a machine where the codex binary is not installed yet.
+#
+# Appended as top-level tables at EOF, which is safe for tables (unlike bare
+# keys — see the compact_prompt note above). The grep guard on the table header
+# makes a re-run a no-op, and never rewrites a table the user has edited.
+ensure_mcp_server_toml() {
+  local name="$1"
+  shift
+  if grep -qE "^\[mcp_servers\.${name}\]" "$CONFIG_FILE" 2>/dev/null; then
+    echo "  ${name} already registered in config.toml"
+    return
+  fi
+  {
+    printf '\n[mcp_servers.%s]\n' "$name"
+    printf '%s\n' "$@"
+  } >> "$CONFIG_FILE"
+  echo "  ${name} registered in config.toml"
+}
+
+# --project-from-cwd: index whatever repo the session was started in, no
+# per-project activation step. --context=codex: Serena's Codex tool profile
+# (contexts/codex.yml, shipped with serena-agent 1.7.0).
+# --open-web-dashboard False: Codex spawns this server, so a browser tab popping
+# up on every session start is noise. The dashboard itself stays ENABLED and
+# reachable at http://localhost:24282/dashboard/index.html — only the autoload
+# is off, which is what upstream recommends.
+ensure_mcp_server_toml serena \
+  'command = "serena"' \
+  'args = ["start-mcp-server", "--project-from-cwd", "--context=codex", "--open-web-dashboard", "False"]' \
+  'startup_timeout_sec = 15'
+# headroom_compress / headroom_retrieve / headroom_stats over stdio. The
+# `headroom wrap` proxy mode works (including on a subscription login) but is
+# deliberately not automated: Codex cannot reach the API at all while the proxy
+# is down, so starting one by default would make every session depend on it.
+# README documents the manual opt-in.
+ensure_mcp_server_toml headroom \
+  'command = "headroom"' \
+  'args = ["mcp", "serve"]'
+
 echo "[6/7] Installing companion tools..."
 echo "  [6a] ast-grep..."
 if command -v ast-grep >/dev/null 2>&1; then
@@ -1605,6 +1677,43 @@ if command -v codeburn >/dev/null 2>&1; then
 else
   npm i -g codeburn@0.9.23 2>/dev/null || echo "    WARNING: codeburn install failed"
 fi
+
+echo "  [6c] uv (Python tool runner for the Serena/Headroom MCP servers)..."
+if command -v uv >/dev/null 2>&1; then
+  echo "    uv already installed"
+else
+  # Astral's official installer drops uv in ~/.local/bin. Non-fatal: a machine
+  # without it still gets a complete Codex install, only without the two Python
+  # MCP servers, and the config.toml entries start working once uv is present.
+  curl -LsSf https://astral.sh/uv/install.sh | sh >/dev/null 2>&1 \
+    || echo "    WARNING: uv install failed; Serena and Headroom will not be installed"
+fi
+append_path_once "$HOME/.local/bin" || true
+
+# `uv tool install` is idempotent by itself, but it still resolves and reports
+# on every run; the `uv tool list` guard keeps a re-install quiet and offline.
+# $2 is the DISTRIBUTION name, not the command name: `uv tool list` prints the
+# distribution at the start of a line (`serena-agent v1.7.0`) and indents the
+# commands it provides below it (`- serena`). Matching on a command name would
+# never hit, and the tool would be reinstalled on every run.
+ensure_uv_tool() {
+  local label="$1" dist="$2" spec="$3"
+  if ! command -v uv >/dev/null 2>&1; then
+    echo "    WARNING: uv unavailable; skipping ${label}"
+    return
+  fi
+  if uv tool list 2>/dev/null | grep -qE "^${dist}[[:space:]]"; then
+    echo "    ${label} already installed"
+    return
+  fi
+  uv tool install --python 3.13 "$spec" >/dev/null 2>&1 \
+    || echo "    WARNING: ${label} install failed"
+}
+
+echo "  [6d] serena (symbol-level code navigation MCP server)..."
+ensure_uv_tool "serena" serena-agent "serena-agent==1.7.0"
+echo "  [6e] headroom (context compression MCP server)..."
+ensure_uv_tool "headroom" headroom-ai "headroom-ai[all]==0.37.0"
 
 LC_ALL=C sort -u "$TMP_MANIFEST" > "$MANIFEST_FILE"
 printf '%s\n' "$INSTALLING_VERSION" > "$VERSION_FILE"
@@ -1628,6 +1737,10 @@ echo "  Codex attr:    $(git config --global --get my-codex.codexAttribution 2>/
 echo "  version:       $(cat "$VERSION_FILE" 2>/dev/null || echo 'unknown')"
 echo "  codex:         $(command -v codex >/dev/null 2>&1 && echo "OK ($(codex --version 2>/dev/null))" || echo 'NOT INSTALLED')"
 echo "  codeburn:      $(command -v codeburn >/dev/null 2>&1 && echo 'OK' || echo 'MISSING')"
+echo "  uv:            $(command -v uv >/dev/null 2>&1 && echo "OK ($(uv --version 2>/dev/null))" || echo 'MISSING')"
+echo "  serena:        $(command -v serena >/dev/null 2>&1 && echo 'OK' || echo 'MISSING') / MCP $(grep -qE '^\[mcp_servers\.serena\]' "$CODEX_ROOT/config.toml" 2>/dev/null && echo 'registered' || echo 'UNREGISTERED')"
+echo "  headroom:      $(command -v headroom >/dev/null 2>&1 && echo 'OK' || echo 'MISSING') / MCP $(grep -qE '^\[mcp_servers\.headroom\]' "$CODEX_ROOT/config.toml" 2>/dev/null && echo 'registered' || echo 'UNREGISTERED')"
+echo "  archify skill: $(test -f "$CODEX_ROOT/skills/archify/SKILL.md" && echo 'OK' || echo 'MISSING')"
 echo ""
 echo "=== Install complete ==="
 echo ""

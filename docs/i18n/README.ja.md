@@ -10,8 +10,8 @@
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 ![Agents](https://img.shields.io/badge/agents-17_core_%2B_17_opt--in-blue)
-![Skills](https://img.shields.io/badge/skills-105-purple)
-![MCP](https://img.shields.io/badge/MCP-3-green)
+![Skills](https://img.shields.io/badge/skills-106-purple)
+![MCP](https://img.shields.io/badge/MCP-5-green)
 ![Auto Sync](https://img.shields.io/badge/upstream_sync-every_3_days-brightgreen)
 
 **OpenAI Codex CLI 向けオールインワン・エージェントハーネス。**
@@ -166,7 +166,7 @@ Boss は作業が発生したすべてのターン — ファイルの編集・�
 │  /review · /qa · /cso · /ship                         │
 ├─────────────────────────────────────────────────────┤
 │  MCP Layer                                            │
-│  Context7 · Exa · grep.app                            │
+│  Context7 · Exa · grep.app · Serena · Headroom         │
 └─────────────────────────────────────────────────────┘
 ```
 
@@ -178,8 +178,8 @@ Boss は作業が発生したすべてのターン — ファイルの編集・�
 |----------|------:|--------|
 | **コアエージェント**（常時ロード） | 17 | Boss 1 + OMO 9 + OMX 7 |
 | **エージェントパック**（オプトイン、デフォルトでは無効） | 17 | ベンダリング済み 2 カテゴリ: data-ai 13 + llmops 4 |
-| **スキル** | 105 | ECC 61 · gstack 27 · Superpowers 13 · Core 4 |
-| **MCP サーバー** | 3 | Context7、Exa、grep.app |
+| **スキル** | 106 | ECC 61 · gstack 27 · Superpowers 13 · Core 4 · archify 1 |
+| **MCP サーバー** | 5 | Context7、Exa、grep.app、Serena、Headroom |
 | **config.toml** | 1 | my-codex |
 | **AGENTS.md** | 1 | my-codex |
 
@@ -252,7 +252,7 @@ bash /tmp/my-codex/install.sh --profile full      # インストール済みの�
 </details>
 
 <details>
-<summary><strong>スキル — 4 つのソースから 105</strong></summary>
+<summary><strong>スキル — 5 つのソースから 106</strong></summary>
 
 スキル単位の許可リストは `scripts/skill-allowlists.sh` にあり、何がインストールされるかはこのファイルが基準です。
 
@@ -262,6 +262,7 @@ bash /tmp/my-codex/install.sh --profile full      # インストール済みの�
 | [gstack](https://github.com/garrytan/gstack) | 27 | /qa, /review, /ship, /cso, /investigate, /office-hours |
 | [superpowers](https://github.com/obra/superpowers) | 13 | brainstorming, systematic-debugging, TDD, writing-plans |
 | [my-codex Core](https://github.com/sehoon787/my-codex) | 4 | boss-advanced, boss-briefing, briefing-vault, gstack-sprint |
+| [archify](https://github.com/tt-a1i/archify) | 1 | archify（アーキテクチャ・ワークフロー・シーケンス・データフロー・ライフサイクル図） |
 
 gstack は許可リストのスキル 26 個にリポジトリルートのエントリを加えて 27 として集計されます。gstack リポジトリ全体は `~/.codex/skills/gstack` に正規のランタイムツリーとしても配置されます。
 
@@ -366,7 +367,7 @@ BriefingVault v2 は 3 つの知識管理手法を統合しています：
 
 ## アップストリームのオープンソースソース
 
-my-codex は **4 つのアップストリームサブモジュール**に加え、ベンダリング済みスナップショット 1 件と、適応済み/姉妹プロジェクト 2 件で構成されています、companion CLI 1 件で構成されます:
+my-codex は **5 つのアップストリームサブモジュール**に加え、ベンダリング済みスナップショット 1 件、適応済み/姉妹プロジェクト 2 件、companion CLI 2 件、MCP サーバー 4 件で構成されます:
 
 | # | ソース | 方式 | 提供内容 |
 |---|--------|------|-----------------|
@@ -374,14 +375,33 @@ my-codex は **4 つのアップストリームサブモジュール**に加え�
 | 2 | <img src="https://github.com/garrytan.png?size=32" width="20" height="20" align="center"/> **[gstack](https://github.com/garrytan/gstack)** — garrytan | サブモジュール | コードレビュー、QA、セキュリティ監査、デプロイメント向けの 27 スキル。Playwright ブラウザデーモンを含む。 |
 | 3 | <img src="https://github.com/Yeachan-Heo.png?size=32" width="20" height="20" align="center"/> **[oh-my-codex](https://github.com/Yeachan-Heo/oh-my-codex)** — Yeachan Heo | サブモジュール | 許可リストのワーカーエージェント 7 個（executor、planner、architect、test-engineer、security-reviewer、code-reviewer、debugger）。Markdown プロンプトから Codex TOML に変換。 |
 | 4 | <img src="https://github.com/obra.png?size=32" width="20" height="20" align="center"/> **[superpowers](https://github.com/obra/superpowers)** — Jesse Vincent | サブモジュール | ブレインストーミング、TDD、系統的デバッグ、計画作成をカバーする 13 スキル。インストールされるエージェントはありません。 |
-| 5 | <img src="https://github.com/VoltAgent.png?size=32" width="20" height="20" align="center"/> **[awesome-codex-subagents](https://github.com/VoltAgent/awesome-codex-subagents)** — VoltAgent | ベンダリング (MIT) | AI/LLM エージェント 17 個を `codex-agents/packs/` にスナップショットし、オプトインパック 2 個（data-ai 13、llmops 4）として提供。サブモジュールは 2026-07-27 に削除。 |
-| 6 | <img src="https://github.com/code-yeongyu.png?size=32" width="20" height="20" align="center"/> **[oh-my-openagent](https://github.com/code-yeongyu/oh-my-openagent)** — code-yeongyu | 適応 | 9 つの OMO エージェント（Sisyphus、Atlas、Oracle など）。Codex ネイティブ TOML フォーマットに適応し、本リポジトリで維持。 |
-| 7 | <img src="https://github.com/sehoon787.png?size=32" width="20" height="20" align="center"/> **[my-claude](https://github.com/sehoon787/my-claude)** — sehoon787 | 姉妹プロジェクト | ネイティブ Claude `.md` エージェントフォーマットで同じ Boss オーケストレーションを実現。スキル、ルール、Briefing Vault を両プロジェクトで共有。 |
-| 8 | <img src="https://github.com/getagentseal.png?size=32" width="20" height="20" align="center"/> **[codeburn](https://github.com/getagentseal/codeburn)** — getagentseal | npm CLI (MIT) | ローカルファーストのトークン/コストトラッカー。`~/.codex/sessions` を読み取り専用で解析 — プロキシ・アップロード不要。`install.sh` がインストール（`codeburn@0.9.23` に固定）、`upstream/SOURCES.json` に `method: npm-cli` として登録。Codex にはフックなし。 |
+| 5 | <img src="https://github.com/tt-a1i.png?size=32" width="20" height="20" align="center"/> **[archify](https://github.com/tt-a1i/archify)** — tt-a1i | サブモジュール (タグ `v2.9.0`) | `archify` スキル: アーキテクチャ・ワークフロー・シーケンス・データフロー・ライフサイクル図をインライン SVG 付きの単一 HTML として描画します。リポジトリの `archify/` ディレクトリのみをインストールします。 |
+| 6 | <img src="https://github.com/VoltAgent.png?size=32" width="20" height="20" align="center"/> **[awesome-codex-subagents](https://github.com/VoltAgent/awesome-codex-subagents)** — VoltAgent | ベンダリング (MIT) | AI/LLM エージェント 17 個を `codex-agents/packs/` にスナップショットし、オプトインパック 2 個（data-ai 13、llmops 4）として提供。サブモジュールは 2026-07-27 に削除。 |
+| 7 | <img src="https://github.com/code-yeongyu.png?size=32" width="20" height="20" align="center"/> **[oh-my-openagent](https://github.com/code-yeongyu/oh-my-openagent)** — code-yeongyu | 適応 | 9 つの OMO エージェント（Sisyphus、Atlas、Oracle など）。Codex ネイティブ TOML フォーマットに適応し、本リポジトリで維持。 |
+| 8 | <img src="https://github.com/sehoon787.png?size=32" width="20" height="20" align="center"/> **[my-claude](https://github.com/sehoon787/my-claude)** — sehoon787 | 姉妹プロジェクト | ネイティブ Claude `.md` エージェントフォーマットで同じ Boss オーケストレーションを実現。スキル、ルール、Briefing Vault を両プロジェクトで共有。 |
+| 9 | <img src="https://github.com/getagentseal.png?size=32" width="20" height="20" align="center"/> **[codeburn](https://github.com/getagentseal/codeburn)** — getagentseal | npm CLI (MIT) | ローカルファーストのトークン/コストトラッカー。`~/.codex/sessions` を読み取り専用で解析 — プロキシ・アップロード不要。`install.sh` がインストール（`codeburn@0.9.23` に固定）、`upstream/SOURCES.json` に `method: npm-cli` として登録。Codex にはフックなし。 |
+| 10 | <img src="https://github.com/oraios.png?size=32" width="20" height="20" align="center"/> **[serena](https://github.com/oraios/serena)** — oraios | uv ツール + MCP | MCP 経由のシンボル単位のコードナビゲーションと編集。`serena-agent==1.7.0` としてインストールし、`[mcp_servers.serena]` に登録します。配布されるパッケージは全体として GPL-3.0-or-later です — GPL のアプリケーションと MIT の SolidLSP が結合されるためで、PyPI の MIT 表記は不正確です。独立したツールとしてインストールするだけで、ベンダリングはしません。 |
+| 11 | <img src="https://github.com/headroomlabs-ai.png?size=32" width="20" height="20" align="center"/> **[headroom](https://github.com/headroomlabs-ai/headroom)** — Headroom Labs | uv ツール + MCP | MCP 経由のコンテキスト圧縮（`headroom_compress`、`headroom_retrieve`、`headroom_stats`）。`headroom-ai[all]==0.37.0` としてインストールし、`[mcp_servers.headroom]` に登録します。`headroom wrap` プロキシは動作しますが自動化はしません。手動での使い方は「結果を確認する場所」の表にあります。Apache-2.0。 |
+| 12 | <img src="https://github.com/ast-grep.png?size=32" width="20" height="20" align="center"/> **[ast-grep](https://github.com/ast-grep/ast-grep)** — ast-grep | npm CLI (MIT) | 構造的なコード検索と書き換え。`install.sh` がインストールします（`@ast-grep/cli@0.42.0` に固定）。 |
+| 13 | <img src="https://github.com/upstash.png?size=32" width="20" height="20" align="center"/> **[context7](https://github.com/upstash/context7)** — Upstash | ホスト型 MCP | 最新のライブラリドキュメント。`install.sh` が `https://mcp.context7.com/mcp` に登録します。 |
+| 14 | <img src="https://github.com/exa-labs.png?size=32" width="20" height="20" align="center"/> **[exa](https://github.com/exa-labs/exa-mcp-server)** — Exa Labs | ホスト型 MCP | ニューラル Web 検索。`https://mcp.exa.ai/mcp?tools=web_search_exa` に登録します。 |
+| 15 | <img src="https://github.com/grep-app.png?size=32" width="20" height="20" align="center"/> **[grep.app](https://grep.app/)** — grep.app | ホスト型 MCP | リポジトリ横断のコード検索。`https://mcp.grep.app` に登録します。 |
 
-すべてのサブモジュールは `upstream/SOURCES.json`（AI-BOM）（companion CLI（ast-grep、codeburn）も同じファイルにバージョン固定で登録されています）で SHA 固定されており、削除された 2 つのサブモジュール（`agency-agents` — ベンダリングなし、`awesome-codex-subagents` — エージェント 17 個をベンダリング）も記録されています。
+すべてのサブモジュールは `upstream/SOURCES.json`（AI-BOM）（companion CLI（ast-grep、codeburn）と MCP サーバー（serena、headroom）も同じファイルにバージョン固定で登録されています）で SHA 固定されており、削除された 2 つのサブモジュール（`agency-agents` — ベンダリングなし、`awesome-codex-subagents` — エージェント 17 個をベンダリング）も記録されています。
 
 ---
+
+## 結果を確認する場所
+
+インストールされた各ツールは、それぞれの場所に結果を残します。その一覧です。
+
+| ツール | 役割 | 実行方法 | 結果の確認場所 |
+|------|--------------|------------|----------------------|
+| **codeburn** | タスク・ツール・モデル・プロジェクト別のトークン/コスト集計 | `codeburn`（対話型ダッシュボード）。非対話では `codeburn report --format json --period week --provider codex`（`--day`、`--from`/`--to` も可） | ターミナル TUI、または `--format json` の標準出力。`~/.codex/sessions` を読み取り専用で読み、公開価格で換算するため、金額は請求書ではなく概算です。 |
+| **Serena** | MCP 経由のシンボル単位のコードナビゲーションと編集 | Codex が `[mcp_servers.serena]` から起動。ツールは `get_symbols_overview`、`find_symbol`、`find_referencing_symbols`、`replace_symbol_body`、`insert_after_symbol` | サーバー稼働中は <http://localhost:24282/dashboard/index.html> でダッシュボードとツール呼び出し統計を確認。プロジェクトごとのインデックスとメモリは `<リポジトリ>/.serena/`。ブラウザは自動では開きません（`--open-web-dashboard False`）。 |
+| **Headroom** | 巨大なツール出力を圧縮し、必要に応じて原文を取り戻す | Codex が `[mcp_servers.headroom]`（`headroom mcp serve`）から起動。ツールは `headroom_compress`、`headroom_retrieve`、`headroom_stats` | セッション内では `headroom_stats`、シェルからは `headroom doctor`。プロキシモードを既定で有効にしないのは、サブスクリプションログインで使えないからではなく（実際には動作します）、プロキシが落ちていると Codex が API に一切到達できなくなるからです。手動で使うには、別のターミナルで `headroom proxy --port 8787` を起動し、`headroom wrap codex --help` に従って Codex を起動します（`OPENAI_BASE_URL` を設定し、Codex 設定に MCP サーバーを登録します）。プロキシの統計は <http://127.0.0.1:8787/stats>。トラフィックが流れた後の削減量とレイテンシは `headroom dashboard` と `headroom perf` で確認します。無効時は `headroom doctor` が `codex: not routed` と表示します。 |
+| **Archify** | アーキテクチャ・ワークフロー・シーケンス・データフロー・ライフサイクル図 | `~/.codex/skills/archify` で `node bin/archify.mjs render <type> <input>.json <output>.html`、続けて `node bin/archify.mjs check <output>.html` | 指定した `<output>.html` の 1 ファイル — インライン SVG、ダーク/ライト切替、PNG/JPEG/WebP/SVG エクスポート付き。ブラウザで開きます。スキルに同梱された `examples/*.json` が、そのまま写せる完成済みの入力例です。 |
+
 
 ## GitHub Actions
 
@@ -500,6 +520,7 @@ max_depth = 1
 | [gstack](https://github.com/garrytan/gstack) | サブモジュール (`upstream/gstack`) |
 | [oh-my-codex](https://github.com/Yeachan-Heo/oh-my-codex) | サブモジュール (`upstream/omx`) |
 | [superpowers](https://github.com/obra/superpowers) | サブモジュール (`upstream/superpowers`) |
+| [archify](https://github.com/tt-a1i/archify) | サブモジュール (`upstream/archify`, タグ `v2.9.0`) |
 | [awesome-codex-subagents](https://github.com/VoltAgent/awesome-codex-subagents) | ベンダリング済みスナップショット（サブモジュールは 2026-07-27 に削除） |
 
 ---
@@ -530,7 +551,7 @@ my-codex と my-claude は同じ Boss オーケストレーションアーキテ
 <details>
 <summary><strong>アップストリーム同期はどのように機能しますか？</strong></summary>
 
-GitHub Actions ワークフローが 3 日ごとに実行され、4 つのアップストリームサブモジュールから最新のコミットを取得し、`upstream/SOURCES.json` の SHA ピンを更新したうえで、セキュリティゲート付きの自動マージ PR を作成します。Actions タブから手動でトリガーすることもできます。
+GitHub Actions ワークフローが 3 日ごとに実行され、ブランチを追跡する 4 つのアップストリームサブモジュール（`upstream/archify` はタグ固定のため、意図的にのみ更新します）から最新のコミットを取得し、`upstream/SOURCES.json` の SHA ピンを更新したうえで、セキュリティゲート付きの自動マージ PR を作成します。Actions タブから手動でトリガーすることもできます。
 
 </details>
 

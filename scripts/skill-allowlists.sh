@@ -191,3 +191,11 @@ debugger
 SUPERPOWERS_SKILL_EXCLUDE="
 dispatching-parallel-agents
 "
+
+# ── archify (diagram skill) ──
+# Single upstream skill, tag-pinned rather than branch-tracked: install.sh copies
+# $ARCHIFY_SKILL_SUBDIR out of the submodule at $ARCHIFY_PINNED_TAG. Kept here so
+# check-dangling-refs.sh counts `archify` as installable when boss.toml routes to it.
+ARCHIFY_SKILL_NAME="archify"
+ARCHIFY_SKILL_SUBDIR="archify"
+ARCHIFY_PINNED_TAG="v2.9.0"

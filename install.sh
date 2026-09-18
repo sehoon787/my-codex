@@ -1656,8 +1656,10 @@ ensure_mcp_server_toml serena \
   'args = ["start-mcp-server", "--project-from-cwd", "--context=codex", "--open-web-dashboard", "False"]' \
   'startup_timeout_sec = 15'
 # headroom_compress / headroom_retrieve / headroom_stats over stdio. The
-# `headroom wrap` proxy mode is deliberately not wired up: it routes model
-# traffic through an OAuth subscription this install does not assume.
+# `headroom wrap` proxy mode works (including on a subscription login) but is
+# deliberately not automated: Codex cannot reach the API at all while the proxy
+# is down, so starting one by default would make every session depend on it.
+# README documents the manual opt-in.
 ensure_mcp_server_toml headroom \
   'command = "headroom"' \
   'args = ["mcp", "serve"]'

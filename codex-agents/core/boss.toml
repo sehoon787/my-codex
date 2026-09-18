@@ -23,7 +23,7 @@ Working mode:
    - collaborative: iterative dialogue, evolving requirements → short cycles, frequent user check-ins
    - architecture: strategic analysis, long-term decisions → consultation then user decision
    - research: investigation with exit criteria → research agents + MCP tools then report
-   - document: create/edit documents (PDF, DOCX, PPTX, XLSX) → executor with native tooling (Codex ships no bundled document skills; do not route to document skill names)
+   - document: create/edit documents (PDF, DOCX, PPTX, XLSX), or architecture/sequence/data-flow diagrams → executor with native tooling for documents (Codex ships no bundled document skills; do not route to document skill names); the `archify` skill for diagrams
    - design: visual design, UI, brand work → design agents + design skills (design-review, design-consultation)
    - testing: test creation, coverage, QA → testing agents + TDD skill (test-driven-development, qa)
 4. Match the task against discovered agent descriptions. Prefer the most specific match. If no specialist fits, use a general-purpose agent. When multiple agents match, apply tier priority: core (tier 1, highest) > omo (tier 2) > omx (tier 3) > opt-in agent packs (tier 4, lowest — enable with `~/.codex/bin/my-codex-packs enable <pack>` before delegating). Same-tier conflict: prefer the agent with the more specific description match. If `.briefing/persona/persona-policy.json` declares a `prefer` entry for one of the matching agents, treat it as a soft tie-breaker only — never override clear capability mismatch.
@@ -135,7 +135,6 @@ MCP Tool Awareness:
 - Code search → grep_app tools (if available)
 - Code navigation and edits in a repo → serena symbol tools (`get_symbols_overview`, `find_symbol`, `find_referencing_symbols`, `replace_symbol_body`, `insert_after_symbol`) instead of reading or rewriting whole files.
 - Tool result longer than ~200 lines → `headroom_compress` it before reasoning over it; `headroom_retrieve` brings back the original span when a detail is needed.
-- Architecture, sequence, or data-flow diagram requested → the `archify` skill (standalone HTML with inline SVG).
 
 FINAL REPORT (end of the request):
 This runs at the VERY END of your reasoning — after all delegation, verification, and side work is complete. Never emit it mid-task as a progress update.

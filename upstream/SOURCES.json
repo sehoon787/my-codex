@@ -85,7 +85,7 @@
     "method": "uv-tool",
     "package": "headroom-ai",
     "pinned_version": "0.37.0",
-    "note": "Context compression MCP server (headroom_compress / headroom_retrieve / headroom_stats). Installed with `uv tool install --python 3.13 \"headroom-ai[all]==0.37.0\"`; registered as [mcp_servers.headroom] (stdio, `headroom mcp serve`). The `headroom wrap` proxy mode is deliberately not used -- it routes model traffic through an OAuth subscription.",
+    "note": "Context compression MCP server (headroom_compress / headroom_retrieve / headroom_stats). Installed with `uv tool install --python 3.13 \"headroom-ai[all]==0.37.0\"`; registered as [mcp_servers.headroom] (stdio, `headroom mcp serve`). The `headroom wrap` proxy mode works on a subscription login but is deliberately not automated: Codex cannot reach the API while the proxy is down, so it stays a documented manual opt-in.",
     "license": "Apache-2.0"
   },
   "ast-grep": {

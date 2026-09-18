@@ -77,11 +77,11 @@
     "package": "serena-agent",
     "pinned_version": "1.7.0",
     "note": "Symbol-level code navigation/editing MCP server. Installed with `uv tool install --python 3.13`; registered as [mcp_servers.serena] in ~/.codex/config.toml (stdio, startup_timeout_sec = 15). Installed as a standalone tool, never vendored or linked into this repo.",
-    "license": "GPL-3.0-or-later (Serena app) / MIT (SolidLSP)",
-    "license_source": "LICENSE (per-component; the PyPI classifier says MIT, the repo does not)"
+    "license": "GPL-3.0-or-later",
+    "license_note": "The distributed serena-agent package is GPL-3.0-or-later as a whole: it combines the GPL-3.0-or-later Serena application with MIT-licensed SolidLSP, and the repo LICENSE states the combination is subject to GPL-3.0-or-later. The SolidLSP files remain MIT when taken on their own. PyPI metadata declares MIT (license field and classifier) and is inaccurate -- do not change this entry back to MIT on its authority. Installed as a standalone uv tool and used over MCP; nothing vendored or linked into this repo."
   },
   "headroom": {
-    "repo": "https://github.com/chopratejas/headroom",
+    "repo": "https://github.com/headroomlabs-ai/headroom",
     "method": "uv-tool",
     "package": "headroom-ai",
     "pinned_version": "0.37.0",

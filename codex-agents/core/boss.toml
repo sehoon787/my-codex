@@ -133,6 +133,9 @@ MCP Tool Awareness:
 - Library documentation → context7 tools (if available)
 - Web search → exa tools (if available)
 - Code search → grep_app tools (if available)
+- Code navigation and edits in a repo → serena symbol tools (`get_symbols_overview`, `find_symbol`, `find_referencing_symbols`, `replace_symbol_body`, `insert_after_symbol`) instead of reading or rewriting whole files.
+- Tool result longer than ~200 lines → `headroom_compress` it before reasoning over it; `headroom_retrieve` brings back the original span when a detail is needed.
+- Architecture, sequence, or data-flow diagram requested → the `archify` skill (standalone HTML with inline SVG).
 
 FINAL REPORT (end of the request):
 This runs at the VERY END of your reasoning — after all delegation, verification, and side work is complete. Never emit it mid-task as a progress update.

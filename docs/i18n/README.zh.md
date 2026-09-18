@@ -10,8 +10,8 @@
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 ![Agents](https://img.shields.io/badge/agents-17_core_%2B_17_opt--in-blue)
-![Skills](https://img.shields.io/badge/skills-105-purple)
-![MCP](https://img.shields.io/badge/MCP-3-green)
+![Skills](https://img.shields.io/badge/skills-106-purple)
+![MCP](https://img.shields.io/badge/MCP-5-green)
 ![Auto Sync](https://img.shields.io/badge/upstream_sync-every_3_days-brightgreen)
 
 **OpenAI Codex CLI 的一体化 Agent 框架。**
@@ -166,7 +166,7 @@ Boss 会以一份无需打开 diff 即可浏览的结构化最终报告来结束
 │  /review · /qa · /cso · /ship                         │
 ├─────────────────────────────────────────────────────┤
 │  MCP Layer                                            │
-│  Context7 · Exa · grep.app                            │
+│  Context7 · Exa · grep.app · Serena · Headroom         │
 └─────────────────────────────────────────────────────┘
 ```
 
@@ -178,8 +178,8 @@ Boss 会以一份无需打开 diff 即可浏览的结构化最终报告来结束
 |----------|------:|--------|
 | **核心 Agent**（始终加载） | 17 | Boss 1 + OMO 9 + OMX 7 |
 | **Agent 包**（可选启用，默认全部关闭） | 17 | 2 个内置分类：data-ai 13 + llmops 4 |
-| **Skills** | 105 | ECC 61 · gstack 27 · Superpowers 13 · Core 4 |
-| **MCP 服务器** | 3 | Context7、Exa、grep.app |
+| **Skills** | 106 | ECC 61 · gstack 27 · Superpowers 13 · Core 4 · archify 1 |
+| **MCP 服务器** | 5 | Context7、Exa、grep.app、Serena、Headroom |
 | **config.toml** | 1 | my-codex |
 | **AGENTS.md** | 1 | my-codex |
 
@@ -252,7 +252,7 @@ bash /tmp/my-codex/install.sh --profile full      # 已安装的全部包
 </details>
 
 <details>
-<summary><strong>Skills — 105 个，来自 4 个来源</strong></summary>
+<summary><strong>Skills — 106 个，来自 5 个来源</strong></summary>
 
 按技能逐项筛选的允许列表位于 `scripts/skill-allowlists.sh`，该文件决定实际安装内容。
 
@@ -262,6 +262,7 @@ bash /tmp/my-codex/install.sh --profile full      # 已安装的全部包
 | [gstack](https://github.com/garrytan/gstack) | 27 | /qa, /review, /ship, /cso, /investigate, /office-hours |
 | [superpowers](https://github.com/obra/superpowers) | 13 | brainstorming, systematic-debugging, TDD, writing-plans |
 | [my-codex Core](https://github.com/sehoon787/my-codex) | 4 | boss-advanced, boss-briefing, briefing-vault, gstack-sprint |
+| [archify](https://github.com/tt-a1i/archify) | 1 | archify（架构 / 工作流 / 时序 / 数据流 / 生命周期图） |
 
 gstack 按允许列表的 26 个技能加上仓库根条目计为 27。整个 gstack 仓库同时位于 `~/.codex/skills/gstack`，作为其标准运行时目录树。ECC 另外提供 9 个允许列表规则文件。
 
@@ -366,7 +367,7 @@ BriefingVault v2 整合了三种知识管理方法论：
 
 ## 上游开源来源
 
-my-codex 由 **4 个上游子模块**，加上 1 份内置快照、2 个适配/姊妹项目与 1 个 companion CLI 组成：
+my-codex 由 **5 个上游子模块**，加上 1 份内置快照、2 个适配/姊妹项目、2 个 companion CLI 与 4 个 MCP 服务器组成：
 
 | # | 来源 | 方式 | 提供的内容 |
 |---|--------|------|-----------------|
@@ -374,14 +375,33 @@ my-codex 由 **4 个上游子模块**，加上 1 份内置快照、2 个适配/�
 | 2 | <img src="https://github.com/garrytan.png?size=32" width="20" height="20" align="center"/> **[gstack](https://github.com/garrytan/gstack)** — garrytan | 子模块 | 27 个用于代码审查、QA、安全审计、部署的 skills。包含 Playwright 浏览器守护进程。 |
 | 3 | <img src="https://github.com/Yeachan-Heo.png?size=32" width="20" height="20" align="center"/> **[oh-my-codex](https://github.com/Yeachan-Heo/oh-my-codex)** — Yeachan Heo | 子模块 | 7 个允许列表工作 Agent（executor、planner、architect、test-engineer、security-reviewer、code-reviewer、debugger），由 Markdown 提示词转换为 Codex TOML。 |
 | 4 | <img src="https://github.com/obra.png?size=32" width="20" height="20" align="center"/> **[superpowers](https://github.com/obra/superpowers)** — Jesse Vincent | 子模块 | 13 个 skills，覆盖头脑风暴、TDD、系统化调试与计划撰写。不安装任何 Agent。 |
-| 5 | <img src="https://github.com/VoltAgent.png?size=32" width="20" height="20" align="center"/> **[awesome-codex-subagents](https://github.com/VoltAgent/awesome-codex-subagents)** — VoltAgent | 内置快照 (MIT) | 17 个 AI/LLM Agent 快照到 `codex-agents/packs/`，作为 2 个可选启用的包（data-ai 13、llmops 4）。子模块已于 2026-07-27 移除。 |
-| 6 | <img src="https://github.com/code-yeongyu.png?size=32" width="20" height="20" align="center"/> **[oh-my-openagent](https://github.com/code-yeongyu/oh-my-openagent)** — code-yeongyu | 适配 | 9 个 OMO Agent（Sisyphus、Atlas、Oracle 等）。适配为 Codex 原生 TOML 格式并在本仓库维护。 |
-| 7 | <img src="https://github.com/sehoon787.png?size=32" width="20" height="20" align="center"/> **[my-claude](https://github.com/sehoon787/my-claude)** — sehoon787 | 姊妹项目 | 同样的 Boss 编排架构，原生 Claude `.md` Agent 格式。Skills、规则和 Briefing Vault 在两个项目间共享。 |
-| 8 | <img src="https://github.com/getagentseal.png?size=32" width="20" height="20" align="center"/> **[codeburn](https://github.com/getagentseal/codeburn)** — getagentseal | npm CLI (MIT) | 本地优先的 token/成本追踪器。只读解析 `~/.codex/sessions` — 无代理、不上传。由 `install.sh` 安装（固定 `codeburn@0.9.23`），在 `upstream/SOURCES.json` 中以 `method: npm-cli` 登记。Codex 上没有钩子。 |
+| 5 | <img src="https://github.com/tt-a1i.png?size=32" width="20" height="20" align="center"/> **[archify](https://github.com/tt-a1i/archify)** — tt-a1i | 子模块（标签 `v2.9.0`） | `archify` 技能：将架构、工作流、时序、数据流与生命周期图渲染为内嵌 SVG 的单文件 HTML。仅安装仓库中的 `archify/` 目录。 |
+| 6 | <img src="https://github.com/VoltAgent.png?size=32" width="20" height="20" align="center"/> **[awesome-codex-subagents](https://github.com/VoltAgent/awesome-codex-subagents)** — VoltAgent | 内置快照 (MIT) | 17 个 AI/LLM Agent 快照到 `codex-agents/packs/`，作为 2 个可选启用的包（data-ai 13、llmops 4）。子模块已于 2026-07-27 移除。 |
+| 7 | <img src="https://github.com/code-yeongyu.png?size=32" width="20" height="20" align="center"/> **[oh-my-openagent](https://github.com/code-yeongyu/oh-my-openagent)** — code-yeongyu | 适配 | 9 个 OMO Agent（Sisyphus、Atlas、Oracle 等）。适配为 Codex 原生 TOML 格式并在本仓库维护。 |
+| 8 | <img src="https://github.com/sehoon787.png?size=32" width="20" height="20" align="center"/> **[my-claude](https://github.com/sehoon787/my-claude)** — sehoon787 | 姊妹项目 | 同样的 Boss 编排架构，原生 Claude `.md` Agent 格式。Skills、规则和 Briefing Vault 在两个项目间共享。 |
+| 9 | <img src="https://github.com/getagentseal.png?size=32" width="20" height="20" align="center"/> **[codeburn](https://github.com/getagentseal/codeburn)** — getagentseal | npm CLI (MIT) | 本地优先的 token/成本追踪器。只读解析 `~/.codex/sessions` — 无代理、不上传。由 `install.sh` 安装（固定 `codeburn@0.9.23`），在 `upstream/SOURCES.json` 中以 `method: npm-cli` 登记。Codex 上没有钩子。 |
+| 10 | <img src="https://github.com/oraios.png?size=32" width="20" height="20" align="center"/> **[serena](https://github.com/oraios/serena)** — oraios | uv 工具 + MCP | 通过 MCP 进行符号级代码导航与编辑。以 `serena-agent==1.7.0` 安装，注册为 `[mcp_servers.serena]`。许可为 GPL-3.0-or-later（应用）/ MIT（SolidLSP）；仅作为独立工具安装，不做内置。 |
+| 11 | <img src="https://github.com/chopratejas.png?size=32" width="20" height="20" align="center"/> **[headroom](https://github.com/chopratejas/headroom)** — chopratejas | uv 工具 + MCP | 通过 MCP 进行上下文压缩（`headroom_compress`、`headroom_retrieve`、`headroom_stats`）。以 `headroom-ai[all]==0.37.0` 安装，注册为 `[mcp_servers.headroom]`。刻意不使用 `headroom wrap` 代理。Apache-2.0。 |
+| 12 | <img src="https://github.com/ast-grep.png?size=32" width="20" height="20" align="center"/> **[ast-grep](https://github.com/ast-grep/ast-grep)** — ast-grep | npm CLI (MIT) | 结构化代码搜索与重写。由 `install.sh` 安装（固定 `@ast-grep/cli@0.42.0`）。 |
+| 13 | <img src="https://github.com/upstash.png?size=32" width="20" height="20" align="center"/> **[context7](https://github.com/upstash/context7)** — Upstash | 托管 MCP | 最新库文档。由 `install.sh` 注册到 `https://mcp.context7.com/mcp`。 |
+| 14 | <img src="https://github.com/exa-labs.png?size=32" width="20" height="20" align="center"/> **[exa](https://github.com/exa-labs/exa-mcp-server)** — Exa Labs | 托管 MCP | 神经网络网页搜索。注册到 `https://mcp.exa.ai/mcp?tools=web_search_exa`。 |
+| 15 | <img src="https://github.com/grep-app.png?size=32" width="20" height="20" align="center"/> **[grep.app](https://grep.app/)** — grep.app | 托管 MCP | 跨仓库代码搜索。注册到 `https://mcp.grep.app`。 |
 
-所有子模块均在 `upstream/SOURCES.json`（AI-BOM）（companion CLI（ast-grep、codeburn）也在同一文件中以固定版本登记）中以 SHA 固定，该文件同时记录了两个已移除的子模块（`agency-agents` — 未内置任何内容；`awesome-codex-subagents` — 内置 17 个 Agent）。
+所有子模块均在 `upstream/SOURCES.json`（AI-BOM）（companion CLI（ast-grep、codeburn）与 MCP 服务器（serena、headroom）也在同一文件中以固定版本登记）中以 SHA 固定，该文件同时记录了两个已移除的子模块（`agency-agents` — 未内置任何内容；`awesome-codex-subagents` — 内置 17 个 Agent）。
 
 ---
+
+## 在哪里查看结果
+
+每个已安装的工具都会把结果写到某个地方。位置如下。
+
+| 工具 | 作用 | 如何运行 | 在哪里查看结果 |
+|------|--------------|------------|----------------------|
+| **codeburn** | 按任务、工具、模型与项目统计 token 与花费 | `codeburn`（交互式面板）、`codeburn report`、`codeburn overview`、`codeburn status` | 终端 TUI；导出文件用 `codeburn export --format json`。以只读方式读取 `~/.codex/sessions` 并按公开价目表计价，因此金额是估算而非账单。 |
+| **Serena** | 通过 MCP 进行符号级代码导航与编辑 | 由 Codex 从 `[mcp_servers.serena]` 启动；工具为 `get_symbols_overview`、`find_symbol`、`find_referencing_symbols`、`replace_symbol_body`、`insert_after_symbol` | 服务器运行时可在 <http://localhost:24282/dashboard/index.html> 查看面板与工具调用统计；按项目的索引与记忆位于 `<仓库>/.serena/`。浏览器不会自动打开（`--open-web-dashboard False`）。 |
+| **Headroom** | 压缩过大的工具输出，并在需要时取回原文 | 由 Codex 从 `[mcp_servers.headroom]`（`headroom mcp serve`）启动；工具为 `headroom_compress`、`headroom_retrieve`、`headroom_stats` | 会话内用 `headroom_stats`，命令行用 `headroom doctor` 与 `headroom perf`。刻意不使用 `headroom wrap` 代理模式 —— 它会让模型流量走 OAuth 订阅。 |
+| **Archify** | 架构 / 工作流 / 时序 / 数据流 / 生命周期图 | 在 `~/.codex/skills/archify` 下执行 `node bin/archify.mjs render <type> <input>.json <output>.html`，再执行 `node bin/archify.mjs check <output>.html` | 你指定的 `<output>.html` —— 单个自包含文件，含内嵌 SVG、明暗主题切换与 PNG/JPEG/WebP/SVG 导出。用浏览器打开。`node bin/archify.mjs examples` 可列出示例。 |
+
 
 ## GitHub Actions
 
@@ -500,6 +520,7 @@ max_depth = 1
 | [gstack](https://github.com/garrytan/gstack) | 子模块 (`upstream/gstack`) |
 | [oh-my-codex](https://github.com/Yeachan-Heo/oh-my-codex) | 子模块 (`upstream/omx`) |
 | [superpowers](https://github.com/obra/superpowers) | 子模块 (`upstream/superpowers`) |
+| [archify](https://github.com/tt-a1i/archify) | 子模块 (`upstream/archify`, 标签 `v2.9.0`) |
 | [awesome-codex-subagents](https://github.com/VoltAgent/awesome-codex-subagents) | 内置快照（子模块已于 2026-07-27 移除） |
 
 ---
@@ -530,7 +551,7 @@ Agent 包是安装到 `~/.codex/agent-packs/` 的领域专属 Agent 集合。目
 <details>
 <summary><strong>上游同步如何工作？</strong></summary>
 
-GitHub Actions 工作流每 3 天运行一次，从 4 个上游子模块拉取最新提交，刷新 `upstream/SOURCES.json` 中的 SHA 固定值，并创建带安全门禁的自动合并 PR。也可以从 Actions 标签页手动触发。
+GitHub Actions 工作流每 3 天运行一次，从 4 个按分支跟踪的上游子模块拉取最新提交（`upstream/archify` 固定在标签上，只在需要时手动升级），刷新 `upstream/SOURCES.json` 中的 SHA 固定值，并创建带安全门禁的自动合并 PR。也可以从 Actions 标签页手动触发。
 
 </details>
 

@@ -10,8 +10,8 @@
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 ![Agents](https://img.shields.io/badge/agents-17_core_%2B_17_opt--in-blue)
-![Skills](https://img.shields.io/badge/skills-105-purple)
-![MCP](https://img.shields.io/badge/MCP-3-green)
+![Skills](https://img.shields.io/badge/skills-106-purple)
+![MCP](https://img.shields.io/badge/MCP-5-green)
 ![Auto Sync](https://img.shields.io/badge/upstream_sync-every_3_days-brightgreen)
 
 **Harnais d'agents tout-en-un pour OpenAI Codex CLI.**
@@ -176,7 +176,7 @@ Il ne se déclenche qu'à la toute fin de la requête — jamais dans un tour qu
 │  /review · /qa · /cso · /ship                         │
 ├─────────────────────────────────────────────────────┤
 │  Couche MCP                                           │
-│  Context7 · Exa · grep.app                            │
+│  Context7 · Exa · grep.app · Serena · Headroom         │
 └─────────────────────────────────────────────────────┘
 ```
 
@@ -188,8 +188,8 @@ Il ne se déclenche qu'à la toute fin de la requête — jamais dans un tour qu
 |----------|------:|--------|
 | **Agents principaux** (toujours chargés) | 17 | Boss 1 + OMO 9 + OMX 7 |
 | **Packs d'agents** (optionnels, aucun activé par défaut) | 17 | 2 catégories intégrées : data-ai 13 + llmops 4 |
-| **Skills** | 105 | ECC 61 · gstack 27 · Superpowers 13 · Core 4 |
-| **Serveurs MCP** | 3 | Context7, Exa, grep.app |
+| **Skills** | 106 | ECC 61 · gstack 27 · Superpowers 13 · Core 4 · archify 1 |
+| **Serveurs MCP** | 5 | Context7, Exa, grep.app, Serena, Headroom |
 | **config.toml** | 1 | my-codex |
 | **AGENTS.md** | 1 | my-codex |
 
@@ -262,7 +262,7 @@ bash /tmp/my-codex/install.sh --profile full      # tous les packs installés
 </details>
 
 <details>
-<summary><strong>Skills — 105 issus de 4 sources</strong></summary>
+<summary><strong>Skills — 106 issus de 5 sources</strong></summary>
 
 Les listes d'autorisation par skill se trouvent dans `scripts/skill-allowlists.sh` — ce fichier fait autorité sur ce qui est livré.
 
@@ -272,6 +272,7 @@ Les listes d'autorisation par skill se trouvent dans `scripts/skill-allowlists.s
 | [gstack](https://github.com/garrytan/gstack) | 27 | /qa, /review, /ship, /cso, /investigate, /office-hours |
 | [superpowers](https://github.com/obra/superpowers) | 13 | brainstorming, systematic-debugging, TDD, writing-plans |
 | [my-codex Core](https://github.com/sehoon787/my-codex) | 4 | boss-advanced, boss-briefing, briefing-vault, gstack-sprint |
+| [archify](https://github.com/tt-a1i/archify) | 1 | archify (diagrammes d'architecture, de workflow, de séquence, de flux de données et de cycle de vie) |
 
 gstack compte 26 skills de la liste d'autorisation plus l'entrée racine du dépôt. L'intégralité du dépôt gstack réside également dans `~/.codex/skills/gstack`, son arbre d'exécution canonique.
 
@@ -376,7 +377,7 @@ BriefingVault v2 intègre trois méthodologies de gestion des connaissances :
 
 ## Sources open source en amont
 
-my-codex suit **4 sous-modules upstream**, plus un instantané intégré deux projets adaptés ou sœurs et une CLI compagnon :
+my-codex suit **5 sous-modules upstream**, plus un instantané intégré, deux projets adaptés ou sœurs, deux CLI compagnons et quatre serveurs MCP :
 
 | # | Source | Méthode | Ce qu'elle fournit |
 |---|--------|---------|-----------------|
@@ -384,14 +385,33 @@ my-codex suit **4 sous-modules upstream**, plus un instantané intégré deux pr
 | 2 | <img src="https://github.com/garrytan.png?size=32" width="20" height="20" align="center"/> **[gstack](https://github.com/garrytan/gstack)** — garrytan | sous-module | 27 skills pour la révision de code, QA, audit de sécurité, déploiement. Inclut un daemon navigateur Playwright. |
 | 3 | <img src="https://github.com/Yeachan-Heo.png?size=32" width="20" height="20" align="center"/> **[oh-my-codex](https://github.com/Yeachan-Heo/oh-my-codex)** — Yeachan Heo | sous-module | 7 agents de travail autorisés (executor, planner, architect, test-engineer, security-reviewer, code-reviewer, debugger), convertis depuis des prompts Markdown vers le TOML de Codex. |
 | 4 | <img src="https://github.com/obra.png?size=32" width="20" height="20" align="center"/> **[superpowers](https://github.com/obra/superpowers)** — Jesse Vincent | sous-module | 13 skills couvrant brainstorming, TDD, débogage systématique et rédaction de plans. Aucun agent installé. |
-| 5 | <img src="https://github.com/VoltAgent.png?size=32" width="20" height="20" align="center"/> **[awesome-codex-subagents](https://github.com/VoltAgent/awesome-codex-subagents)** — VoltAgent | intégré (MIT) | 17 agents IA/LLM capturés dans `codex-agents/packs/` sous forme de 2 packs optionnels (data-ai 13, llmops 4). Sous-module supprimé le 2026-07-27. |
-| 6 | <img src="https://github.com/code-yeongyu.png?size=32" width="20" height="20" align="center"/> **[oh-my-openagent](https://github.com/code-yeongyu/oh-my-openagent)** — code-yeongyu | adapté | 9 agents OMO (Sisyphus, Atlas, Oracle, etc.). Adaptés au format TOML natif Codex et maintenus dans ce dépôt. |
-| 7 | <img src="https://github.com/sehoon787.png?size=32" width="20" height="20" align="center"/> **[my-claude](https://github.com/sehoon787/my-claude)** — sehoon787 | projet sœur | Même orchestration Boss au format natif Claude `.md`. Skills, règles et Briefing Vault partagés entre les deux projets. |
-| 8 | <img src="https://github.com/getagentseal.png?size=32" width="20" height="20" align="center"/> **[codeburn](https://github.com/getagentseal/codeburn)** — getagentseal | CLI npm (MIT) | Suivi local-first des tokens et des coûts. Lit `~/.codex/sessions` en lecture seule — pas de proxy, pas d'upload. Installé par `install.sh` (épinglé `codeburn@0.9.23`), enregistré dans `upstream/SOURCES.json` en `method: npm-cli`. Aucun hook sur Codex. |
+| 5 | <img src="https://github.com/tt-a1i.png?size=32" width="20" height="20" align="center"/> **[archify](https://github.com/tt-a1i/archify)** — tt-a1i | sous-module (tag `v2.9.0`) | Le skill `archify` : diagrammes d'architecture, de workflow, de séquence, de flux de données et de cycle de vie rendus en HTML autonome avec SVG intégré. Seul le répertoire `archify/` du dépôt est installé. |
+| 6 | <img src="https://github.com/VoltAgent.png?size=32" width="20" height="20" align="center"/> **[awesome-codex-subagents](https://github.com/VoltAgent/awesome-codex-subagents)** — VoltAgent | intégré (MIT) | 17 agents IA/LLM capturés dans `codex-agents/packs/` sous forme de 2 packs optionnels (data-ai 13, llmops 4). Sous-module supprimé le 2026-07-27. |
+| 7 | <img src="https://github.com/code-yeongyu.png?size=32" width="20" height="20" align="center"/> **[oh-my-openagent](https://github.com/code-yeongyu/oh-my-openagent)** — code-yeongyu | adapté | 9 agents OMO (Sisyphus, Atlas, Oracle, etc.). Adaptés au format TOML natif Codex et maintenus dans ce dépôt. |
+| 8 | <img src="https://github.com/sehoon787.png?size=32" width="20" height="20" align="center"/> **[my-claude](https://github.com/sehoon787/my-claude)** — sehoon787 | projet sœur | Même orchestration Boss au format natif Claude `.md`. Skills, règles et Briefing Vault partagés entre les deux projets. |
+| 9 | <img src="https://github.com/getagentseal.png?size=32" width="20" height="20" align="center"/> **[codeburn](https://github.com/getagentseal/codeburn)** — getagentseal | CLI npm (MIT) | Suivi local-first des tokens et des coûts. Lit `~/.codex/sessions` en lecture seule — pas de proxy, pas d'upload. Installé par `install.sh` (épinglé `codeburn@0.9.23`), enregistré dans `upstream/SOURCES.json` en `method: npm-cli`. Aucun hook sur Codex. |
+| 10 | <img src="https://github.com/oraios.png?size=32" width="20" height="20" align="center"/> **[serena](https://github.com/oraios/serena)** — oraios | outil uv + MCP | Navigation et édition de code au niveau des symboles via MCP. Installé comme `serena-agent==1.7.0`, enregistré comme `[mcp_servers.serena]`. Licence GPL-3.0-or-later (application) / MIT (SolidLSP) ; installé comme outil autonome, jamais intégré. |
+| 11 | <img src="https://github.com/chopratejas.png?size=32" width="20" height="20" align="center"/> **[headroom](https://github.com/chopratejas/headroom)** — chopratejas | outil uv + MCP | Compression de contexte via MCP (`headroom_compress`, `headroom_retrieve`, `headroom_stats`). Installé comme `headroom-ai[all]==0.37.0`, enregistré comme `[mcp_servers.headroom]`. Le proxy `headroom wrap` n'est délibérément pas utilisé. Apache-2.0. |
+| 12 | <img src="https://github.com/ast-grep.png?size=32" width="20" height="20" align="center"/> **[ast-grep](https://github.com/ast-grep/ast-grep)** — ast-grep | CLI npm (MIT) | Recherche et réécriture structurelles de code. Installé par `install.sh` (épinglé à `@ast-grep/cli@0.42.0`). |
+| 13 | <img src="https://github.com/upstash.png?size=32" width="20" height="20" align="center"/> **[context7](https://github.com/upstash/context7)** — Upstash | MCP hébergé | Documentation de bibliothèques à jour. Enregistré par `install.sh` sur `https://mcp.context7.com/mcp`. |
+| 14 | <img src="https://github.com/exa-labs.png?size=32" width="20" height="20" align="center"/> **[exa](https://github.com/exa-labs/exa-mcp-server)** — Exa Labs | MCP hébergé | Recherche web neuronale. Enregistré sur `https://mcp.exa.ai/mcp?tools=web_search_exa`. |
+| 15 | <img src="https://github.com/grep-app.png?size=32" width="20" height="20" align="center"/> **[grep.app](https://grep.app/)** — grep.app | MCP hébergé | Recherche de code inter-dépôts. Enregistré sur `https://mcp.grep.app`. |
 
-Chaque sous-module est épinglé par SHA dans `upstream/SOURCES.json` (AI-BOM) — les CLI compagnons (ast-grep, codeburn) y sont également épinglées par version —, qui consigne aussi les deux sous-modules supprimés (`agency-agents` — rien d'intégré ; `awesome-codex-subagents` — 17 agents intégrés).
+Chaque sous-module est épinglé par SHA dans `upstream/SOURCES.json` (AI-BOM) — les CLI compagnons (ast-grep, codeburn) et les serveurs MCP (serena, headroom) y sont également épinglés par version —, qui consigne aussi les deux sous-modules supprimés (`agency-agents` — rien d'intégré ; `awesome-codex-subagents` — 17 agents intégrés).
 
 ---
+
+## Où voir les résultats
+
+Chaque outil installé écrit sa sortie quelque part. Voici où.
+
+| Outil | Rôle | Comment le lancer | Où voir les résultats |
+|------|--------------|------------|----------------------|
+| **codeburn** | Comptabilité des tokens et des coûts par tâche, outil, modèle et projet | `codeburn` (tableau de bord interactif), `codeburn report`, `codeburn overview`, `codeburn status` | TUI dans le terminal ; en fichier via `codeburn export --format json`. Lit `~/.codex/sessions` en lecture seule et applique les tarifs publics : les montants sont des estimations, pas une facture. |
+| **Serena** | Navigation et édition de code au niveau des symboles via MCP | Lancé par Codex depuis `[mcp_servers.serena]` ; outils `get_symbols_overview`, `find_symbol`, `find_referencing_symbols`, `replace_symbol_body`, `insert_after_symbol` | Tableau de bord et statistiques d'appels sur <http://localhost:24282/dashboard/index.html> tant qu'un serveur tourne. Index et mémoires par projet sous `<dépôt>/.serena/`. Le navigateur ne s'ouvre pas automatiquement (`--open-web-dashboard False`). |
+| **Headroom** | Compresse les sorties d'outils trop longues et récupère l'original à la demande | Lancé par Codex depuis `[mcp_servers.headroom]` (`headroom mcp serve`) ; outils `headroom_compress`, `headroom_retrieve`, `headroom_stats` | `headroom_stats` depuis une session ; `headroom doctor` et `headroom perf` depuis un shell. Le mode proxy `headroom wrap` n'est délibérément pas utilisé : il fait passer le trafic modèle par un abonnement OAuth. |
+| **Archify** | Diagrammes d'architecture, de workflow, de séquence, de flux de données et de cycle de vie | Depuis `~/.codex/skills/archify` : `node bin/archify.mjs render <type> <input>.json <output>.html`, puis `node bin/archify.mjs check <output>.html` | Le fichier `<output>.html` que vous avez nommé — un seul fichier autonome avec SVG intégré, bascule clair/sombre et export PNG/JPEG/WebP/SVG. À ouvrir dans un navigateur. `node bin/archify.mjs examples` liste les exemples. |
+
 
 ## GitHub Actions
 
@@ -510,6 +530,7 @@ Les sources upstream sont gérées comme des sous-modules git. Les commits épin
 | [gstack](https://github.com/garrytan/gstack) | sous-module (`upstream/gstack`) |
 | [oh-my-codex](https://github.com/Yeachan-Heo/oh-my-codex) | sous-module (`upstream/omx`) |
 | [superpowers](https://github.com/obra/superpowers) | sous-module (`upstream/superpowers`) |
+| [archify](https://github.com/tt-a1i/archify) | sous-module (`upstream/archify`, tag `v2.9.0`) |
 | [awesome-codex-subagents](https://github.com/VoltAgent/awesome-codex-subagents) | instantané intégré (sous-module supprimé le 2026-07-27) |
 
 ---
@@ -540,7 +561,7 @@ Les packs d'agents sont des collections d'agents spécifiques à un domaine, ins
 <details>
 <summary><strong>Comment fonctionne la synchronisation upstream ?</strong></summary>
 
-Un workflow GitHub Actions s'exécute tous les 3 jours, récupérant les derniers commits des 4 sous-modules upstream, rafraîchissant les épinglages SHA de `upstream/SOURCES.json` et créant une PR de fusion automatique sous contrôle de sécurité. Vous pouvez également le déclencher manuellement depuis l'onglet Actions.
+Un workflow GitHub Actions s'exécute tous les 3 jours, récupérant les derniers commits des 4 sous-modules upstream suivis par branche (`upstream/archify` est épinglé sur un tag et relevé délibérément), rafraîchissant les épinglages SHA de `upstream/SOURCES.json` et créant une PR de fusion automatique sous contrôle de sécurité. Vous pouvez également le déclencher manuellement depuis l'onglet Actions.
 
 </details>
 

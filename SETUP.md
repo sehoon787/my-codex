@@ -56,7 +56,7 @@ What gets installed:
 |---|---|
 | `~/.codex/agents/` | 17 core agents (Boss 1 + OMO 9 + OMX 7), deduplicated by tier |
 | `~/.codex/agent-packs/` | 17 opt-in pack agents across 2 packs (data-ai 13, llmops 4) |
-| `~/.codex/skills/` | 105 skills (ECC 61 + gstack 27 + superpowers 13 + core 4) |
+| `~/.codex/skills/` | 106 skills (ECC 61 + gstack 27 + superpowers 13 + core 4 + archify 1) |
 | `~/.codex/AGENTS.md` | Agent catalog and routing instructions |
 | `~/.codex/enabled-agent-packs.txt` | Persisted active pack set; first install writes an empty set (packs are opt-in) |
 | `~/.codex/enabled-skill-lanes.txt` | Persisted optional skill lanes; first install writes an empty set (default lane only) |
@@ -65,7 +65,7 @@ What gets installed:
 | `~/.codex/hooks/` | Hook scripts referenced by `hooks.json` |
 | `~/.codex/git-hooks/` | `prepare-commit-msg` + `commit-msg` + `post-commit` hooks for Codex attribution |
 | `~/.codex/bin/codex` | Wrapper that records Codex-touched files for commit attribution |
-| MCP servers | 3 servers registered via `codex mcp add`: context7, exa, grep_app |
+| MCP servers | 5 servers: context7, exa, grep_app via `codex mcp add`; serena and headroom as `[mcp_servers.*]` tables in `config.toml` |
 
 ---
 
@@ -166,17 +166,22 @@ Available packs and agent counts (vendored from awesome-codex-subagents, MIT):
 
 ## 6. MCP Server Configuration
 
-Three MCP servers are registered via `codex mcp add`:
+Five MCP servers are registered. The three hosted ones go through `codex mcp add`; the two stdio ones are written into `~/.codex/config.toml` as tables, because `codex mcp add` has no flag for `startup_timeout_sec` and Serena's first launch needs one.
 
-| Server | Purpose |
-|---|---|
-| **context7** | Library documentation lookup |
-| **exa** | Neural web search |
-| **grep_app** | GitHub code search |
+| Server | Purpose | Registered as |
+|---|---|---|
+| **context7** | Library documentation lookup | `codex mcp add --url` |
+| **exa** | Neural web search | `codex mcp add --url` |
+| **grep_app** | GitHub code search | `codex mcp add --url` |
+| **serena** | Symbol-level code navigation and editing | `[mcp_servers.serena]` (stdio, `serena start-mcp-server`) |
+| **headroom** | Context compression (`headroom_compress` / `headroom_retrieve` / `headroom_stats`) | `[mcp_servers.headroom]` (stdio, `headroom mcp serve`) |
+
+Serena and Headroom are Python tools installed with `uv tool install --python 3.13` (`serena-agent==1.7.0`, `headroom-ai[all]==0.37.0`). `install.sh` installs `uv` first if it is missing; if that fails, the install still completes and the two servers start working once `uv` is available.
 
 Verify MCP servers are registered:
 ```bash
 codex mcp list
+grep -E '^\[mcp_servers\.' ~/.codex/config.toml
 ```
 
 If a server is missing, re-run `install.sh` or add it manually:

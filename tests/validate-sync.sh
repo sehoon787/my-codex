@@ -27,7 +27,7 @@ if [ "$MODE" = "repo" ]; then
   # 2. Submodules initialized — check each
   echo ""
   echo "=== Submodule Validation ==="
-  for sub in ecc omx gstack superpowers; do
+  for sub in ecc omx gstack superpowers archify; do
     subdir="upstream/$sub"
     if [ ! -d "$subdir" ] || [ -z "$(ls -A "$subdir" 2>/dev/null)" ]; then
       echo "SKIP: $subdir not initialized (run: git submodule update --init)"
@@ -52,6 +52,14 @@ if [ "$MODE" = "repo" ]; then
         # v6.2.0 ships no agents/ dir — skills are the only contract.
         SKILL_COUNT=$({ find "$subdir/skills" -name 'SKILL.md' 2>/dev/null || true; } | wc -l | tr -d ' ')
         [ "$SKILL_COUNT" -ge 10 ] && echo "OK: $sub — $SKILL_COUNT skills" || { echo "FAIL: $sub has $SKILL_COUNT skills (expected >= 10)"; ERRORS=$((ERRORS + 1)); }
+        ;;
+      archify)
+        # One skill, and only its directory is installed — assert exactly that path.
+        if [ -f "$subdir/archify/SKILL.md" ]; then
+          echo "OK: $sub — archify/SKILL.md present"
+        else
+          echo "FAIL: $sub is missing archify/SKILL.md"; ERRORS=$((ERRORS + 1))
+        fi
         ;;
     esac
   done

@@ -61,6 +61,33 @@
     "note": "Local-first AI token/cost tracker; parses ~/.codex/sessions read-only, no proxy, no upload. No hooks on Codex (read-only).",
     "license": "MIT"
   },
+  "archify": {
+    "repo": "https://github.com/tt-a1i/archify",
+    "path": "upstream/archify",
+    "method": "submodule (tag-pinned)",
+    "pinned_tag": "v2.9.0",
+    "pinned_sha": "62904f3b73dc469ceb1f1fd500ff44c8dee70b06",
+    "pinned_date": "2026-09-19",
+    "note": "Diagram skill (architecture/workflow/sequence/dataflow/lifecycle -> standalone HTML with inline SVG). Only the repo's top-level archify/ directory is installed, as ~/.codex/skills/archify. Tag-pinned, so update-upstream.yml skips it in --remote.",
+    "license": "MIT"
+  },
+  "serena": {
+    "repo": "https://github.com/oraios/serena",
+    "method": "uv-tool",
+    "package": "serena-agent",
+    "pinned_version": "1.7.0",
+    "note": "Symbol-level code navigation/editing MCP server. Installed with `uv tool install --python 3.13`; registered as [mcp_servers.serena] in ~/.codex/config.toml (stdio, startup_timeout_sec = 15). Installed as a standalone tool, never vendored or linked into this repo.",
+    "license": "GPL-3.0-or-later (Serena app) / MIT (SolidLSP)",
+    "license_source": "LICENSE (per-component; the PyPI classifier says MIT, the repo does not)"
+  },
+  "headroom": {
+    "repo": "https://github.com/chopratejas/headroom",
+    "method": "uv-tool",
+    "package": "headroom-ai",
+    "pinned_version": "0.37.0",
+    "note": "Context compression MCP server (headroom_compress / headroom_retrieve / headroom_stats). Installed with `uv tool install --python 3.13 \"headroom-ai[all]==0.37.0\"`; registered as [mcp_servers.headroom] (stdio, `headroom mcp serve`). The `headroom wrap` proxy mode is deliberately not used -- it routes model traffic through an OAuth subscription.",
+    "license": "Apache-2.0"
+  },
   "ast-grep": {
     "repo": "https://github.com/ast-grep/ast-grep",
     "method": "npm-cli",

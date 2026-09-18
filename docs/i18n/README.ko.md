@@ -10,8 +10,8 @@
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 ![Agents](https://img.shields.io/badge/agents-17_core_%2B_17_opt--in-blue)
-![Skills](https://img.shields.io/badge/skills-105-purple)
-![MCP](https://img.shields.io/badge/MCP-3-green)
+![Skills](https://img.shields.io/badge/skills-106-purple)
+![MCP](https://img.shields.io/badge/MCP-5-green)
 ![Auto Sync](https://img.shields.io/badge/upstream_sync-every_3_days-brightgreen)
 
 **OpenAI Codex CLI를 위한 올인원 에이전트 하네스.**
@@ -166,7 +166,7 @@ Boss는 작업이 있던 모든 턴 — 파일 편집·생성, 커밋/PR/머지,
 │  /review · /qa · /cso · /ship                         │
 ├─────────────────────────────────────────────────────┤
 │  MCP Layer                                            │
-│  Context7 · Exa · grep.app                            │
+│  Context7 · Exa · grep.app · Serena · Headroom         │
 └─────────────────────────────────────────────────────┘
 ```
 
@@ -178,8 +178,8 @@ Boss는 작업이 있던 모든 턴 — 파일 편집·생성, 커밋/PR/머지,
 |----------|------:|--------|
 | **핵심 에이전트** (항상 로드됨) | 17 | Boss 1 + OMO 9 + OMX 7 |
 | **에이전트 팩** (옵트인, 기본 비활성) | 17 | 벤더링된 2개 카테고리: data-ai 13 + llmops 4 |
-| **스킬** | 105 | ECC 61 · gstack 27 · Superpowers 13 · Core 4 |
-| **MCP 서버** | 3 | Context7, Exa, grep.app |
+| **스킬** | 106 | ECC 61 · gstack 27 · Superpowers 13 · Core 4 · archify 1 |
+| **MCP 서버** | 5 | Context7, Exa, grep.app, Serena, Headroom |
 | **config.toml** | 1 | my-codex |
 | **AGENTS.md** | 1 | my-codex |
 
@@ -252,7 +252,7 @@ bash /tmp/my-codex/install.sh --profile full      # 설치된 모든 팩
 </details>
 
 <details>
-<summary><strong>스킬 — 4개 출처에서 105개</strong></summary>
+<summary><strong>스킬 — 5개 출처에서 106개</strong></summary>
 
 스킬 단위 큐레이션 허용목록은 `scripts/skill-allowlists.sh`에 있으며, 이 파일이 무엇을 설치할지 결정하는 기준입니다.
 
@@ -262,6 +262,7 @@ bash /tmp/my-codex/install.sh --profile full      # 설치된 모든 팩
 | [gstack](https://github.com/garrytan/gstack) | 27 | /qa, /review, /ship, /cso, /investigate, /office-hours |
 | [superpowers](https://github.com/obra/superpowers) | 13 | brainstorming, systematic-debugging, TDD, writing-plans |
 | [my-codex Core](https://github.com/sehoon787/my-codex) | 4 | boss-advanced, boss-briefing, briefing-vault, gstack-sprint |
+| [archify](https://github.com/tt-a1i/archify) | 1 | archify (아키텍처·워크플로·시퀀스·데이터 흐름·라이프사이클 다이어그램) |
 
 gstack은 허용목록 스킬 26개에 저장소 루트 항목을 더해 27개로 집계됩니다. gstack 저장소 전체는 `~/.codex/skills/gstack`에 표준 런타임 트리로도 존재합니다.
 
@@ -366,7 +367,7 @@ BriefingVault v2는 세 가지 지식 관리 방법론을 통합합니다:
 
 ## 업스트림 오픈소스 출처
 
-my-codex는 **4개의 업스트림 서브모듈**과 벤더링된 스냅샷 1개, 적용/자매 프로젝트 2개, companion CLI 1개로 구성됩니다:
+my-codex는 **5개의 업스트림 서브모듈**과 벤더링된 스냅샷 1개, 적용/자매 프로젝트 2개, companion CLI 2개, MCP 서버 4개로 구성됩니다:
 
 | # | 출처 | 방식 | 제공 내용 |
 |---|--------|------|-----------------|
@@ -374,14 +375,33 @@ my-codex는 **4개의 업스트림 서브모듈**과 벤더링된 스냅샷 1개
 | 2 | <img src="https://github.com/garrytan.png?size=32" width="20" height="20" align="center"/> **[gstack](https://github.com/garrytan/gstack)** — garrytan | 서브모듈 | 코드 리뷰, QA, 보안 감사, 배포를 위한 스킬 27개. Playwright 브라우저 데몬 포함. |
 | 3 | <img src="https://github.com/Yeachan-Heo.png?size=32" width="20" height="20" align="center"/> **[oh-my-codex](https://github.com/Yeachan-Heo/oh-my-codex)** — Yeachan Heo | 서브모듈 | 허용목록 작업자 에이전트 7개(executor, planner, architect, test-engineer, security-reviewer, code-reviewer, debugger). Markdown 프롬프트를 Codex TOML로 변환. |
 | 4 | <img src="https://github.com/obra.png?size=32" width="20" height="20" align="center"/> **[superpowers](https://github.com/obra/superpowers)** — Jesse Vincent | 서브모듈 | 브레인스토밍, TDD, 체계적 디버깅, 계획 작성을 다루는 스킬 13개. 설치되는 에이전트는 없습니다. |
-| 5 | <img src="https://github.com/VoltAgent.png?size=32" width="20" height="20" align="center"/> **[awesome-codex-subagents](https://github.com/VoltAgent/awesome-codex-subagents)** — VoltAgent | 벤더링 (MIT) | AI/LLM 에이전트 17개를 `codex-agents/packs/`에 스냅샷하여 옵트인 팩 2개(data-ai 13, llmops 4)로 제공. 서브모듈은 2026-07-27에 제거되었습니다. |
-| 6 | <img src="https://github.com/code-yeongyu.png?size=32" width="20" height="20" align="center"/> **[oh-my-openagent](https://github.com/code-yeongyu/oh-my-openagent)** — code-yeongyu | 적용 | OMO 에이전트 9개 (Sisyphus, Atlas, Oracle 등). Codex 네이티브 TOML 형식으로 적용하여 저장소에서 관리합니다. |
-| 7 | <img src="https://github.com/sehoon787.png?size=32" width="20" height="20" align="center"/> **[my-claude](https://github.com/sehoon787/my-claude)** — sehoon787 | 자매 프로젝트 | 네이티브 Claude `.md` 에이전트 형식의 동일한 Boss 오케스트레이션. 스킬, 규칙, Briefing Vault를 두 프로젝트가 공유합니다. |
-| 8 | <img src="https://github.com/getagentseal.png?size=32" width="20" height="20" align="center"/> **[codeburn](https://github.com/getagentseal/codeburn)** — getagentseal | npm CLI (MIT) | 로컬 우선 토큰/비용 추적기. `~/.codex/sessions`를 읽기 전용으로 파싱 — 프록시·업로드 없음. `install.sh`가 설치(`codeburn@0.9.23` 고정), `upstream/SOURCES.json`에 `method: npm-cli`로 등재. Codex에는 훅 없음. |
+| 5 | <img src="https://github.com/tt-a1i.png?size=32" width="20" height="20" align="center"/> **[archify](https://github.com/tt-a1i/archify)** — tt-a1i | 서브모듈 (태그 `v2.9.0`) | `archify` 스킬: 아키텍처·워크플로·시퀀스·데이터 흐름·라이프사이클 다이어그램을 인라인 SVG가 포함된 단일 HTML로 렌더링. 저장소의 `archify/` 디렉터리만 설치합니다. |
+| 6 | <img src="https://github.com/VoltAgent.png?size=32" width="20" height="20" align="center"/> **[awesome-codex-subagents](https://github.com/VoltAgent/awesome-codex-subagents)** — VoltAgent | 벤더링 (MIT) | AI/LLM 에이전트 17개를 `codex-agents/packs/`에 스냅샷하여 옵트인 팩 2개(data-ai 13, llmops 4)로 제공. 서브모듈은 2026-07-27에 제거되었습니다. |
+| 7 | <img src="https://github.com/code-yeongyu.png?size=32" width="20" height="20" align="center"/> **[oh-my-openagent](https://github.com/code-yeongyu/oh-my-openagent)** — code-yeongyu | 적용 | OMO 에이전트 9개 (Sisyphus, Atlas, Oracle 등). Codex 네이티브 TOML 형식으로 적용하여 저장소에서 관리합니다. |
+| 8 | <img src="https://github.com/sehoon787.png?size=32" width="20" height="20" align="center"/> **[my-claude](https://github.com/sehoon787/my-claude)** — sehoon787 | 자매 프로젝트 | 네이티브 Claude `.md` 에이전트 형식의 동일한 Boss 오케스트레이션. 스킬, 규칙, Briefing Vault를 두 프로젝트가 공유합니다. |
+| 9 | <img src="https://github.com/getagentseal.png?size=32" width="20" height="20" align="center"/> **[codeburn](https://github.com/getagentseal/codeburn)** — getagentseal | npm CLI (MIT) | 로컬 우선 토큰/비용 추적기. `~/.codex/sessions`를 읽기 전용으로 파싱 — 프록시·업로드 없음. `install.sh`가 설치(`codeburn@0.9.23` 고정), `upstream/SOURCES.json`에 `method: npm-cli`로 등재. Codex에는 훅 없음. |
+| 10 | <img src="https://github.com/oraios.png?size=32" width="20" height="20" align="center"/> **[serena](https://github.com/oraios/serena)** — oraios | uv 도구 + MCP | MCP를 통한 심볼 단위 코드 탐색·편집. `serena-agent==1.7.0`으로 설치하고 `[mcp_servers.serena]`로 등록합니다. 라이선스는 GPL-3.0-or-later(앱) / MIT(SolidLSP)이며, 독립 도구로 설치할 뿐 벤더링하지 않습니다. |
+| 11 | <img src="https://github.com/chopratejas.png?size=32" width="20" height="20" align="center"/> **[headroom](https://github.com/chopratejas/headroom)** — chopratejas | uv 도구 + MCP | MCP를 통한 컨텍스트 압축(`headroom_compress`, `headroom_retrieve`, `headroom_stats`). `headroom-ai[all]==0.37.0`으로 설치하고 `[mcp_servers.headroom]`로 등록합니다. `headroom wrap` 프록시는 의도적으로 사용하지 않습니다. Apache-2.0. |
+| 12 | <img src="https://github.com/ast-grep.png?size=32" width="20" height="20" align="center"/> **[ast-grep](https://github.com/ast-grep/ast-grep)** — ast-grep | npm CLI (MIT) | 구조적 코드 검색·치환. `install.sh`가 설치합니다(`@ast-grep/cli@0.42.0` 고정). |
+| 13 | <img src="https://github.com/upstash.png?size=32" width="20" height="20" align="center"/> **[context7](https://github.com/upstash/context7)** — Upstash | 호스팅 MCP | 최신 라이브러리 문서. `install.sh`가 `https://mcp.context7.com/mcp`로 등록합니다. |
+| 14 | <img src="https://github.com/exa-labs.png?size=32" width="20" height="20" align="center"/> **[exa](https://github.com/exa-labs/exa-mcp-server)** — Exa Labs | 호스팅 MCP | 뉴럴 웹 검색. `https://mcp.exa.ai/mcp?tools=web_search_exa`로 등록합니다. |
+| 15 | <img src="https://github.com/grep-app.png?size=32" width="20" height="20" align="center"/> **[grep.app](https://grep.app/)** — grep.app | 호스팅 MCP | 저장소 교차 코드 검색. `https://mcp.grep.app`으로 등록합니다. |
 
-모든 서브모듈은 `upstream/SOURCES.json`(AI-BOM) — companion CLI(ast-grep, codeburn)도 같은 파일에 버전 고정으로 등재됩니다 —에 SHA로 고정되어 있으며, 제거된 서브모듈 2개(`agency-agents` — 벤더링 없음, `awesome-codex-subagents` — 에이전트 17개 벤더링)도 함께 기록됩니다.
+모든 서브모듈은 `upstream/SOURCES.json`(AI-BOM) — companion CLI(ast-grep, codeburn)와 MCP 서버(serena, headroom)도 같은 파일에 버전 고정으로 등재됩니다 —에 SHA로 고정되어 있으며, 제거된 서브모듈 2개(`agency-agents` — 벤더링 없음, `awesome-codex-subagents` — 에이전트 17개 벤더링)도 함께 기록됩니다.
 
 ---
+
+## 결과를 확인하는 곳
+
+설치된 도구는 저마다 결과를 남깁니다. 그 위치입니다.
+
+| 도구 | 하는 일 | 실행 방법 | 결과 확인 위치 |
+|------|--------------|------------|----------------------|
+| **codeburn** | 작업·도구·모델·프로젝트별 토큰/비용 집계 | `codeburn`(대화형 대시보드), `codeburn report`, `codeburn overview`, `codeburn status` | 터미널 TUI, 파일로는 `codeburn export --format json`. `~/.codex/sessions`를 읽기 전용으로 읽고 공개 정가로 계산하므로 금액은 청구서가 아닌 추정치입니다. |
+| **Serena** | MCP를 통한 심볼 단위 코드 탐색·편집 | Codex가 `[mcp_servers.serena]`로 기동. 도구는 `get_symbols_overview`, `find_symbol`, `find_referencing_symbols`, `replace_symbol_body`, `insert_after_symbol` | 서버 실행 중 <http://localhost:24282/dashboard/index.html> 에서 대시보드와 도구 호출 통계 확인. 프로젝트별 인덱스·메모리는 `<저장소>/.serena/`. 브라우저는 자동으로 열리지 않습니다(`--open-web-dashboard False`). |
+| **Headroom** | 과대한 도구 출력을 압축하고 필요할 때 원본을 회수 | Codex가 `[mcp_servers.headroom]`(`headroom mcp serve`)로 기동. 도구는 `headroom_compress`, `headroom_retrieve`, `headroom_stats` | 세션 안에서는 `headroom_stats`, 셸에서는 `headroom doctor`와 `headroom perf`. `headroom wrap` 프록시 모드는 의도적으로 사용하지 않습니다 — OAuth 구독으로 모델 트래픽을 우회시키기 때문입니다. |
+| **Archify** | 아키텍처·워크플로·시퀀스·데이터 흐름·라이프사이클 다이어그램 | `~/.codex/skills/archify`에서 `node bin/archify.mjs render <type> <input>.json <output>.html` 실행 후 `node bin/archify.mjs check <output>.html` | 지정한 `<output>.html` 한 파일 — 인라인 SVG, 다크/라이트 토글, PNG/JPEG/WebP/SVG 내보내기 포함. 브라우저로 엽니다. `node bin/archify.mjs examples`로 예제를 확인합니다. |
+
 
 ## GitHub Actions
 
@@ -500,6 +520,7 @@ max_depth = 1
 | [gstack](https://github.com/garrytan/gstack) | 서브모듈 (`upstream/gstack`) |
 | [oh-my-codex](https://github.com/Yeachan-Heo/oh-my-codex) | 서브모듈 (`upstream/omx`) |
 | [superpowers](https://github.com/obra/superpowers) | 서브모듈 (`upstream/superpowers`) |
+| [archify](https://github.com/tt-a1i/archify) | 서브모듈 (`upstream/archify`, 태그 `v2.9.0`) |
 | [awesome-codex-subagents](https://github.com/VoltAgent/awesome-codex-subagents) | 벤더링 스냅샷 (서브모듈은 2026-07-27 제거) |
 
 ---
@@ -530,7 +551,7 @@ my-codex와 my-claude는 동일한 Boss 오케스트레이션 아키텍처와 �
 <details>
 <summary><strong>업스트림 동기화는 어떻게 이루어지나요?</strong></summary>
 
-GitHub Actions 워크플로가 3일마다 실행되어 4개 업스트림 서브모듈의 최신 커밋을 가져오고, `upstream/SOURCES.json`의 SHA 핀을 갱신한 뒤, 보안 게이트가 적용된 자동 병합 PR을 생성합니다. Actions 탭에서 수동으로 트리거할 수도 있습니다.
+GitHub Actions 워크플로가 3일마다 실행되어 브랜치를 추적하는 업스트림 서브모듈 4개(`upstream/archify`는 태그 고정이라 의도적으로만 올립니다)의 최신 커밋을 가져오고, `upstream/SOURCES.json`의 SHA 핀을 갱신한 뒤, 보안 게이트가 적용된 자동 병합 PR을 생성합니다. Actions 탭에서 수동으로 트리거할 수도 있습니다.
 
 </details>
 

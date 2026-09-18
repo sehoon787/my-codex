@@ -1690,13 +1690,17 @@ append_path_once "$HOME/.local/bin" || true
 
 # `uv tool install` is idempotent by itself, but it still resolves and reports
 # on every run; the `uv tool list` guard keeps a re-install quiet and offline.
+# $2 is the DISTRIBUTION name, not the command name: `uv tool list` prints the
+# distribution at the start of a line (`serena-agent v1.7.0`) and indents the
+# commands it provides below it (`- serena`). Matching on a command name would
+# never hit, and the tool would be reinstalled on every run.
 ensure_uv_tool() {
-  local label="$1" binary="$2" spec="$3"
+  local label="$1" dist="$2" spec="$3"
   if ! command -v uv >/dev/null 2>&1; then
     echo "    WARNING: uv unavailable; skipping ${label}"
     return
   fi
-  if uv tool list 2>/dev/null | grep -qE "^${binary}[[:space:]]"; then
+  if uv tool list 2>/dev/null | grep -qE "^${dist}[[:space:]]"; then
     echo "    ${label} already installed"
     return
   fi

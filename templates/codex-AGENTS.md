@@ -65,6 +65,10 @@ Rules:
 - Do not re-read a file already in context; re-read only after it changed.
 - Subagent final reports stay at 30 lines or fewer.
 
+## Tooling (MCP + skills)
+<!-- my-codex:tooling-mcp -->
+- Code work goes through serena symbol tools, oversized tool output through `headroom_compress`, and diagram requests through the `archify` skill.
+
 ## Available Agents
 
 Use `spawn_agent` with `agent_type` to delegate work. Tier priority when several match: core > omo > omx > opt-in packs.

@@ -39,7 +39,16 @@ jobs:
             git -C "upstream/$SUBMODULE" pull origin HEAD
             git add "upstream/$SUBMODULE"
           else
-            git submodule update --remote
+            # upstream/archify is pinned to a release tag, not a branch: a blanket
+            # --remote would drag it to the tip of its default branch. It is bumped
+            # deliberately by re-pointing the submodule at a newer tag.
+            TAG_PINNED="upstream/archify"
+            git config -f .gitmodules --get-regexp '^submodule\..*\.path$' \
+              | awk '{print $2}' \
+              | while read -r sub_path; do
+                  case " $TAG_PINNED " in *" $sub_path "*) continue ;; esac
+                  git submodule update --remote "$sub_path"
+                done
             git add upstream/
           fi
 

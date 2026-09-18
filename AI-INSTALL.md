@@ -1,7 +1,7 @@
 # my-codex AI Installation Guide
 
 You are an AI agent setting up a Codex CLI multi-agent orchestration environment.
-The bundle installs 17 auto-loaded agents, 17 opt-in pack agents (2 packs, disabled by default), 105 curated skills, and 3 MCP servers.
+The bundle installs 17 auto-loaded agents, 17 opt-in pack agents (2 packs, disabled by default), 106 curated skills, and 5 MCP servers.
 Agents and skills come from curated allowlists (`scripts/skill-allowlists.sh`), not bulk copies — the installed footprint is the allowlist, deduplicated by tier.
 Only 2-3 steps are needed.
 
@@ -84,13 +84,13 @@ This installs:
 - 2 opt-in agent packs in `~/.codex/agent-packs/` (`data-ai` 13, `llmops` 4), vendored from awesome-codex-subagents
 - `~/.codex/enabled-agent-packs.txt` with **no packs enabled** — opt in with `~/.codex/bin/my-codex-packs enable <pack>`
 - `~/.codex/enabled-skill-lanes.txt` with **no optional lane enabled** — add the 18 web/UI skills with `bash install.sh --skills=web`
-- 105 skills in `~/.codex/skills/` (ECC 61 · gstack 27 · superpowers 13 · my-codex core 4)
+- 106 skills in `~/.codex/skills/` (ECC 61 · gstack 27 · superpowers 13 · my-codex core 4 · archify 1)
 - gstack also cloned whole to `~/.codex/skills/gstack` as its canonical runtime tree
 - Global `AGENTS.md` instructions with Boss meta-orchestrator as default agent
 - `config.toml` with `multi_agent = true`
 - `~/.codex/bin/codex` wrapper plus git hooks for Codex-only commit attribution
 - Codex-native Briefing Vault hooks (9 hook files across 8 events) plus wrapper fallback (`session-start.sh`, `session-sync.js`, `session-end.js`)
-- 3 MCP servers (Context7 — real-time library docs, Exa — web search, grep_app — GitHub code search)
+- 5 MCP servers (Context7 — real-time library docs, Exa — web search, grep_app — GitHub code search, Serena — symbol-level code navigation, Headroom — context compression)
 
 Why the installed counts are smaller than raw upstream totals:
 - Upstream repos are not copied wholesale. `scripts/skill-allowlists.sh` names every skill and upstream agent that ships.
@@ -106,7 +106,7 @@ Briefing Vault note:
 
 ## Step 1b: Manual install (if install.sh unavailable)
 
-> **Note**: This repository uses git submodules for upstream content. Run `git submodule update --init` after cloning to populate the 4 `upstream/` directories used below (`upstream/ecc`, `upstream/gstack`, `upstream/omx`, `upstream/superpowers`). They will be empty without this step.
+> **Note**: This repository uses git submodules for upstream content. Run `git submodule update --init` after cloning to populate the 5 `upstream/` directories used below (`upstream/ecc`, `upstream/gstack`, `upstream/omx`, `upstream/superpowers`, `upstream/archify`). They will be empty without this step.
 
 ```bash
 git clone --depth 1 https://github.com/sehoon787/my-codex.git /tmp/my-codex
@@ -139,6 +139,8 @@ for skill in $ECC_SKILL_ALLOWLIST; do
   cp -R /tmp/my-codex/upstream/ecc/skills/"$skill" ~/.codex/skills/ 2>/dev/null
 done
 cp -R /tmp/my-codex/skills/core/* ~/.codex/skills/
+# ── archify (diagram skill; only the repo's archify/ directory is installed) ──
+cp -R /tmp/my-codex/upstream/archify/"$ARCHIFY_SKILL_SUBDIR" ~/.codex/skills/"$ARCHIFY_SKILL_NAME" 2>/dev/null
 # ── gstack (sprint-process harness, 27 skill entries) ──
 GSTACK_DIR="$HOME/.codex/skills/gstack"
 if [ -d "$GSTACK_DIR/.git" ]; then
@@ -199,6 +201,22 @@ codex mcp list 2>/dev/null | grep -qE '^context7[[:space:]]' || codex mcp add co
 codex mcp list 2>/dev/null | grep -qE '^exa[[:space:]]' || codex mcp add exa --url "https://mcp.exa.ai/mcp?tools=web_search_exa" 2>/dev/null || true
 codex mcp list 2>/dev/null | grep -qE '^grep_app[[:space:]]' || codex mcp add grep_app --url https://mcp.grep.app 2>/dev/null || true
 
+# Serena and Headroom are stdio servers; `codex mcp add` cannot set startup_timeout_sec,
+# so they go straight into config.toml as tables (append-only, guarded by the header).
+grep -qE '^\[mcp_servers\.serena\]' ~/.codex/config.toml || cat >> ~/.codex/config.toml <<'MCPTOML'
+
+[mcp_servers.serena]
+command = "serena"
+args = ["start-mcp-server", "--project-from-cwd", "--context=codex", "--open-web-dashboard", "False"]
+startup_timeout_sec = 15
+MCPTOML
+grep -qE '^\[mcp_servers\.headroom\]' ~/.codex/config.toml || cat >> ~/.codex/config.toml <<'MCPTOML'
+
+[mcp_servers.headroom]
+command = "headroom"
+args = ["mcp", "serve"]
+MCPTOML
+
 rm -rf /tmp/my-codex
 ```
 
@@ -208,6 +226,11 @@ rm -rf /tmp/my-codex
 # AST tools for code intelligence
 npm i -g @ast-grep/cli@0.42.0
 npm i -g codeburn@0.9.23
+
+# MCP servers behind [mcp_servers.serena] and [mcp_servers.headroom]
+command -v uv >/dev/null 2>&1 || curl -LsSf https://astral.sh/uv/install.sh | sh
+uv tool install --python 3.13 serena-agent==1.7.0
+uv tool install --python 3.13 "headroom-ai[all]==0.37.0"
 ```
 
 ## Step 3: Customize active agent packs (optional)

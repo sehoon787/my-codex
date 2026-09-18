@@ -109,9 +109,38 @@ exit 0
 EOF
 chmod +x "$BIN_DIR/ast-grep"
 
+# uv shim. Real `uv tool install` would download serena-agent and headroom-ai
+# (hundreds of MB, minutes) on every CI run; what this test is about is the
+# wiring -- that the installer resolves uv, asks for the pinned specs once, and
+# skips them on re-run. `tool list` is backed by a state file so the installer's
+# idempotency guard is exercised for real rather than stubbed out.
+cat > "$BIN_DIR/uv" <<'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+STATE="${MY_CODEX_TEST_UV_STATE:?}"
+echo "uv $*" >> "${MY_CODEX_TEST_LOG:?}"
+if [ "${1:-}" = "tool" ]; then
+  case "${2:-}" in
+    list) [ -f "$STATE" ] && cat "$STATE"; exit 0 ;;
+    install)
+      # last argument is the pinned spec: name[extras]==version
+      for spec in "$@"; do :; done
+      name="${spec%%==*}"; name="${name%%[*}"
+      printf '%s v%s\n' "$name" "${spec##*==}" >> "$STATE"
+      exit 0
+      ;;
+  esac
+fi
+exit 0
+EOF
+chmod +x "$BIN_DIR/uv"
+UV_STATE="$TMP_ROOT/uv-tools.txt"
+: > "$UV_STATE"
+export MY_CODEX_TEST_UV_STATE="$UV_STATE"
+
 expected_version="$(git -C "$REPO_ROOT" rev-parse --short=12 HEAD 2>/dev/null || printf 'unknown')"
 
-HOME="$TEST_HOME" PATH="$BIN_DIR:$PATH" MY_CODEX_TEST_LOG="$LOG_FILE" \
+HOME="$TEST_HOME" PATH="$BIN_DIR:$PATH" MY_CODEX_TEST_LOG="$LOG_FILE" MY_CODEX_TEST_UV_STATE="$UV_STATE" \
   bash "$REPO_ROOT/install.sh" > "$TMP_ROOT/install.out"
 
 test -f "$TEST_HOME/.agents/plugins/marketplace.json"
@@ -306,7 +335,8 @@ assert_features_hooks_enabled "$TEST_HOME/.codex/config.toml"
 grep -q '<!-- my-codex:calibrated-response -->' "$TEST_HOME/.codex/AGENTS.md"
 grep -q '<!-- my-codex:final-report -->' "$TEST_HOME/.codex/AGENTS.md"
 grep -q '<!-- my-codex:context-hygiene -->' "$TEST_HOME/.codex/AGENTS.md"
-test "$(grep -c 'my-codex:' "$TEST_HOME/.codex/AGENTS.md")" = "3"
+grep -q '<!-- my-codex:tooling-mcp -->' "$TEST_HOME/.codex/AGENTS.md"
+test "$(grep -c 'my-codex:' "$TEST_HOME/.codex/AGENTS.md")" = "4"
 grep -q '^compact_prompt = ' "$TEST_HOME/.codex/config.toml"
 test "$(grep -c '^compact_prompt = ' "$TEST_HOME/.codex/config.toml")" = "1"
 case "$(uname -s)" in
@@ -329,13 +359,37 @@ grep -q 'mcp add context7' "$LOG_FILE"
 grep -q 'mcp add exa' "$LOG_FILE"
 grep -q 'mcp add grep_app' "$LOG_FILE"
 
+# ── Serena / Headroom / Archify ──
+# The two stdio MCP servers are registered as config.toml tables rather than via
+# `codex mcp add` (no --startup-timeout-sec flag there), so assert the tables and
+# the keys that make them work, then assert the file still parses as TOML.
+assert_toml_parses() {
+  python3 -c "import sys, tomllib; tomllib.load(open(sys.argv[1], 'rb'))" "$1"
+}
+grep -q '^\[mcp_servers\.serena\]' "$TEST_HOME/.codex/config.toml"
+grep -q '^\[mcp_servers\.headroom\]' "$TEST_HOME/.codex/config.toml"
+grep -q '^startup_timeout_sec = 15$' "$TEST_HOME/.codex/config.toml"
+grep -q -- '--open-web-dashboard' "$TEST_HOME/.codex/config.toml"
+grep -q '"mcp", "serve"' "$TEST_HOME/.codex/config.toml"
+assert_toml_parses "$TEST_HOME/.codex/config.toml"
+
+# Pinned Python tools: asked for once, by exact spec, through uv.
+grep -q 'uv tool install --python 3.13 serena-agent==1.7.0' "$LOG_FILE"
+grep -q 'uv tool install --python 3.13 headroom-ai\[all\]==0.37.0' "$LOG_FILE"
+grep -q '^serena-agent v1.7.0$' "$UV_STATE"
+grep -q '^headroom-ai v0.37.0$' "$UV_STATE"
+
+# Archify ships as one skill directory copied out of the tag-pinned submodule.
+test -f "$TEST_HOME/.codex/skills/archify/SKILL.md"
+test -f "$TEST_HOME/.codex/skills/archify/bin/archify.mjs"
+
 HOME="$TEST_HOME" "$TEST_HOME/.codex/bin/my-codex-packs" set-profile minimal
 test "$(find "$TEST_HOME/.codex/agents" -maxdepth 1 -type l -name '*.toml' | wc -l | tr -d ' ')" = "0"
 
 HOME="$TEST_HOME" "$TEST_HOME/.codex/bin/my-codex-packs" set-profile dev
 test "$(find "$TEST_HOME/.codex/agents" -maxdepth 1 -type l -name '*.toml' | wc -l | tr -d ' ')" -ge 1
 
-HOME="$TEST_HOME" PATH="$BIN_DIR:$PATH" MY_CODEX_TEST_LOG="$LOG_FILE" \
+HOME="$TEST_HOME" PATH="$BIN_DIR:$PATH" MY_CODEX_TEST_LOG="$LOG_FILE" MY_CODEX_TEST_UV_STATE="$UV_STATE" \
   bash "$REPO_ROOT/install.sh" --profile minimal > "$TMP_ROOT/install-minimal.out"
 test "$(find "$TEST_HOME/.codex/agents" -maxdepth 1 -type l -name '*.toml' | wc -l | tr -d ' ')" = "0"
 
@@ -355,13 +409,23 @@ cp "$TEST_HOME/.codex/hooks.json" "$TMP_ROOT/idempotency-before/hooks.json"
 cp "$TEST_HOME/.codex/config.toml" "$TMP_ROOT/idempotency-before/config.toml"
 cp "$TEST_HOME/.codex/AGENTS.md" "$TMP_ROOT/idempotency-before/AGENTS.md"
 
-HOME="$TEST_HOME" PATH="$BIN_DIR:$PATH" MY_CODEX_TEST_LOG="$LOG_FILE" \
+HOME="$TEST_HOME" PATH="$BIN_DIR:$PATH" MY_CODEX_TEST_LOG="$LOG_FILE" MY_CODEX_TEST_UV_STATE="$UV_STATE" \
   bash "$REPO_ROOT/install.sh" > "$TMP_ROOT/reinstall.out"
 
 diff -u "$TMP_ROOT/idempotency-before/hooks.json" "$TEST_HOME/.codex/hooks.json"
 diff -u "$TMP_ROOT/idempotency-before/config.toml" "$TEST_HOME/.codex/config.toml"
 diff -u "$TMP_ROOT/idempotency-before/AGENTS.md" "$TEST_HOME/.codex/AGENTS.md"
 test ! -f "$TEST_HOME/.codex/hooks/hooks.json"
+
+# The config.toml diff above already proves the MCP tables were not re-appended;
+# assert the count directly too, since a duplicate table is the failure mode that
+# would make Codex reject the whole file.
+test "$(grep -c '^\[mcp_servers\.serena\]' "$TEST_HOME/.codex/config.toml")" = "1"
+test "$(grep -c '^\[mcp_servers\.headroom\]' "$TEST_HOME/.codex/config.toml")" = "1"
+assert_toml_parses "$TEST_HOME/.codex/config.toml"
+test "$(grep -c '^serena-agent v1.7.0$' "$UV_STATE")" = "1"
+test "$(grep -c '^headroom-ai v0.37.0$' "$UV_STATE")" = "1"
+test -f "$TEST_HOME/.codex/skills/archify/SKILL.md"
 
 test -f "$TEST_HOME/.codex/agents/custom-user-agent.toml"
 test -f "$TEST_HOME/.codex/agent-packs/custom/custom-pack-agent.toml"
@@ -377,7 +441,7 @@ mkdir -p "$TEST_HOME/.codex/skills/unmanaged-web-note"
 printf -- '---\nname: unmanaged-web-note\n---\n' > "$TEST_HOME/.codex/skills/unmanaged-web-note/SKILL.md"
 skills_default_count=$(find "$TEST_HOME/.codex/skills" -name 'SKILL.md' | wc -l | tr -d ' ')
 
-HOME="$TEST_HOME" PATH="$BIN_DIR:$PATH" MY_CODEX_TEST_LOG="$LOG_FILE" \
+HOME="$TEST_HOME" PATH="$BIN_DIR:$PATH" MY_CODEX_TEST_LOG="$LOG_FILE" MY_CODEX_TEST_UV_STATE="$UV_STATE" \
   bash "$REPO_ROOT/install.sh" --skills=web > "$TMP_ROOT/install-skills-web.out"
 test -f "$TEST_HOME/.codex/skills/react-patterns/SKILL.md"
 test -f "$TEST_HOME/.codex/skills/vue-patterns/SKILL.md"
@@ -387,7 +451,7 @@ skills_web_count=$(find "$TEST_HOME/.codex/skills" -name 'SKILL.md' | wc -l | tr
 test "$((skills_web_count - skills_default_count))" -eq 18
 
 # The lane persists: a plain re-run keeps it without repeating the flag.
-HOME="$TEST_HOME" PATH="$BIN_DIR:$PATH" MY_CODEX_TEST_LOG="$LOG_FILE" \
+HOME="$TEST_HOME" PATH="$BIN_DIR:$PATH" MY_CODEX_TEST_LOG="$LOG_FILE" MY_CODEX_TEST_UV_STATE="$UV_STATE" \
   bash "$REPO_ROOT/install.sh" > "$TMP_ROOT/install-skills-persist.out"
 test -f "$TEST_HOME/.codex/skills/react-patterns/SKILL.md"
 grep -q '^web$' "$TEST_HOME/.codex/enabled-skill-lanes.txt"
@@ -395,7 +459,7 @@ grep -q '^web$' "$TEST_HOME/.codex/enabled-skill-lanes.txt"
 # Upgrade path: turning the lane off removes every managed copy (this is the
 # same manifest mechanism that drops the 18 from an existing install) and
 # leaves unmanaged user skills alone.
-HOME="$TEST_HOME" PATH="$BIN_DIR:$PATH" MY_CODEX_TEST_LOG="$LOG_FILE" \
+HOME="$TEST_HOME" PATH="$BIN_DIR:$PATH" MY_CODEX_TEST_LOG="$LOG_FILE" MY_CODEX_TEST_UV_STATE="$UV_STATE" \
   bash "$REPO_ROOT/install.sh" --skills=none > "$TMP_ROOT/install-skills-none.out"
 test ! -e "$TEST_HOME/.codex/skills/react-patterns"
 test ! -e "$TEST_HOME/.codex/skills/vue-patterns"
@@ -560,7 +624,7 @@ printf '{}' > "$LEGACY_HOME/.codex/hooks/hooks.json"
 # AGENTS.md without either marker exercises append_agents_section's append branch.
 printf '# Legacy AGENTS\n\n## Something\ntext\n' > "$LEGACY_HOME/.codex/AGENTS.md"
 
-HOME="$LEGACY_HOME" PATH="$BIN_DIR:$PATH" MY_CODEX_TEST_LOG="$LOG_FILE" \
+HOME="$LEGACY_HOME" PATH="$BIN_DIR:$PATH" MY_CODEX_TEST_LOG="$LOG_FILE" MY_CODEX_TEST_UV_STATE="$UV_STATE" \
   bash "$REPO_ROOT/install.sh" > "$TMP_ROOT/install-legacy.out"
 
 assert_features_hooks_enabled "$LEGACY_HOME/.codex/config.toml"
@@ -568,7 +632,15 @@ test "$(awk 'f && /^\[/ { exit } /^[[:space:]]*\[[[:space:]]*features[[:space:]]
 test "$(grep -cE '^[[:space:]]*\[[[:space:]]*features[[:space:]]*\][[:space:]]*(#.*)?$' "$LEGACY_HOME/.codex/config.toml")" = "1"
 python3 -c "import sys,tomllib; tomllib.load(open(sys.argv[1],'rb'))" "$LEGACY_HOME/.codex/config.toml"
 grep -q '^command = "npx"$' "$LEGACY_HOME/.codex/config.toml"
-test "$(tail -n 1 "$LEGACY_HOME/.codex/config.toml")" = 'command = "npx"'
+# The pre-existing trailing [mcp_servers.context7] table must stay intact. The
+# installer appends the serena and headroom tables after it, which is legal, but
+# a bare KEY appended at EOF would silently join context7 -- so the first
+# non-blank line after `command = "npx"` has to be a table header or nothing.
+line_after_context7="$(awk '/^command = "npx"$/ { found = 1; next } found && NF { print; exit }' "$LEGACY_HOME/.codex/config.toml")"
+case "${line_after_context7:-[}" in
+  '['*) ;;
+  *) echo "FAIL: bare key appended after the context7 table: $line_after_context7" >&2; exit 1 ;;
+esac
 test -f "$LEGACY_HOME/.codex/hooks.json"
 test ! -f "$LEGACY_HOME/.codex/hooks/hooks.json"
 test "$(grep -c '<!-- my-codex:calibrated-response -->' "$LEGACY_HOME/.codex/AGENTS.md")" = "1"
@@ -576,7 +648,7 @@ test "$(grep -c '<!-- my-codex:final-report -->' "$LEGACY_HOME/.codex/AGENTS.md"
 
 cp "$LEGACY_HOME/.codex/config.toml" "$TMP_ROOT/legacy-config-before.toml"
 cp "$LEGACY_HOME/.codex/AGENTS.md" "$TMP_ROOT/legacy-agents-before.md"
-HOME="$LEGACY_HOME" PATH="$BIN_DIR:$PATH" MY_CODEX_TEST_LOG="$LOG_FILE" \
+HOME="$LEGACY_HOME" PATH="$BIN_DIR:$PATH" MY_CODEX_TEST_LOG="$LOG_FILE" MY_CODEX_TEST_UV_STATE="$UV_STATE" \
   bash "$REPO_ROOT/install.sh" > "$TMP_ROOT/install-legacy-2.out"
 diff -u "$TMP_ROOT/legacy-config-before.toml" "$LEGACY_HOME/.codex/config.toml"
 diff -u "$TMP_ROOT/legacy-agents-before.md" "$LEGACY_HOME/.codex/AGENTS.md"

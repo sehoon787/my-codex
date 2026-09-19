@@ -67,7 +67,35 @@ Rules:
 
 ## Tooling (MCP + skills)
 <!-- my-codex:tooling-mcp -->
+- Library documentation -> context7 tools (if available)
+- Web search -> exa tools (if available)
+- Code search across GitHub -> grep_app tools (if available)
 - Code work goes through serena symbol tools, oversized tool output through `headroom_compress`, and diagram requests through the `archify` skill.
+
+### Skill Lane Ownership
+
+- Orchestration -> `$ralph`, `$autopilot`, `$ultrawork`, `$team` (OMC execution modes — installed only when the OMC skill set is also present under `~/.codex/skills`; confirm in the registry before routing)
+- Dev process -> superpowers (`brainstorming`, `test-driven-development`, `systematic-debugging`, `verification-before-completion`, `writing-plans`)
+- Ship/QA/deploy/security -> gstack (`/ship`, `/qa`, `/review`, `/cso`, `/investigate`)
+- Language/stack knowledge -> ECC skills
+- Diagrams -> `archify`
+- AI/domain work -> vendored agent packs (`codex-agents/packs`; enable with `my-codex-packs enable <pack>`)
+
+### Skill Counter-Proposal Signals
+
+| Signal | Direction |
+|--------|-----------|
+| High completion risk — large scope, many moving parts | `$ralph`, `$autopilot`, `$ultrawork` (OMC-conditional, see Skill Lane Ownership above) |
+| Ambiguity — vague requirements | `prometheus` agent (interview-driven work plan before any code) |
+| Safety-sensitive — auth, secrets, deployment | gstack `/cso`, `verification-before-completion` |
+| Unknown root cause | gstack `/investigate` |
+| Quality concern — AI-generated code, no tests | `test-driven-development`, `code-reviewer` agent |
+| Knowledge gap — new codebase, unfamiliar library | `codebase-onboarding`, `documentation-lookup` |
+| Strategic decision — architecture tradeoffs | `architecture-decision-records`, `oracle` agent |
+| End-to-end feature implementation | `gstack-sprint` |
+| Project kickoff/initial planning | gstack `/office-hours`, `prometheus` agent |
+
+Propose a counter-proposal at most once per request; if the user declines, proceed with direct execution.
 
 ## Available Agents
 

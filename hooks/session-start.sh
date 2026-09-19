@@ -237,5 +237,13 @@ MSG="${MSG}[SessionStart] Registry cache: ${REGISTRY_STATUS}."
 [ -n "$_kv_msg" ] && MSG="${MSG} ${_kv_msg}"
 [ -n "$_update_msg" ] && MSG="${MSG} ${_update_msg}"
 if [ -n "$MSG" ]; then
-  echo "{\"hookSpecificOutput\":{\"additionalContext\":\"$MSG\"}}"
+  # Codex deserializes SessionStart stdout with deny_unknown_fields into
+  # SessionStartHookSpecificOutputWire, where hookEventName is REQUIRED --
+  # omitting it makes every `codex exec` print "hook: SessionStart Failed"
+  # and drops the context entirely.
+  # MSG is assembled from other hooks' stdout, which can carry quotes,
+  # backslashes, or newlines; raw, any of those break the single JSON
+  # document Codex expects, so escape them before interpolating.
+  _json_msg=$(printf '%s' "$MSG" | sed -e 's/\\/\\\\/g' -e 's/"/\\"/g' | tr '\n\r\t' '   ')
+  printf '{"hookSpecificOutput":{"hookEventName":"SessionStart","additionalContext":"%s"}}\n' "$_json_msg"
 fi

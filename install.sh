@@ -1670,13 +1670,62 @@ fi
 # on a machine where the codex binary is not installed yet.
 #
 # Appended as top-level tables at EOF, which is safe for tables (unlike bare
-# keys — see the compact_prompt note above). The grep guard on the table header
-# makes a re-run a no-op, and never rewrites a table the user has edited.
+# keys — see the compact_prompt note above).
+#
+# When the table is already present its body is REFRESHED in place to match the
+# keys below. An append-once guard looked safer, but it meant every key added
+# here after the first install never reached a machine that already had the
+# table — the same defect class as #92/#95. Only the body between this table's
+# header and the next table header is rewritten; every other byte of
+# config.toml, including the blank lines that separate tables, is preserved.
+#
+# The refresh replaces the WHOLE body, so a key or comment hand-added inside an
+# installer-owned table does not survive it. That is the deliberate trade for
+# making added keys reach existing installs. A table whose header line is not an
+# exact match (a trailing comment, odd spacing) reads as hand-managed and is
+# skipped untouched, which is the escape hatch for anyone who wants to own one.
 ensure_mcp_server_toml() {
   local name="$1"
   shift
   if grep -qE "^\[mcp_servers\.${name}\]" "$CONFIG_FILE" 2>/dev/null; then
-    echo "  ${name} already registered in config.toml"
+    local desired current
+    desired=$(printf '%s\n' "$@")
+    current=$(awk -v hdr="[mcp_servers.${name}]" '
+      $0 == hdr { in_table = 1; next }
+      in_table && /^\[/ { in_table = 0 }
+      in_table && NF { print }
+    ' "$CONFIG_FILE")
+    if [ "$current" = "$desired" ]; then
+      echo "  ${name} already registered in config.toml"
+      return
+    fi
+    # Rewrite only the lines between this header and the next table header.
+    local hdr_ln end_ln total blanks tmp i
+    hdr_ln=$(awk -v hdr="[mcp_servers.${name}]" '$0 == hdr { print NR; exit }' "$CONFIG_FILE")
+    if [ -z "$hdr_ln" ]; then
+      # Header matched the grep but not an exact line (trailing comment, odd
+      # spacing): a hand-edited table, so leave it exactly as the user wrote it.
+      echo "  ${name} already registered in config.toml (custom header, left as is)"
+      return
+    fi
+    total=$(awk 'END { print NR }' "$CONFIG_FILE")
+    end_ln=$(awk -v s="$hdr_ln" 'NR > s && /^\[/ { print NR; exit }' "$CONFIG_FILE")
+    [ -n "$end_ln" ] || end_ln=$((total + 1))
+    # Blank lines trailing the old body are the separator before the next table;
+    # re-emit exactly as many so the rest of the file stays byte-identical.
+    blanks=$(awk -v s="$hdr_ln" -v e="$end_ln" '
+      NR > s && NR < e { if (NF == 0) n++; else n = 0 }
+      END { print n + 0 }
+    ' "$CONFIG_FILE")
+    tmp="${CONFIG_FILE}.my-codex.$$"
+    {
+      awk -v e="$hdr_ln" 'NR <= e' "$CONFIG_FILE"
+      printf '%s\n' "$@"
+      i=0
+      while [ "$i" -lt "$blanks" ]; do printf '\n'; i=$((i + 1)); done
+      awk -v e="$end_ln" 'NR >= e' "$CONFIG_FILE"
+    } > "$tmp" && mv "$tmp" "$CONFIG_FILE"
+    echo "  ${name} config.toml table refreshed"
     return
   fi
   {
@@ -1702,9 +1751,16 @@ ensure_mcp_server_toml serena \
 # deliberately not automated: Codex cannot reach the API at all while the proxy
 # is down, so starting one by default would make every session depend on it.
 # README documents the manual opt-in.
+# default_tools_approval_mode = "approve" (never prompt): headroom publishes no
+# MCP annotations, so Codex's default per-server mode `auto` treats every tool as
+# needing approval — interactive sessions prompt on each headroom_compress /
+# headroom_retrieve / headroom_stats call, and `codex exec` (approval_policy
+# never) skips them outright. The server is local and only reads and compresses
+# the transcript, so there is nothing to gate.
 ensure_mcp_server_toml headroom \
   'command = "headroom"' \
-  'args = ["mcp", "serve"]'
+  'args = ["mcp", "serve"]' \
+  'default_tools_approval_mode = "approve"'
 
 echo "[6/7] Installing companion tools..."
 echo "  [6a] ast-grep..."

@@ -102,3 +102,4 @@ jobs:
           bash scripts/test-codex-attribution.sh
           bash scripts/test-skills-only-install.sh
           bash scripts/test-agent-pack-activation.sh
+          bash tests/agents-section-upsert.test.sh

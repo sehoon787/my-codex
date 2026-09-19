@@ -106,3 +106,4 @@ jobs:
           bash tests/uv-guard.test.sh
           bash tests/mcp-table-upsert.test.sh
           node tests/hook-output-shape.test.js
+          node tests/stop-session-enforcement.test.js

@@ -29,6 +29,11 @@ try {
 
 if (wc === 0 && mc <= 2 && !hasAgent) { process.exit(0); }
 
+// Cooldown: block at most once every 30 minutes
+var COOLDOWN_MS = 1800000;
+var lastBlockedAt = state.lastBlockedAt || '';
+if (lastBlockedAt && (Date.now() - new Date(lastBlockedAt).getTime()) < COOLDOWN_MS) { process.exit(0); }
+
 // Detect language
 var lang = 'en';
 try {
@@ -50,8 +55,10 @@ try {
 } catch(e) {}
 
 if (hasSession) {
-  // Session exists but boss-briefing not run — pass silently
+  // Session exists but boss-briefing not run — pass silently and auto-set
+  // lastVaultSync so later Stops this session don't block again.
   // UserPromptSubmit hook already reminds about /boss-briefing during session
+  try { runtime.writeState(Object.assign({}, runtime.readState(), { lastVaultSync: runtime.isoNow() })); } catch(e) {}
   process.exit(0);
 }
 
@@ -59,6 +66,7 @@ if (hasSession) {
 var reason = isKo
   ? '[BriefingVault] /boss-briefing 미실행. 세션 종료 전 /boss-briefing을 실행하세요.'
   : '[BriefingVault] Run /boss-briefing before ending the session to sync your vault.';
+try { runtime.writeState(Object.assign({}, runtime.readState(), { lastBlockedAt: runtime.isoNow() })); } catch(e) {}
 process.stdout.write(JSON.stringify({ decision: 'block', reason: reason }) + '\n');
 process.exit(0);
 } catch(e) { process.exit(0); }

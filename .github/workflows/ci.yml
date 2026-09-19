@@ -104,3 +104,5 @@ jobs:
           bash scripts/test-agent-pack-activation.sh
           bash tests/agents-section-upsert.test.sh
           bash tests/uv-guard.test.sh
+          bash tests/mcp-table-upsert.test.sh
+          node tests/hook-output-shape.test.js

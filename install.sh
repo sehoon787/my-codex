@@ -1429,7 +1429,7 @@ else
   append_agents_section "## Final Report (end of the request)" "<!-- my-codex:final-report -->"
   append_agents_section "## Context Hygiene" "<!-- my-codex:context-hygiene -->"
   append_agents_section "## Tooling (MCP + skills)" "<!-- my-codex:tooling-mcp -->"
-  echo "  AGENTS.md already exists -- skipping (delete to regenerate)"
+  echo "  AGENTS.md: existing file kept; my-codex sections refreshed (delete the file to regenerate from the template)"
 fi
 
 echo "[3.5/7] Installing hooks..."

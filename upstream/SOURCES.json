@@ -53,6 +53,12 @@
     "pinned_date": "2026-08-31",
     "license": "MIT"
   },
+  "my-claude": {
+    "repo": "https://github.com/sehoon787/my-claude",
+    "method": "sister-project",
+    "note": "Claude Code counterpart of this repo — same Boss orchestration in native Claude .md agent format. Linked from the README as a sister project only; install.sh never clones, curls, or copies anything from it, so nothing is vendored here and there is no pin to track.",
+    "license": "MIT"
+  },
   "codeburn": {
     "repo": "https://github.com/getagentseal/codeburn",
     "method": "npm-cli",

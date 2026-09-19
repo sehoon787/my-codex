@@ -1357,15 +1357,57 @@ else
   echo "  WARNING: agent pack manager missing; no packs were activated"
 fi
 
-# Append one template section to an existing AGENTS.md, keyed by its HTML marker.
+# Upsert one template section into an existing AGENTS.md, keyed by its HTML marker.
 # The section is everything from <heading> up to the next "## " line in the template.
-# No-op when the marker is already there, so re-running the installer is a no-diff.
+# Marker already present -> replace that section in place, so template edits reach
+# installs that predate them; everything else in the file is copied through byte for
+# byte. Marker absent -> append. Re-running the installer is a no-diff either way.
 append_agents_section() {
   local heading="$1"
   local marker="$2"
   local target="$CODEX_ROOT/AGENTS.md"
+  local tmp
 
-  grep -qF "$marker" "$target" 2>/dev/null && return 0
+  if grep -qF "$marker" "$target" 2>/dev/null; then
+    tmp="$target.tmp.$$"
+    # Pass 1 buffers the template section (trailing blank lines trimmed); pass 2
+    # swaps it in for the target's copy and replays the blank lines that trailed
+    # that copy, so the separator spacing around the section is left as it was.
+    awk -v heading="$heading" '
+      FNR == NR {
+        if (!captured && $0 == heading) { in_template = 1 }
+        else if (in_template && /^## /) { in_template = 0; captured = 1 }
+        if (!in_template) { next }
+        if ($0 ~ /^[[:space:]]*$/) { blank[++blanks] = $0; next }
+        for (i = 1; i <= blanks; i++) section[++count] = blank[i]
+        blanks = 0
+        section[++count] = $0
+        next
+      }
+      !replaced && $0 == heading {
+        in_section = 1
+        for (i = 1; i <= count; i++) print section[i]
+        next
+      }
+      in_section {
+        if ($0 ~ /^[[:space:]]*$/) { held[++holds] = $0; next }
+        if (/^## /) {
+          for (i = 1; i <= holds; i++) print held[i]
+          holds = 0
+          in_section = 0
+          replaced = 1
+          print
+          next
+        }
+        holds = 0
+        next
+      }
+      { print }
+      END { for (i = 1; i <= holds; i++) print held[i] }
+    ' "$REPO_ROOT/templates/codex-AGENTS.md" "$target" > "$tmp" && mv "$tmp" "$target"
+    echo "  AGENTS.md: refreshed $heading"
+    return 0
+  fi
 
   {
     echo ""

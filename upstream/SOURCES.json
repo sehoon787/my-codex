@@ -9,8 +9,8 @@
     "path": "upstream/ecc",
     "method": "submodule",
     "note": "ECC skills + rules",
-    "pinned_sha": "8321021c54d670126ce3b2969d5deb880b4b0c2a",
-    "pinned_date": "2026-09-13",
+    "pinned_sha": "07756cee15788a54506031462794ad645719b028",
+    "pinned_date": "2026-09-19",
     "license": "MIT"
   },
   "awesome-codex-subagents": {
@@ -49,8 +49,8 @@
     "repo": "https://github.com/obra/superpowers",
     "path": "upstream/superpowers",
     "method": "submodule",
-    "pinned_sha": "b36e0829c6d0140e93cfef2ca599b1b07d4a7797",
-    "pinned_date": "2026-08-31",
+    "pinned_sha": "5bf4e78011075bcfc0dc295f0724994cd123ee71",
+    "pinned_date": "2026-09-19",
     "license": "MIT"
   },
   "my-claude": {

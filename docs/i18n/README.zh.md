@@ -1,53 +1,33 @@
-[English](../../README.md) | [한국어](./README.ko.md) | [日本語](./README.ja.md) | [中文](./README.zh.md) | [Deutsch](./README.de.md) | [Français](./README.fr.md)
-
+[英语](../../README.md) | [韩语](./README.ko.md) | [日语](./README.ja.md) | [中文](./README.zh.md) | [德语](./README.de.md) | [法语](./README.fr.md)
 > [![Claude Code](https://img.shields.io/badge/Claude_Code-my--claude-d97757?style=flat-square&logo=anthropic&logoColor=white)](https://github.com/sehoon787/my-claude) 在找 Claude Code？→ **my-claude** — 同样的 Boss 编排架构，原生 Claude `.md` Agent 格式
-
----
-
 <div align="center">
 
 # my-codex
-
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 ![Agents](https://img.shields.io/badge/agents-17_core_%2B_17_opt--in-blue)
 ![Skills](https://img.shields.io/badge/skills-106-purple)
 ![MCP](https://img.shields.io/badge/MCP-5-green)
 ![Auto Sync](https://img.shields.io/badge/upstream_sync-every_3_days-brightgreen)
-
 **OpenAI Codex CLI 的一体化 Agent 框架。**
 **安装一次，17 个精选 Agent 随时待命。**
-
 Boss 在运行时自动发现所有 Agent 和 Skill，
 并通过 `spawn_agent` 将任务路由到最合适的专家。无需配置，无需样板代码。
-
 <img src="./assets/owl-codex-social.svg" alt="The Maestro Owl — my-codex" width="700">
 
 </div>
-
----
-
 ## 安装
-
 ### 面向用户
-
 ```bash
 git clone --depth 1 https://github.com/sehoon787/my-codex.git /tmp/my-codex
 bash /tmp/my-codex/install.sh
 rm -rf /tmp/my-codex
 ```
-
 ### 面向 AI Agent
-
 ```bash
 curl -fsSL https://raw.githubusercontent.com/sehoon787/my-codex/main/install.sh | bash
 ```
-
----
-
 ## Boss 的工作原理
-
 Boss 是 my-codex 的核心元编排器。它从不编写代码——它负责发现、分类、匹配、委派和验证。
-
 ```
 User Request
      │
@@ -87,11 +67,8 @@ User Request
 │  → Retry up to 3× on failure               │
 └─────────────────────────────────────────────┘
 ```
-
 ### 优先级路由
-
 Boss 对每个请求按优先级链逐级匹配，直到找到最佳方案：
-
 | 优先级 | 匹配类型 | 触发时机 | 示例 |
 |:--------:|-----------|------|---------|
 | **P1** | Skill 匹配 | 任务对应某个独立 skill | `"review this diff"` → /review skill |
@@ -99,19 +76,14 @@ Boss 对每个请求按优先级链逐级匹配，直到找到最佳方案：
 | **P3a** | Boss 直接 | 2–4 个独立 Agent | `"fix 3 bugs"` → parallel spawn |
 | **P3b** | 子编排器 | 复杂多步骤工作流 | `"refactor + test"` → Sisyphus |
 | **P4** | 回退 | 无专家匹配 | `"explain this"` → general agent |
-
 ### 模型路由
-
 | 复杂度 | 模型 | 用途 |
 |-----------|-------|----------|
 | 深度分析、架构 | gpt-6-astra （high/xhigh reasoning） | Boss、Oracle、Sisyphus、Atlas |
 | 标准实现 | gpt-5.6-sol（medium） | executor、debugger、test-engineer |
 | 快速查询、探索 | gpt-5.6-terra（low） | explore、简单咨询 |
-
 ### 三阶段冲刺工作流
-
 对于端到端功能实现，Boss 编排结构化冲刺：
-
 ```
 Phase 1: DESIGN         Phase 2: EXECUTE        Phase 3: REVIEW
 (interactive)            (autonomous)             (interactive)
@@ -120,60 +92,17 @@ User decides scope      executor runs tasks     Compare vs design doc
 Engineering review      Auto code review        Present comparison table
 Confirm "design done"   Architect verification  User: approve / improve
 ```
-
 ### 结构化最终报告
-
 Boss 会以一份无需打开 diff 即可浏览的结构化最终报告来结束每个有实际工作的回合 — 即编辑/创建了文件、进行了提交/PR/合并、更改了配置或执行了验证的回合。报告由 5 个固定表格组成，每个表格仅在对应情况确实发生时才输出（绝不输出空表）:
-
 | 情况 | 表格 | 列 |
 |-----------|-------|---------|
-| 文件/设置变更 | 변경 대조 (Changes) | 대상 / Before / After / 근거 |
-| 完成多项任务 | 작업 요약 (Work summary) | 항목 / 결과 / 근거 |
-| 执行了验证 | 검증 결과 (Verification) | 항목 / 기대 / 실제 / 판정 |
-| 产出提交/PR | 산출물 (Deliverables) | PR / 저장소 / 내용 / 상태 |
-| 存在未解决项 | 남은 것 (Remaining) | 항목 / 상태 / 다음 조치 |
-
+| 文件/设置变更 | 变更对照 | 目标 / 之前 / 之后 / 依据 |
+| 完成多项任务 | 工作摘要 | 项目 / 结果 / 证据 |
+| 执行了验证 | 验证 | 项目 / 预期 / 实际 / 结论 |
+| 产出提交/PR | 交付物 | PR / 仓库 / 内容 / 状态 |
+| 存在未解决项 | 剩余事项 | 项目 / 状态 / 下一步 |
 该报告仅在请求的最末尾触发 — 绝不会在启动或转达后台任务的回合、或作为任务中途的进度更新输出 — 纯问答回合则正常结束、不生成报告。规范同时随 `boss.toml` 的 developer instructions 和 `~/.codex/AGENTS.md` 提供，因此主会话也能看到。与姊妹项目 [my-claude](https://github.com/sehoon787/my-claude) 一样，一个 Stop 钩子（`hooks/stop-final-report.js`）会强制执行它：当某个回合改变了状态却没有输出报告表格时，钩子会将该回合阻断一次并要求补上报告。
-
----
-
-## 架构
-
-```
-┌─────────────────────────────────────────────────────┐
-│                    User Request                       │
-└───────────────────────┬─────────────────────────────┘
-                        ▼
-┌─────────────────────────────────────────────────────┐
-│  Boss · Meta-Orchestrator (gpt-6-astra xhigh)              │
-│  Discovery → Classification → Matching → Delegation  │
-└──┬──────────┬──────────┬──────────┬─────────────────┘
-   │          │          │          │
-   ▼          ▼          ▼          ▼
-┌──────┐ ┌────────┐ ┌────────┐ ┌────────┐
-│ P3a  │ │  P3b   │ │  P1/P2 │ │Config  │
-│Direct│ │Sub-orch│ │ Skill/ │ │Control │
-│2-4   │ │Sisyphus│ │ Agent  │ │config. │
-│spawn │ │Atlas   │ │ Direct │ │toml    │
-└──────┘ └────────┘ └────────┘ └────────┘
-┌─────────────────────────────────────────────────────┐
-│  Agent Layer (17 installed TOML files)                │
-│  Boss 1 · OMO 9 · OMX 7                               │
-│  + 2 opt-in agent packs (17 agents, off by default)   │
-├─────────────────────────────────────────────────────┤
-│  Skills Layer (105 from ECC + gstack + superpowers)   │
-│  coding-standards · security-scan · deep-research     │
-│  /review · /qa · /cso · /ship                         │
-├─────────────────────────────────────────────────────┤
-│  MCP Layer                                            │
-│  Context7 · Exa · grep.app · Serena · Headroom         │
-└─────────────────────────────────────────────────────┘
-```
-
----
-
 ## 内容一览
-
 | 类别 | 数量 | 来源 |
 |----------|------:|--------|
 | **核心 Agent**（始终加载） | 17 | Boss 1 + OMO 9 + OMX 7 |
@@ -182,7 +111,6 @@ Boss 会以一份无需打开 diff 即可浏览的结构化最终报告来结束
 | **MCP 服务器** | 5 | Context7、Exa、grep.app、Serena、Headroom |
 | **config.toml** | 1 | my-codex |
 | **AGENTS.md** | 1 | my-codex |
-
 <details>
 <summary><strong>核心 Agent — Boss 元编排器（1）</strong></summary>
 
@@ -213,7 +141,6 @@ Boss 会以一份无需打开 diff 即可浏览的结构化最终报告来结束
 <summary><strong>OMX Agents — 专家工作者（7）</strong></summary>
 
 由 [oh-my-codex](https://github.com/Yeachan-Heo/oh-my-codex) 的 `prompts/*.md` 转换为 Codex TOML。仅转换 `templates/codex-AGENTS.md` 中列出的通道，允许列表位于 `scripts/skill-allowlists.sh`。
-
 | Agent | 沙箱 | 角色 | 来源 |
 |-------|---------|------|--------|
 | executor | workspace-write | 代码实现 | oh-my-codex |
@@ -230,20 +157,16 @@ Boss 会以一份无需打开 diff 即可浏览的结构化最终报告来结束
 <summary><strong>Agent 包 — 可选启用的 AI 专家（2 个包，17 个 Agent）</strong></summary>
 
 从 [awesome-codex-subagents](https://github.com/VoltAgent/awesome-codex-subagents)（MIT）内置到 `codex-agents/packs/`，并安装到 `~/.codex/agent-packs/`。**默认不启用任何包** — 需要显式开启：
-
 ```bash
 # 查看当前状态
 ~/.codex/bin/my-codex-packs status
-
 # 立即启用某个包
 ~/.codex/bin/my-codex-packs enable data-ai
-
 # 安装时切换配置档
 bash /tmp/my-codex/install.sh --profile minimal   # 不启用任何包
 bash /tmp/my-codex/install.sh --profile dev       # data-ai + llmops
 bash /tmp/my-codex/install.sh --profile full      # 已安装的全部包
 ```
-
 | 包 | 数量 | Agent |
 |------|------:|---------|
 | data-ai | 13 | ai-engineer, data-analyst, data-engineer, data-scientist, database-optimizer, llm-architect, machine-learning-engineer, ml-engineer, mlops-engineer, nlp-engineer, postgres-pro, prompt-engineer, reinforcement-learning-engineer |
@@ -255,7 +178,6 @@ bash /tmp/my-codex/install.sh --profile full      # 已安装的全部包
 <summary><strong>Skills — 106 个，来自 5 个来源</strong></summary>
 
 按技能逐项筛选的允许列表位于 `scripts/skill-allowlists.sh`，该文件决定实际安装内容。
-
 | 来源 | 数量 | 主要 Skills |
 |--------|------:|------------|
 | [everything-claude-code](https://github.com/affaan-m/everything-claude-code) | 61 | coding-standards, python-testing, api-design, deep-research |
@@ -263,15 +185,13 @@ bash /tmp/my-codex/install.sh --profile full      # 已安装的全部包
 | [superpowers](https://github.com/obra/superpowers) | 13 | brainstorming, systematic-debugging, TDD, writing-plans |
 | [my-codex Core](https://github.com/sehoon787/my-codex) | 4 | boss-advanced, boss-briefing, briefing-vault, gstack-sprint |
 | [archify](https://github.com/tt-a1i/archify) | 1 | archify（架构 / 工作流 / 时序 / 数据流 / 生命周期图） |
-
-gstack 按允许列表的 26 个技能加上仓库根条目计为 27。整个 gstack 仓库同时位于 `~/.codex/skills/gstack`，作为其标准运行时目录树。ECC 另外提供 9 个允许列表规则文件。
-
+gstack 按允许列表的 26 个技能加上仓库根条目计为 27。完整 checkout 位于 `~/.codex/vendor/gstack`；`~/.codex/skills/gstack` 是运行时门面。ECC 另外提供 9 个允许列表规则文件。
 Codex **不提供文档类 skill** — 本捆绑包中没有 `pdf`、`docx`、`pptx`、`xlsx` skill。
 
 </details>
 
 <details>
-<summary><strong>MCP 服务器（3）</strong></summary>
+<summary><strong>托管 MCP 服务器（3）</strong></summary>
 
 | 服务器 | 用途 | 费用 |
 |--------|---------|------|
@@ -281,12 +201,8 @@ Codex **不提供文档类 skill** — 本捆绑包中没有 `pdf`、`docx`、`p
 
 </details>
 
----
-
 ## <img src="https://obsidian.md/images/obsidian-logo-gradient.svg" width="24" height="24" align="center"/> Briefing Vault
-
 兼容 Obsidian 的持久化记忆。每个项目维护一个 `.briefing/` 目录，跨会话自动填充。
-
 ```
 .briefing/
 ├── INDEX.md                          ← Project context (auto-created once)
@@ -316,9 +232,7 @@ Codex **不提供文档类 skill** — 本捆绑包中没有 `pdf`、`docx`、`p
 └── wiki/                             ← 概念页面 (自动建议)
     └── _schema.md
 ```
-
 ### 自动化生命周期
-
 | 阶段 | Hook 事件 | 发生的事情 |
 |-------|-----------|-------------|
 | **会话开始** | `SessionStart` | 创建 `.briefing/` 结构，保存 git HEAD 哈希用于会话专属差异 |
@@ -330,45 +244,30 @@ Codex **不提供文档类 skill** — 本捆绑包中没有 `pdf`、`docx`、`p
 | **会话结束** | `Stop`（第 2 个 hook） | 若文件编辑 ≥ 3 次则**强制** AI 撰写会话摘要——以模板阻止会话结束 |
 | **archives/** | — | 自动建议将 30 天以上的已完成/不活跃笔记归档。PARA 归档概念。 |
 | **wiki/** | — | 概念 wiki 页面。关键词出现 3 次以上时自动建议生成。LLM-wiki 概念。 |
-
 ### 自动生成 vs AI 撰写
-
 | 类型 | 文件模式 | 创建者 | 内容 |
 |------|-------------|-----------|---------|
 | **自动脚手架** | `*-auto.md`、`*-auto-session.md` | Stop hook（Node.js） | Git 差异统计、Agent 使用情况、提交列表——仅数据 |
 | **AI 摘要** | `YYYY-MM-DD-<topic>.md` | 会话中的 AI | 有意义的分析，包含上下文、代码引用、理由 |
 | **遥测** | `agent-log.jsonl`、`auto-links.md` | Hook 脚本 | 仅追加的结构化日志 |
 | **个性化** | `profile.md`、`suggestions.jsonl` | Stop hook | 基于使用的 Agent 偏好和路由建议 |
-
 自动脚手架作为 AI 撰写正式摘要的**参考数据**。强制 hook 在阻止会话结束时提供脚手架内容和结构化模板。
-
 ### 会话专属差异
-
 在会话开始时，当前 git HEAD 保存到 `.briefing/.session-start-head`。会话结束时，差异相对于此保存点计算——仅显示当前会话的变更，而非之前会话积累的未提交变更。
-
 ### 与 Obsidian 配合使用
-
 1. Open Obsidian → **Open folder as vault** → 选择 `.briefing/`
 2. 笔记显示在图谱视图中，通过 `[[wiki-links]]` 关联
 3. YAML frontmatter（`date`、`type`、`tags`）支持结构化搜索
 4. 决策与学习的时间线跨会话自动积累
-
 ### 知识管理 (v2)
-
 BriefingVault v2 整合了三种知识管理方法论：
-
 | 方法论 | 概念 | 在 BriefingVault 中的应用 |
 |--------|------|--------------------------|
 | **PARA**（Tiago Forte） | 按可行性分类：项目、领域、资源、归档 | sessions/ = 项目，decisions/ = 领域，references/ = 资源，archives/ = 归档 |
 | **Zettelkasten**（Luhmann） | 具有唯一 ID 和明确链接的原子笔记 | learnings/ 文件：`YYYYMMDDHHMMSS` ID，`related:` 需至少 2 个链接 |
 | **LLM-wiki**（Karpathy） | 由 AI 从原始笔记维护的概念页面 | wiki/ 页面：关键词出现 3 次以上时自动建议 |
-
----
-
 ## 上游开源来源
-
 my-codex 由 **5 个上游子模块**，加上 1 份内置快照、2 个适配/姊妹项目、2 个 companion CLI 与 4 个 MCP 服务器组成：
-
 | # | 来源 | 方式 | 提供的内容 |
 |---|--------|------|-----------------|
 | 1 | <img src="https://github.com/affaan-m.png?size=32" width="20" height="20" align="center"/> **[everything-claude-code](https://github.com/affaan-m/everything-claude-code)** — affaan-m | 子模块 | 覆盖开发工作流的 61 个允许列表 skills。移除 Claude Code 专属内容，保留通用编码 skills。 |
@@ -386,25 +285,16 @@ my-codex 由 **5 个上游子模块**，加上 1 份内置快照、2 个适配/�
 | 13 | <img src="https://github.com/upstash.png?size=32" width="20" height="20" align="center"/> **[context7](https://github.com/upstash/context7)** — Upstash | 托管 MCP | 最新库文档。由 `install.sh` 注册到 `https://mcp.context7.com/mcp`。 |
 | 14 | <img src="https://github.com/exa-labs.png?size=32" width="20" height="20" align="center"/> **[exa](https://github.com/exa-labs/exa-mcp-server)** — Exa Labs | 托管 MCP | 神经网络网页搜索。注册到 `https://mcp.exa.ai/mcp?tools=web_search_exa`。 |
 | 15 | <img src="https://github.com/grep-app.png?size=32" width="20" height="20" align="center"/> **[grep.app](https://grep.app/)** — grep.app | 托管 MCP | 跨仓库代码搜索。注册到 `https://mcp.grep.app`。 |
-
 所有子模块均在 `upstream/SOURCES.json`（AI-BOM）（companion CLI（ast-grep、codeburn）与 MCP 服务器（serena、headroom）也在同一文件中以固定版本登记）中以 SHA 固定，该文件同时记录了两个已移除的子模块（`agency-agents` — 未内置任何内容；`awesome-codex-subagents` — 内置 17 个 Agent）。
-
----
-
 ## 在哪里查看结果
-
 每个已安装的工具都会把结果写到某个地方。位置如下。
-
 | 工具 | 作用 | 如何运行 | 在哪里查看结果 |
 |------|--------------|------------|----------------------|
-| **codeburn** | 按任务、工具、模型与项目统计 token 与花费 | `codeburn`（交互式面板）；非交互用 `codeburn report --format json --period week --provider codex`（也支持 `--day`、`--from`/`--to`） | 终端 TUI，或 `--format json` 标准输出。以只读方式读取 `~/.codex/sessions` 并按公开价目表计价，因此金额是估算而非账单。 |
+| **codeburn** | 按任务、工具、模型与项目统计 token 与花费 | `codeburn`（交互式面板）；`codeburn web --provider codex`（本地浏览器面板；添加 `--no-open` 仅输出 URL）；非交互用 `codeburn report --format json --period week --provider codex`（也支持 `--day`、`--from`/`--to`） | 终端 TUI、<http://127.0.0.1:4747> 的浏览器面板，或 `--format json` 标准输出。以只读方式读取 `~/.codex/sessions` 并按公开价目表计价，因此金额是估算而非账单。 |
 | **Serena** | 通过 MCP 进行符号级代码导航与编辑 | 由 Codex 从 `[mcp_servers.serena]` 启动；工具为 `get_symbols_overview`、`find_symbol`、`find_referencing_symbols`、`replace_symbol_body`、`insert_after_symbol` | 服务器运行时可在 <http://localhost:24282/dashboard/index.html> 查看面板与工具调用统计；按项目的索引与记忆位于 `<仓库>/.serena/`。浏览器不会自动打开（`--open-web-dashboard False`）。 |
 | **Headroom** | 压缩过大的工具输出，并在需要时取回原文 | 由 Codex 从 `[mcp_servers.headroom]`（`headroom mcp serve`）启动；工具为 `headroom_compress`、`headroom_retrieve`、`headroom_stats` | 会话内用 `headroom_stats`，命令行用 `headroom doctor`。默认不开代理，并不是因为订阅登录用不了（实际可用），而是代理一旦未运行，Codex 就完全无法访问 API。手动开启：在一个终端运行 `headroom proxy --port 8787`，再按 `headroom wrap codex --help` 启动 Codex（它会设置 `OPENAI_BASE_URL` 并在 Codex 配置中注册 MCP 服务器）。代理统计见 <http://127.0.0.1:8787/stats>；有流量之后，用 `headroom dashboard` 与 `headroom perf` 查看节省量与延迟；未开启时 `headroom doctor` 会显示 `codex: not routed`。 |
 | **Archify** | 架构 / 工作流 / 时序 / 数据流 / 生命周期图 | 在 `~/.codex/skills/archify` 下执行 `node bin/archify.mjs render <type> <input>.json <output>.html`，再执行 `node bin/archify.mjs check <output>.html` | 你指定的 `<output>.html` —— 单个自包含文件，含内嵌 SVG、明暗主题切换与 PNG/JPEG/WebP/SVG 导出。用浏览器打开。技能自带的 `examples/*.json` 就是可直接照抄的完整输入示例。 |
-
-
 ## GitHub Actions
-
 | 工作流 | 触发条件 | 用途 |
 |----------|---------|---------|
 | **CI** | push、PR | 验证 TOML Agent 文件、skill 存在性和上游文件数量 |
@@ -414,13 +304,8 @@ my-codex 由 **5 个上游子模块**，加上 1 份内置快照、2 个适配/�
 | **Pages** | push 到 main | 将 `docs/index.html` 部署到 GitHub Pages |
 | **CLA** | PR | 贡献者许可协议检查 |
 | **Lint Workflows** | push、PR | 验证 GitHub Actions 工作流 YAML 语法 |
-
----
-
 ## my-codex 原创功能
-
 专为本项目构建、超出上游来源的功能：
-
 | 功能 | 描述 |
 |---------|-------------|
 | **Boss 元编排器** | 动态能力发现 → 意图分类 → 4 级优先路由 → 委派 → 验证 |
@@ -432,59 +317,39 @@ my-codex 由 **5 个上游子模块**，加上 1 份内置快照、2 个适配/�
 | **Agent 包系统** | 通过 `--profile` 和 `my-codex-packs` 助手按需激活领域专家 |
 | **Codex 归属** | git hooks 记录 Codex 修改的文件，并在提交信息中追加 `AI-Contributed-By: Codex` |
 | **CI 重复检测** | 跨上游同步自动检测重复 TOML Agent |
-
----
-
 ## 安装选项
-
 ### 快速安装
-
 ```bash
 git clone --depth 1 https://github.com/sehoon787/my-codex.git /tmp/my-codex
 bash /tmp/my-codex/install.sh
 rm -rf /tmp/my-codex
 ```
-
 重新运行相同命令即可刷新到最新的 `main` 构建，仅替换 `~/.codex/` 中由 my-codex 管理的文件，并从 `~/.agents/skills/` 中删除过时的 skill 副本。
-
 ### Agent 包配置文件
-
 包会被安装，但**默认不启用**。全新安装会在 `~/.codex/enabled-agent-packs.txt` 中记录一个空集合。按包逐个启用，或选择一个配置档：
-
 ```bash
 # 立即启用某个包
 ~/.codex/bin/my-codex-packs enable data-ai
-
 # minimal 配置档（仅核心 Agent，不启用任何包 — 默认）
 bash /tmp/my-codex/install.sh --profile minimal
-
 # dev 配置档（data-ai + llmops）
 bash /tmp/my-codex/install.sh --profile dev
-
 # full 配置档（启用已安装的 2 个包分类）
 bash /tmp/my-codex/install.sh --profile full
 ```
-
 ### Codex 归属系统
-
 `install.sh` 安装 `codex` 包装器以及 `~/.codex/git-hooks/` 中的全局 git hooks：
-
 - **`prepare-commit-msg`** — 记录真实 Codex 会话期间修改的文件
 - **`commit-msg`** — 当暂存文件与记录的变更集交集时追加 `Generated with Codex CLI: https://github.com/openai/codex`
 - **`post-commit`** — 为符合条件的提交添加 `AI-Contributed-By: Codex` trailer
-
 选择性加入 `Co-authored-by` trailer：同时设置 `git config --global my-codex.codexContributorName '<label>'` 和 `my-codex.codexContributorEmail '<github-linked-email>'`。完全禁用：`git config --global my-codex.codexAttribution false`。my-codex **不会**修改 `git user.name`、`git user.email` 或提交作者身份。
-
 ### Agent TOML 格式
-
 每个 Agent 都是 `~/.codex/agents/` 中的原生 TOML 文件：
-
 ```toml
 name = "debugger"
 description = "Focused debugging specialist — traces failures to root cause"
 model = "gpt-5.6-sol"
 model_reasoning_effort = "medium"
-
 [developer_instructions]
 content = """
 You are a debugging specialist. Analyze failures systematically:
@@ -494,26 +359,17 @@ You are a debugging specialist. Analyze failures systematically:
 4. Verify the fix does not break adjacent behavior
 """
 ```
-
 ### config.toml
-
 `~/.codex/config.toml` 中的全局 Codex 设置：
-
 ```toml
 [agents]
 max_threads = 8
 max_depth = 1
 ```
-
 - `max_threads` — 最大并发子 Agent 数
 - `max_depth` — Agent 链式 spawn 的最大嵌套深度
-
----
-
 ## 捆绑的上游版本
-
 上游来源以 git 子模块管理。固定提交记录在 `.gitmodules` 中。
-
 | 来源 | 同步方式 |
 |--------|------|
 | [everything-claude-code](https://github.com/affaan-m/everything-claude-code) | 子模块 (`upstream/ecc`) |
@@ -522,11 +378,7 @@ max_depth = 1
 | [superpowers](https://github.com/obra/superpowers) | 子模块 (`upstream/superpowers`) |
 | [archify](https://github.com/tt-a1i/archify) | 子模块 (`upstream/archify`, 标签 `v2.9.0`) |
 | [awesome-codex-subagents](https://github.com/VoltAgent/awesome-codex-subagents) | 内置快照（子模块已于 2026-07-27 移除） |
-
----
-
 ## 常见问题
-
 <details>
 <summary><strong>my-codex 和 my-claude 有什么区别？</strong></summary>
 
@@ -562,32 +414,17 @@ Boss 和子编排器（Sisyphus、Atlas、Oracle）使用 gpt-6-astra 高推理�
 
 </details>
 
----
-
 ## 故障排查
-
 ### 仅恢复 Skills
-
 如果工具报告 `~/.agents/skills/` 下存在无效的 `SKILL.md` 文件，最常见的原因是旧安装遗留的过期本地副本或过期软链接目标。
-
 从 `~/.agents/skills/` 中删除受影响目录以及 `~/.claude/skills/` 下的对应条目，然后重新安装：
-
 ```bash
 npx skills add sehoon787/my-codex -y -g
 ```
-
 如果你使用完整的 Codex 捆绑包，也需重新运行一次 `install.sh`。完整安装器会刷新 `~/.codex/skills/` 并移除 `~/.agents/skills/` 下过时的 my-codex 管理副本。
-
----
-
 ## 贡献
-
 欢迎提交 Issue 和 PR。添加新 Agent 时，请在 `codex-agents/core/` 或 `codex-agents/omo/` 中添加 `.toml` 文件，并更新 `SETUP.md` 中的 Agent 列表。PR 验证步骤和 Codex 提交归属行为详见 [CONTRIBUTING.md](./CONTRIBUTING.md)。
-
 ## 致谢
-
 本项目基于以下工作构建：[my-claude](https://github.com/sehoon787/my-claude)（sehoon787）、[everything-claude-code](https://github.com/affaan-m/everything-claude-code)（affaan-m）、[gstack](https://github.com/garrytan/gstack)（garrytan）、[oh-my-codex](https://github.com/Yeachan-Heo/oh-my-codex)（Yeachan Heo）、[superpowers](https://github.com/obra/superpowers)（Jesse Vincent）、[awesome-codex-subagents](https://github.com/VoltAgent/awesome-codex-subagents)（VoltAgent）、[oh-my-openagent](https://github.com/code-yeongyu/oh-my-openagent)（code-yeongyu）、[openai/skills](https://github.com/openai/skills)（OpenAI）。
-
 ## 许可证
-
 MIT 许可证。详情请参阅 [LICENSE](./LICENSE) 文件。

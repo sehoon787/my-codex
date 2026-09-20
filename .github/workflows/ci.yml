@@ -107,3 +107,6 @@ jobs:
           bash tests/mcp-table-upsert.test.sh
           node tests/hook-output-shape.test.js
           node tests/stop-session-enforcement.test.js
+          node tests/context-budget.test.js
+          node tests/stop-final-report.test.js
+          node tests/normalize-skill-english.test.js

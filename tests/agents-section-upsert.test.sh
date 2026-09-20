@@ -22,9 +22,12 @@ MARKER="<!-- my-codex:tooling-mcp -->"
 TMP_ROOT="$(mktemp -d)"
 trap 'rm -rf "$TMP_ROOT"' EXIT
 
-# Extract append_agents_section() straight out of install.sh (rather than
-# reimplementing it here) so this test tracks the real function.
-FUNC_SRC="$(sed -n '/^append_agents_section() {/,/^}/p' "$INSTALL_SH")"
+# Extract append_agents_section() and its helper straight out of install.sh
+# (rather than reimplementing them here) so this test tracks the real functions.
+FUNC_SRC="$(sed -n \
+  -e '/^legacy_agents_section_matches() {/,/^}/p' \
+  -e '/^append_agents_section() {/,/^}/p' \
+  "$INSTALL_SH")"
 if [ -z "$FUNC_SRC" ]; then
   echo "FAIL: could not extract append_agents_section() from install.sh" >&2
   exit 1

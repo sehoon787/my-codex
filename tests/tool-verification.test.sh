@@ -41,7 +41,15 @@ cat > "$BIN_DIR/serena" <<'EOF'
 printf 'serena %s\n' "$*" >> "${TOOL_PROBE_TEST_LOG:?}"
 case "${TEST_SERENA_MODE:-ok}" in
   fail) echo 'serena failed' >&2; exit 8 ;;
-  timeout) sleep 5; exit 0 ;;
+  timeout)
+    if [ -n "${TOOL_PROBE_CHILD_SENTINEL:-}" ]; then
+      (sleep 2; printf 'child survived\n' > "$TOOL_PROBE_CHILD_SENTINEL") &
+      wait
+    else
+      sleep 5
+    fi
+    exit 0
+    ;;
 esac
 printf 'Serena 1.7.0\n'
 EOF
@@ -66,6 +74,7 @@ fi
 case "${TEST_NODE_MODE:-ok}" in
   fail) echo 'archify render failed' >&2; exit 6 ;;
   timeout) sleep 5; exit 0 ;;
+  slow) sleep 0.7 ;;
 esac
 if [ "${2:-}" = "render" ]; then
   for output_path in "$@"; do :; done
@@ -75,13 +84,14 @@ EOF
 chmod +x "$BIN_DIR/codeburn" "$BIN_DIR/serena" "$BIN_DIR/headroom" "$BIN_DIR/node"
 
 run_verification() {
+  local probe_parent="${TOOL_PROBE_TEST_TMP_PARENT:-$PROBE_TMP}"
   env \
     HOME="$TEST_ROOT/home" \
     CODEX_HOME="$HOSTILE_CODEX_HOME" \
     PATH="$BIN_DIR:/usr/bin:/bin" \
     TOOL_PROBE_TEST_LOG="$LOG_FILE" \
     MY_CODEX_VERIFY_TIMEOUT_SECONDS=1 \
-    MY_CODEX_VERIFY_TMP_PARENT="$PROBE_TMP" \
+    MY_CODEX_VERIFY_TMP_PARENT="$probe_parent" \
     bash -c 'set -euo pipefail; source "$1"; verify_installed_tools "$2"' \
       _ "$REPO_ROOT/scripts/verify-installed-tools.sh" "$CODEX_ROOT"
 }
@@ -110,12 +120,31 @@ grep -q '^  Tool probes:   3 OK, 1 FAIL$' <<<"$failure_output"
 test -z "$(find "$PROBE_TMP" -mindepth 1 -print -quit)"
 
 SECONDS=0
-timeout_output="$(TEST_SERENA_MODE=timeout run_verification)"
+child_sentinel="$TEST_ROOT/timeout-child-survived"
+timeout_output="$(TOOL_PROBE_CHILD_SENTINEL="$child_sentinel" TEST_SERENA_MODE=timeout run_verification)"
 elapsed=$SECONDS
 grep -q '^  serena:        FAIL (timeout after 1s)$' <<<"$timeout_output"
 grep -q '^  Tool probes:   3 OK, 1 FAIL$' <<<"$timeout_output"
 test "$elapsed" -le 2
+sleep 2
+test ! -e "$child_sentinel"
 test -z "$(find "$PROBE_TMP" -mindepth 1 -print -quit)"
+
+SECONDS=0
+archify_budget_output="$(TEST_NODE_MODE=slow run_verification)"
+archify_elapsed=$SECONDS
+grep -q '^  archify:       FAIL (check timeout after 1s)$' <<<"$archify_budget_output"
+grep -q '^  Tool probes:   3 OK, 1 FAIL$' <<<"$archify_budget_output"
+test "$archify_elapsed" -le 2
+test -z "$(find "$PROBE_TMP" -mindepth 1 -print -quit)"
+
+bad_temp_parent="$TEST_ROOT/not-a-directory"
+printf 'file\n' > "$bad_temp_parent"
+bad_temp_output="$(TOOL_PROBE_TEST_TMP_PARENT="$bad_temp_parent" run_verification)"
+grep -q '^  Tool probes:   0 OK, 4 FAIL (could not create temporary directory)$' <<<"$bad_temp_output"
+grep -q '^  Serena dashboard: http://localhost:24282/dashboard/index.html$' <<<"$bad_temp_output"
+grep -q '^  codeburn: `codeburn web` serves http://127.0.0.1:4747 (not started by this installer)$' <<<"$bad_temp_output"
+grep -q '^  Serena/Headroom MCP: auto-start each Codex session$' <<<"$bad_temp_output"
 
 archify_failure_output="$(TEST_NODE_MODE=fail run_verification)"
 grep -q '^  archify:       FAIL (exit 6: archify render failed)$' <<<"$archify_failure_output"

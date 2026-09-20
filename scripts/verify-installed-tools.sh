@@ -17,33 +17,68 @@ run_bounded_tool_probe() {
   local output_file="$1" timeout_seconds="$2"
   shift 2
 
-  local timeout_marker="${output_file}.timeout" probe_pid watchdog_pid status
+  local timeout_marker="${output_file}.timeout" probe_pid watchdog_pid status restore_monitor=0
   : > "$output_file"
   rm -f "$timeout_marker"
 
+  # Non-interactive Bash normally puts background commands in the installer's
+  # process group. Temporarily enabling job control gives this probe its own
+  # group, so a timeout can stop wrappers and every renderer/helper they spawn.
+  case "$-" in
+    *m*) ;;
+    *) set -m; restore_monitor=1 ;;
+  esac
   "$@" >"$output_file" 2>&1 &
   probe_pid=$!
   (
     sleep "$timeout_seconds"
     if kill -0 "$probe_pid" 2>/dev/null; then
       : > "$timeout_marker"
-      kill -KILL "$probe_pid" 2>/dev/null || true
+      kill -KILL -- "-$probe_pid" 2>/dev/null || kill -KILL "$probe_pid" 2>/dev/null || true
     fi
   ) &
   watchdog_pid=$!
+  if [ "$restore_monitor" -eq 1 ]; then
+    set +m
+  fi
 
   if wait "$probe_pid" 2>/dev/null; then
     status=0
   else
     status=$?
   fi
-  kill "$watchdog_pid" 2>/dev/null || true
+  kill -KILL -- "-$watchdog_pid" 2>/dev/null || kill -KILL "$watchdog_pid" 2>/dev/null || true
   wait "$watchdog_pid" 2>/dev/null || true
+  # Also remove descendants left behind by a wrapper that exited before them.
+  kill -KILL -- "-$probe_pid" 2>/dev/null || true
 
   if [ -f "$timeout_marker" ]; then
     return 124
   fi
   return "$status"
+}
+
+run_archify_commands() {
+  local renderer="$1" example="$2" rendered_file="$3"
+  local render_output_file="$4" check_output_file="$5" phase_file="$6"
+
+  printf 'render\n' > "$phase_file"
+  if node "$renderer" render workflow "$example" "$rendered_file" >"$render_output_file" 2>&1; then
+    :
+  else
+    return $?
+  fi
+  if [ ! -s "$rendered_file" ] || ! grep -Eiq '<!doctype html|<html' "$rendered_file"; then
+    printf 'validate\n' > "$phase_file"
+    return 90
+  fi
+
+  printf 'check\n' > "$phase_file"
+  if node "$renderer" check "$rendered_file" >"$check_output_file" 2>&1; then
+    return 0
+  else
+    return $?
+  fi
 }
 
 verify_version_probe() {
@@ -86,7 +121,9 @@ verify_archify_probe() {
   local renderer="$skill_dir/bin/archify.mjs"
   local example="$skill_dir/examples/agent-tool-call.workflow.json"
   local output_file="$work_dir/archify-probe.out"
+  local combined_output_file="$work_dir/archify-combined.out"
   local check_output_file="$work_dir/archify-check.out"
+  local phase_file="$work_dir/archify-phase"
   local rendered_file="$work_dir/archify-probe.html"
   local status detail
 
@@ -99,40 +136,34 @@ verify_archify_probe() {
     return 1
   fi
 
-  if run_bounded_tool_probe "$output_file" "$timeout_seconds" \
-    node "$renderer" render workflow "$example" "$rendered_file"; then
+  if run_bounded_tool_probe "$combined_output_file" "$timeout_seconds" \
+    run_archify_commands "$renderer" "$example" "$rendered_file" \
+      "$output_file" "$check_output_file" "$phase_file"; then
     status=0
   else
     status=$?
   fi
 
   if [ "$status" -eq 124 ]; then
-    printf '  %-14s FAIL (timeout after %ss)\n' 'archify:' "$timeout_seconds"
+    if grep -q '^check$' "$phase_file" 2>/dev/null; then
+      printf '  %-14s FAIL (check timeout after %ss)\n' 'archify:' "$timeout_seconds"
+    else
+      printf '  %-14s FAIL (timeout after %ss)\n' 'archify:' "$timeout_seconds"
+    fi
     return 1
   fi
-  if [ "$status" -ne 0 ]; then
-    detail="$(tool_probe_detail "$output_file")"
-    printf '  %-14s FAIL (exit %s: %s)\n' 'archify:' "$status" "$detail"
-    return 1
-  fi
-  if [ ! -s "$rendered_file" ] || ! grep -Eiq '<!doctype html|<html' "$rendered_file"; then
+  if [ "$status" -eq 90 ]; then
     printf '  %-14s FAIL (renderer produced no valid HTML)\n' 'archify:'
     return 1
   fi
-
-  if run_bounded_tool_probe "$check_output_file" "$timeout_seconds" \
-    node "$renderer" check "$rendered_file"; then
-    status=0
-  else
-    status=$?
-  fi
-  if [ "$status" -eq 124 ]; then
-    printf '  %-14s FAIL (check timeout after %ss)\n' 'archify:' "$timeout_seconds"
-    return 1
-  fi
   if [ "$status" -ne 0 ]; then
-    detail="$(tool_probe_detail "$check_output_file")"
-    printf '  %-14s FAIL (check exit %s: %s)\n' 'archify:' "$status" "$detail"
+    if grep -q '^check$' "$phase_file" 2>/dev/null; then
+      detail="$(tool_probe_detail "$check_output_file")"
+      printf '  %-14s FAIL (check exit %s: %s)\n' 'archify:' "$status" "$detail"
+    else
+      detail="$(tool_probe_detail "$output_file")"
+      printf '  %-14s FAIL (exit %s: %s)\n' 'archify:' "$status" "$detail"
+    fi
     return 1
   fi
 
@@ -153,34 +184,33 @@ verify_installed_tools() (
   }
   trap cleanup_tool_verification EXIT
 
-  mkdir -p "$temp_parent"
-  if ! work_dir="$(mktemp -d "$temp_parent/my-codex-tool-verification.XXXXXX")"; then
+  if ! mkdir -p "$temp_parent" 2>/dev/null || \
+    ! work_dir="$(mktemp -d "$temp_parent/my-codex-tool-verification.XXXXXX" 2>/dev/null)"; then
     echo "  Tool probes:   0 OK, 4 FAIL (could not create temporary directory)"
-    return 0
-  fi
+  else
+    if verify_version_probe codeburn codeburn 0.9.23 "$work_dir/codeburn.out" "$timeout_seconds"; then
+      ok_count=$((ok_count + 1))
+    else
+      fail_count=$((fail_count + 1))
+    fi
+    if verify_version_probe serena serena 'Serena 1.7.0' "$work_dir/serena.out" "$timeout_seconds"; then
+      ok_count=$((ok_count + 1))
+    else
+      fail_count=$((fail_count + 1))
+    fi
+    if verify_version_probe headroom headroom 'headroom, version 0.37.0' "$work_dir/headroom.out" "$timeout_seconds"; then
+      ok_count=$((ok_count + 1))
+    else
+      fail_count=$((fail_count + 1))
+    fi
+    if verify_archify_probe "$codex_root" "$work_dir" "$timeout_seconds"; then
+      ok_count=$((ok_count + 1))
+    else
+      fail_count=$((fail_count + 1))
+    fi
 
-  if verify_version_probe codeburn codeburn 0.9.23 "$work_dir/codeburn.out" "$timeout_seconds"; then
-    ok_count=$((ok_count + 1))
-  else
-    fail_count=$((fail_count + 1))
+    printf '  Tool probes:   %s OK, %s FAIL\n' "$ok_count" "$fail_count"
   fi
-  if verify_version_probe serena serena 'Serena 1.7.0' "$work_dir/serena.out" "$timeout_seconds"; then
-    ok_count=$((ok_count + 1))
-  else
-    fail_count=$((fail_count + 1))
-  fi
-  if verify_version_probe headroom headroom 'headroom, version 0.37.0' "$work_dir/headroom.out" "$timeout_seconds"; then
-    ok_count=$((ok_count + 1))
-  else
-    fail_count=$((fail_count + 1))
-  fi
-  if verify_archify_probe "$codex_root" "$work_dir" "$timeout_seconds"; then
-    ok_count=$((ok_count + 1))
-  else
-    fail_count=$((fail_count + 1))
-  fi
-
-  printf '  Tool probes:   %s OK, %s FAIL\n' "$ok_count" "$fail_count"
   echo ""
   echo "Tool access:"
   echo "  Serena dashboard: http://localhost:24282/dashboard/index.html"

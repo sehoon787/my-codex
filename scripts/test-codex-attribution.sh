@@ -36,7 +36,11 @@ exit 0
 EOF
 chmod +x "$BIN_DIR/ast-grep"
 
-HOME="$TEST_HOME" PATH="$BIN_DIR:$PATH" bash "$REPO_ROOT/install.sh" > "$TMP_ROOT/install.out"
+HOME="$TEST_HOME" PATH="$BIN_DIR:$PATH" AGENT_HARNESS_SERVICES_SKIP=1 \
+  bash "$REPO_ROOT/install.sh" > "$TMP_ROOT/install.out"
+
+grep -Fqx 'Shared local services: SKIPPED (AGENT_HARNESS_SERVICES_SKIP=1)' "$TMP_ROOT/install.out"
+! grep -Eq '^(codeburn web|Headroom proxy): (STARTED|REUSED)' "$TMP_ROOT/install.out"
 
 test -x "$TEST_HOME/.codex/bin/codex"
 test -x "$TEST_HOME/.codex/bin/codex-mark-used"

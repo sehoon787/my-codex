@@ -41,7 +41,8 @@ chmod +x "$BIN_DIR/ast-grep"
 
 first_home="$TMP_ROOT/home-defaults"
 mkdir -p "$first_home"
-HOME="$first_home" PATH="$BIN_DIR:$PATH" bash "$REPO_ROOT/install.sh" > "$TMP_ROOT/defaults.out"
+HOME="$first_home" PATH="$BIN_DIR:$PATH" AGENT_HARNESS_SERVICES_SKIP=1 \
+  bash "$REPO_ROOT/install.sh" > "$TMP_ROOT/defaults.out"
 
 # No packs are enabled by default — the state file is written with no pack lines
 # and nothing is symlinked into agents/.
@@ -54,7 +55,8 @@ test "$(find "$first_home/.codex/agents" -maxdepth 1 -type l -name '*.toml' | wc
 cat > "$first_home/.codex/enabled-agent-packs.txt" <<'EOF'
 data-ai
 EOF
-HOME="$first_home" PATH="$BIN_DIR:$PATH" bash "$REPO_ROOT/install.sh" > "$TMP_ROOT/custom.out"
+HOME="$first_home" PATH="$BIN_DIR:$PATH" AGENT_HARNESS_SERVICES_SKIP=1 \
+  bash "$REPO_ROOT/install.sh" > "$TMP_ROOT/custom.out"
 
 grep -q '^data-ai$' "$first_home/.codex/enabled-agent-packs.txt"
 test -L "$first_home/.codex/agents/ai-engineer.toml"
@@ -70,7 +72,13 @@ printf 'name = "marketing-seo-specialist"\ndescription = "SEO specialist"\n[deve
 ln -s "$migration_home/.codex/agent-packs/marketing/marketing-seo-specialist.toml" \
   "$migration_home/.codex/agents/marketing-seo-specialist.toml"
 
-HOME="$migration_home" PATH="$BIN_DIR:$PATH" bash "$REPO_ROOT/install.sh" > "$TMP_ROOT/migration.out"
+HOME="$migration_home" PATH="$BIN_DIR:$PATH" AGENT_HARNESS_SERVICES_SKIP=1 \
+  bash "$REPO_ROOT/install.sh" > "$TMP_ROOT/migration.out"
+
+for output in defaults custom migration; do
+  grep -Fqx 'Shared local services: SKIPPED (AGENT_HARNESS_SERVICES_SKIP=1)' "$TMP_ROOT/$output.out"
+  ! grep -Eq '^(codeburn web|Headroom proxy): (STARTED|REUSED)' "$TMP_ROOT/$output.out"
+done
 
 grep -q '^marketing$' "$migration_home/.codex/enabled-agent-packs.txt"
 if grep -q '^engineering$' "$migration_home/.codex/enabled-agent-packs.txt"; then

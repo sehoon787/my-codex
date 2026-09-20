@@ -238,7 +238,7 @@ section{padding:80px 0}
   <div class="badges">
     <span class="badge"><em>17</em>&nbsp;agents</span>
     <span class="badge"><em>105</em>&nbsp;skills</span>
-    <span class="badge"><em>3</em>&nbsp;MCP</span>
+    <span class="badge"><em>5</em>&nbsp;MCP</span>
   </div>
   <div class="inst-tabs">
     <button class="inst-tab active" onclick="switchInst(this,'human')">Human</button>
@@ -511,22 +511,22 @@ section{padding:80px 0}
     <tr>
       <td>codeburn</td>
       <td><code>codeburn</code>, or <code>codeburn web --provider codex</code> (add <code>--no-open</code> to print the URL only), or <code>codeburn report --format json --period week --provider codex</code></td>
-      <td><span class="lang" data-en="Terminal dashboard, or browser dashboard at http://127.0.0.1:4747, or JSON on stdout. Reads ~/.codex/sessions read-only and prices it from public list rates, so figures are estimates." data-ko="터미널 대시보드, http://127.0.0.1:4747 의 브라우저 대시보드, 또는 표준 출력 JSON. ~/.codex/sessions를 읽기 전용으로 읽고 공개 정가로 계산하므로 금액은 추정치입니다."></span></td>
+      <td><span class="lang" data-en="Terminal dashboard, browser dashboard at <a href='http://127.0.0.1:4747'>http://127.0.0.1:4747</a>, or JSON on stdout. Reads <code>~/.codex/sessions</code> read-only and prices it from public list rates, so figures are estimates." data-ko="터미널 대시보드, <a href='http://127.0.0.1:4747'>http://127.0.0.1:4747</a>의 브라우저 대시보드 또는 표준 출력 JSON. <code>~/.codex/sessions</code>를 읽기 전용으로 읽고 공개 정가로 계산하므로 금액은 추정치입니다."></span></td>
     </tr>
     <tr>
       <td>serena</td>
-      <td><span class="lang" data-en="Started by Codex from [mcp_servers.serena]; tools find_symbol, get_symbols_overview, replace_symbol_body" data-ko="Codex가 [mcp_servers.serena]로 기동. 도구: find_symbol, get_symbols_overview, replace_symbol_body"></span></td>
-      <td><span class="lang" data-en="Dashboard and tool-call stats at http://localhost:24282/dashboard/index.html while a server runs; per-project memories under .serena/ in the repo." data-ko="서버 실행 중 http://localhost:24282/dashboard/index.html 에서 대시보드와 도구 호출 통계 확인. 프로젝트별 메모리는 저장소의 .serena/ 아래."></span></td>
+      <td><span class="lang" data-en="Started by Codex from <code>[mcp_servers.serena]</code>; tools <code>find_symbol</code>, <code>get_symbols_overview</code>, <code>replace_symbol_body</code>" data-ko="Codex가 <code>[mcp_servers.serena]</code>로 기동. 도구: <code>find_symbol</code>, <code>get_symbols_overview</code>, <code>replace_symbol_body</code>"></span></td>
+      <td><span class="lang" data-en="Dashboard and tool-call stats at <a href='http://localhost:24282/dashboard/index.html'>http://localhost:24282/dashboard/index.html</a> while a server runs; per-project memories under <code>.serena/</code> in the repo." data-ko="서버 실행 중 <a href='http://localhost:24282/dashboard/index.html'>http://localhost:24282/dashboard/index.html</a>에서 대시보드와 도구 호출 통계 확인. 프로젝트별 메모리는 저장소의 <code>.serena/</code> 아래."></span></td>
     </tr>
     <tr>
       <td>headroom</td>
-      <td><span class="lang" data-en="Started by Codex from [mcp_servers.headroom] (headroom mcp serve); tools headroom_compress, headroom_retrieve, headroom_stats" data-ko="Codex가 [mcp_servers.headroom] (headroom mcp serve)로 기동. 도구: headroom_compress, headroom_retrieve, headroom_stats"></span></td>
-      <td><span class="lang" data-en="headroom_stats inside a session; headroom doctor from a shell. Proxy mode is off by default because Codex cannot reach the API while the proxy is down, not because a subscription login blocks it. To opt in: headroom proxy --port 8787 in one terminal, then launch Codex per headroom wrap codex --help. Stats at http://127.0.0.1:8787/stats, with headroom dashboard and headroom perf once traffic has flowed." data-ko="세션 안에서는 headroom_stats, 셸에서는 headroom doctor. 프록시를 기본으로 켜지 않는 이유는 구독 로그인에서 막혀서가 아니라 프록시가 내려가면 Codex가 API에 닿지 못하기 때문입니다. 수동으로 켜려면 한 터미널에서 headroom proxy --port 8787, 이어서 headroom wrap codex --help 에 따라 Codex를 실행합니다. 통계는 http://127.0.0.1:8787/stats, 트래픽이 흐른 뒤에는 headroom dashboard 와 headroom perf."></span></td>
+      <td><span class="lang" data-en="Started by Codex from <code>[mcp_servers.headroom]</code> (<code>headroom mcp serve</code>); tools <code>headroom_compress</code>, <code>headroom_retrieve</code>, <code>headroom_stats</code>" data-ko="Codex가 <code>[mcp_servers.headroom]</code>(<code>headroom mcp serve</code>)로 기동. 도구: <code>headroom_compress</code>, <code>headroom_retrieve</code>, <code>headroom_stats</code>"></span></td>
+      <td><span class="lang" data-en="<code>headroom_stats</code> inside a session; <code>headroom doctor</code> from a shell. Proxy mode is off by default because Codex cannot reach the API while the proxy is down, not because a subscription login blocks it. To opt in, run <code>headroom proxy --port 8787</code> in one terminal, then launch Codex per <code>headroom wrap codex --help</code>. Stats at <a href='http://127.0.0.1:8787/stats'>http://127.0.0.1:8787/stats</a>, with <code>headroom dashboard</code> and <code>headroom perf</code> once traffic has flowed." data-ko="세션 안에서는 <code>headroom_stats</code>, 셸에서는 <code>headroom doctor</code>. 프록시를 기본으로 켜지 않는 이유는 구독 로그인에서 막혀서가 아니라 프록시가 내려가면 Codex가 API에 닿지 못하기 때문입니다. 수동으로 켜려면 한 터미널에서 <code>headroom proxy --port 8787</code>을 실행하고, 이어서 <code>headroom wrap codex --help</code>에 따라 Codex를 실행합니다. 통계는 <a href='http://127.0.0.1:8787/stats'>http://127.0.0.1:8787/stats</a>, 트래픽이 흐른 뒤에는 <code>headroom dashboard</code>와 <code>headroom perf</code>로 확인합니다."></span></td>
     </tr>
     <tr>
       <td>archify</td>
       <td><code>node bin/archify.mjs render &lt;type&gt; &lt;input&gt;.json &lt;output&gt;.html</code></td>
-      <td><span class="lang" data-en="The output HTML you named — one self-contained file with inline SVG, a dark/light toggle, and PNG/JPEG/WebP/SVG export. Verify it with node bin/archify.mjs check." data-ko="지정한 출력 HTML 한 파일 — 인라인 SVG, 다크/라이트 토글, PNG/JPEG/WebP/SVG 내보내기 포함. node bin/archify.mjs check 로 검증합니다."></span></td>
+      <td><span class="lang" data-en="The output HTML you named — one self-contained file with inline SVG, a dark/light toggle, and PNG/JPEG/WebP/SVG export. Verify it with <code>node bin/archify.mjs check &lt;output&gt;.html</code>." data-ko="지정한 출력 HTML 한 파일 — 인라인 SVG, 다크/라이트 토글, PNG/JPEG/WebP/SVG 내보내기 포함. <code>node bin/archify.mjs check &lt;output&gt;.html</code>로 검증합니다."></span></td>
     </tr>
   </table>
 </div>

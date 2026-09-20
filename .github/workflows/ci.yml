@@ -105,6 +105,7 @@ jobs:
           bash tests/agents-section-upsert.test.sh
           bash tests/uv-guard.test.sh
           bash tests/mcp-table-upsert.test.sh
+          bash tests/tool-verification.test.sh
           node tests/hook-output-shape.test.js
           node tests/stop-session-enforcement.test.js
           node tests/context-budget.test.js

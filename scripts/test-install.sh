@@ -112,6 +112,36 @@ exit 0
 EOF
 chmod +x "$BIN_DIR/ast-grep"
 
+# Runtime verification shims. They exercise the installer's actual bounded
+# probes without reading host state, opening a browser, starting a server, or
+# relying on the CI machine to have the optional tools preinstalled.
+cat > "$BIN_DIR/codeburn" <<'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+echo "codeburn $*" >> "${MY_CODEX_TEST_LOG:?}"
+[ "${1:-}" = "--version" ] || exit 2
+echo "0.9.23"
+EOF
+chmod +x "$BIN_DIR/codeburn"
+
+cat > "$BIN_DIR/serena" <<'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+echo "serena $*" >> "${MY_CODEX_TEST_LOG:?}"
+[ "${1:-}" = "--version" ] || exit 2
+echo "Serena 1.7.0"
+EOF
+chmod +x "$BIN_DIR/serena"
+
+cat > "$BIN_DIR/headroom" <<'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+echo "headroom $*" >> "${MY_CODEX_TEST_LOG:?}"
+[ "${1:-}" = "--version" ] || exit 2
+echo "headroom, version 0.37.0"
+EOF
+chmod +x "$BIN_DIR/headroom"
+
 # uv shim. Real `uv tool install` would download serena-agent and headroom-ai
 # (hundreds of MB, minutes) on every CI run; what this test is about is the
 # wiring -- that the installer resolves uv, asks for the pinned specs once, and
@@ -164,6 +194,17 @@ HOME="$TEST_HOME" CODEX_HOME="$HOSTILE_CODEX_HOME" PATH="$BIN_DIR:$PATH" MY_CODE
   bash "$REPO_ROOT/install.sh" > "$TMP_ROOT/install.out"
 test "$(cat "$HOSTILE_CODEX_HOME/sentinel")" = "untouched"
 test ! -e "$HOSTILE_CODEX_HOME/skills"
+grep -q '^  codeburn:      OK (0.9.23)$' "$TMP_ROOT/install.out"
+grep -q '^  serena:        OK (Serena 1.7.0)$' "$TMP_ROOT/install.out"
+grep -q '^  headroom:      OK (headroom, version 0.37.0)$' "$TMP_ROOT/install.out"
+grep -q '^  archify:       OK (rendered and checked bundled workflow example)$' "$TMP_ROOT/install.out"
+grep -q '^  Tool probes:   4 OK, 0 FAIL$' "$TMP_ROOT/install.out"
+grep -q '^  Serena dashboard: http://localhost:24282/dashboard/index.html$' "$TMP_ROOT/install.out"
+grep -q '^  codeburn: `codeburn web` serves http://127.0.0.1:4747 (not started by this installer)$' "$TMP_ROOT/install.out"
+grep -q '^  Serena/Headroom MCP: auto-start each Codex session$' "$TMP_ROOT/install.out"
+grep -q '^codeburn --version$' "$LOG_FILE"
+grep -q '^serena --version$' "$LOG_FILE"
+grep -q '^headroom --version$' "$LOG_FILE"
 
 test -f "$TEST_HOME/.agents/plugins/marketplace.json"
 grep -q '"name": "my-codex"' "$TEST_HOME/.agents/plugins/marketplace.json"

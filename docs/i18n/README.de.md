@@ -1,53 +1,33 @@
-[English](../../README.md) | [한국어](./README.ko.md) | [日本語](./README.ja.md) | [中文](./README.zh.md) | [Deutsch](./README.de.md) | [Français](./README.fr.md)
-
+[Englisch](../../README.md) | [Koreanisch](./README.ko.md) | [Japanisch](./README.ja.md) | [Chinesisch](./README.zh.md) | [Deutsch](./README.de.md) | [Französisch](./README.fr.md)
 > [![Claude Code](https://img.shields.io/badge/Claude_Code-my--claude-d97757?style=flat-square&logo=anthropic&logoColor=white)](https://github.com/sehoon787/my-claude) Suchen Sie nach Claude Code? → **my-claude** — dieselbe Boss-Orchestrierung im nativen Claude `.md`-Agentenformat
-
----
-
 <div align="center">
 
 # my-codex
-
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 ![Agents](https://img.shields.io/badge/agents-17_core_%2B_17_opt--in-blue)
 ![Skills](https://img.shields.io/badge/skills-106-purple)
 ![MCP](https://img.shields.io/badge/MCP-5-green)
 ![Auto Sync](https://img.shields.io/badge/upstream_sync-every_3_days-brightgreen)
-
 **All-in-one Agent-Harness für OpenAI Codex CLI.**
 **Einmal installieren, 17 kuratierte Agenten bereit.**
-
 Boss entdeckt automatisch zur Laufzeit jeden Agenten und jede Skill,
 und leitet Ihre Aufgabe über `spawn_agent` an den richtigen Spezialisten weiter. Keine Konfiguration. Kein Boilerplate.
-
 <img src="./assets/owl-codex-social.svg" alt="The Maestro Owl — my-codex" width="700">
 
 </div>
-
----
-
 ## Installation
-
 ### Für Menschen
-
 ```bash
 git clone --depth 1 https://github.com/sehoon787/my-codex.git /tmp/my-codex
 bash /tmp/my-codex/install.sh
 rm -rf /tmp/my-codex
 ```
-
 ### Für KI-Agenten
-
 ```bash
 curl -fsSL https://raw.githubusercontent.com/sehoon787/my-codex/main/install.sh | bash
 ```
-
----
-
 ## Wie Boss funktioniert
-
 Boss ist der Meta-Orchestrator im Kern von my-codex. Er schreibt niemals Code — er entdeckt, klassifiziert, ordnet zu, delegiert und verifiziert.
-
 ```
 User Request
      │
@@ -87,11 +67,8 @@ User Request
 │  → Retry up to 3× on failure               │
 └─────────────────────────────────────────────┘
 ```
-
 ### Prioritäts-Routing
-
 Boss leitet jede Anfrage durch eine Prioritätskette, bis die beste Übereinstimmung gefunden wird:
-
 | Priorität | Übereinstimmungstyp | Wann | Beispiel |
 |:---------:|---------------------|------|----------|
 | **P1** | Skill-Treffer | Aufgabe entspricht einer eigenständigen Skill | `"review this diff"` → /review Skill |
@@ -99,19 +76,14 @@ Boss leitet jede Anfrage durch eine Prioritätskette, bis die beste Übereinstim
 | **P3a** | Boss direkt | 2–4 unabhängige Agenten | `"fix 3 bugs"` → parallel spawn |
 | **P3b** | Sub-Orchestrator | Komplexer mehrstufiger Workflow | `"refactor + test"` → Sisyphus |
 | **P4** | Fallback | Kein Spezialist gefunden | `"explain this"` → general agent |
-
 ### Modell-Routing
-
 | Komplexität | Modell | Verwendet für |
 |-------------|--------|---------------|
 | Tiefgehende Analyse, Architektur | gpt-6-astra (high/xhigh reasoning) | Boss, Oracle, Sisyphus, Atlas |
 | Standardimplementierung | gpt-5.6-sol (medium) | executor, debugger, test-engineer |
 | Schnelle Suche, Erkundung | gpt-5.6-terra (low) | explore, einfache Beratung |
-
 ### 3-Phasen-Sprint-Workflow
-
 Für die Ende-zu-Ende-Funktionsimplementierung orchestriert Boss einen strukturierten Sprint:
-
 ```
 Phase 1: DESIGN         Phase 2: EXECUTE        Phase 3: REVIEW
 (interactive)            (autonomous)             (interactive)
@@ -120,60 +92,17 @@ User decides scope      executor runs tasks     Compare vs design doc
 Engineering review      Auto code review        Present comparison table
 Confirm "design done"   Architect verification  User: approve / improve
 ```
-
 ### Strukturierter Abschlussbericht
-
 Boss schließt jeden Arbeits-Turn — jeden Turn, in dem Dateien bearbeitet oder erstellt, Commits/PRs/Merges gemacht, Konfiguration geändert oder Verifikation ausgeführt wurde — mit einem strukturierten Abschlussbericht ab, den man ohne Öffnen eines Diffs überfliegen kann. Der Bericht besteht aus fünf festen Tabellen, die jeweils nur ausgegeben werden, wenn ihre Situation tatsächlich eingetreten ist (niemals eine leere Tabelle):
-
 | Situation | Tabelle | Spalten |
 |-----------|-------|---------|
-| Dateien/Einstellungen geändert | 변경 대조 (Changes) | 대상 / Before / After / 근거 |
-| Mehrere Aufgaben abgeschlossen | 작업 요약 (Work summary) | 항목 / 결과 / 근거 |
-| Verifikation ausgeführt | 검증 결과 (Verification) | 항목 / 기대 / 실제 / 판정 |
-| Commits/PRs erzeugt | 산출물 (Deliverables) | PR / 저장소 / 내용 / 상태 |
-| Etwas ungelöst | 남은 것 (Remaining) | 항목 / 상태 / 다음 조치 |
-
+| Dateien/Einstellungen geändert | Änderungsvergleich | Ziel / Vorher / Nachher / Begründung |
+| Mehrere Aufgaben abgeschlossen | Arbeitsübersicht | Element / Ergebnis / Nachweis |
+| Verifikation ausgeführt | Verifikation | Element / Erwartet / Tatsächlich / Urteil |
+| Commits/PRs erzeugt | Ergebnisse | PR / Repository / Inhalt / Status |
+| Etwas ungelöst | Offen | Element / Status / Nächster Schritt |
 Er wird nur ganz am Ende der Anfrage ausgelöst — niemals in einem Turn, der Hintergrundarbeit startet oder weiterreicht, und niemals als Fortschrittsmeldung mitten in der Aufgabe — und reine Q&A-Turns enden normal ohne ihn. Die Spezifikation liegt in den developer instructions von `boss.toml` und in `~/.codex/AGENTS.md`, sodass auch die Hauptsitzung sie sieht. Ein Stop-Hook (`hooks/stop-final-report.js`) setzt sie durch, wie im Schwesterprojekt [my-claude](https://github.com/sehoon787/my-claude): Wenn ein Turn den Zustand verändert hat, aber ohne Report-Tabelle endet, blockiert der Hook diesen Turn einmal und fordert den Report an.
-
----
-
-## Architektur
-
-```
-┌─────────────────────────────────────────────────────┐
-│                    User Request                       │
-└───────────────────────┬─────────────────────────────┘
-                        ▼
-┌─────────────────────────────────────────────────────┐
-│  Boss · Meta-Orchestrator (gpt-6-astra xhigh)              │
-│  Discovery → Classification → Matching → Delegation  │
-└──┬──────────┬──────────┬──────────┬─────────────────┘
-   │          │          │          │
-   ▼          ▼          ▼          ▼
-┌──────┐ ┌────────┐ ┌────────┐ ┌────────┐
-│ P3a  │ │  P3b   │ │  P1/P2 │ │Config  │
-│Direct│ │Sub-orch│ │ Skill/ │ │Control │
-│2-4   │ │Sisyphus│ │ Agent  │ │config. │
-│spawn │ │Atlas   │ │ Direct │ │toml    │
-└──────┘ └────────┘ └────────┘ └────────┘
-┌─────────────────────────────────────────────────────┐
-│  Agent Layer (17 installed TOML files)                │
-│  Boss 1 · OMO 9 · OMX 7                               │
-│  + 2 opt-in agent packs (17 agents, off by default)   │
-├─────────────────────────────────────────────────────┤
-│  Skills Layer (105 from ECC + gstack + superpowers)   │
-│  coding-standards · security-scan · deep-research     │
-│  /review · /qa · /cso · /ship                         │
-├─────────────────────────────────────────────────────┤
-│  MCP Layer                                            │
-│  Context7 · Exa · grep.app · Serena · Headroom         │
-└─────────────────────────────────────────────────────┘
-```
-
----
-
 ## Was enthalten ist
-
 | Kategorie | Anzahl | Quelle |
 |-----------|-------:|--------|
 | **Kern-Agenten** (immer geladen) | 17 | Boss 1 + OMO 9 + OMX 7 |
@@ -182,7 +111,6 @@ Er wird nur ganz am Ende der Anfrage ausgelöst — niemals in einem Turn, der H
 | **MCP-Server** | 5 | Context7, Exa, grep.app, Serena, Headroom |
 | **config.toml** | 1 | my-codex |
 | **AGENTS.md** | 1 | my-codex |
-
 <details>
 <summary><strong>Kern-Agent — Boss Meta-Orchestrator (1)</strong></summary>
 
@@ -213,7 +141,6 @@ Er wird nur ganz am Ende der Anfrage ausgelöst — niemals in einem Turn, der H
 <summary><strong>OMX-Agenten — Spezialistenmitarbeiter (7)</strong></summary>
 
 Aus den `prompts/*.md` von [oh-my-codex](https://github.com/Yeachan-Heo/oh-my-codex) nach Codex-TOML konvertiert. Konvertiert werden nur die Lanes, die `templates/codex-AGENTS.md` ausweist; die Allowlist steht in `scripts/skill-allowlists.sh`.
-
 | Agent | Sandbox | Rolle | Quelle |
 |-------|---------|-------|--------|
 | executor | workspace-write | Code-Implementierung | oh-my-codex |
@@ -230,20 +157,16 @@ Aus den `prompts/*.md` von [oh-my-codex](https://github.com/Yeachan-Heo/oh-my-co
 <summary><strong>Agenten-Packs — Opt-in-KI-Spezialisten (2 Packs, 17 Agenten)</strong></summary>
 
 Aus [awesome-codex-subagents](https://github.com/VoltAgent/awesome-codex-subagents) (MIT) nach `codex-agents/packs/` eingebunden und nach `~/.codex/agent-packs/` installiert. **Standardmäßig ist kein Pack aktiviert** — Aktivierung erfolgt ausdrücklich:
-
 ```bash
 # Aktuellen Stand ansehen
 ~/.codex/bin/my-codex-packs status
-
 # Pack sofort aktivieren
 ~/.codex/bin/my-codex-packs enable data-ai
-
 # Profile bei der Installation wechseln
 bash /tmp/my-codex/install.sh --profile minimal   # keine Packs
 bash /tmp/my-codex/install.sh --profile dev       # data-ai + llmops
 bash /tmp/my-codex/install.sh --profile full      # alle installierten Packs
 ```
-
 | Pack | Anzahl | Agenten |
 |------|------:|---------|
 | data-ai | 13 | ai-engineer, data-analyst, data-engineer, data-scientist, database-optimizer, llm-architect, machine-learning-engineer, ml-engineer, mlops-engineer, nlp-engineer, postgres-pro, prompt-engineer, reinforcement-learning-engineer |
@@ -255,7 +178,6 @@ bash /tmp/my-codex/install.sh --profile full      # alle installierten Packs
 <summary><strong>Skills — 106 aus 5 Quellen</strong></summary>
 
 Die kuratierten Allowlists pro Skill stehen in `scripts/skill-allowlists.sh` — diese Datei ist maßgeblich dafür, was ausgeliefert wird.
-
 | Quelle | Anzahl | Wichtige Skills |
 |--------|------:|------------|
 | [everything-claude-code](https://github.com/affaan-m/everything-claude-code) | 61 | coding-standards, python-testing, api-design, deep-research |
@@ -263,15 +185,13 @@ Die kuratierten Allowlists pro Skill stehen in `scripts/skill-allowlists.sh` —
 | [superpowers](https://github.com/obra/superpowers) | 13 | brainstorming, systematic-debugging, TDD, writing-plans |
 | [my-codex Core](https://github.com/sehoon787/my-codex) | 4 | boss-advanced, boss-briefing, briefing-vault, gstack-sprint |
 | [archify](https://github.com/tt-a1i/archify) | 1 | archify (Architektur-, Workflow-, Sequenz-, Datenfluss- und Lifecycle-Diagramme) |
-
-gstack zählt als 26 Allowlist-Skills plus den Repository-Root-Eintrag. Das gesamte gstack-Repository liegt zusätzlich unter `~/.codex/skills/gstack` als sein kanonischer Runtime-Baum.
-
+gstack zählt als 26 Allowlist-Skills plus den Repository-Root-Eintrag. Der vollständige Checkout liegt unter `~/.codex/vendor/gstack`; `~/.codex/skills/gstack` ist die Runtime-Fassade.
 Codex bringt **keine Dokument-Skills** mit — in diesem Bundle gibt es kein `pdf`, `docx`, `pptx` oder `xlsx`.
 
 </details>
 
 <details>
-<summary><strong>MCP-Server (3)</strong></summary>
+<summary><strong>Gehostete MCP-Server (3)</strong></summary>
 
 | Server | Zweck | Kosten |
 |--------|-------|--------|
@@ -281,12 +201,8 @@ Codex bringt **keine Dokument-Skills** mit — in diesem Bundle gibt es kein `pd
 
 </details>
 
----
-
 ## <img src="https://obsidian.md/images/obsidian-logo-gradient.svg" width="24" height="24" align="center"/> Briefing Vault
-
 Obsidian-kompatibler persistenter Speicher. Jedes Projekt pflegt ein `.briefing/`-Verzeichnis, das sich über Sitzungen hinweg automatisch befüllt.
-
 ```
 .briefing/
 ├── INDEX.md                          ← Project context (auto-created once)
@@ -316,9 +232,7 @@ Obsidian-kompatibler persistenter Speicher. Jedes Projekt pflegt ein `.briefing/
 └── wiki/                             ← Konzeptseiten (automatisch vorgeschlagen)
     └── _schema.md
 ```
-
 ### Automatisierungs-Lebenszyklus
-
 | Phase | Hook-Ereignis | Was passiert |
 |-------|--------------|--------------|
 | **Sitzungsstart** | `SessionStart` | Erstellt `.briefing/`-Struktur, speichert git-HEAD-Hash für sitzungsspezifische Diffs |
@@ -330,45 +244,30 @@ Obsidian-kompatibler persistenter Speicher. Jedes Projekt pflegt ein `.briefing/
 | **Sitzungsende** | `Stop` (2. Hook) | **Erzwingt** KI-erstellte Sitzungszusammenfassung bei ≥ 3 Dateibearbeitungen — blockiert Sitzungsende mit Vorlage |
 | **archives/** | — | Schlägt automatisch vor, abgeschlossene/inaktive Notizen ab 30+ Tagen zu archivieren. PARA-Archiv-Konzept. |
 | **wiki/** | — | Konzept-Wiki-Seiten. Automatisch vorgeschlagen, wenn ein Schlüsselwort 3+ Mal vorkommt. LLM-wiki-Konzept. |
-
 ### Automatisch generiert vs. KI-erstellt
-
 | Typ | Dateimuster | Erstellt von | Inhalt |
 |-----|-------------|-------------|--------|
 | **Auto-Gerüst** | `*-auto.md`, `*-auto-session.md` | Stop hook (Node.js) | Git-Diff-Statistiken, Agentennutzung, Commit-Liste — nur Daten |
 | **KI-Zusammenfassung** | `YYYY-MM-DD-<topic>.md` | KI während der Sitzung | Aussagekräftige Analyse mit Kontext, Code-Referenzen, Begründung |
 | **Telemetrie** | `agent-log.jsonl`, `auto-links.md` | Hook-Skripte | Nur-Anhänge-strukturierte Protokolle |
 | **Persona** | `profile.md`, `suggestions.jsonl` | Stop hook | Nutzungsbasierte Agenten-Affinität und Routing-Vorschläge |
-
 Auto-Gerüste dienen als **Referenzdaten** für die KI zum Verfassen angemessener Zusammenfassungen. Der Durchsetzungs-Hook stellt den Gerüstinhalt + eine strukturierte Vorlage bereit, wenn das Sitzungsende blockiert wird.
-
 ### Sitzungsspezifische Diffs
-
 Beim Sitzungsstart wird der aktuelle git-HEAD in `.briefing/.session-start-head` gespeichert. Am Sitzungsende werden Diffs relativ zu diesem gespeicherten Punkt berechnet — es werden nur Änderungen aus der aktuellen Sitzung angezeigt, keine angesammelten nicht committeten Änderungen aus vorherigen Sitzungen.
-
 ### Verwendung mit Obsidian
-
 1. Öffnen Sie Obsidian → **Ordner als Vault öffnen** → `.briefing/` auswählen
 2. Notizen erscheinen in der Graphansicht, verknüpft durch `[[wiki-links]]`
 3. YAML-Frontmatter (`date`, `type`, `tags`) ermöglicht strukturierte Suche
 4. Eine Zeitleiste von Entscheidungen und Lernnotizen entsteht automatisch über Sitzungen hinweg
-
 ### Wissensmanagement (v2)
-
 BriefingVault v2 integriert drei Wissensmanagement-Methoden:
-
 | Methode | Konzept | Anwendung in BriefingVault |
 |---------|---------|---------------------------|
 | **PARA** (Tiago Forte) | Organisieren nach Handlungsfähigkeit: Projekte, Bereiche, Ressourcen, Archive | sessions/ = Projekte, decisions/ = Bereiche, references/ = Ressourcen, archives/ = Archive |
 | **Zettelkasten** (Luhmann) | Atomare Notizen mit eindeutigen IDs und expliziten Links | learnings/-Dateien: `YYYYMMDDHHMMSS`-IDs, `related:` mindestens 2 Links erforderlich |
 | **LLM-wiki** (Karpathy) | KI-gepflegte Konzeptseiten aus Quellnotizen | wiki/-Seiten: automatisch vorgeschlagen bei 3+ Wiederholungen eines Schlüsselworts |
-
----
-
 ## Upstream Open-Source-Quellen
-
 my-codex verfolgt **5 Upstream-Submodule**, dazu einen eingebundenen Snapshot, zwei angepasste bzw. Schwesterprojekte, zwei Companion-CLIs und vier MCP-Server:
-
 | # | Quelle | Methode | Was bereitgestellt wird |
 |---|--------|---------|------------------------|
 | 1 | <img src="https://github.com/affaan-m.png?size=32" width="20" height="20" align="center"/> **[everything-claude-code](https://github.com/affaan-m/everything-claude-code)** — affaan-m | Submodul | 61 Allowlist-Skills für Entwicklungsworkflows. Claude Code-spezifische Inhalte entfernt; generische Coding-Skills beibehalten. |
@@ -386,25 +285,16 @@ my-codex verfolgt **5 Upstream-Submodule**, dazu einen eingebundenen Snapshot, z
 | 13 | <img src="https://github.com/upstash.png?size=32" width="20" height="20" align="center"/> **[context7](https://github.com/upstash/context7)** — Upstash | gehostetes MCP | Aktuelle Bibliotheksdokumentation. Von `install.sh` unter `https://mcp.context7.com/mcp` registriert. |
 | 14 | <img src="https://github.com/exa-labs.png?size=32" width="20" height="20" align="center"/> **[exa](https://github.com/exa-labs/exa-mcp-server)** — Exa Labs | gehostetes MCP | Neuronale Websuche. Registriert unter `https://mcp.exa.ai/mcp?tools=web_search_exa`. |
 | 15 | <img src="https://github.com/grep-app.png?size=32" width="20" height="20" align="center"/> **[grep.app](https://grep.app/)** — grep.app | gehostetes MCP | Repository-übergreifende Codesuche. Registriert unter `https://mcp.grep.app`. |
-
 Jedes Submodul ist in `upstream/SOURCES.json` (AI-BOM) — Companion-CLIs (ast-grep, codeburn) und MCP-Server (serena, headroom) sind dort ebenfalls versionsgepinnt eingetragen — per SHA gepinnt; dort sind auch die beiden entfernten Submodule vermerkt (`agency-agents` — nichts eingebunden; `awesome-codex-subagents` — 17 Agenten eingebunden).
-
----
-
 ## Wo die Ergebnisse landen
-
 Jedes installierte Tool schreibt seine Ausgabe irgendwohin. Hier steht, wohin.
-
 | Tool | Aufgabe | Aufruf | Wo die Ergebnisse landen |
 |------|--------------|------------|----------------------|
-| **codeburn** | Token- und Kostenabrechnung nach Aufgabe, Tool, Modell und Projekt | `codeburn` (interaktives Dashboard); nicht-interaktiv: `codeburn report --format json --period week --provider codex` (auch `--day`, `--from`/`--to`) | Terminal-TUI oder JSON auf stdout mit `--format json`. Liest `~/.codex/sessions` nur lesend und rechnet mit öffentlichen Listenpreisen — die Zahlen sind Schätzungen, keine Rechnung. |
+| **codeburn** | Token- und Kostenabrechnung nach Aufgabe, Tool, Modell und Projekt | `codeburn` (interaktives Dashboard); `codeburn web --provider codex` (lokales Browser-Dashboard; mit `--no-open` nur die URL ausgeben); nicht-interaktiv: `codeburn report --format json --period week --provider codex` (auch `--day`, `--from`/`--to`) | Terminal-TUI, Browser-Dashboard unter <http://127.0.0.1:4747> oder JSON auf stdout mit `--format json`. Liest `~/.codex/sessions` nur lesend und rechnet mit öffentlichen Listenpreisen — die Zahlen sind Schätzungen, keine Rechnung. |
 | **Serena** | Symbolgenaue Codenavigation und -bearbeitung über MCP | Wird von Codex aus `[mcp_servers.serena]` gestartet; Tools: `get_symbols_overview`, `find_symbol`, `find_referencing_symbols`, `replace_symbol_body`, `insert_after_symbol` | Dashboard und Tool-Call-Statistik unter <http://localhost:24282/dashboard/index.html>, solange ein Server läuft. Index und Memories pro Projekt unter `<Repo>/.serena/`. Der Browser öffnet sich nicht automatisch (`--open-web-dashboard False`). |
 | **Headroom** | Komprimiert übergroße Tool-Ausgaben und holt das Original bei Bedarf zurück | Wird von Codex aus `[mcp_servers.headroom]` gestartet (`headroom mcp serve`); Tools: `headroom_compress`, `headroom_retrieve`, `headroom_stats` | `headroom_stats` innerhalb einer Sitzung; `headroom doctor` in der Shell. Der Proxy-Modus ist standardmäßig aus, weil Codex die API gar nicht mehr erreicht, sobald der Proxy steht — nicht weil ein Abo-Login ihn blockieren würde; er funktioniert. Manuell aktivieren: `headroom proxy --port 8787` in einem eigenen Terminal, dann Codex gemäß `headroom wrap codex --help` starten (setzt `OPENAI_BASE_URL` und registriert den MCP-Server in der Codex-Konfiguration). Proxy-Statistik unter <http://127.0.0.1:8787/stats>; sobald Traffic geflossen ist, zeigen `headroom dashboard` und `headroom perf` Einsparung und Latenz; `headroom doctor` meldet `codex: not routed`, solange er aus ist. |
 | **Archify** | Architektur-, Workflow-, Sequenz-, Datenfluss- und Lifecycle-Diagramme | Aus `~/.codex/skills/archify`: `node bin/archify.mjs render <type> <input>.json <output>.html`, danach `node bin/archify.mjs check <output>.html` | Die von Ihnen benannte Datei `<output>.html` — eine eigenständige Datei mit eingebettetem SVG, Dark/Light-Umschalter und Export als PNG/JPEG/WebP/SVG. Im Browser öffnen. Die mitgelieferten `examples/*.json` des Skills sind ausgearbeitete Eingaben zum Abschauen. |
-
-
 ## GitHub Actions
-
 | Workflow | Auslöser | Zweck |
 |----------|----------|-------|
 | **CI** | push, PR | Validiert TOML-Agentendateien, Skill-Existenz und Upstream-Dateianzahlen |
@@ -414,13 +304,8 @@ Jedes installierte Tool schreibt seine Ausgabe irgendwohin. Hier steht, wohin.
 | **Pages** | push to main | Deployt `docs/index.html` auf GitHub Pages |
 | **CLA** | PR | Prüfung des Contributor License Agreement |
 | **Lint Workflows** | push, PR | Validiert die YAML-Syntax der GitHub Actions-Workflows |
-
----
-
 ## my-codex Originals
-
 Funktionen, die speziell für dieses Projekt entwickelt wurden und über das hinausgehen, was Upstream-Quellen bieten:
-
 | Funktion | Beschreibung |
 |----------|-------------|
 | **Boss Meta-Orchestrator** | Dynamische Fähigkeitsentdeckung → Absichtsklassifizierung → 4-Prioritäten-Routing → Delegation → Verifikation |
@@ -432,59 +317,39 @@ Funktionen, die speziell für dieses Projekt entwickelt wurden und über das hin
 | **Agenten-Pack-System** | On-demand-Domänenspezialisten-Aktivierung über `--profile` und `my-codex-packs`-Hilfsprogramm |
 | **Codex Attribution** | git hooks zeichnen von Codex berührte Dateien auf und hängen `AI-Contributed-By: Codex` an Commit-Nachrichten an |
 | **CI Dedup Detection** | Automatische Erkennung doppelter TOML-Agenten über Upstream-Syncs hinweg |
-
----
-
 ## Installationsoptionen
-
 ### Schnellinstallation
-
 ```bash
 git clone --depth 1 https://github.com/sehoon787/my-codex.git /tmp/my-codex
 bash /tmp/my-codex/install.sh
 rm -rf /tmp/my-codex
 ```
-
 Wenn Sie denselben Befehl erneut ausführen, wird auf den neuesten `main`-Build aktualisiert, es werden nur von my-codex verwaltete Dateien in `~/.codex/` ersetzt, und veraltete Skill-Kopien aus `~/.agents/skills/` werden entfernt.
-
 ### Agenten-Pack-Profile
-
 Packs werden installiert, sind aber **standardmäßig inaktiv** — eine Neuinstallation aktiviert keines und schreibt die leere Menge nach `~/.codex/enabled-agent-packs.txt`. Aktiviere einzelne Packs oder wähle ein Profil:
-
 ```bash
 # Ein Pack sofort aktivieren
 ~/.codex/bin/my-codex-packs enable data-ai
-
 # Minimal-Profil (nur Kern-Agenten, keine Packs — Standard)
 bash /tmp/my-codex/install.sh --profile minimal
-
 # Dev-Profil (data-ai + llmops)
 bash /tmp/my-codex/install.sh --profile dev
-
 # Full-Profil (beide installierten Pack-Kategorien aktiviert)
 bash /tmp/my-codex/install.sh --profile full
 ```
-
 ### Codex Attribution System
-
 `install.sh` installiert einen `codex`-Wrapper sowie globale git-Hooks in `~/.codex/git-hooks/`:
-
 - **`prepare-commit-msg`** — Zeichnet Dateien auf, die während einer echten Codex-Sitzung geändert wurden
 - **`commit-msg`** — Hängt `Generated with Codex CLI: https://github.com/openai/codex` an, wenn gestage Dateien die aufgezeichneten Änderungen schneiden
 - **`post-commit`** — Fügt den Trailer `AI-Contributed-By: Codex` zu qualifizierenden Commits hinzu
-
 Opt-in `Co-authored-by`-Trailer: Setzen Sie sowohl `git config --global my-codex.codexContributorName '<label>'` als auch `my-codex.codexContributorEmail '<github-linked-email>'`. Vollständig deaktivieren: `git config --global my-codex.codexAttribution false`. my-codex ändert **nicht** `git user.name`, `git user.email` oder die Commit-Autorenidentität.
-
 ### Agenten-TOML-Format
-
 Jeder Agent ist eine native TOML-Datei in `~/.codex/agents/`:
-
 ```toml
 name = "debugger"
 description = "Focused debugging specialist — traces failures to root cause"
 model = "gpt-5.6-sol"
 model_reasoning_effort = "medium"
-
 [developer_instructions]
 content = """
 You are a debugging specialist. Analyze failures systematically:
@@ -494,26 +359,17 @@ You are a debugging specialist. Analyze failures systematically:
 4. Verify the fix does not break adjacent behavior
 """
 ```
-
 ### config.toml
-
 Globale Codex-Einstellungen in `~/.codex/config.toml`:
-
 ```toml
 [agents]
 max_threads = 8
 max_depth = 1
 ```
-
 - `max_threads` — Maximale Anzahl gleichzeitiger Sub-Agenten
 - `max_depth` — Maximale Verschachtelungstiefe für Agent-spawnt-Agent-Ketten
-
----
-
 ## Gebündelte Upstream-Versionen
-
 Upstream-Quellen werden als git-Submodule verwaltet. Festgelegte Commits werden in `.gitmodules` verfolgt.
-
 | Quelle | Sync |
 |--------|------|
 | [everything-claude-code](https://github.com/affaan-m/everything-claude-code) | Submodul (`upstream/ecc`) |
@@ -522,11 +378,7 @@ Upstream-Quellen werden als git-Submodule verwaltet. Festgelegte Commits werden 
 | [superpowers](https://github.com/obra/superpowers) | Submodul (`upstream/superpowers`) |
 | [archify](https://github.com/tt-a1i/archify) | Submodul (`upstream/archify`, Tag `v2.9.0`) |
 | [awesome-codex-subagents](https://github.com/VoltAgent/awesome-codex-subagents) | eingebundener Snapshot (Submodul am 2026-07-27 entfernt) |
-
----
-
 ## Häufig gestellte Fragen
-
 <details>
 <summary><strong>Wie unterscheidet sich my-codex von my-claude?</strong></summary>
 
@@ -562,32 +414,17 @@ Boss und Sub-Orchestratoren (Sisyphus, Atlas, Oracle) verwenden gpt-6-astra mit 
 
 </details>
 
----
-
 ## Fehlerbehebung
-
 ### Nur-Skills-Wiederherstellung
-
 Wenn ein Tool ungültige `SKILL.md`-Dateien unter `~/.agents/skills/` meldet, ist die häufigste Ursache eine veraltete lokale Kopie oder ein veraltetes Symlink-Ziel aus einer älteren Installation.
-
 Entfernen Sie die betroffenen Verzeichnisse aus `~/.agents/skills/` und die entsprechenden Einträge unter `~/.claude/skills/`, dann installieren Sie neu:
-
 ```bash
 npx skills add sehoon787/my-codex -y -g
 ```
-
 Wenn Sie das vollständige Codex-Bundle verwenden, führen Sie auch `install.sh` einmal erneut aus. Das vollständige Installationsprogramm aktualisiert `~/.codex/skills/` und entfernt veraltete, von my-codex verwaltete Kopien unter `~/.agents/skills/`.
-
----
-
 ## Mitwirken
-
 Issues und PRs sind willkommen. Wenn Sie einen neuen Agenten hinzufügen, fügen Sie eine `.toml`-Datei zu `codex-agents/core/` oder `codex-agents/omo/` hinzu und aktualisieren Sie die Agentenliste in `SETUP.md`. Weitere Informationen zu PR-Validierungsschritten und zum Codex-Commit-Attributionsverhalten finden Sie in [CONTRIBUTING.md](./CONTRIBUTING.md).
-
 ## Danksagungen
-
 Aufgebaut auf der Arbeit von: [my-claude](https://github.com/sehoon787/my-claude) (sehoon787), [everything-claude-code](https://github.com/affaan-m/everything-claude-code) (affaan-m), [gstack](https://github.com/garrytan/gstack) (garrytan), [oh-my-codex](https://github.com/Yeachan-Heo/oh-my-codex) (Yeachan Heo), [superpowers](https://github.com/obra/superpowers) (Jesse Vincent), [awesome-codex-subagents](https://github.com/VoltAgent/awesome-codex-subagents) (VoltAgent), [oh-my-openagent](https://github.com/code-yeongyu/oh-my-openagent) (code-yeongyu), [openai/skills](https://github.com/openai/skills) (OpenAI).
-
 ## Lizenz
-
 MIT-Lizenz. Weitere Informationen finden Sie in der Datei [LICENSE](./LICENSE).

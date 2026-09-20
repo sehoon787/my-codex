@@ -1,53 +1,33 @@
-[English](../../README.md) | [한국어](./README.ko.md) | [日本語](./README.ja.md) | [中文](./README.zh.md) | [Deutsch](./README.de.md) | [Français](./README.fr.md)
-
+[英語](../../README.md) | [韓国語](./README.ko.md) | [日本語](./README.ja.md) | [中国語](./README.zh.md) | [ドイツ語](./README.de.md) | [フランス語](./README.fr.md)
 > [![Claude Code](https://img.shields.io/badge/Claude_Code-my--claude-d97757?style=flat-square&logo=anthropic&logoColor=white)](https://github.com/sehoon787/my-claude) Claude Code をお探しの方は → **my-claude** — ネイティブ Claude `.md` エージェントフォーマットで同じ Boss オーケストレーションを提供
-
----
-
 <div align="center">
 
 # my-codex
-
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 ![Agents](https://img.shields.io/badge/agents-17_core_%2B_17_opt--in-blue)
 ![Skills](https://img.shields.io/badge/skills-106-purple)
 ![MCP](https://img.shields.io/badge/MCP-5-green)
 ![Auto Sync](https://img.shields.io/badge/upstream_sync-every_3_days-brightgreen)
-
 **OpenAI Codex CLI 向けオールインワン・エージェントハーネス。**
 **一度インストールするだけで、厳選された 17 のエージェントがすぐに使えます。**
-
 Boss はランタイムですべてのエージェントとスキルを自動検出し、
 `spawn_agent` を通じて適切なスペシャリストにタスクをルーティングします。設定もボイラープレートも不要です。
-
 <img src="./assets/owl-codex-social.svg" alt="The Maestro Owl — my-codex" width="700">
 
 </div>
-
----
-
 ## インストール
-
 ### 人間向け
-
 ```bash
 git clone --depth 1 https://github.com/sehoon787/my-codex.git /tmp/my-codex
 bash /tmp/my-codex/install.sh
 rm -rf /tmp/my-codex
 ```
-
 ### AI エージェント向け
-
 ```bash
 curl -fsSL https://raw.githubusercontent.com/sehoon787/my-codex/main/install.sh | bash
 ```
-
----
-
 ## Boss の仕組み
-
 Boss は my-codex の中核にあるメタオーケストレーターです。コードを書くことはなく、検出・分類・マッチング・委任・検証を行います。
-
 ```
 User Request
      │
@@ -87,11 +67,8 @@ User Request
 │  → Retry up to 3× on failure               │
 └─────────────────────────────────────────────┘
 ```
-
 ### 優先ルーティング
-
 Boss はすべてのリクエストを優先チェーンにカスケードし、最適なマッチを見つけます:
-
 | 優先度 | マッチタイプ | 条件 | 例 |
 |:--------:|-----------|------|---------|
 | **P1** | スキルマッチ | タスクが自己完結型スキルに対応する場合 | `"review this diff"` → /review スキル |
@@ -99,19 +76,14 @@ Boss はすべてのリクエストを優先チェーンにカスケードし、
 | **P3a** | Boss ダイレクト | 2〜4 個の独立エージェント | `"fix 3 bugs"` → 並列スポーン |
 | **P3b** | サブオーケストレーター | 複雑なマルチステップワークフロー | `"refactor + test"` → Sisyphus |
 | **P4** | フォールバック | スペシャリストが一致しない場合 | `"explain this"` → 汎用エージェント |
-
 ### モデルルーティング
-
 | 複雑度 | モデル | 使用場面 |
 |-----------|-------|----------|
 | 深い分析、アーキテクチャ | gpt-6-astra (high/xhigh reasoning) | Boss、Oracle、Sisyphus、Atlas |
 | 標準的な実装 | gpt-5.6-sol (medium) | executor、debugger、test-engineer |
 | 簡単な検索、調査 | gpt-5.6-terra (low) | explore、簡易アドバイザリー |
-
 ### 3 フェーズスプリントワークフロー
-
 エンドツーエンドの機能実装において、Boss は構造化されたスプリントをオーケストレートします:
-
 ```
 Phase 1: DESIGN         Phase 2: EXECUTE        Phase 3: REVIEW
 (interactive)            (autonomous)             (interactive)
@@ -120,60 +92,17 @@ User decides scope      executor runs tasks     Compare vs design doc
 Engineering review      Auto code review        Present comparison table
 Confirm "design done"   Architect verification  User: approve / improve
 ```
-
 ### 構造化された最終レポート
-
 Boss は作業が発生したすべてのターン — ファイルの編集・作成、コミット/PR/マージ、設定変更、検証の実行があったターン — を、diff を開かなくても読み取れる構造化された最終レポートで締めくくります。レポートは固定された 5 つのテーブルから組み立てられ、各テーブルはその状況が実際に発生した場合にのみ出力されます（空のテーブルは決して出力しません）:
-
 | 状況 | テーブル | 列 |
 |-----------|-------|---------|
-| ファイル/設定の変更 | 변경 대조 (Changes) | 대상 / Before / After / 근거 |
-| 複数タスクの完了 | 작업 요약 (Work summary) | 항목 / 결과 / 근거 |
-| 検証を実行 | 검증 결과 (Verification) | 항목 / 기대 / 실제 / 판정 |
-| コミット/PR を作成 | 산출물 (Deliverables) | PR / 저장소 / 내용 / 상태 |
-| 未解決事項あり | 남은 것 (Remaining) | 항목 / 상태 / 다음 조치 |
-
+| ファイル/設定の変更 | 変更比較 | 対象 / 変更前 / 変更後 / 根拠 |
+| 複数タスクの完了 | 作業概要 | 項目 / 結果 / 根拠 |
+| 検証を実行 | 検証 | 項目 / 期待値 / 実測値 / 判定 |
+| コミット/PR を作成 | 成果物 | PR / リポジトリ / 内容 / 状態 |
+| 未解決事項あり | 残件 | 項目 / 状態 / 次の対応 |
 このレポートはリクエストの最後にのみ発動し — バックグラウンド作業を起動・中継するターンやタスク途中の進捗報告としては決して出力されず — 純粋な Q&A のターンはレポートなしで通常どおり終了します。仕様は `boss.toml` の developer instructions と `~/.codex/AGENTS.md` の両方に含まれているため、メインセッションからも参照できます。姉妹プロジェクトの [my-claude](https://github.com/sehoon787/my-claude) と同様に Stop フック（`hooks/stop-final-report.js`）がこれを強制します。状態を変更したターンがレポートのテーブルなしで終了した場合、フックはそのターンを一度だけブロックしてレポートを要求します。
-
----
-
-## アーキテクチャ
-
-```
-┌─────────────────────────────────────────────────────┐
-│                    User Request                       │
-└───────────────────────┬─────────────────────────────┘
-                        ▼
-┌─────────────────────────────────────────────────────┐
-│  Boss · Meta-Orchestrator (gpt-6-astra xhigh)              │
-│  Discovery → Classification → Matching → Delegation  │
-└──┬──────────┬──────────┬──────────┬─────────────────┘
-   │          │          │          │
-   ▼          ▼          ▼          ▼
-┌──────┐ ┌────────┐ ┌────────┐ ┌────────┐
-│ P3a  │ │  P3b   │ │  P1/P2 │ │Config  │
-│Direct│ │Sub-orch│ │ Skill/ │ │Control │
-│2-4   │ │Sisyphus│ │ Agent  │ │config. │
-│spawn │ │Atlas   │ │ Direct │ │toml    │
-└──────┘ └────────┘ └────────┘ └────────┘
-┌─────────────────────────────────────────────────────┐
-│  Agent Layer (17 installed TOML files)                │
-│  Boss 1 · OMO 9 · OMX 7                               │
-│  + 2 opt-in agent packs (17 agents, off by default)   │
-├─────────────────────────────────────────────────────┤
-│  Skills Layer (105 from ECC + gstack + superpowers)   │
-│  coding-standards · security-scan · deep-research     │
-│  /review · /qa · /cso · /ship                         │
-├─────────────────────────────────────────────────────┤
-│  MCP Layer                                            │
-│  Context7 · Exa · grep.app · Serena · Headroom         │
-└─────────────────────────────────────────────────────┘
-```
-
----
-
 ## 含まれるもの
-
 | カテゴリ | 数 | ソース |
 |----------|------:|--------|
 | **コアエージェント**（常時ロード） | 17 | Boss 1 + OMO 9 + OMX 7 |
@@ -182,7 +111,6 @@ Boss は作業が発生したすべてのターン — ファイルの編集・�
 | **MCP サーバー** | 5 | Context7、Exa、grep.app、Serena、Headroom |
 | **config.toml** | 1 | my-codex |
 | **AGENTS.md** | 1 | my-codex |
-
 <details>
 <summary><strong>コアエージェント — Boss メタオーケストレーター (1)</strong></summary>
 
@@ -213,7 +141,6 @@ Boss は作業が発生したすべてのターン — ファイルの編集・�
 <summary><strong>OMX エージェント — スペシャリストワーカー (7)</strong></summary>
 
 [oh-my-codex](https://github.com/Yeachan-Heo/oh-my-codex) の `prompts/*.md` を Codex TOML に変換したものです。`templates/codex-AGENTS.md` が案内するレーンのみを変換し、許可リストは `scripts/skill-allowlists.sh` にあります。
-
 | エージェント | サンドボックス | 役割 | ソース |
 |-------|---------|------|--------|
 | executor | workspace-write | コード実装 | oh-my-codex |
@@ -230,20 +157,16 @@ Boss は作業が発生したすべてのターン — ファイルの編集・�
 <summary><strong>エージェントパック — オプトインの AI スペシャリスト (2 パック、17 エージェント)</strong></summary>
 
 [awesome-codex-subagents](https://github.com/VoltAgent/awesome-codex-subagents)（MIT）から `codex-agents/packs/` にベンダリングし、`~/.codex/agent-packs/` にインストールされます。**デフォルトで有効になるパックはありません** — 明示的にオプトインしてください:
-
 ```bash
 # 現在の状態を確認
 ~/.codex/bin/my-codex-packs status
-
 # パックを即時有効化
 ~/.codex/bin/my-codex-packs enable data-ai
-
 # インストール時にプロファイルを切り替え
 bash /tmp/my-codex/install.sh --profile minimal   # パックなし
 bash /tmp/my-codex/install.sh --profile dev       # data-ai + llmops
 bash /tmp/my-codex/install.sh --profile full      # インストール済みの全パック
 ```
-
 | パック | 数 | エージェント |
 |------|------:|---------|
 | data-ai | 13 | ai-engineer, data-analyst, data-engineer, data-scientist, database-optimizer, llm-architect, machine-learning-engineer, ml-engineer, mlops-engineer, nlp-engineer, postgres-pro, prompt-engineer, reinforcement-learning-engineer |
@@ -255,7 +178,6 @@ bash /tmp/my-codex/install.sh --profile full      # インストール済みの�
 <summary><strong>スキル — 5 つのソースから 106</strong></summary>
 
 スキル単位の許可リストは `scripts/skill-allowlists.sh` にあり、何がインストールされるかはこのファイルが基準です。
-
 | ソース | 数 | 主なスキル |
 |--------|------:|------------|
 | [everything-claude-code](https://github.com/affaan-m/everything-claude-code) | 61 | coding-standards, python-testing, api-design, deep-research |
@@ -263,15 +185,13 @@ bash /tmp/my-codex/install.sh --profile full      # インストール済みの�
 | [superpowers](https://github.com/obra/superpowers) | 13 | brainstorming, systematic-debugging, TDD, writing-plans |
 | [my-codex Core](https://github.com/sehoon787/my-codex) | 4 | boss-advanced, boss-briefing, briefing-vault, gstack-sprint |
 | [archify](https://github.com/tt-a1i/archify) | 1 | archify（アーキテクチャ・ワークフロー・シーケンス・データフロー・ライフサイクル図） |
-
-gstack は許可リストのスキル 26 個にリポジトリルートのエントリを加えて 27 として集計されます。gstack リポジトリ全体は `~/.codex/skills/gstack` に正規のランタイムツリーとしても配置されます。
-
+gstack は許可リストのスキル 26 個にリポジトリルートのエントリを加えて 27 として集計されます。完全なチェックアウトは `~/.codex/vendor/gstack` にあり、`~/.codex/skills/gstack` はランタイムファサードです。
 Codex には**ドキュメントスキルがありません** — このバンドルに `pdf`、`docx`、`pptx`、`xlsx` スキルは含まれません。
 
 </details>
 
 <details>
-<summary><strong>MCP サーバー (3)</strong></summary>
+<summary><strong>ホスト型 MCP サーバー (3)</strong></summary>
 
 | サーバー | 目的 | コスト |
 |--------|---------|------|
@@ -281,12 +201,8 @@ Codex には**ドキュメントスキルがありません** — このバン�
 
 </details>
 
----
-
 ## <img src="https://obsidian.md/images/obsidian-logo-gradient.svg" width="24" height="24" align="center"/> Briefing Vault
-
 Obsidian 互換の永続メモリ。各プロジェクトはセッション間で自動入力される `.briefing/` ディレクトリを維持します。
-
 ```
 .briefing/
 ├── INDEX.md                          ← Project context (auto-created once)
@@ -316,9 +232,7 @@ Obsidian 互換の永続メモリ。各プロジェクトはセッション間�
 └── wiki/                             ← コンセプトページ (自動提案)
     └── _schema.md
 ```
-
 ### 自動化ライフサイクル
-
 | フェーズ | フックイベント | 何が起きるか |
 |-------|-----------|-------------|
 | **セッション開始** | `SessionStart` | `.briefing/` 構造を作成し、セッション固有の差分のために git HEAD ハッシュを保存 |
@@ -330,45 +244,30 @@ Obsidian 互換の永続メモリ。各プロジェクトはセッション間�
 | **セッション終了** | `Stop`（第 2 フック） | ファイル編集が 3 回以上の場合、AI によるセッションサマリーを**強制** — テンプレートでセッション終了をブロック |
 | **archives/** | — | 30 日以上経過した完了/非アクティブノートのアーカイブを自動提案。PARA アーカイブコンセプト。 |
 | **wiki/** | — | コンセプト wiki ページ。キーワードが 3 回以上登場した場合に自動提案。LLM-wiki コンセプト。 |
-
 ### 自動生成 vs AI 記述
-
 | タイプ | ファイルパターン | 作成者 | 内容 |
 |------|-------------|-----------|---------|
 | **自動スキャフォールド** | `*-auto.md`、`*-auto-session.md` | Stop フック (Node.js) | Git diff 統計、エージェント使用状況、コミットリスト — データのみ |
 | **AI サマリー** | `YYYY-MM-DD-<topic>.md` | セッション中の AI | コンテキスト、コード参照、根拠を含む意味のある分析 |
 | **テレメトリー** | `agent-log.jsonl`、`auto-links.md` | フックスクリプト | 追記専用の構造化ログ |
 | **ペルソナ** | `profile.md`、`suggestions.jsonl` | Stop フック | 使用量ベースのエージェントアフィニティとルーティング提案 |
-
 自動スキャフォールドは AI が適切なサマリーを書くための**参照データ**として機能します。強制フックはセッション終了をブロックする際にスキャフォールドコンテンツと構造化テンプレートを提供します。
-
 ### セッション固有の差分
-
 セッション開始時、現在の git HEAD が `.briefing/.session-start-head` に保存されます。セッション終了時、差分はこの保存されたポイントを基準に計算されます — 以前のセッションから蓄積された未コミットの変更ではなく、現在のセッションの変更のみを表示します。
-
 ### Obsidian との使い方
-
 1. Obsidian を開く → **フォルダをボルトとして開く** → `.briefing/` を選択
 2. ノートはグラフビューに表示され、`[[wiki-links]]` でリンクされます
 3. YAML フロントマター（`date`、`type`、`tags`）で構造化検索が可能
 4. 意思決定と学習のタイムラインがセッションを重ねるごとに自動的に構築されます
-
 ### ナレッジマネジメント (v2)
-
 BriefingVault v2 は 3 つの知識管理手法を統合しています：
-
 | 手法 | コンセプト | BriefingVault での適用 |
 |------|-----------|----------------------|
 | **PARA**（Tiago Forte） | 実行可能性で分類：プロジェクト、エリア、リソース、アーカイブ | sessions/ = プロジェクト、decisions/ = エリア、references/ = リソース、archives/ = アーカイブ |
 | **Zettelkasten**（Luhmann） | 一意の ID と明示的なリンクを持つ原子的ノート | learnings/ ファイル：`YYYYMMDDHHMMSS` ID、`related:` に 2 件以上のリンク必須 |
 | **LLM-wiki**（Karpathy） | ソースノートから AI が管理するコンセプトページ | wiki/ ページ：キーワードが 3 回以上繰り返されると自動提案 |
-
----
-
 ## アップストリームのオープンソースソース
-
 my-codex は **5 つのアップストリームサブモジュール**に加え、ベンダリング済みスナップショット 1 件、適応済み/姉妹プロジェクト 2 件、companion CLI 2 件、MCP サーバー 4 件で構成されます:
-
 | # | ソース | 方式 | 提供内容 |
 |---|--------|------|-----------------|
 | 1 | <img src="https://github.com/affaan-m.png?size=32" width="20" height="20" align="center"/> **[everything-claude-code](https://github.com/affaan-m/everything-claude-code)** — affaan-m | サブモジュール | 開発ワークフロー全般にわたる許可リストのスキル 61 個。Claude Code 固有のコンテンツを除去し、汎用コーディングスキルを保持。 |
@@ -386,25 +285,16 @@ my-codex は **5 つのアップストリームサブモジュール**に加え�
 | 13 | <img src="https://github.com/upstash.png?size=32" width="20" height="20" align="center"/> **[context7](https://github.com/upstash/context7)** — Upstash | ホスト型 MCP | 最新のライブラリドキュメント。`install.sh` が `https://mcp.context7.com/mcp` に登録します。 |
 | 14 | <img src="https://github.com/exa-labs.png?size=32" width="20" height="20" align="center"/> **[exa](https://github.com/exa-labs/exa-mcp-server)** — Exa Labs | ホスト型 MCP | ニューラル Web 検索。`https://mcp.exa.ai/mcp?tools=web_search_exa` に登録します。 |
 | 15 | <img src="https://github.com/grep-app.png?size=32" width="20" height="20" align="center"/> **[grep.app](https://grep.app/)** — grep.app | ホスト型 MCP | リポジトリ横断のコード検索。`https://mcp.grep.app` に登録します。 |
-
 すべてのサブモジュールは `upstream/SOURCES.json`（AI-BOM）（companion CLI（ast-grep、codeburn）と MCP サーバー（serena、headroom）も同じファイルにバージョン固定で登録されています）で SHA 固定されており、削除された 2 つのサブモジュール（`agency-agents` — ベンダリングなし、`awesome-codex-subagents` — エージェント 17 個をベンダリング）も記録されています。
-
----
-
 ## 結果を確認する場所
-
 インストールされた各ツールは、それぞれの場所に結果を残します。その一覧です。
-
 | ツール | 役割 | 実行方法 | 結果の確認場所 |
 |------|--------------|------------|----------------------|
-| **codeburn** | タスク・ツール・モデル・プロジェクト別のトークン/コスト集計 | `codeburn`（対話型ダッシュボード）。非対話では `codeburn report --format json --period week --provider codex`（`--day`、`--from`/`--to` も可） | ターミナル TUI、または `--format json` の標準出力。`~/.codex/sessions` を読み取り専用で読み、公開価格で換算するため、金額は請求書ではなく概算です。 |
+| **codeburn** | タスク・ツール・モデル・プロジェクト別のトークン/コスト集計 | `codeburn`（対話型ダッシュボード）、`codeburn web --provider codex`（ローカルのブラウザダッシュボード。URL だけを表示するには `--no-open` を追加）。非対話では `codeburn report --format json --period week --provider codex`（`--day`、`--from`/`--to` も可） | ターミナル TUI、<http://127.0.0.1:4747> のブラウザダッシュボード、または `--format json` の標準出力。`~/.codex/sessions` を読み取り専用で読み、公開価格で換算するため、金額は請求書ではなく概算です。 |
 | **Serena** | MCP 経由のシンボル単位のコードナビゲーションと編集 | Codex が `[mcp_servers.serena]` から起動。ツールは `get_symbols_overview`、`find_symbol`、`find_referencing_symbols`、`replace_symbol_body`、`insert_after_symbol` | サーバー稼働中は <http://localhost:24282/dashboard/index.html> でダッシュボードとツール呼び出し統計を確認。プロジェクトごとのインデックスとメモリは `<リポジトリ>/.serena/`。ブラウザは自動では開きません（`--open-web-dashboard False`）。 |
 | **Headroom** | 巨大なツール出力を圧縮し、必要に応じて原文を取り戻す | Codex が `[mcp_servers.headroom]`（`headroom mcp serve`）から起動。ツールは `headroom_compress`、`headroom_retrieve`、`headroom_stats` | セッション内では `headroom_stats`、シェルからは `headroom doctor`。プロキシモードを既定で有効にしないのは、サブスクリプションログインで使えないからではなく（実際には動作します）、プロキシが落ちていると Codex が API に一切到達できなくなるからです。手動で使うには、別のターミナルで `headroom proxy --port 8787` を起動し、`headroom wrap codex --help` に従って Codex を起動します（`OPENAI_BASE_URL` を設定し、Codex 設定に MCP サーバーを登録します）。プロキシの統計は <http://127.0.0.1:8787/stats>。トラフィックが流れた後の削減量とレイテンシは `headroom dashboard` と `headroom perf` で確認します。無効時は `headroom doctor` が `codex: not routed` と表示します。 |
 | **Archify** | アーキテクチャ・ワークフロー・シーケンス・データフロー・ライフサイクル図 | `~/.codex/skills/archify` で `node bin/archify.mjs render <type> <input>.json <output>.html`、続けて `node bin/archify.mjs check <output>.html` | 指定した `<output>.html` の 1 ファイル — インライン SVG、ダーク/ライト切替、PNG/JPEG/WebP/SVG エクスポート付き。ブラウザで開きます。スキルに同梱された `examples/*.json` が、そのまま写せる完成済みの入力例です。 |
-
-
 ## GitHub Actions
-
 | ワークフロー | トリガー | 目的 |
 |----------|---------|---------|
 | **CI** | push、PR | TOML エージェントファイル、スキルの存在、アップストリームファイル数を検証 |
@@ -414,13 +304,8 @@ my-codex は **5 つのアップストリームサブモジュール**に加え�
 | **Pages** | main へのプッシュ | `docs/index.html` を GitHub Pages にデプロイ |
 | **CLA** | PR | コントリビューターライセンス契約チェック |
 | **Lint Workflows** | push、PR | GitHub Actions ワークフロー YAML 構文を検証 |
-
----
-
 ## my-codex オリジナル
-
 アップストリームソースが提供するものを超えて、このプロジェクト専用に構築された機能:
-
 | 機能 | 説明 |
 |---------|-------------|
 | **Boss メタオーケストレーター** | ダイナミックケイパビリティ検出 → インテント分類 → 4 優先ルーティング → 委任 → 検証 |
@@ -432,59 +317,39 @@ my-codex は **5 つのアップストリームサブモジュール**に加え�
 | **エージェントパックシステム** | `--profile` と `my-codex-packs` ヘルパーによるオンデマンドのドメインスペシャリスト有効化 |
 | **Codex アトリビューション** | git フックが Codex が変更したファイルを記録し、コミットメッセージに `AI-Contributed-By: Codex` を追加 |
 | **CI 重複検出** | アップストリーム同期をまたいだ TOML エージェントの重複を自動検出 |
-
----
-
 ## インストールオプション
-
 ### クイックインストール
-
 ```bash
 git clone --depth 1 https://github.com/sehoon787/my-codex.git /tmp/my-codex
 bash /tmp/my-codex/install.sh
 rm -rf /tmp/my-codex
 ```
-
 同じコマンドを再実行すると最新の `main` ビルドに更新され、`~/.codex/` 内の my-codex 管理ファイルのみが置き換えられ、`~/.agents/skills/` から古いスキルのコピーが削除されます。
-
 ### エージェントパックプロファイル
-
 パックはインストールされますが、**デフォルトでは無効**です。新規インストールは有効なパックのない空のセットを `~/.codex/enabled-agent-packs.txt` に記録します。パック単位でオプトインするか、プロファイルを選んでください:
-
 ```bash
 # パックを 1 つ即時有効化
 ~/.codex/bin/my-codex-packs enable data-ai
-
 # Minimal プロファイル（コアエージェントのみ、パックなし — デフォルト）
 bash /tmp/my-codex/install.sh --profile minimal
-
 # dev プロファイル（data-ai + llmops）
 bash /tmp/my-codex/install.sh --profile dev
-
 # Full プロファイル（インストール済みの 2 パックカテゴリをすべて有効化）
 bash /tmp/my-codex/install.sh --profile full
 ```
-
 ### Codex アトリビューションシステム
-
 `install.sh` は `codex` ラッパーと `~/.codex/git-hooks/` のグローバル git フックをインストールします:
-
 - **`prepare-commit-msg`** — 実際の Codex セッション中に変更されたファイルを記録
 - **`commit-msg`** — ステージされたファイルが記録された変更セットと交差する場合に `Generated with Codex CLI: https://github.com/openai/codex` を追加
 - **`post-commit`** — 対象コミットに `AI-Contributed-By: Codex` トレーラーを追加
-
 オプトイン `Co-authored-by` トレーラー: `git config --global my-codex.codexContributorName '<label>'` と `my-codex.codexContributorEmail '<github-linked-email>'` の両方を設定してください。完全に無効化するには: `git config --global my-codex.codexAttribution false`。my-codex は `git user.name`、`git user.email`、またはコミット作者 ID を変更**しません**。
-
 ### エージェント TOML フォーマット
-
 すべてのエージェントは `~/.codex/agents/` のネイティブ TOML ファイルです:
-
 ```toml
 name = "debugger"
 description = "Focused debugging specialist — traces failures to root cause"
 model = "gpt-5.6-sol"
 model_reasoning_effort = "medium"
-
 [developer_instructions]
 content = """
 You are a debugging specialist. Analyze failures systematically:
@@ -494,26 +359,17 @@ You are a debugging specialist. Analyze failures systematically:
 4. Verify the fix does not break adjacent behavior
 """
 ```
-
 ### config.toml
-
 `~/.codex/config.toml` のグローバル Codex 設定:
-
 ```toml
 [agents]
 max_threads = 8
 max_depth = 1
 ```
-
 - `max_threads` — 最大同時サブエージェント数
 - `max_depth` — エージェントがエージェントをスポーンするチェーンの最大ネスト深度
-
----
-
 ## バンドルされたアップストリームバージョン
-
 アップストリームソースは git サブモジュールとして管理。ピン留めされたコミットは `.gitmodules` で追跡。
-
 | ソース | 同期 |
 |--------|------|
 | [everything-claude-code](https://github.com/affaan-m/everything-claude-code) | サブモジュール (`upstream/ecc`) |
@@ -522,11 +378,7 @@ max_depth = 1
 | [superpowers](https://github.com/obra/superpowers) | サブモジュール (`upstream/superpowers`) |
 | [archify](https://github.com/tt-a1i/archify) | サブモジュール (`upstream/archify`, タグ `v2.9.0`) |
 | [awesome-codex-subagents](https://github.com/VoltAgent/awesome-codex-subagents) | ベンダリング済みスナップショット（サブモジュールは 2026-07-27 に削除） |
-
----
-
 ## よくある質問
-
 <details>
 <summary><strong>my-codex と my-claude の違いは何ですか？</strong></summary>
 
@@ -562,32 +414,17 @@ Boss とサブオーケストレーター（Sisyphus、Atlas、Oracle）は高�
 
 </details>
 
----
-
 ## トラブルシューティング
-
 ### スキルのみの復旧
-
 `~/.agents/skills/` 以下で無効な `SKILL.md` ファイルがツールから報告される場合、最も一般的な原因は古いローカルコピーまたは古いインストールからのシンボリックリンクターゲットです。
-
 `~/.agents/skills/` から影響を受けたディレクトリと `~/.claude/skills/` 以下の対応エントリを削除してから再インストールしてください:
-
 ```bash
 npx skills add sehoon787/my-codex -y -g
 ```
-
 Codex フルバンドルを使用している場合は、`install.sh` を一度再実行してください。フルインストーラーは `~/.codex/skills/` を更新し、`~/.agents/skills/` 以下の古い my-codex 管理コピーを削除します。
-
----
-
 ## コントリビューション
-
 Issues と PR を歓迎します。新しいエージェントを追加する際は、`codex-agents/core/` または `codex-agents/omo/` に `.toml` ファイルを追加し、`SETUP.md` のエージェントリストを更新してください。PR 検証手順と Codex コミットアトリビューションの動作については [CONTRIBUTING.md](./CONTRIBUTING.md) を参照してください。
-
 ## クレジット
-
 以下の成果物の上に構築されています: [my-claude](https://github.com/sehoon787/my-claude) (sehoon787)、[everything-claude-code](https://github.com/affaan-m/everything-claude-code) (affaan-m)、[gstack](https://github.com/garrytan/gstack) (garrytan)、[oh-my-codex](https://github.com/Yeachan-Heo/oh-my-codex) (Yeachan Heo)、[superpowers](https://github.com/obra/superpowers) (Jesse Vincent)、[awesome-codex-subagents](https://github.com/VoltAgent/awesome-codex-subagents) (VoltAgent)、[oh-my-openagent](https://github.com/code-yeongyu/oh-my-openagent) (code-yeongyu)、[openai/skills](https://github.com/openai/skills) (OpenAI)。
-
 ## ライセンス
-
 MIT ライセンス。詳細は [LICENSE](./LICENSE) ファイルをご参照ください。

@@ -80,6 +80,8 @@ source "$REPO_ROOT/scripts/model-tiers.sh"
 # Which upstream skills/agents this installer copies — see scripts/skill-allowlists.sh
 # shellcheck source=scripts/skill-allowlists.sh
 source "$REPO_ROOT/scripts/skill-allowlists.sh"
+# shellcheck source=scripts/verify-installed-tools.sh
+source "$REPO_ROOT/scripts/verify-installed-tools.sh"
 
 CODEX_ROOT="$HOME/.codex"
 MANIFEST_FILE="$CODEX_ROOT/.my-codex-manifest.txt"
@@ -590,7 +592,10 @@ skill_lane_enabled() {
 }
 
 current_install_version() {
-  if [ -d "$REPO_ROOT/.git" ]; then
+  # A linked worktree stores .git as a pointer file, while a regular checkout
+  # stores it as a directory. Both are repositories; an installed snapshot has
+  # neither and deliberately reports an unknown source revision.
+  if [ -e "$REPO_ROOT/.git" ]; then
     git -C "$REPO_ROOT" rev-parse --short=12 HEAD 2>/dev/null || printf 'unknown'
   else
     printf 'unknown'
@@ -2048,11 +2053,8 @@ echo "  hooksPath:     $(git config --global --get core.hooksPath 2>/dev/null ||
 echo "  Codex attr:    $(git config --global --get my-codex.codexAttribution 2>/dev/null || echo 'UNSET')"
 echo "  version:       $(cat "$VERSION_FILE" 2>/dev/null || echo 'unknown')"
 echo "  codex:         $(command -v codex >/dev/null 2>&1 && echo "OK ($(codex --version 2>/dev/null))" || echo 'NOT INSTALLED')"
-echo "  codeburn:      $(command -v codeburn >/dev/null 2>&1 && echo 'OK' || echo 'MISSING')"
 echo "  uv:            $(command -v uv >/dev/null 2>&1 && echo "OK ($(uv --version 2>/dev/null))" || echo 'MISSING')"
-echo "  serena:        $(command -v serena >/dev/null 2>&1 && echo 'OK' || echo 'MISSING') / MCP $(grep -qE '^\[mcp_servers\.serena\]' "$CODEX_ROOT/config.toml" 2>/dev/null && echo 'registered' || echo 'UNREGISTERED')"
-echo "  headroom:      $(command -v headroom >/dev/null 2>&1 && echo 'OK' || echo 'MISSING') / MCP $(grep -qE '^\[mcp_servers\.headroom\]' "$CODEX_ROOT/config.toml" 2>/dev/null && echo 'registered' || echo 'UNREGISTERED')"
-echo "  archify skill: $(test -f "$CODEX_ROOT/skills/archify/SKILL.md" && echo 'OK' || echo 'MISSING')"
+verify_installed_tools "$CODEX_ROOT"
 echo ""
 echo "=== Install complete ==="
 echo ""

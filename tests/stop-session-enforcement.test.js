@@ -20,10 +20,10 @@
 const fs = require('fs'), os = require('os'), path = require('path'), cp = require('child_process');
 const HOOK = path.resolve(__dirname, '..', 'hooks', 'stop-session-enforcement.js');
 
-function tmpDir(state, sessionFile) {
+function tmpDir(state, sessionFile, language = 'en') {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'sse-'));
   fs.mkdirSync(path.join(dir, '.briefing', 'sessions'), { recursive: true });
-  fs.writeFileSync(path.join(dir, '.briefing', 'INDEX.md'), '---\nlanguage: en\n---\n# x\n');
+  fs.writeFileSync(path.join(dir, '.briefing', 'INDEX.md'), `---\nlanguage: ${language}\n---\n# x\n`);
   fs.writeFileSync(path.join(dir, '.briefing', 'state.json'), JSON.stringify(state));
   if (sessionFile) {
     const today = new Date().toISOString().slice(0, 10);
@@ -115,6 +115,17 @@ function check(name, ok, detail) {
   const againShape = assertShape(again);
   check('B4. next Stop (lastVaultSync now set today) → passes again', againShape.blocked === false);
 
+  fs.rmSync(dir, { recursive: true, force: true });
+}
+
+// Locale controls report language, but hook instructions remain English.
+for (const language of ['ko', 'kr']) {
+  const dir = tmpDir({ workCounter: 5, sessionMessageCount: 5 }, false, language);
+  const shape = assertShape(runHook(dir));
+  const reason = (shape.doc && shape.doc.reason) || '';
+  check(`C. ${language} vault locale emits English enforcement instructions`,
+    shape.blocked === true && reason.includes('Run /boss-briefing') && !/[\uac00-\ud7a3]/.test(reason),
+    `reason=${JSON.stringify(reason)}`);
   fs.rmSync(dir, { recursive: true, force: true });
 }
 

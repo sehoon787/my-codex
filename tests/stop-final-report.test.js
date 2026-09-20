@@ -26,9 +26,9 @@
 'use strict';
 const fs = require('fs'), os = require('os'), path = require('path'), cp = require('child_process');
 const HOOK = path.resolve(__dirname, '..', 'hooks', 'stop-final-report.js');
-const NO_REPORT = '작업을 마쳤습니다. 결과가 오면 이어서 진행하겠습니다.';
+const NO_REPORT = '\uC791\uC5C5\uC744 \uB9C8\uCCE4\uC2B5\uB2C8\uB2E4. \uACB0\uACFC\uAC00 \uC624\uBA74 \uC774\uC5B4\uC11C \uC9C4\uD589\uD558\uACA0\uC2B5\uB2C8\uB2E4.';
 const REPORT_EN = 'Done.\n\n## Work summary\n\n| Item | Result | Evidence |\n|---|---|---|\n| a | b | c |\n';
-const REPORT_KO = '완료.\n\n## 작업 요약\n\n| 항목 | 결과 | 근거 |\n|---|---|---|\n| a | b | c |\n';
+const REPORT_KO = '\uC644\uB8CC.\n\n## \uC791\uC5C5 \uC694\uC57D\n\n| \uD56D\uBAA9 | \uACB0\uACFC | \uADFC\uAC70 |\n|---|---|---|\n| a | b | c |\n';
 
 const started = (turnId) => ({ timestamp: 't', type: 'event_msg', payload: { type: 'task_started', turn_id: turnId, started_at: 1 } });
 const user = (turnId, text) => ({ timestamp: 't', type: 'event_msg', payload: { type: 'item_completed', turn_id: turnId, item: { type: 'UserMessage', id: 'i1', content: [{ type: 'text', text, text_elements: [] }] } } });
@@ -38,11 +38,11 @@ const asst = (turnId, text) => ({ timestamp: 't', type: 'event_msg', payload: { 
 function run(name, opts, expect) {
   const {
     entries, lam, workCounter = 5, acked = 0, blockedTurnId,
-    turnId = 't1', stopHookActive = false, transcript = 'jsonl'
+    turnId = 't1', stopHookActive = false, transcript = 'jsonl', language = 'ko'
   } = opts;
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'sfr-'));
   fs.mkdirSync(path.join(dir, '.briefing'));
-  fs.writeFileSync(path.join(dir, '.briefing', 'INDEX.md'), '---\nlanguage: ko\n---\n# x\n');
+  fs.writeFileSync(path.join(dir, '.briefing', 'INDEX.md'), `---\nlanguage: ${language}\n---\n# x\n`);
   fs.writeFileSync(path.join(dir, '.briefing', 'state.json'), JSON.stringify({ workCounter, finalReport: { ackWorkCounter: acked, blockedTurnId } }));
 
   let tp = null;
@@ -63,12 +63,14 @@ function run(name, opts, expect) {
   };
   const out = cp.spawnSync('node', [HOOK], { cwd: dir, input: JSON.stringify(payload), encoding: 'utf8' });
   const blocked = /"decision":"block"/.test(out.stdout);
-  const hasReason = blocked ? !!(JSON.parse(out.stdout).reason || '').length : false;
+  const reason = blocked ? JSON.parse(out.stdout).reason || '' : '';
+  const hasReason = !!reason.length;
   const state = JSON.parse(fs.readFileSync(path.join(dir, '.briefing', 'state.json'), 'utf8'));
   const ack = (state.finalReport || {}).ackWorkCounter || 0;
   const ok = blocked === expect.blocked
     && (expect.ack === undefined || ack === expect.ack)
     && (expect.reason === undefined || hasReason === expect.reason)
+    && (expect.englishReason === undefined || (/[\uac00-\ud7a3]/.test(reason) === !expect.englishReason))
     && (expect.silent === undefined || (out.stdout === '') === expect.silent);
   console.log(`${ok ? 'PASS' : 'FAIL'}  ${name}  (blocked=${blocked}, ack=${ack})`);
   fs.rmSync(dir, { recursive: true, force: true });
@@ -79,14 +81,18 @@ const turn = (id, text) => [started(id), user(id, text)];
 
 const results = [
   run('1. human turn, work, no report → block once with a reason',
-    { entries: [...turn('t1', 'do x'), call('t1', 'exec_command'), asst('t1', 'ok')], lam: NO_REPORT },
-    { blocked: true, ack: 0, reason: true }),
+    { entries: [...turn('t1', 'do x'), call('t1', 'exec_command'), asst('t1', 'ok')], lam: NO_REPORT, language: 'ko' },
+    { blocked: true, ack: 0, reason: true, englishReason: true }),
+
+  run('1b. kr vault locale also emits English enforcement instructions',
+    { entries: [...turn('t1', 'do x'), asst('t1', 'ok')], lam: NO_REPORT, language: 'kr' },
+    { blocked: true, ack: 0, englishReason: true }),
 
   run('2. report present (English headers) → pass + ack',
     { entries: [...turn('t1', 'do x'), asst('t1', 'ok')], lam: REPORT_EN },
     { blocked: false, ack: 5 }),
 
-  run('2b. report present (Korean header "| 항목 |") → pass + ack',
+  run('2b. report present (Korean table header) → pass + ack',
     { entries: [...turn('t1', 'do x'), asst('t1', 'ok')], lam: REPORT_KO },
     { blocked: false, ack: 5 }),
 

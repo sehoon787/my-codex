@@ -109,15 +109,7 @@ function contextBudgetText(promptsSinceCompaction) {
     'at the next task boundary run /compact and keep: current task, decisions, open items, file paths.';
 }
 
-function readLanguage() {
-  const indexContent = runtime.readText(INDEX_FILE);
-  const match = indexContent.match(/^language:\s*(\S+)/m);
-  return match ? match[1].trim() : 'en';
-}
-
 function reminderText(state) {
-  const lang = readLanguage();
-  const isKo = lang === 'ko' || lang === 'kr';
   const promptCount = state.promptCount || 0;
   const workCount = state.workCounter || 0;
   const changedCount = (state.changedFiles || []).length;
@@ -132,13 +124,6 @@ function reminderText(state) {
       return '[BriefingVault] Run /boss-briefing to sync vault and analyze workflow patterns.';
     }
     return '';
-  }
-
-  if (isKo) {
-    if (promptCount >= 6 || changedCount >= 3) {
-      return `[BriefingVault] 지금 세션은 작업량이 많습니다. .briefing/sessions/${runtime.currentDate()}-<topic>.md 에 목표, 실제 작업, 남은 TODO를 정리하세요.`;
-    }
-    return `[BriefingVault] 이 대화 내용을 세션 노트로 남기세요: .briefing/sessions/${runtime.currentDate()}-<topic>.md`;
   }
 
   if (promptCount >= 6 || changedCount >= 3) {

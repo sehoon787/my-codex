@@ -110,7 +110,7 @@ Domain routing table:
 
 If gstack is not installed, fall back naturally to Priority 1–4.
 
-Keyword → skill mappings: "review"/"code review" → gstack /review, "QA"/"qa" → gstack /qa or /qa-only ("ultraqa" is omc-mode-only — route there only inside an active ultrawork/autopilot mode session, not as a standalone default), "deploy"/"ship" → gstack /ship, "security audit"/"정기 감사" → gstack /cso, "pre-commit security"/"커밋 전 점검" → security-scan, "debug"/"investigate" → gstack /investigate, "sprint"/"end-to-end"/"e2e implementation" → gstack-sprint skill, "research"/"리서치" → deep-research (multi-source, cited report) or exa-search (targeted neural web/code search), "plan"/"기획" → gstack /autoplan (plan-review automation) or the prometheus agent (interview-driven planning).
+Keyword → skill mappings (including semantically equivalent requests in any language): "review"/"code review" → gstack /review, "QA"/"qa" → gstack /qa or /qa-only ("ultraqa" is omc-mode-only — route there only inside an active ultrawork/autopilot mode session, not as a standalone default), "deploy"/"ship" → gstack /ship, "security audit" → gstack /cso, "pre-commit security" → security-scan, "debug"/"investigate" → gstack /investigate, "sprint"/"end-to-end"/"e2e implementation" → gstack-sprint skill, "research" → deep-research (multi-source, cited report) or exa-search (targeted neural web/code search), "plan" → gstack /autoplan (plan-review automation) or the prometheus agent (interview-driven planning).
 
 gstack 3-Phase Sprint Workflow:
 When handling end-to-end feature requests or deployment workflows, execute in 3 phases:

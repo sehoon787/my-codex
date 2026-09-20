@@ -91,7 +91,7 @@ try {
   // Report present? Markdown table rows (at least a header + one data row)
   // or an explicit final-report heading — matching the AGENTS.md spec.
   var tableRows = (lam.match(/^\s*\|.*\|\s*$/gm) || []).length;
-  var hasHeading = /(^|\n)#{1,4}\s*.{0,24}(최종 보고|Final Report)/i.test(lam);
+  var hasHeading = /(^|\n)#{1,4}\s*.{0,24}(\uCD5C\uC885 \uBCF4\uACE0|Final Report)/i.test(lam);
   if (tableRows >= 2 || hasHeading) {
     saveFinalReport({ ackWorkCounter: wc });
     process.exit(0);
@@ -111,16 +111,7 @@ try {
     process.exit(0);
   }
 
-  // Language from INDEX.md frontmatter.
-  var isKo = false;
-  try {
-    var m = runtime.readText(INDEX_FILE).match(/^language:\s*(\S+)/m);
-    isKo = !!m && (m[1] === 'ko' || m[1] === 'kr');
-  } catch (e) {}
-
-  var reason = isKo
-    ? '[FinalReport] 이 요청의 작업이 끝났는데 최종 보고가 없습니다. 답변 마지막에 AGENTS.md의 FINAL REPORT 규격대로 정리하세요: 해당되는 표만 골라 (변경 대조: 대상/Before/After/근거), (작업 요약: 항목/결과/근거), (검증 결과: 항목/기대/실제/판정), (산출물: PR/저장소/내용/상태), (남은 것: 항목/상태/다음 조치). 빈 표 금지, 표 이름과 헤더도 한국어로.'
-    : '[FinalReport] Work happened for this request but the final report is missing. End your reply with the FINAL REPORT spec from AGENTS.md: include only the applicable tables — Changes (Target/Before/After/Rationale), Work summary (Item/Result/Evidence), Verification (Item/Expected/Actual/Verdict), Deliverables (PR/Repo/Content/Status), Remaining (Item/Status/Next step). No empty tables.';
+  var reason = '[FinalReport] Work happened for this request but the final report is missing. End your reply with the FINAL REPORT spec from AGENTS.md: include only the applicable tables — Changes (Target/Before/After/Rationale), Work summary (Item/Result/Evidence), Verification (Item/Expected/Actual/Verdict), Deliverables (PR/Repo/Content/Status), Remaining (Item/Status/Next step). Match the user\'s language for the prose, table names, and headers. No empty tables.';
 
   saveFinalReport({ blockedTurnId: turnId });
   process.stdout.write(JSON.stringify({ decision: 'block', reason: reason }) + '\n');

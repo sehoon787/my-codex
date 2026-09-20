@@ -107,7 +107,20 @@ bash install.sh --full-skills    # add every optional lane
 bash install.sh --skills=none    # back to the default 105
 ```
 
-The choice is written to `~/.codex/enabled-skill-lanes.txt`, so later `install.sh` runs keep it without repeating the flag. `MY_CODEX_SKILLS=web` does the same for a one-off non-interactive install. Turning a lane off removes its skills through the install manifest; skills you created yourself in `~/.codex/skills/` are never touched.
+The choice is written to `~/.codex/enabled-skill-lanes.txt`, so later `install.sh` runs keep it without repeating the flag. `MY_CODEX_SKILLS=web` does the same for a one-off non-interactive install. Turning a lane off removes its skills through the install manifest; lane cleanup does not remove skills you created yourself in `~/.codex/skills/`.
+
+Skill instructions and harness messages are authored in English. Installation
+applies maintained translations to known `SKILL.md` text after upstream
+generation; the same step runs on reinstall. Each changed original version is backed up under
+`~/.codex/backups/english-skill-originals`. This does not change the language of
+your requests or the assistant's replies. The normalizer preserves external
+symlink targets and reports remaining CJK text. Localized documentation and
+language-processing fixtures remain available separately.
+
+The gstack checkout lives in `~/.codex/vendor/gstack`, outside recursive skill
+discovery. The installer keeps the runtime entry points and supported skill
+names under `~/.codex/skills`, without exposing upstream test fixtures. A large
+remaining skill catalog can still cause Codex to shorten descriptions.
 
 ---
 

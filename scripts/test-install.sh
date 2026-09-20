@@ -10,9 +10,12 @@ TEST_HOME="$TMP_ROOT/home"
 BIN_DIR="$TMP_ROOT/bin"
 LOG_FILE="$TMP_ROOT/codex.log"
 VAULT_ONLY=0
+GSTACK_ONLY=0
 
 if [ "${1:-}" = "--vault-only" ]; then
   VAULT_ONLY=1
+elif [ "${1:-}" = "--gstack-only" ]; then
+  GSTACK_ONLY=1
 fi
 
 find_git_bash() {
@@ -139,9 +142,28 @@ UV_STATE="$TMP_ROOT/uv-tools.txt"
 export MY_CODEX_TEST_UV_STATE="$UV_STATE"
 
 expected_version="$(git -C "$REPO_ROOT" rev-parse --short=12 HEAD 2>/dev/null || printf 'unknown')"
+HOSTILE_CODEX_HOME="$TMP_ROOT/hostile-codex-home"
+mkdir -p "$HOSTILE_CODEX_HOME"
+printf 'untouched\n' > "$HOSTILE_CODEX_HOME/sentinel"
 
-HOME="$TEST_HOME" PATH="$BIN_DIR:$PATH" MY_CODEX_TEST_LOG="$LOG_FILE" MY_CODEX_TEST_UV_STATE="$UV_STATE" \
+# Reproduce the legacy whole-checkout layout that leaked gstack test fixtures
+# into Codex's recursive skill discovery. The executable config sentinel makes
+# a stale-runtime-only success check insufficient.
+mkdir -p "$TEST_HOME/.codex/skills/gstack/test/fixtures/context-bill/tree-a/alpha" \
+  "$TEST_HOME/.codex/skills/gstack/bin" "$TEST_HOME/.codex/skills/gstack/review"
+printf '#!/usr/bin/env bash\n' > "$TEST_HOME/.codex/skills/gstack/setup"
+printf '#!/usr/bin/env bash\n' > "$TEST_HOME/.codex/skills/gstack/bin/gstack-config"
+printf -- '---\nname: alpha\ndescription: fixture\n---\n' > \
+  "$TEST_HOME/.codex/skills/gstack/test/fixtures/context-bill/tree-a/alpha/SKILL.md"
+printf -- '---\nname: review\ndescription: legacy\n---\n' > \
+  "$TEST_HOME/.codex/skills/gstack/review/SKILL.md"
+ln -s "$TEST_HOME/.codex/skills/gstack/review" "$TEST_HOME/.codex/skills/review"
+chmod +x "$TEST_HOME/.codex/skills/gstack/setup" "$TEST_HOME/.codex/skills/gstack/bin/gstack-config"
+
+HOME="$TEST_HOME" CODEX_HOME="$HOSTILE_CODEX_HOME" PATH="$BIN_DIR:$PATH" MY_CODEX_TEST_LOG="$LOG_FILE" MY_CODEX_TEST_UV_STATE="$UV_STATE" \
   bash "$REPO_ROOT/install.sh" > "$TMP_ROOT/install.out"
+test "$(cat "$HOSTILE_CODEX_HOME/sentinel")" = "untouched"
+test ! -e "$HOSTILE_CODEX_HOME/skills"
 
 test -f "$TEST_HOME/.agents/plugins/marketplace.json"
 grep -q '"name": "my-codex"' "$TEST_HOME/.agents/plugins/marketplace.json"
@@ -333,10 +355,59 @@ test -f "$TEST_HOME/.codex/hooks.json"
 test ! -f "$TEST_HOME/.codex/hooks/hooks.json"
 assert_features_hooks_enabled "$TEST_HOME/.codex/config.toml"
 grep -q '<!-- my-codex:calibrated-response -->' "$TEST_HOME/.codex/AGENTS.md"
+grep -q '<!-- my-codex:default-agent -->' "$TEST_HOME/.codex/AGENTS.md"
+grep -q '<!-- my-codex:boss-first -->' "$TEST_HOME/.codex/AGENTS.md"
 grep -q '<!-- my-codex:final-report -->' "$TEST_HOME/.codex/AGENTS.md"
 grep -q '<!-- my-codex:context-hygiene -->' "$TEST_HOME/.codex/AGENTS.md"
 grep -q '<!-- my-codex:tooling-mcp -->' "$TEST_HOME/.codex/AGENTS.md"
-test "$(grep -c 'my-codex:' "$TEST_HOME/.codex/AGENTS.md")" = "4"
+test "$(grep -c 'my-codex:' "$TEST_HOME/.codex/AGENTS.md")" = "6"
+grep -q 'The root agent is the \*\*Boss orchestrator\*\*' "$TEST_HOME/.codex/AGENTS.md"
+! grep -q 'spawn_agent(prompt="<user.s full request>", agent_type="boss")' "$TEST_HOME/.codex/AGENTS.md"
+# A successful gstack install keeps the checkout outside Codex's recursively
+# scanned skills root and exposes only the upstream minimal runtime facade.
+if [ -f "$TEST_HOME/.codex/vendor/gstack/setup" ]; then
+  test ! -e "$TEST_HOME/.codex/skills/gstack/test"
+  test ! -e "$TEST_HOME/.codex/skills/gstack/test/fixtures/context-bill/tree-a/alpha/SKILL.md"
+  if [ -x "$TEST_HOME/.codex/skills/gstack/bin/gstack-config" ]; then
+    test -x "$TEST_HOME/.codex/skills/gstack/bin/gstack-paths"
+  fi
+fi
+test ! -e "$TEST_HOME/.codex/skills/gstack/test/fixtures/context-bill/tree-a/alpha/SKILL.md"
+test "$(find "$TEST_HOME/.codex/backups" -path '*/test/fixtures/context-bill/tree-a/alpha/SKILL.md' 2>/dev/null | wc -l | tr -d ' ')" = "1"
+test -e "$TEST_HOME/.codex/skills/review/SKILL.md"
+test ! -e "$TEST_HOME/.codex/skills/gstack-review"
+test -f "$TEST_HOME/.codex/skills/gstack/SKILL.md"
+test ! -L "$TEST_HOME/.codex/skills/gstack/SKILL.md"
+grep -q '^name: gstack$' "$TEST_HOME/.codex/skills/gstack/SKILL.md"
+grep -q '^name: codex$' "$TEST_HOME/.codex/skills/codex/SKILL.md"
+grep -q '^name: gstack-upgrade$' "$TEST_HOME/.codex/skills/gstack-upgrade/SKILL.md"
+grep -q '^name: hackernews-frontpage$' "$TEST_HOME/.codex/skills/hackernews-frontpage/SKILL.md"
+
+# A real gstack-prefixed directory can share the generated SKILL.md bytes while
+# carrying user-owned files. Matching only SKILL.md would wrongly classify the
+# whole directory as generated and delete the note during prefix normalization.
+generated_review="$TEST_HOME/.codex/vendor/gstack/.agents/skills/gstack-review/SKILL.md"
+custom_gstack_review="$TEST_HOME/.codex/skills/gstack-review"
+test -f "$generated_review"
+test ! -e "$custom_gstack_review"
+mkdir -p "$custom_gstack_review"
+cp "$generated_review" "$custom_gstack_review/SKILL.md"
+printf 'keep this user note\n' > "$custom_gstack_review/user-notes.md"
+test -d "$custom_gstack_review"
+test ! -L "$custom_gstack_review"
+cmp -s "$generated_review" "$custom_gstack_review/SKILL.md"
+
+if [ "$GSTACK_ONLY" = "1" ]; then
+  HOME="$TEST_HOME" CODEX_HOME="$HOSTILE_CODEX_HOME" PATH="$BIN_DIR:$PATH" MY_CODEX_TEST_LOG="$LOG_FILE" MY_CODEX_TEST_UV_STATE="$UV_STATE" \
+    bash "$REPO_ROOT/install.sh" > "$TMP_ROOT/install-gstack-repeat.out"
+  test -d "$custom_gstack_review"
+  test ! -L "$custom_gstack_review"
+  test -f "$custom_gstack_review/SKILL.md"
+  test "$(cat "$custom_gstack_review/user-notes.md")" = "keep this user note"
+  ! grep -qx 'skills/gstack-review' "$TEST_HOME/.codex/.my-codex-manifest.txt"
+  echo "Gstack install isolation and ownership test passed"
+  exit 0
+fi
 grep -q '^compact_prompt = ' "$TEST_HOME/.codex/config.toml"
 test "$(grep -c '^compact_prompt = ' "$TEST_HOME/.codex/config.toml")" = "1"
 case "$(uname -s)" in
@@ -430,6 +501,11 @@ test -f "$TEST_HOME/.codex/skills/archify/SKILL.md"
 test -f "$TEST_HOME/.codex/agents/custom-user-agent.toml"
 test -f "$TEST_HOME/.codex/agent-packs/custom/custom-pack-agent.toml"
 test -f "$TEST_HOME/.codex/skills/custom-skill/SKILL.md"
+test -d "$custom_gstack_review"
+test ! -L "$custom_gstack_review"
+test -f "$custom_gstack_review/SKILL.md"
+test "$(cat "$custom_gstack_review/user-notes.md")" = "keep this user note"
+! grep -qx 'skills/gstack-review' "$TEST_HOME/.codex/.my-codex-manifest.txt"
 test "$(cat "$TEST_HOME/.codex/.my-codex-version")" = "$expected_version"
 
 # ── Optional skill lane (--skills=web) ──
@@ -621,8 +697,30 @@ command = "npx"
 LEGACY_TOML
 mkdir -p "$LEGACY_HOME/.codex/hooks"
 printf '{}' > "$LEGACY_HOME/.codex/hooks/hooks.json"
-# AGENTS.md without either marker exercises append_agents_section's append branch.
-printf '# Legacy AGENTS\n\n## Something\ntext\n' > "$LEGACY_HOME/.codex/AGENTS.md"
+# Exact pre-marker Default/Boss sections exercise the conservative migration
+# branch; unrelated user content must remain byte-for-byte around them.
+cat > "$LEGACY_HOME/.codex/AGENTS.md" <<'LEGACY_AGENTS'
+# Legacy AGENTS
+
+## Default Agent
+
+When starting a new session, always use the **boss** agent as the primary orchestrator.
+Boss discovers available agents, classifies user intent, and delegates to the best specialist.
+Do not bypass Boss for direct implementation unless the user explicitly requests a specific agent.
+
+## Boss-First Routing (Default Behavior)
+
+Before executing any task, first scan `~/.codex/agents/*.toml` to discover active specialists and `~/.codex/agent-packs/*/*.toml` to discover installed-but-inactive specialists. For any non-trivial request (multi-file changes, architecture decisions, debugging, refactoring, code review, or unfamiliar domains), route through the Boss meta-orchestrator:
+
+```
+spawn_agent(prompt="<user's full request>", agent_type="boss")
+```
+
+Boss will classify intent, match the task to the optimal specialist from the discovered registry, delegate with structured prompts, and verify results independently. Only handle trivial single-command tasks (ls, git status, simple questions) directly. If the best specialist is installed only in an inactive pack, activate the smallest matching pack with `~/.codex/bin/my-codex-packs enable <pack>` before delegating.
+
+## Something
+text
+LEGACY_AGENTS
 
 HOME="$LEGACY_HOME" PATH="$BIN_DIR:$PATH" MY_CODEX_TEST_LOG="$LOG_FILE" MY_CODEX_TEST_UV_STATE="$UV_STATE" \
   bash "$REPO_ROOT/install.sh" > "$TMP_ROOT/install-legacy.out"
@@ -644,9 +742,19 @@ esac
 test -f "$LEGACY_HOME/.codex/hooks.json"
 test ! -f "$LEGACY_HOME/.codex/hooks/hooks.json"
 test "$(grep -c '<!-- my-codex:calibrated-response -->' "$LEGACY_HOME/.codex/AGENTS.md")" = "1"
+test "$(grep -c '<!-- my-codex:default-agent -->' "$LEGACY_HOME/.codex/AGENTS.md")" = "1"
+test "$(grep -c '<!-- my-codex:boss-first -->' "$LEGACY_HOME/.codex/AGENTS.md")" = "1"
 test "$(grep -c '<!-- my-codex:final-report -->' "$LEGACY_HOME/.codex/AGENTS.md")" = "1"
+grep -q '^## Something$' "$LEGACY_HOME/.codex/AGENTS.md"
 
 cp "$LEGACY_HOME/.codex/config.toml" "$TMP_ROOT/legacy-config-before.toml"
+# A user section with the same heading before the marked managed section must
+# survive refresh; replacement is anchored by the marker, not the first heading.
+{
+  printf '## Default Agent\n\nUser-custom routing stays here.\n\n'
+  cat "$LEGACY_HOME/.codex/AGENTS.md"
+} > "$LEGACY_HOME/.codex/AGENTS.md.tmp"
+mv "$LEGACY_HOME/.codex/AGENTS.md.tmp" "$LEGACY_HOME/.codex/AGENTS.md"
 cp "$LEGACY_HOME/.codex/AGENTS.md" "$TMP_ROOT/legacy-agents-before.md"
 HOME="$LEGACY_HOME" PATH="$BIN_DIR:$PATH" MY_CODEX_TEST_LOG="$LOG_FILE" MY_CODEX_TEST_UV_STATE="$UV_STATE" \
   bash "$REPO_ROOT/install.sh" > "$TMP_ROOT/install-legacy-2.out"

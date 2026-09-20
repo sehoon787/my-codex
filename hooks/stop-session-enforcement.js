@@ -34,15 +34,6 @@ var COOLDOWN_MS = 1800000;
 var lastBlockedAt = state.lastBlockedAt || '';
 if (lastBlockedAt && (Date.now() - new Date(lastBlockedAt).getTime()) < COOLDOWN_MS) { process.exit(0); }
 
-// Detect language
-var lang = 'en';
-try {
-  var idx = runtime.readText(INDEX_FILE);
-  var lm = idx.match(/^language:\s*(\S+)/m);
-  if (lm) lang = lm[1].trim();
-} catch(e) {}
-var isKo = (lang === 'ko' || lang === 'kr');
-
 // Check for session summary as safety net
 var SESSIONS_DIR = path.join(runtime.BRIEFING_DIR, 'sessions');
 var hasSession = false;
@@ -63,9 +54,7 @@ if (hasSession) {
 }
 
 // Block: meaningful work, no vault sync, no session
-var reason = isKo
-  ? '[BriefingVault] /boss-briefing 미실행. 세션 종료 전 /boss-briefing을 실행하세요. 그 다음 최종 답변 전체(최종 보고 표 포함)를 마지막 메시지로 다시 보내세요.'
-  : '[BriefingVault] Run /boss-briefing before ending the session to sync your vault. Then repeat your full final answer (including the final-report tables) as your last message.';
+var reason = '[BriefingVault] Run /boss-briefing before ending the session to sync your vault. Then repeat your full final answer (including the final-report tables) as your last message.';
 try { runtime.writeState(Object.assign({}, runtime.readState(), { lastBlockedAt: runtime.isoNow() })); } catch(e) {}
 process.stdout.write(JSON.stringify({ decision: 'block', reason: reason }) + '\n');
 process.exit(0);

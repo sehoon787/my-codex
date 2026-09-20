@@ -57,6 +57,11 @@ Read https://raw.githubusercontent.com/sehoon787/my-codex/main/AI-INSTALL.md and
 
 Boss is the meta-orchestrator at the core of my-codex. It never writes code — it discovers, classifies, matches, delegates, and verifies.
 
+The main Codex session performs the Boss role through the installed `AGENTS.md`;
+it delegates directly to specialists instead of spawning another Boss first.
+Its native session identity remains Codex/root. Reinstalling refreshes managed
+instructions while preserving customized sections.
+
 ```
 User Request
      │

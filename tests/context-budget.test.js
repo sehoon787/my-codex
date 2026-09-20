@@ -13,11 +13,11 @@ const path = require('path');
 
 const SYNC = path.resolve(__dirname, '..', 'hooks', 'session-sync.js');
 
-function makeWorkspace(withVault) {
+function makeWorkspace(withVault, language = 'en') {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'my-codex-ctxbudget-'));
   if (withVault) {
     fs.mkdirSync(path.join(dir, '.briefing'), { recursive: true });
-    fs.writeFileSync(path.join(dir, '.briefing', 'INDEX.md'), '---\nlanguage: en\n---\n');
+    fs.writeFileSync(path.join(dir, '.briefing', 'INDEX.md'), `---\nlanguage: ${language}\n---\n`);
   }
   return dir;
 }
@@ -58,6 +58,15 @@ function budgetLines(stdout) {
     .join('\n')
     .split('\n')
     .filter((line) => line.startsWith('[ContextBudget]'));
+}
+
+function additionalContext(stdout) {
+  return stdout
+    .split('\n')
+    .filter((line) => line.trim())
+    .map((line) => JSON.parse(line))
+    .map((payload) => (payload.hookSpecificOutput || {}).additionalContext || '')
+    .join('\n');
 }
 
 function run(name, fn) {
@@ -139,6 +148,16 @@ results.push(run('7. ContextBudget line carries hookEventName UserPromptSubmit',
     'UserPromptSubmit',
     `missing/wrong hookEventName: ${JSON.stringify(payload)}`
   );
+}));
+
+results.push(run('8. BriefingVault reminders stay English for ko and kr vault locales', () => {
+  for (const language of ['ko', 'kr']) {
+    const dir = makeWorkspace(true, language);
+    writeState(dir, { promptCount: 2, workCounter: 1 });
+    const context = additionalContext(runSync(dir, 'prompt', 99));
+    assert.ok(context.includes('[BriefingVault] Capture this conversation'), `${language}: ${context}`);
+    assert.ok(!/[\uac00-\ud7a3]/.test(context), `${language}: ${context}`);
+  }
 }));
 
 const failed = results.filter((ok) => !ok).length;

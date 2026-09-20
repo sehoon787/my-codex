@@ -755,6 +755,26 @@ copy_repo_snapshot() {
   fi
 }
 
+# Refresh a long-lived upstream runtime without discarding its generated build
+# output on every my-codex reinstall. The fallback remains correct on systems
+# without rsync, but may require gstack to rebuild its local artifacts.
+sync_runtime_snapshot() {
+  local src_dir="$1"
+  local dest_dir="$2"
+
+  if command -v rsync >/dev/null 2>&1; then
+    mkdir -p "$dest_dir"
+    rsync -a --delete \
+      --exclude '.git' \
+      --exclude '.tmp-install-tests' \
+      --exclude 'node_modules' \
+      --exclude 'browse/dist' \
+      "$src_dir"/ "$dest_dir"/
+  else
+    copy_repo_snapshot "$src_dir" "$dest_dir"
+  fi
+}
+
 patch_yaml_scalar_line() {
   local file_path="$1"
   local key="$2"
@@ -1235,20 +1255,38 @@ fi
 if [ "$SKIP_GSTACK" = "0" ]; then
   echo "  [gstack] Initializing gstack..."
   if init_upstream gstack https://github.com/garrytan/gstack; then
-    GSTACK_DIR="$CODEX_ROOT/skills/gstack"
-    # Deliberately manifest-exempt: this is gstack's canonical runtime tree,
-    # refreshed in place by `git pull` / `git checkout` and by `./setup` (which
-    # builds the browser binary into it). Tracking it would make cleanup
-    # `rm -rf` it on every update, discarding the checkout and forcing a full
-    # re-clone plus rebuild. Left fully untracked rather than half-tracked;
-    # the depth-1 surfaced copies derived from it below ARE tracked.
-    if [ -d "$GSTACK_DIR/.git" ]; then
-      git -C "$GSTACK_DIR" pull --ff-only 2>/dev/null || true
-    else
-      rm -rf "$GSTACK_DIR"
-      cp -R "$UPSTREAM_DIR" "$GSTACK_DIR" 2>/dev/null || \
-        git clone --depth 1 https://github.com/garrytan/gstack.git "$GSTACK_DIR" 2>/dev/null || true
+    # my-codex versions before the vendor-runtime layout copied the entire
+    # checkout here. Move only that positively identified legacy shape out of
+    # recursive discovery after replacement source is available. Keep it as a
+    # recoverable backup rather than deleting possible local changes.
+    if [ -f "$CODEX_ROOT/skills/gstack/setup" ] && \
+       [ -d "$CODEX_ROOT/skills/gstack/test/fixtures/context-bill" ]; then
+      legacy_gstack_backup="$CODEX_ROOT/backups/gstack-legacy-checkout-$(date +%Y%m%dT%H%M%S)"
+      while [ -e "$legacy_gstack_backup" ]; do
+        legacy_gstack_backup="${legacy_gstack_backup}-1"
+      done
+      mkdir -p "$CODEX_ROOT/backups"
+      mv "$CODEX_ROOT/skills/gstack" "$legacy_gstack_backup"
+      for target in "$CODEX_ROOT/skills/"*; do
+        [ -L "$target" ] || continue
+        link_dest="$(readlink "$target" 2>/dev/null || true)"
+        case "$link_dest" in
+          "$CODEX_ROOT/skills/gstack/"*|gstack/*)
+            rm -f "$target"
+            ;;
+        esac
+      done
+      echo "  [gstack] Legacy checkout moved to $legacy_gstack_backup"
     fi
+    # Codex scans ~/.codex/skills recursively. A full checkout at
+    # skills/gstack exposes every source skill (including upstream test
+    # fixtures), then gstack setup exposes the generated variants again.
+    # Keep the pinned checkout in my-codex-owned vendor storage and let
+    # upstream setup create its supported minimal skills/gstack runtime facade.
+    GSTACK_DIR="$CODEX_ROOT/vendor/gstack"
+    # Kept outside the per-run manifest so node_modules and browse/dist survive
+    # reinstall; sync_runtime_snapshot refreshes source files in place.
+    sync_runtime_snapshot "$UPSTREAM_DIR" "$GSTACK_DIR"
 
     # Install bun if missing (required for gstack browser)
     if ! install_bun_if_missing; then
@@ -1269,7 +1307,9 @@ if [ "$SKIP_GSTACK" = "0" ]; then
 
     # Run gstack setup
     if [ -d "$GSTACK_DIR" ] && command -v bun >/dev/null 2>&1 && [ -f "$GSTACK_DIR/setup" ]; then
-      (cd "$GSTACK_DIR" && ./setup --host codex 2>/dev/null || true)
+      # Pin setup to this install root. An inherited CODEX_HOME (for example
+      # while testing with HOME overridden) must not mutate another profile.
+      (cd "$GSTACK_DIR" && CODEX_HOME="$CODEX_ROOT" ./setup --host codex 2>/dev/null || true)
     fi
 
     # Restore SKILL.md files if deleted by gen:skill-docs
@@ -1277,11 +1317,82 @@ if [ "$SKIP_GSTACK" = "0" ]; then
     patch_gstack_openclaw_skills "$GSTACK_DIR"
     fix_windows_gstack_skill_aliases "$GSTACK_DIR"
 
-    # Fallback: ensure allowlisted gstack skills are accessible at depth 1.
-    # The whole gstack repo stays at $GSTACK_DIR (canonical runtime tree); this
-    # only controls which subdirs are surfaced as ~/.codex/skills/<name> —
-    # $GSTACK_SKILL_ALLOWLIST (scripts/skill-allowlists.sh).
-    if [ -d "$GSTACK_DIR" ]; then
+    # File symlinks inside a real skill directory are not portable across all
+    # Codex loaders. Materialize the root router while keeping runtime assets
+    # linked to the vendor tree.
+    if [ -f "$GSTACK_DIR/.agents/skills/gstack/SKILL.md" ] && [ -d "$CODEX_ROOT/skills/gstack" ]; then
+      [ -L "$CODEX_ROOT/skills/gstack/SKILL.md" ] && unlink "$CODEX_ROOT/skills/gstack/SKILL.md"
+      cp "$GSTACK_DIR/.agents/skills/gstack/SKILL.md" "$CODEX_ROOT/skills/gstack/SKILL.md"
+    fi
+
+    # gstack generates Codex-correct skills under gstack-* directory names.
+    # Keep my-codex's established unprefixed routing surface and remove the
+    # duplicate prefixed path, but only when the installed entry is provably
+    # the generated source (symlink on Unix, byte-identical copy on Windows).
+    for generated_source in "$GSTACK_DIR/.agents/skills/"gstack-*; do
+      [ -f "$generated_source/SKILL.md" ] || continue
+      generated_name="$(basename "$generated_source")"
+      skill_name="$(sed -n 's/^name:[[:space:]]*//p' "$generated_source/SKILL.md" | head -n 1 | tr -d '\r')"
+      [ -n "$skill_name" ] || continue
+      generated_target="$CODEX_ROOT/skills/$generated_name"
+      [ -e "$generated_target" ] || [ -L "$generated_target" ] || continue
+      generated_owned=0
+      if [ -L "$generated_target" ]; then
+        link_dest="$(readlink "$generated_target" 2>/dev/null || true)"
+        case "$link_dest" in /*) ;; *) link_dest="$(dirname "$generated_target")/$link_dest" ;; esac
+        link_parent="$(cd "$(dirname "$link_dest")" 2>/dev/null && pwd -P || true)"
+        source_parent="$(cd "$(dirname "$generated_source")" 2>/dev/null && pwd -P || true)"
+        if [ -n "$link_parent" ] && [ -n "$source_parent" ] && \
+           [ "$link_parent/$(basename "$link_dest")" = "$source_parent/$(basename "$generated_source")" ]; then
+          generated_owned=1
+        fi
+      elif [ -d "$generated_target" ] && diff -qr "$generated_target" "$generated_source" >/dev/null 2>&1; then
+        generated_owned=1
+      fi
+      [ "$generated_owned" = "1" ] || continue
+
+      target="$CODEX_ROOT/skills/$skill_name"
+      if [ "$target" = "$generated_target" ]; then
+        add_manifest_entry "skills/$skill_name"
+      elif [ ! -e "$target" ] && [ ! -L "$target" ]; then
+        mv "$generated_target" "$target"
+        add_manifest_entry "skills/$skill_name"
+      else
+        rm -rf "$generated_target"
+      fi
+    done
+
+    # This browser sub-skill is intentionally nested upstream but was visible
+    # in the old recursive checkout. Preserve it without re-exposing tests or
+    # the rest of the repository tree.
+    browser_skill_source="$GSTACK_DIR/browser-skills/hackernews-frontpage"
+    browser_skill_target="$CODEX_ROOT/skills/hackernews-frontpage"
+    if [ -f "$browser_skill_source/SKILL.md" ] && \
+       [ ! -e "$browser_skill_target" ] && [ ! -L "$browser_skill_target" ]; then
+      case "$(uname -s)" in
+        MINGW*|MSYS*|CYGWIN*) cp -r "$browser_skill_source" "$browser_skill_target" ;;
+        *) ln -s "$browser_skill_source" "$browser_skill_target" ;;
+      esac
+      add_manifest_entry "skills/hackernews-frontpage"
+    fi
+
+    # The Codex-host generator names its host wrapper "claude-code". Keep the
+    # established gstack `codex` skill as well; existing routing refers to it.
+    codex_skill_source="$GSTACK_DIR/codex"
+    codex_skill_target="$CODEX_ROOT/skills/codex"
+    if [ -f "$codex_skill_source/SKILL.md" ] && \
+       [ ! -e "$codex_skill_target" ] && [ ! -L "$codex_skill_target" ]; then
+      case "$(uname -s)" in
+        MINGW*|MSYS*|CYGWIN*) cp -r "$codex_skill_source" "$codex_skill_target" ;;
+        *) ln -s "$codex_skill_source" "$codex_skill_target" ;;
+      esac
+      add_manifest_entry "skills/codex"
+    fi
+
+    # If bun/setup is unavailable, retain the old narrow fallback rather than
+    # exposing the whole checkout. A successful setup already installed its
+    # generated Codex variants, so do not create a second set of aliases.
+    if [ ! -x "$CODEX_ROOT/skills/gstack/bin/gstack-config" ]; then
       for skill_name in $GSTACK_SKILL_ALLOWLIST; do
         skill_dir="$GSTACK_DIR/$skill_name"
         [ -f "$skill_dir/SKILL.md" ] || continue
@@ -1291,11 +1402,6 @@ if [ "$SKIP_GSTACK" = "0" ]; then
             MINGW*|MSYS*|CYGWIN*) cp -r "$skill_dir" "$target" ;;
             *) ln -s "$(cd "$skill_dir" && pwd)" "$target" 2>/dev/null || cp -r "$skill_dir" "$target" ;;
           esac
-          # Recorded only when this run actually created the path, so a
-          # pre-existing custom skill of the same name is never claimed. The
-          # directory entry makes the Windows `cp -r` copy fully reversible
-          # (previously untracked, which is why dropped allowlist entries had
-          # to be swept by hand — see the connect-chrome removal above).
           add_manifest_entry "skills/$skill_name"
         fi
       done
@@ -1335,6 +1441,18 @@ if [ "$SKIP_ARCHIFY" = "0" ]; then
   fi
 fi
 
+# Keep installed skill instructions English without modifying pinned upstream
+# checkouts. The normalizer follows runtime aliases once, backs up each changed
+# source, and applies only maintained overrides or exact known phrase mappings.
+node "$REPO_ROOT/scripts/normalize-skill-english.js" \
+  --root "$CODEX_ROOT/skills" \
+  --root "$HOME/.agents/skills" \
+  --allowed-write-root "$CODEX_ROOT/skills" \
+  --allowed-write-root "$CODEX_ROOT/vendor/gstack" \
+  --allowed-write-root "$HOME/.agents/skills" \
+  --backup-root "$CODEX_ROOT/backups/english-skill-originals" \
+  --overrides "$REPO_ROOT/skill-overrides"
+
 managed_skills="$(count_managed_skills)"
 total_skills="$(find "$CODEX_ROOT/skills" -name 'SKILL.md' 2>/dev/null | wc -l | tr -d ' ')"
 extra_skills=$((total_skills - managed_skills))
@@ -1357,6 +1475,63 @@ else
   echo "  WARNING: agent pack manager missing; no packs were activated"
 fi
 
+# Recognize the two unmarked sections shipped before they became managed. Only
+# an exact section match is migrated; user-authored sections with the same
+# heading are preserved and the managed section is appended separately.
+legacy_agents_section_matches() {
+  local heading="$1"
+  local marker="$2"
+  local target="$3"
+  local current="$target.current.$$"
+  local expected="$target.expected.$$"
+
+  awk -v heading="$heading" '
+    $0 == heading { in_section = 1 }
+    in_section && $0 != heading && /^## / { exit }
+    in_section { lines[++count] = $0 }
+    END {
+      while (count > 0 && lines[count] ~ /^[[:space:]]*$/) count--
+      for (i = 1; i <= count; i++) print lines[i]
+    }
+  ' "$target" > "$current"
+
+  case "$marker" in
+    '<!-- my-codex:default-agent -->')
+      cat > "$expected" <<'EOF'
+## Default Agent
+
+When starting a new session, always use the **boss** agent as the primary orchestrator.
+Boss discovers available agents, classifies user intent, and delegates to the best specialist.
+Do not bypass Boss for direct implementation unless the user explicitly requests a specific agent.
+EOF
+      ;;
+    '<!-- my-codex:boss-first -->')
+      cat > "$expected" <<'EOF'
+## Boss-First Routing (Default Behavior)
+
+Before executing any task, first scan `~/.codex/agents/*.toml` to discover active specialists and `~/.codex/agent-packs/*/*.toml` to discover installed-but-inactive specialists. For any non-trivial request (multi-file changes, architecture decisions, debugging, refactoring, code review, or unfamiliar domains), route through the Boss meta-orchestrator:
+
+```
+spawn_agent(prompt="<user's full request>", agent_type="boss")
+```
+
+Boss will classify intent, match the task to the optimal specialist from the discovered registry, delegate with structured prompts, and verify results independently. Only handle trivial single-command tasks (ls, git status, simple questions) directly. If the best specialist is installed only in an inactive pack, activate the smallest matching pack with `~/.codex/bin/my-codex-packs enable <pack>` before delegating.
+EOF
+      ;;
+    *)
+      rm -f "$current" "$expected"
+      return 1
+      ;;
+  esac
+
+  if cmp -s "$current" "$expected"; then
+    rm -f "$current" "$expected"
+    return 0
+  fi
+  rm -f "$current" "$expected"
+  return 1
+}
+
 # Upsert one template section into an existing AGENTS.md, keyed by its HTML marker.
 # The section is everything from <heading> up to the next "## " line in the template.
 # Marker already present -> replace that section in place, so template edits reach
@@ -1368,12 +1543,19 @@ append_agents_section() {
   local target="$CODEX_ROOT/AGENTS.md"
   local tmp
 
+  local match_mode=""
   if grep -qF "$marker" "$target" 2>/dev/null; then
+    match_mode="marker"
+  elif legacy_agents_section_matches "$heading" "$marker" "$target"; then
+    match_mode="legacy"
+  fi
+
+  if [ -n "$match_mode" ]; then
     tmp="$target.tmp.$$"
     # Pass 1 buffers the template section (trailing blank lines trimmed); pass 2
     # swaps it in for the target's copy and replays the blank lines that trailed
     # that copy, so the separator spacing around the section is left as it was.
-    awk -v heading="$heading" '
+    awk -v heading="$heading" -v marker="$marker" -v mode="$match_mode" '
       FNR == NR {
         if (!captured && $0 == heading) { in_template = 1 }
         else if (in_template && /^## /) { in_template = 0; captured = 1 }
@@ -1384,7 +1566,22 @@ append_agents_section() {
         section[++count] = $0
         next
       }
-      !replaced && $0 == heading {
+      mode == "marker" && !replaced && candidate {
+        if ($0 == marker) {
+          for (i = 1; i <= count; i++) print section[i]
+          candidate = 0
+          in_section = 1
+          next
+        }
+        print candidate_line
+        candidate = 0
+      }
+      mode == "marker" && !replaced && $0 == heading {
+        candidate = 1
+        candidate_line = $0
+        next
+      }
+      mode == "legacy" && !replaced && $0 == heading {
         in_section = 1
         for (i = 1; i <= count; i++) print section[i]
         next
@@ -1403,9 +1600,17 @@ append_agents_section() {
         next
       }
       { print }
-      END { for (i = 1; i <= holds; i++) print held[i] }
+      END {
+        if (candidate) print candidate_line
+        for (i = 1; i <= holds; i++) print held[i]
+      }
     ' "$REPO_ROOT/templates/codex-AGENTS.md" "$target" > "$tmp" && mv "$tmp" "$target"
     echo "  AGENTS.md: refreshed $heading"
+    return 0
+  fi
+
+  if grep -qF "$heading" "$target" 2>/dev/null; then
+    echo "  AGENTS.md: kept customized $heading (no managed marker)"
     return 0
   fi
 
@@ -1425,6 +1630,8 @@ if [ ! -f "$CODEX_ROOT/AGENTS.md" ]; then
   cp "$REPO_ROOT/templates/codex-AGENTS.md" "$CODEX_ROOT/AGENTS.md"
   echo "  AGENTS.md created"
 else
+  append_agents_section "## Default Agent" "<!-- my-codex:default-agent -->"
+  append_agents_section "## Boss-First Routing (Default Behavior)" "<!-- my-codex:boss-first -->"
   append_agents_section "## Calibrated Response (mandatory)" "<!-- my-codex:calibrated-response -->"
   append_agents_section "## Final Report (end of the request)" "<!-- my-codex:final-report -->"
   append_agents_section "## Context Hygiene" "<!-- my-codex:context-hygiene -->"

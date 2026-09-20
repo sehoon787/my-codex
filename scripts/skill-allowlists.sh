@@ -139,9 +139,9 @@ web
 "
 
 # ── gstack skills ──
-# The 26 skills Boss P0 routing depends on. The gstack repo itself is installed
-# whole into ~/.codex/skills/gstack (canonical runtime tree); this list controls
-# only which subdirectories are additionally surfaced at ~/.codex/skills/<name>.
+# The 26 skills Boss P0 routing depends on. Current gstack setup owns its Codex
+# skill surface; this list is the narrow fallback when bun/setup is unavailable.
+# The full checkout lives outside the recursively scanned skills root.
 GSTACK_SKILL_ALLOWLIST="
 autoplan
 benchmark

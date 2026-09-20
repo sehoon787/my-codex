@@ -278,9 +278,9 @@ my-codex 由 **5 个上游子模块**，加上 1 份内置快照、2 个适配/�
 | 6 | <img src="https://github.com/VoltAgent.png?size=32" width="20" height="20" align="center"/> **[awesome-codex-subagents](https://github.com/VoltAgent/awesome-codex-subagents)** — VoltAgent | 内置快照 (MIT) | 17 个 AI/LLM Agent 快照到 `codex-agents/packs/`，作为 2 个可选启用的包（data-ai 13、llmops 4）。子模块已于 2026-07-27 移除。 |
 | 7 | <img src="https://github.com/code-yeongyu.png?size=32" width="20" height="20" align="center"/> **[oh-my-openagent](https://github.com/code-yeongyu/oh-my-openagent)** — code-yeongyu | 适配 | 9 个 OMO Agent（Sisyphus、Atlas、Oracle 等）。适配为 Codex 原生 TOML 格式并在本仓库维护。 |
 | 8 | <img src="https://github.com/sehoon787.png?size=32" width="20" height="20" align="center"/> **[my-claude](https://github.com/sehoon787/my-claude)** — sehoon787 | 姊妹项目 | 同样的 Boss 编排架构，原生 Claude `.md` Agent 格式。Skills、规则和 Briefing Vault 在两个项目间共享。 |
-| 9 | <img src="https://github.com/getagentseal.png?size=32" width="20" height="20" align="center"/> **[codeburn](https://github.com/getagentseal/codeburn)** — getagentseal | npm CLI (MIT) | 本地优先的 token/成本追踪器。只读解析 `~/.codex/sessions` — 无代理、不上传。由 `install.sh` 安装（固定 `codeburn@0.9.23`），在 `upstream/SOURCES.json` 中以 `method: npm-cli` 登记。Codex 上没有钩子。 |
-| 10 | <img src="https://github.com/oraios.png?size=32" width="20" height="20" align="center"/> **[serena](https://github.com/oraios/serena)** — oraios | uv 工具 + MCP | 通过 MCP 进行符号级代码导航与编辑。以 `serena-agent==1.7.0` 安装，注册为 `[mcp_servers.serena]`。分发的软件包整体为 GPL-3.0-or-later —— 因为它把 GPL 应用与 MIT 的 SolidLSP 组合在一起；PyPI 标注的 MIT 并不准确。仅作为独立工具安装，不做内置。 |
-| 11 | <img src="https://github.com/headroomlabs-ai.png?size=32" width="20" height="20" align="center"/> **[headroom](https://github.com/headroomlabs-ai/headroom)** — Headroom Labs | uv 工具 + MCP | 通过 MCP 进行上下文压缩（`headroom_compress`、`headroom_retrieve`、`headroom_stats`）。以 `headroom-ai[all]==0.37.0` 安装，注册为 `[mcp_servers.headroom]`。安装程序启动或复用共享本地代理，但不会自动路由 API 流量。Apache-2.0。 |
+| 9 | <img src="https://github.com/getagentseal.png?size=32" width="20" height="20" align="center"/> **[codeburn](https://github.com/getagentseal/codeburn)** — getagentseal | npm CLI (MIT) | 本地优先的 token/成本追踪器，在没有代理、上传或 Codex hook 的情况下读取 `~/.codex/sessions`。`install.sh` 固定为 `codeburn@0.9.23`；`upstream/SOURCES.json` 记录 `method: npm-cli`。 |
+| 10 | <img src="https://github.com/oraios.png?size=32" width="20" height="20" align="center"/> **[serena](https://github.com/oraios/serena)** — oraios | uv 工具 + MCP | 符号级代码导航与编辑作为独立的 `serena-agent==1.7.0` 安装，并注册为 `[mcp_servers.serena]`。GPL 应用与 MIT SolidLSP 组合后的整个软件包为 GPL-3.0-or-later；PyPI 的 MIT 标注不准确，且代码不会内置。 |
+| 11 | <img src="https://github.com/headroomlabs-ai.png?size=32" width="20" height="20" align="center"/> **[headroom](https://github.com/headroomlabs-ai/headroom)** — Headroom Labs | uv 工具 + MCP | Apache-2.0 MCP 压缩（`headroom_compress`、`headroom_retrieve`、`headroom_stats`）以 `headroom-ai[all]==0.37.0` 安装，并注册为 `[mcp_servers.headroom]`。安装程序启动或复用共享代理，但不会路由 API 流量。 |
 | 12 | <img src="https://github.com/ast-grep.png?size=32" width="20" height="20" align="center"/> **[ast-grep](https://github.com/ast-grep/ast-grep)** — ast-grep | npm CLI (MIT) | 结构化代码搜索与重写。由 `install.sh` 安装（固定 `@ast-grep/cli@0.42.0`）。 |
 | 13 | <img src="https://github.com/upstash.png?size=32" width="20" height="20" align="center"/> **[context7](https://github.com/upstash/context7)** — Upstash | 托管 MCP | 最新库文档。由 `install.sh` 注册到 `https://mcp.context7.com/mcp`。 |
 | 14 | <img src="https://github.com/exa-labs.png?size=32" width="20" height="20" align="center"/> **[exa](https://github.com/exa-labs/exa-mcp-server)** — Exa Labs | 托管 MCP | 神经网络网页搜索。注册到 `https://mcp.exa.ai/mcp?tools=web_search_exa`。 |
@@ -318,6 +318,7 @@ my-codex 由 **5 个上游子模块**，加上 1 份内置快照、2 个适配/�
 | **Codex 归属** | git hooks 记录 Codex 修改的文件，并在提交信息中追加 `AI-Contributed-By: Codex` |
 | **CI 重复检测** | 跨上游同步自动检测重复 TOML Agent |
 ## 安装选项
+交互式安装会询问一次是否安装 Serena、Headroom 和 codeburn；Enter 或 `y` 会安装，`n` 会跳过它们并继续。自动运行默认保留这些工具；`--yes` 可明确确认，`--skip-tools` 只省略这三个工具、其 MCP 条目和共享面板。
 ### 快速安装
 ```bash
 git clone --depth 1 https://github.com/sehoon787/my-codex.git /tmp/my-codex

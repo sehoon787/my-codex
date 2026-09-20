@@ -434,6 +434,8 @@ SKIP_OMX=0
 SKIP_GSTACK=0
 SKIP_SUPERPOWERS=0
 SKIP_ARCHIFY=0
+SKIP_TOOLS=0
+ASSUME_YES=0
 
 while [ "$#" -gt 0 ]; do
   case "$1" in
@@ -458,6 +460,8 @@ while [ "$#" -gt 0 ]; do
     --skip-gstack)     SKIP_GSTACK=1; shift ;;
     --skip-superpowers) SKIP_SUPERPOWERS=1; shift ;;
     --skip-archify)    SKIP_ARCHIFY=1; shift ;;
+    --skip-tools)      SKIP_TOOLS=1; shift ;;
+    --yes)             ASSUME_YES=1; shift ;;
     --self-only)
       SKIP_ECC=1
       SKIP_OMX=1; SKIP_GSTACK=1; SKIP_SUPERPOWERS=1; SKIP_ARCHIFY=1
@@ -483,7 +487,9 @@ Options:
   --skip-gstack         Skip gstack upstream install
   --skip-superpowers    Skip superpowers upstream install
   --skip-archify        Skip archify diagram skill install
-  --self-only           Install only self-owned files (implies all --skip-* flags)
+  --skip-tools          Skip optional Serena, Headroom, and codeburn installation
+  --yes                 Install optional tools without prompting
+  --self-only           Install only self-owned files (skips upstream installs)
 EOF
       exit 0
       ;;
@@ -493,6 +499,29 @@ EOF
       ;;
   esac
 done
+
+# These companion tools improve navigation, output compression, and local cost
+# visibility, but the orchestration harness does not depend on them. Ask once
+# on an interactive install; automation keeps the historical install-all
+# behavior. --skip-tools always wins so scripted minimal installs are stable.
+INSTALL_OPTIONAL_TOOLS=1
+if [ "$SKIP_TOOLS" = "1" ]; then
+  INSTALL_OPTIONAL_TOOLS=0
+elif [ "$ASSUME_YES" = "1" ] || [ "${CI+x}" = "x" ] || [ ! -t 0 ]; then
+  INSTALL_OPTIONAL_TOOLS=1
+else
+  echo "Optional tools (the my-codex harness works without them):"
+  echo "  Serena: symbol-level code navigation and editing over MCP."
+  echo "  Headroom: compresses large tool output and retrieves it on demand."
+  echo "  codeburn: local token and cost dashboard for agent sessions."
+  printf "Install these optional tools? [Y/n] "
+  IFS= read -r optional_tools_answer || optional_tools_answer=""
+  case "$optional_tools_answer" in
+    ""|y|Y|yes|YES) INSTALL_OPTIONAL_TOOLS=1 ;;
+    n|N|no|NO) INSTALL_OPTIONAL_TOOLS=0 ;;
+    *) echo "  Unrecognized response; optional tools will be skipped."; INSTALL_OPTIONAL_TOOLS=0 ;;
+  esac
+fi
 
 add_manifest_entry() {
   printf '%s\n' "$1" >> "$TMP_MANIFEST"
@@ -1954,10 +1983,11 @@ ensure_mcp_server_toml() {
 # up on every session start is noise. The dashboard itself stays ENABLED and
 # reachable at http://localhost:24282/dashboard/index.html — only the autoload
 # is off, which is what upstream recommends.
-ensure_mcp_server_toml serena \
-  'command = "serena"' \
-  'args = ["start-mcp-server", "--project-from-cwd", "--context=codex", "--open-web-dashboard", "False"]' \
-  'startup_timeout_sec = 15'
+if [ "$INSTALL_OPTIONAL_TOOLS" = "1" ]; then
+  ensure_mcp_server_toml serena \
+    'command = "serena"' \
+    'args = ["start-mcp-server", "--project-from-cwd", "--context=codex", "--open-web-dashboard", "False"]' \
+    'startup_timeout_sec = 15'
 # headroom_compress / headroom_retrieve / headroom_stats over stdio. The
 # `headroom wrap` proxy mode works (including on a subscription login) but is
 # deliberately not automated: Codex cannot reach the API at all while the proxy
@@ -1969,10 +1999,13 @@ ensure_mcp_server_toml serena \
 # headroom_retrieve / headroom_stats call, and `codex exec` (approval_policy
 # never) skips them outright. The server is local and only reads and compresses
 # the transcript, so there is nothing to gate.
-ensure_mcp_server_toml headroom \
-  'command = "headroom"' \
-  'args = ["mcp", "serve"]' \
-  'default_tools_approval_mode = "approve"'
+  ensure_mcp_server_toml headroom \
+    'command = "headroom"' \
+    'args = ["mcp", "serve"]' \
+    'default_tools_approval_mode = "approve"'
+else
+  echo "  Serena and Headroom MCP registration: SKIPPED"
+fi
 
 echo "[6/7] Installing companion tools..."
 echo "  [6a] ast-grep..."
@@ -1982,14 +2015,18 @@ else
   npm i -g @ast-grep/cli@0.42.0 2>/dev/null || echo "    WARNING: ast-grep install failed"
 fi
 echo "  [6b] codeburn (AI token/cost tracker; reads ~/.codex/sessions read-only)..."
-if command -v codeburn >/dev/null 2>&1; then
+if [ "$INSTALL_OPTIONAL_TOOLS" = "0" ]; then
+  echo "    SKIPPED"
+elif command -v codeburn >/dev/null 2>&1; then
   echo "    codeburn already installed"
 else
   npm i -g codeburn@0.9.23 2>/dev/null || echo "    WARNING: codeburn install failed"
 fi
 
 echo "  [6c] uv (Python tool runner for the Serena/Headroom MCP servers)..."
-if command -v uv >/dev/null 2>&1; then
+if [ "$INSTALL_OPTIONAL_TOOLS" = "0" ]; then
+  echo "    SKIPPED"
+elif command -v uv >/dev/null 2>&1; then
   echo "    uv already installed"
 else
   # Astral's official installer drops uv in ~/.local/bin. Non-fatal: a machine
@@ -1998,7 +2035,9 @@ else
   curl -LsSf https://astral.sh/uv/install.sh | sh >/dev/null 2>&1 \
     || echo "    WARNING: uv install failed; Serena and Headroom will not be installed"
 fi
-append_path_once "$HOME/.local/bin" || true
+if [ "$INSTALL_OPTIONAL_TOOLS" = "1" ]; then
+  append_path_once "$HOME/.local/bin" || true
+fi
 
 # `uv tool install` is idempotent by itself, but it still resolves and reports
 # on every run; the `uv tool list` guard keeps a re-install quiet and offline.
@@ -2028,13 +2067,25 @@ ensure_uv_tool() {
 }
 
 echo "  [6d] serena (symbol-level code navigation MCP server)..."
-ensure_uv_tool "serena" serena-agent "serena-agent==1.7.0"
+if [ "$INSTALL_OPTIONAL_TOOLS" = "1" ]; then
+  ensure_uv_tool "serena" serena-agent "serena-agent==1.7.0"
+else
+  echo "    SKIPPED"
+fi
 echo "  [6e] headroom (context compression MCP server)..."
-ensure_uv_tool "headroom" headroom-ai "headroom-ai[all]==0.37.0"
+if [ "$INSTALL_OPTIONAL_TOOLS" = "1" ]; then
+  ensure_uv_tool "headroom" headroom-ai "headroom-ai[all]==0.37.0"
+else
+  echo "    SKIPPED"
+fi
 
 echo "  [6f] shared local dashboards (reused across agent harnesses)..."
-bash "$REPO_ROOT/scripts/ensure-shared-local-services.sh" || \
-  echo "    WARNING: shared local dashboard setup failed"
+if [ "$INSTALL_OPTIONAL_TOOLS" = "1" ]; then
+  bash "$REPO_ROOT/scripts/ensure-shared-local-services.sh" || \
+    echo "    WARNING: shared local dashboard setup failed"
+else
+  echo "    SKIPPED"
+fi
 
 LC_ALL=C sort -u "$TMP_MANIFEST" > "$MANIFEST_FILE"
 printf '%s\n' "$INSTALLING_VERSION" > "$VERSION_FILE"
@@ -2057,8 +2108,12 @@ echo "  hooksPath:     $(git config --global --get core.hooksPath 2>/dev/null ||
 echo "  Codex attr:    $(git config --global --get my-codex.codexAttribution 2>/dev/null || echo 'UNSET')"
 echo "  version:       $(cat "$VERSION_FILE" 2>/dev/null || echo 'unknown')"
 echo "  codex:         $(command -v codex >/dev/null 2>&1 && echo "OK ($(codex --version 2>/dev/null))" || echo 'NOT INSTALLED')"
-echo "  uv:            $(command -v uv >/dev/null 2>&1 && echo "OK ($(uv --version 2>/dev/null))" || echo 'MISSING')"
-verify_installed_tools "$CODEX_ROOT"
+if [ "$INSTALL_OPTIONAL_TOOLS" = "1" ]; then
+  echo "  uv:            $(command -v uv >/dev/null 2>&1 && echo "OK ($(uv --version 2>/dev/null))" || echo 'MISSING')"
+else
+  echo "  uv:            SKIPPED (optional tools declined)"
+fi
+verify_installed_tools "$CODEX_ROOT" "$INSTALL_OPTIONAL_TOOLS"
 echo ""
 echo "=== Install complete ==="
 echo ""

@@ -214,7 +214,8 @@ verify_installed_tools() (
   echo ""
   echo "Tool access:"
   echo "  Serena dashboard: http://localhost:24282/dashboard/index.html"
-  echo '  codeburn: `codeburn web` serves http://127.0.0.1:4747 (not started by this installer)'
+  echo "  codeburn shared dashboard: http://127.0.0.1:4747/ (started or reused during installation)"
+  echo "  Headroom proxy stats: http://127.0.0.1:8787/stats (empty until traffic is explicitly routed)"
   echo "  Serena/Headroom MCP: auto-start each Codex session"
 
   # Runtime verification is diagnostic. A missing or unhealthy optional tool

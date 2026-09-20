@@ -2032,6 +2032,10 @@ ensure_uv_tool "serena" serena-agent "serena-agent==1.7.0"
 echo "  [6e] headroom (context compression MCP server)..."
 ensure_uv_tool "headroom" headroom-ai "headroom-ai[all]==0.37.0"
 
+echo "  [6f] shared local dashboards (reused across agent harnesses)..."
+bash "$REPO_ROOT/scripts/ensure-shared-local-services.sh" || \
+  echo "    WARNING: shared local dashboard setup failed"
+
 LC_ALL=C sort -u "$TMP_MANIFEST" > "$MANIFEST_FILE"
 printf '%s\n' "$INSTALLING_VERSION" > "$VERSION_FILE"
 echo "$REPO_ROOT" > "$CODEX_ROOT/.my-codex-repo-path" 2>/dev/null || true

@@ -195,9 +195,9 @@ Codex には**ドキュメントスキルがありません** — このバン�
 
 | サーバー | 目的 | コスト |
 |--------|---------|------|
-| <img src="https://context7.com/favicon.ico" width="16" height="16" align="center"/> [Context7](https://mcp.context7.com) | リアルタイムライブラリドキュメント | 無料 |
-| <img src="https://exa.ai/images/favicon-32x32.png" width="16" height="16" align="center"/> [Exa](https://mcp.exa.ai) | セマンティックウェブ検索 | 月 1,000 リクエスト無料 |
-| <img src="https://www.google.com/s2/favicons?domain=grep.app&sz=32" width="16" height="16" align="center"/> [grep.app](https://mcp.grep.app) | GitHub コード検索 | 無料 |
+| <img src="https://context7.com/favicon.ico" width="16" height="16" align="center"/> [Context7](https://context7.com) | リアルタイムライブラリドキュメント | 無料 |
+| <img src="https://exa.ai/images/favicon-32x32.png" width="16" height="16" align="center"/> [Exa](https://exa.ai) | セマンティックウェブ検索 | 月 1,000 リクエスト無料 |
+| <img src="https://www.google.com/s2/favicons?domain=grep.app&sz=32" width="16" height="16" align="center"/> [grep.app](https://github.com/grep-app) | GitHub コード検索 | 無料 |
 
 </details>
 
@@ -280,19 +280,19 @@ my-codex は **5 つのアップストリームサブモジュール**に加え�
 | 8 | <img src="https://github.com/sehoon787.png?size=32" width="20" height="20" align="center"/> **[my-claude](https://github.com/sehoon787/my-claude)** — sehoon787 | 姉妹プロジェクト | ネイティブ Claude `.md` エージェントフォーマットで同じ Boss オーケストレーションを実現。スキル、ルール、Briefing Vault を両プロジェクトで共有。 |
 | 9 | <img src="https://github.com/getagentseal.png?size=32" width="20" height="20" align="center"/> **[codeburn](https://github.com/getagentseal/codeburn)** — getagentseal | npm CLI (MIT) | ローカルファーストのトークン/コストトラッカー。`~/.codex/sessions` を読み取り専用で解析 — プロキシ・アップロード不要。`install.sh` がインストール（`codeburn@0.9.23` に固定）、`upstream/SOURCES.json` に `method: npm-cli` として登録。Codex にはフックなし。 |
 | 10 | <img src="https://github.com/oraios.png?size=32" width="20" height="20" align="center"/> **[serena](https://github.com/oraios/serena)** — oraios | uv ツール + MCP | MCP 経由のシンボル単位のコードナビゲーションと編集。`serena-agent==1.7.0` としてインストールし、`[mcp_servers.serena]` に登録します。配布されるパッケージは全体として GPL-3.0-or-later です — GPL のアプリケーションと MIT の SolidLSP が結合されるためで、PyPI の MIT 表記は不正確です。独立したツールとしてインストールするだけで、ベンダリングはしません。 |
-| 11 | <img src="https://github.com/headroomlabs-ai.png?size=32" width="20" height="20" align="center"/> **[headroom](https://github.com/headroomlabs-ai/headroom)** — Headroom Labs | uv ツール + MCP | MCP 経由のコンテキスト圧縮（`headroom_compress`、`headroom_retrieve`、`headroom_stats`）。`headroom-ai[all]==0.37.0` としてインストールし、`[mcp_servers.headroom]` に登録します。`headroom wrap` プロキシは動作しますが自動化はしません。手動での使い方は「結果を確認する場所」の表にあります。Apache-2.0。 |
+| 11 | <img src="https://github.com/headroomlabs-ai.png?size=32" width="20" height="20" align="center"/> **[headroom](https://github.com/headroomlabs-ai/headroom)** — Headroom Labs | uv ツール + MCP | MCP 経由のコンテキスト圧縮（`headroom_compress`、`headroom_retrieve`、`headroom_stats`）。`headroom-ai[all]==0.37.0` としてインストールし、`[mcp_servers.headroom]` に登録します。インストーラーは共有ローカルプロキシを起動または再利用しますが、API トラフィックは自動でルーティングしません。Apache-2.0。 |
 | 12 | <img src="https://github.com/ast-grep.png?size=32" width="20" height="20" align="center"/> **[ast-grep](https://github.com/ast-grep/ast-grep)** — ast-grep | npm CLI (MIT) | 構造的なコード検索と書き換え。`install.sh` がインストールします（`@ast-grep/cli@0.42.0` に固定）。 |
 | 13 | <img src="https://github.com/upstash.png?size=32" width="20" height="20" align="center"/> **[context7](https://github.com/upstash/context7)** — Upstash | ホスト型 MCP | 最新のライブラリドキュメント。`install.sh` が `https://mcp.context7.com/mcp` に登録します。 |
 | 14 | <img src="https://github.com/exa-labs.png?size=32" width="20" height="20" align="center"/> **[exa](https://github.com/exa-labs/exa-mcp-server)** — Exa Labs | ホスト型 MCP | ニューラル Web 検索。`https://mcp.exa.ai/mcp?tools=web_search_exa` に登録します。 |
-| 15 | <img src="https://github.com/grep-app.png?size=32" width="20" height="20" align="center"/> **[grep.app](https://grep.app/)** — grep.app | ホスト型 MCP | リポジトリ横断のコード検索。`https://mcp.grep.app` に登録します。 |
+| 15 | <img src="https://github.com/grep-app.png?size=32" width="20" height="20" align="center"/> **[grep.app](https://github.com/grep-app)** — grep.app | ホスト型 MCP | リポジトリ横断のコード検索。`https://mcp.grep.app` に登録します。 |
 すべてのサブモジュールは `upstream/SOURCES.json`（AI-BOM）（companion CLI（ast-grep、codeburn）と MCP サーバー（serena、headroom）も同じファイルにバージョン固定で登録されています）で SHA 固定されており、削除された 2 つのサブモジュール（`agency-agents` — ベンダリングなし、`awesome-codex-subagents` — エージェント 17 個をベンダリング）も記録されています。
 ## 結果を確認する場所
 インストールされた各ツールは、それぞれの場所に結果を残します。その一覧です。
 | ツール | 役割 | 実行方法 | 結果の確認場所 |
 |------|--------------|------------|----------------------|
-| **codeburn** | タスク・ツール・モデル・プロジェクト別のトークン/コスト集計 | `codeburn`（対話型ダッシュボード）、`codeburn web --provider codex`（ローカルのブラウザダッシュボード。URL だけを表示するには `--no-open` を追加）。非対話では `codeburn report --format json --period week --provider codex`（`--day`、`--from`/`--to` も可） | ターミナル TUI、<http://127.0.0.1:4747> のブラウザダッシュボード、または `--format json` の標準出力。`~/.codex/sessions` を読み取り専用で読み、公開価格で換算するため、金額は請求書ではなく概算です。 |
+| **codeburn** | タスク・ツール・モデル・プロジェクト別のトークン/コスト集計 | インストーラーが `codeburn web --provider all --port 4747 --no-open` を起動または再利用。ターミナルダッシュボードは `codeburn` | 共有ブラウザダッシュボードは <http://127.0.0.1:4747/>。ローカルのエージェントセッションを変更せず読み、公開価格から概算します。 |
 | **Serena** | MCP 経由のシンボル単位のコードナビゲーションと編集 | Codex が `[mcp_servers.serena]` から起動。ツールは `get_symbols_overview`、`find_symbol`、`find_referencing_symbols`、`replace_symbol_body`、`insert_after_symbol` | サーバー稼働中は <http://localhost:24282/dashboard/index.html> でダッシュボードとツール呼び出し統計を確認。プロジェクトごとのインデックスとメモリは `<リポジトリ>/.serena/`。ブラウザは自動では開きません（`--open-web-dashboard False`）。 |
-| **Headroom** | 巨大なツール出力を圧縮し、必要に応じて原文を取り戻す | Codex が `[mcp_servers.headroom]`（`headroom mcp serve`）から起動。ツールは `headroom_compress`、`headroom_retrieve`、`headroom_stats` | セッション内では `headroom_stats`、シェルからは `headroom doctor`。プロキシモードを既定で有効にしないのは、サブスクリプションログインで使えないからではなく（実際には動作します）、プロキシが落ちていると Codex が API に一切到達できなくなるからです。手動で使うには、別のターミナルで `headroom proxy --port 8787` を起動し、`headroom wrap codex --help` に従って Codex を起動します（`OPENAI_BASE_URL` を設定し、Codex 設定に MCP サーバーを登録します）。プロキシの統計は <http://127.0.0.1:8787/stats>。トラフィックが流れた後の削減量とレイテンシは `headroom dashboard` と `headroom perf` で確認します。無効時は `headroom doctor` が `codex: not routed` と表示します。 |
+| **Headroom** | 巨大なツール出力を圧縮し、必要に応じて原文を取り戻す | Codex が `[mcp_servers.headroom]`（`headroom mcp serve`）から MCP サーバーを起動し、インストーラーが `headroom install apply --profile agent-harness-shared --preset persistent-service --runtime python --providers manual --port 8787 --no-telemetry --env HEADROOM_NO_SUBSCRIPTION_TRACKING=1` でネイティブの `agent-harness-shared` プロファイルを起動または再利用 | 統計は <http://127.0.0.1:8787/stats>。`headroom wrap` または Base URL でクライアントを明示的にルーティングするまでは空です。インストーラーは `ANTHROPIC_BASE_URL` と `OPENAI_BASE_URL` を設定しません。 |
 | **Archify** | アーキテクチャ・ワークフロー・シーケンス・データフロー・ライフサイクル図 | `~/.codex/skills/archify` で `node bin/archify.mjs render <type> <input>.json <output>.html`、続けて `node bin/archify.mjs check <output>.html` | 指定した `<output>.html` の 1 ファイル — インライン SVG、ダーク/ライト切替、PNG/JPEG/WebP/SVG エクスポート付き。ブラウザで開きます。スキルに同梱された `examples/*.json` が、そのまま写せる完成済みの入力例です。 |
 ## GitHub Actions
 | ワークフロー | トリガー | 目的 |
@@ -389,7 +389,7 @@ my-codex と my-claude は同じ Boss オーケストレーションアーキテ
 <details>
 <summary><strong>my-codex と my-claude を両方使えますか？</strong></summary>
 
-はい。それぞれ別のディレクトリ（`~/.codex/` と `~/.claude/`）にインストールされるため、競合しません。共有アップストリームソースのスキルは各プラットフォーム向けに適応されています。
+はい。それぞれ別のディレクトリ（`~/.codex/` と `~/.claude/`）にインストールされます。両インストーラーは `${XDG_STATE_HOME:-$HOME/.local/state}/agent-harness-services` を通じて codeburn と Headroom を調整し、正常なサービスを再利用して、固定ポートを使う他のプロセスには触れません。共有アップストリームソースのスキルは各プラットフォーム向けに適応されています。
 
 </details>
 

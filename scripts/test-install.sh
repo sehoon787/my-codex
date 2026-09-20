@@ -9,8 +9,10 @@ TMP_ROOT="$TMP_PARENT/my-codex-install-test.$$"
 TEST_HOME="$TMP_ROOT/home"
 BIN_DIR="$TMP_ROOT/bin"
 LOG_FILE="$TMP_ROOT/codex.log"
+SERVICE_STATE="$TMP_ROOT/shared-services"
 VAULT_ONLY=0
 GSTACK_ONLY=0
+export AGENT_HARNESS_STATE_DIR="$SERVICE_STATE"
 
 if [ "${1:-}" = "--vault-only" ]; then
   VAULT_ONLY=1
@@ -65,6 +67,12 @@ assert_features_hooks_enabled() {
 }
 
 cleanup() {
+  local pid_file pid
+  for pid_file in "$SERVICE_STATE"/*.pid; do
+    [ -f "$pid_file" ] || continue
+    pid="$(cat "$pid_file")"
+    kill "$pid" 2>/dev/null || true
+  done
   if [ "${KEEP_TMP_ROOT:-0}" = "1" ]; then
     echo "Preserving test root: $TMP_ROOT" >&2
     return
@@ -119,8 +127,14 @@ cat > "$BIN_DIR/codeburn" <<'EOF'
 #!/usr/bin/env bash
 set -euo pipefail
 echo "codeburn $*" >> "${MY_CODEX_TEST_LOG:?}"
-[ "${1:-}" = "--version" ] || exit 2
-echo "0.9.23"
+if [ "${1:-}" = "--version" ]; then
+  echo "0.9.23"
+  exit 0
+fi
+[ "${1:-}" = "web" ] || exit 2
+touch "${MY_CODEX_TEST_SERVICE_ROOT:?}/codeburn.healthy"
+trap 'rm -f "$MY_CODEX_TEST_SERVICE_ROOT/codeburn.healthy"; exit 0' TERM INT
+while :; do sleep 1; done
 EOF
 chmod +x "$BIN_DIR/codeburn"
 
@@ -137,10 +151,42 @@ cat > "$BIN_DIR/headroom" <<'EOF'
 #!/usr/bin/env bash
 set -euo pipefail
 echo "headroom $*" >> "${MY_CODEX_TEST_LOG:?}"
-[ "${1:-}" = "--version" ] || exit 2
-echo "headroom, version 0.37.0"
+if [ "${1:-}" = "--version" ]; then
+  echo "headroom, version 0.37.0"
+  exit 0
+fi
+[ "${1:-}" = "install" ] && [ "${2:-}" = "apply" ] || exit 2
+touch "${MY_CODEX_TEST_SERVICE_ROOT:?}/headroom.healthy"
 EOF
 chmod +x "$BIN_DIR/headroom"
+
+SERVICE_ROOT="$TMP_ROOT/services"
+mkdir -p "$SERVICE_ROOT"
+export MY_CODEX_TEST_SERVICE_ROOT="$SERVICE_ROOT"
+
+cat > "$BIN_DIR/curl" <<'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+for arg in "$@"; do url="$arg"; done
+case "$url" in
+  http://127.0.0.1:4747/)
+    [ -f "${MY_CODEX_TEST_SERVICE_ROOT:?}/codeburn.healthy" ] || exit 7
+    printf '<html><head><title>CodeBurn - Local Dashboard</title></head></html>\n'
+    ;;
+  http://127.0.0.1:8787/livez)
+    [ -f "${MY_CODEX_TEST_SERVICE_ROOT:?}/headroom.healthy" ] || exit 7
+    printf '{"service":"headroom-proxy","status":"healthy","alive":true}\n'
+    ;;
+  *) exec /usr/bin/curl "$@" ;;
+esac
+EOF
+chmod +x "$BIN_DIR/curl"
+
+cat > "$BIN_DIR/lsof" <<'EOF'
+#!/usr/bin/env bash
+exit 1
+EOF
+chmod +x "$BIN_DIR/lsof"
 
 # uv shim. Real `uv tool install` would download serena-agent and headroom-ai
 # (hundreds of MB, minutes) on every CI run; what this test is about is the
@@ -190,7 +236,7 @@ printf -- '---\nname: review\ndescription: legacy\n---\n' > \
 ln -s "$TEST_HOME/.codex/skills/gstack/review" "$TEST_HOME/.codex/skills/review"
 chmod +x "$TEST_HOME/.codex/skills/gstack/setup" "$TEST_HOME/.codex/skills/gstack/bin/gstack-config"
 
-HOME="$TEST_HOME" CODEX_HOME="$HOSTILE_CODEX_HOME" PATH="$BIN_DIR:$PATH" MY_CODEX_TEST_LOG="$LOG_FILE" MY_CODEX_TEST_UV_STATE="$UV_STATE" \
+HOME="$TEST_HOME" CODEX_HOME="$HOSTILE_CODEX_HOME" PATH="$BIN_DIR:$PATH" MY_CODEX_TEST_LOG="$LOG_FILE" MY_CODEX_TEST_UV_STATE="$UV_STATE" MY_CODEX_TEST_SERVICE_ROOT="$SERVICE_ROOT" \
   bash "$REPO_ROOT/install.sh" > "$TMP_ROOT/install.out"
 test "$(cat "$HOSTILE_CODEX_HOME/sentinel")" = "untouched"
 test ! -e "$HOSTILE_CODEX_HOME/skills"
@@ -200,11 +246,20 @@ grep -q '^  headroom:      OK (headroom, version 0.37.0)$' "$TMP_ROOT/install.ou
 grep -q '^  archify:       OK (rendered and checked bundled workflow example)$' "$TMP_ROOT/install.out"
 grep -q '^  Tool probes:   4 OK, 0 FAIL$' "$TMP_ROOT/install.out"
 grep -q '^  Serena dashboard: http://localhost:24282/dashboard/index.html$' "$TMP_ROOT/install.out"
-grep -q '^  codeburn: `codeburn web` serves http://127.0.0.1:4747 (not started by this installer)$' "$TMP_ROOT/install.out"
+grep -q '^codeburn web: STARTED (http://127.0.0.1:4747/; log: ' "$TMP_ROOT/install.out"
+grep -q '^Headroom proxy: STARTED (http://127.0.0.1:8787/stats; profile: agent-harness-shared; log: ' "$TMP_ROOT/install.out"
+grep -q '^  codeburn dashboard: http://127.0.0.1:4747/$' "$TMP_ROOT/install.out"
+grep -q '^  Headroom stats:     http://127.0.0.1:8787/stats$' "$TMP_ROOT/install.out"
+grep -Fq "  Shared service logs: $SERVICE_STATE/logs" "$TMP_ROOT/install.out"
+grep -q '^  Headroom does not route Claude or Codex traffic until you explicitly configure a client.$' "$TMP_ROOT/install.out"
+grep -q '^  codeburn shared dashboard: http://127.0.0.1:4747/ (started or reused during installation)$' "$TMP_ROOT/install.out"
+grep -q '^  Headroom proxy stats: http://127.0.0.1:8787/stats (empty until traffic is explicitly routed)$' "$TMP_ROOT/install.out"
 grep -q '^  Serena/Headroom MCP: auto-start each Codex session$' "$TMP_ROOT/install.out"
 grep -q '^codeburn --version$' "$LOG_FILE"
 grep -q '^serena --version$' "$LOG_FILE"
 grep -q '^headroom --version$' "$LOG_FILE"
+grep -q '^codeburn web --provider all --port 4747 --no-open$' "$LOG_FILE"
+grep -q '^headroom install apply --profile agent-harness-shared --preset persistent-service --runtime python --providers manual --port 8787 --no-telemetry --env HEADROOM_NO_SUBSCRIPTION_TRACKING=1$' "$LOG_FILE"
 
 test -f "$TEST_HOME/.agents/plugins/marketplace.json"
 grep -q '"name": "my-codex"' "$TEST_HOME/.agents/plugins/marketplace.json"

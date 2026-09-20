@@ -32,7 +32,11 @@ trap cleanup EXIT
 
 mkdir -p "$TEST_HOME"
 
-if ! HOME="$TEST_HOME" npx --yes skills add "$REPO_ROOT" -y -g >"$INSTALL_OUT" 2>"$INSTALL_ERR"; then
+# The temporary HOME intentionally contains no detectable agents. Name the two
+# destinations this smoke test verifies so `skills` CLI auto-detection changes
+# cannot silently narrow the test to Codex alone.
+if ! HOME="$TEST_HOME" npx --yes skills add "$REPO_ROOT" -y -g \
+    --agent codex claude-code >"$INSTALL_OUT" 2>"$INSTALL_ERR"; then
   fail "npx skills add failed during skills-only smoke test"
 fi
 

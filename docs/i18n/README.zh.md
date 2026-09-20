@@ -195,9 +195,9 @@ Codex **不提供文档类 skill** — 本捆绑包中没有 `pdf`、`docx`、`p
 
 | 服务器 | 用途 | 费用 |
 |--------|---------|------|
-| <img src="https://context7.com/favicon.ico" width="16" height="16" align="center"/> [Context7](https://mcp.context7.com) | 实时库文档 | 免费 |
-| <img src="https://exa.ai/images/favicon-32x32.png" width="16" height="16" align="center"/> [Exa](https://mcp.exa.ai) | 语义网页搜索 | 每月免费 1k 次请求 |
-| <img src="https://www.google.com/s2/favicons?domain=grep.app&sz=32" width="16" height="16" align="center"/> [grep.app](https://mcp.grep.app) | GitHub 代码搜索 | 免费 |
+| <img src="https://context7.com/favicon.ico" width="16" height="16" align="center"/> [Context7](https://context7.com) | 实时库文档 | 免费 |
+| <img src="https://exa.ai/images/favicon-32x32.png" width="16" height="16" align="center"/> [Exa](https://exa.ai) | 语义网页搜索 | 每月免费 1k 次请求 |
+| <img src="https://www.google.com/s2/favicons?domain=grep.app&sz=32" width="16" height="16" align="center"/> [grep.app](https://github.com/grep-app) | GitHub 代码搜索 | 免费 |
 
 </details>
 
@@ -280,19 +280,19 @@ my-codex 由 **5 个上游子模块**，加上 1 份内置快照、2 个适配/�
 | 8 | <img src="https://github.com/sehoon787.png?size=32" width="20" height="20" align="center"/> **[my-claude](https://github.com/sehoon787/my-claude)** — sehoon787 | 姊妹项目 | 同样的 Boss 编排架构，原生 Claude `.md` Agent 格式。Skills、规则和 Briefing Vault 在两个项目间共享。 |
 | 9 | <img src="https://github.com/getagentseal.png?size=32" width="20" height="20" align="center"/> **[codeburn](https://github.com/getagentseal/codeburn)** — getagentseal | npm CLI (MIT) | 本地优先的 token/成本追踪器。只读解析 `~/.codex/sessions` — 无代理、不上传。由 `install.sh` 安装（固定 `codeburn@0.9.23`），在 `upstream/SOURCES.json` 中以 `method: npm-cli` 登记。Codex 上没有钩子。 |
 | 10 | <img src="https://github.com/oraios.png?size=32" width="20" height="20" align="center"/> **[serena](https://github.com/oraios/serena)** — oraios | uv 工具 + MCP | 通过 MCP 进行符号级代码导航与编辑。以 `serena-agent==1.7.0` 安装，注册为 `[mcp_servers.serena]`。分发的软件包整体为 GPL-3.0-or-later —— 因为它把 GPL 应用与 MIT 的 SolidLSP 组合在一起；PyPI 标注的 MIT 并不准确。仅作为独立工具安装，不做内置。 |
-| 11 | <img src="https://github.com/headroomlabs-ai.png?size=32" width="20" height="20" align="center"/> **[headroom](https://github.com/headroomlabs-ai/headroom)** — Headroom Labs | uv 工具 + MCP | 通过 MCP 进行上下文压缩（`headroom_compress`、`headroom_retrieve`、`headroom_stats`）。以 `headroom-ai[all]==0.37.0` 安装，注册为 `[mcp_servers.headroom]`。`headroom wrap` 代理可用，但不做自动化；手动开启方式见“在哪里查看结果”表。Apache-2.0。 |
+| 11 | <img src="https://github.com/headroomlabs-ai.png?size=32" width="20" height="20" align="center"/> **[headroom](https://github.com/headroomlabs-ai/headroom)** — Headroom Labs | uv 工具 + MCP | 通过 MCP 进行上下文压缩（`headroom_compress`、`headroom_retrieve`、`headroom_stats`）。以 `headroom-ai[all]==0.37.0` 安装，注册为 `[mcp_servers.headroom]`。安装程序启动或复用共享本地代理，但不会自动路由 API 流量。Apache-2.0。 |
 | 12 | <img src="https://github.com/ast-grep.png?size=32" width="20" height="20" align="center"/> **[ast-grep](https://github.com/ast-grep/ast-grep)** — ast-grep | npm CLI (MIT) | 结构化代码搜索与重写。由 `install.sh` 安装（固定 `@ast-grep/cli@0.42.0`）。 |
 | 13 | <img src="https://github.com/upstash.png?size=32" width="20" height="20" align="center"/> **[context7](https://github.com/upstash/context7)** — Upstash | 托管 MCP | 最新库文档。由 `install.sh` 注册到 `https://mcp.context7.com/mcp`。 |
 | 14 | <img src="https://github.com/exa-labs.png?size=32" width="20" height="20" align="center"/> **[exa](https://github.com/exa-labs/exa-mcp-server)** — Exa Labs | 托管 MCP | 神经网络网页搜索。注册到 `https://mcp.exa.ai/mcp?tools=web_search_exa`。 |
-| 15 | <img src="https://github.com/grep-app.png?size=32" width="20" height="20" align="center"/> **[grep.app](https://grep.app/)** — grep.app | 托管 MCP | 跨仓库代码搜索。注册到 `https://mcp.grep.app`。 |
+| 15 | <img src="https://github.com/grep-app.png?size=32" width="20" height="20" align="center"/> **[grep.app](https://github.com/grep-app)** — grep.app | 托管 MCP | 跨仓库代码搜索。注册到 `https://mcp.grep.app`。 |
 所有子模块均在 `upstream/SOURCES.json`（AI-BOM）（companion CLI（ast-grep、codeburn）与 MCP 服务器（serena、headroom）也在同一文件中以固定版本登记）中以 SHA 固定，该文件同时记录了两个已移除的子模块（`agency-agents` — 未内置任何内容；`awesome-codex-subagents` — 内置 17 个 Agent）。
 ## 在哪里查看结果
 每个已安装的工具都会把结果写到某个地方。位置如下。
 | 工具 | 作用 | 如何运行 | 在哪里查看结果 |
 |------|--------------|------------|----------------------|
-| **codeburn** | 按任务、工具、模型与项目统计 token 与花费 | `codeburn`（交互式面板）；`codeburn web --provider codex`（本地浏览器面板；添加 `--no-open` 仅输出 URL）；非交互用 `codeburn report --format json --period week --provider codex`（也支持 `--day`、`--from`/`--to`） | 终端 TUI、<http://127.0.0.1:4747> 的浏览器面板，或 `--format json` 标准输出。以只读方式读取 `~/.codex/sessions` 并按公开价目表计价，因此金额是估算而非账单。 |
+| **codeburn** | 按任务、工具、模型与项目统计 token 与花费 | 安装程序启动或复用 `codeburn web --provider all --port 4747 --no-open`；终端面板使用 `codeburn` | 共享浏览器面板位于 <http://127.0.0.1:4747/>。它不会修改本地 Agent 会话，并按公开价目表估算费用。 |
 | **Serena** | 通过 MCP 进行符号级代码导航与编辑 | 由 Codex 从 `[mcp_servers.serena]` 启动；工具为 `get_symbols_overview`、`find_symbol`、`find_referencing_symbols`、`replace_symbol_body`、`insert_after_symbol` | 服务器运行时可在 <http://localhost:24282/dashboard/index.html> 查看面板与工具调用统计；按项目的索引与记忆位于 `<仓库>/.serena/`。浏览器不会自动打开（`--open-web-dashboard False`）。 |
-| **Headroom** | 压缩过大的工具输出，并在需要时取回原文 | 由 Codex 从 `[mcp_servers.headroom]`（`headroom mcp serve`）启动；工具为 `headroom_compress`、`headroom_retrieve`、`headroom_stats` | 会话内用 `headroom_stats`，命令行用 `headroom doctor`。默认不开代理，并不是因为订阅登录用不了（实际可用），而是代理一旦未运行，Codex 就完全无法访问 API。手动开启：在一个终端运行 `headroom proxy --port 8787`，再按 `headroom wrap codex --help` 启动 Codex（它会设置 `OPENAI_BASE_URL` 并在 Codex 配置中注册 MCP 服务器）。代理统计见 <http://127.0.0.1:8787/stats>；有流量之后，用 `headroom dashboard` 与 `headroom perf` 查看节省量与延迟；未开启时 `headroom doctor` 会显示 `codex: not routed`。 |
+| **Headroom** | 压缩过大的工具输出，并在需要时取回原文 | Codex 从 `[mcp_servers.headroom]`（`headroom mcp serve`）启动 MCP 服务器；安装程序通过 `headroom install apply --profile agent-harness-shared --preset persistent-service --runtime python --providers manual --port 8787 --no-telemetry --env HEADROOM_NO_SUBSCRIPTION_TRACKING=1` 启动或复用原生 `agent-harness-shared` 配置文件 | 统计位于 <http://127.0.0.1:8787/stats>；在通过 `headroom wrap` 或 Base URL 显式路由客户端前保持为空。安装程序不会设置 `ANTHROPIC_BASE_URL` 或 `OPENAI_BASE_URL`。 |
 | **Archify** | 架构 / 工作流 / 时序 / 数据流 / 生命周期图 | 在 `~/.codex/skills/archify` 下执行 `node bin/archify.mjs render <type> <input>.json <output>.html`，再执行 `node bin/archify.mjs check <output>.html` | 你指定的 `<output>.html` —— 单个自包含文件，含内嵌 SVG、明暗主题切换与 PNG/JPEG/WebP/SVG 导出。用浏览器打开。技能自带的 `examples/*.json` 就是可直接照抄的完整输入示例。 |
 ## GitHub Actions
 | 工作流 | 触发条件 | 用途 |
@@ -389,7 +389,7 @@ my-codex 和 my-claude 共享相同的 Boss 编排架构和上游 skill 来源�
 <details>
 <summary><strong>我可以同时使用 my-codex 和 my-claude 吗？</strong></summary>
 
-可以。它们安装到独立目录（`~/.codex/` 和 `~/.claude/`），互不冲突。共享上游来源的 skills 已针对各自平台适配。
+可以。它们安装到独立目录（`~/.codex/` 和 `~/.claude/`）。两个安装程序通过 `${XDG_STATE_HOME:-$HOME/.local/state}/agent-harness-services` 协调 codeburn 与 Headroom，复用健康服务，并且不会终止占用固定端口的外部进程。共享上游来源的 skills 已针对各自平台适配。
 
 </details>
 

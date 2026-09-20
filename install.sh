@@ -1363,6 +1363,11 @@ if [ "$SKIP_GSTACK" = "0" ]; then
     # Keep my-codex's established unprefixed routing surface and remove the
     # duplicate prefixed path, but only when the installed entry is provably
     # the generated source (symlink on Unix, byte-identical copy on Windows).
+    # Upstream setup exposes every generated skill. Limit that surface to the
+    # curated allowlist; gstack-upgrade is the installer/runtime maintenance
+    # entry that setup owns in addition to task-routing skills.
+    # shellcheck disable=SC2086  # deliberate re-split of newline allowlist
+    gstack_allowed_names=" $(echo $GSTACK_SKILL_ALLOWLIST) gstack-upgrade "
     for generated_source in "$GSTACK_DIR/.agents/skills/"gstack-*; do
       [ -f "$generated_source/SKILL.md" ] || continue
       generated_name="$(basename "$generated_source")"
@@ -1386,6 +1391,28 @@ if [ "$SKIP_GSTACK" = "0" ]; then
       [ "$generated_owned" = "1" ] || continue
 
       target="$CODEX_ROOT/skills/$skill_name"
+      case "$gstack_allowed_names" in
+        *" $skill_name "*) ;;
+        *)
+          # setup's generated prefixed alias is safe to remove only after the
+          # exact source provenance check above. Also clean an unprefixed alias
+          # left by an older my-codex install, but never a directory/copy or a
+          # symlink to any other source.
+          [ -L "$generated_target" ] && rm -f "$generated_target"
+          if [ "$target" != "$generated_target" ] && [ -L "$target" ]; then
+            link_dest="$(readlink "$target" 2>/dev/null || true)"
+            case "$link_dest" in /*) ;; *) link_dest="$(dirname "$target")/$link_dest" ;; esac
+            link_parent="$(cd "$(dirname "$link_dest")" 2>/dev/null && pwd -P || true)"
+            source_parent="$(cd "$(dirname "$generated_source")" 2>/dev/null && pwd -P || true)"
+            if [ -n "$link_parent" ] && [ -n "$source_parent" ] && \
+               [ "$link_parent/$(basename "$link_dest")" = "$source_parent/$(basename "$generated_source")" ]; then
+              rm -f "$target"
+            fi
+          fi
+          continue
+          ;;
+      esac
+
       if [ "$target" = "$generated_target" ]; then
         add_manifest_entry "skills/$skill_name"
       elif [ ! -e "$target" ] && [ ! -L "$target" ]; then

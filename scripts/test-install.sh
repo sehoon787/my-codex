@@ -479,6 +479,39 @@ grep -q '^name: codex$' "$TEST_HOME/.codex/skills/codex/SKILL.md"
 grep -q '^name: gstack-upgrade$' "$TEST_HOME/.codex/skills/gstack-upgrade/SKILL.md"
 grep -q '^name: hackernews-frontpage$' "$TEST_HOME/.codex/skills/hackernews-frontpage/SKILL.md"
 
+# gstack setup currently generates every upstream gstack-* skill. my-codex's
+# public Codex catalog is narrower: only names in GSTACK_SKILL_ALLOWLIST may be
+# exposed at ~/.codex/skills. The full source remains available in vendor/gstack.
+# Check the installed result rather than the installer's source text so this
+# catches future setup changes that add another generated skill.
+# shellcheck source=skill-allowlists.sh
+source "$REPO_ROOT/scripts/skill-allowlists.sh"
+gstack_allowed=" $({ printf '%s\n' $GSTACK_SKILL_ALLOWLIST; } | tr '\n' ' ') gstack-upgrade "
+for generated_source in "$TEST_HOME/.codex/vendor/gstack/.agents/skills/"gstack-*; do
+  [ -f "$generated_source/SKILL.md" ] || continue
+  skill_name="$(sed -n 's/^name:[[:space:]]*//p' "$generated_source/SKILL.md" | head -n 1 | tr -d '\r')"
+  [ -n "$skill_name" ] || continue
+  case "$gstack_allowed" in *" $skill_name "*) continue ;; esac
+  test ! -e "$TEST_HOME/.codex/skills/$skill_name"
+  test ! -L "$TEST_HOME/.codex/skills/$skill_name"
+done
+
+# A user-owned symlink that collides with an unallowlisted generated name must
+# survive a later install. Exact provenance, rather than the target name, owns
+# the cleanup decision.
+custom_design_html_source="$TEST_HOME/custom-skills/design-html"
+custom_design_html="$TEST_HOME/.codex/skills/design-html"
+mkdir -p "$custom_design_html_source"
+printf -- '---\nname: design-html\ndescription: user owned\n---\n' > \
+  "$custom_design_html_source/SKILL.md"
+ln -s "$custom_design_html_source" "$custom_design_html"
+
+# A directory at the generated prefixed path is not safe to delete based on
+# byte equality alone: on platforms without symlinks it may be a user copy.
+custom_generated_design_html="$TEST_HOME/.codex/skills/gstack-design-html"
+cp -R "$TEST_HOME/.codex/vendor/gstack/.agents/skills/gstack-design-html" \
+  "$custom_generated_design_html"
+
 # A real gstack-prefixed directory can share the generated SKILL.md bytes while
 # carrying user-owned files. Matching only SKILL.md would wrongly classify the
 # whole directory as generated and delete the note during prefix normalization.
@@ -501,6 +534,13 @@ if [ "$GSTACK_ONLY" = "1" ]; then
   test -f "$custom_gstack_review/SKILL.md"
   test "$(cat "$custom_gstack_review/user-notes.md")" = "keep this user note"
   ! grep -qx 'skills/gstack-review' "$TEST_HOME/.codex/.my-codex-manifest.txt"
+  test -L "$custom_design_html"
+  test "$(readlink "$custom_design_html")" = "$custom_design_html_source"
+  test -f "$custom_design_html/SKILL.md"
+  ! grep -qx 'skills/design-html' "$TEST_HOME/.codex/.my-codex-manifest.txt"
+  test -d "$custom_generated_design_html"
+  test ! -L "$custom_generated_design_html"
+  test -f "$custom_generated_design_html/SKILL.md"
   echo "Gstack install isolation and ownership test passed"
   exit 0
 fi

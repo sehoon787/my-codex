@@ -151,6 +151,93 @@ const SESSION_START_CMD = findCommand('SessionStart', 'session-start.sh');
 }
 
 {
+  // A transient manager failure must leave the old cache byte-for-byte intact
+  // so its stale mtime forces the next session to retry. The second real hook
+  // invocation then succeeds and replaces the catalog with the manager result.
+  const dir = tmpProject();
+  const manager = path.join(FAKE_HOME, '.codex', 'bin', 'my-codex-skills');
+  const registry = path.join(FAKE_HOME, '.omc', 'state', 'capability-registry.json');
+  const callCount = path.join(FAKE_HOME, '.codex', 'skill-manager-calls');
+  fs.mkdirSync(path.dirname(manager), { recursive: true });
+  fs.mkdirSync(path.dirname(registry), { recursive: true });
+  fs.mkdirSync(path.join(FAKE_HOME, '.codex', 'skills', 'inactive-physical-skill'), { recursive: true });
+  fs.writeFileSync(manager, `#!/bin/sh
+count=0
+[ -f "${callCount}" ] && count=$(cat "${callCount}")
+count=$((count + 1))
+printf '%s' "$count" > "${callCount}"
+if [ "$count" -eq 1 ]; then
+  printf 'manager exploded "quoted"\\nsecond line\\n' >&2
+  exit 23
+fi
+printf '%s\\n' '{"activeSkillNames":["recovered-active"],"laneIndex":{"core":["recovered-active"]}}'
+`, { mode: 0o755 });
+  const originalBytes = '{"generated_at":"old","skills":["last-known-active"],"sentinel":"preserve-me"}\n';
+  fs.writeFileSync(registry, originalBytes);
+  const oldTime = new Date('2020-01-02T03:04:05.000Z');
+  fs.utimesSync(registry, oldTime, oldTime);
+  fs.writeFileSync(path.join(FAKE_HOME, '.codex', 'config.toml'), '# force registry refresh\n');
+  const future = new Date(Date.now() + 5000);
+  fs.utimesSync(path.join(FAKE_HOME, '.codex', 'config.toml'), future, future);
+  const first = runResolvedFile(SESSION_START_CMD, {
+    cwd: dir,
+    input: JSON.stringify({ hook_event_name: 'SessionStart', session_id: 't', cwd: dir, source: 'startup' })
+  });
+  assertShape('SessionStart with transient skill manager failure', 'SessionStart', first);
+  const firstContext = JSON.parse(first.stdout).hookSpecificOutput.additionalContext;
+  check('SessionStart manager failure -> emits actual diagnostic safely',
+    firstContext.includes('manager exploded "quoted"') && firstContext.includes('second line'),
+    `context=${JSON.stringify(firstContext)}`);
+  check('SessionStart manager failure -> preserves cache bytes',
+    fs.readFileSync(registry, 'utf8') === originalBytes);
+  check('SessionStart manager failure -> preserves cache mtime',
+    fs.statSync(registry).mtimeMs === oldTime.getTime(),
+    `mtime=${fs.statSync(registry).mtimeMs}`);
+
+  const second = runResolvedFile(SESSION_START_CMD, {
+    cwd: dir,
+    input: JSON.stringify({ hook_event_name: 'SessionStart', session_id: 't2', cwd: dir, source: 'startup' })
+  });
+  assertShape('SessionStart retries manager after transient failure', 'SessionStart', second);
+  const recovered = JSON.parse(fs.readFileSync(registry, 'utf8'));
+  check('SessionStart manager retry -> invokes manager twice',
+    fs.readFileSync(callCount, 'utf8') === '2');
+  check('SessionStart manager retry -> installs corrected active catalog',
+    JSON.stringify(recovered.skills) === JSON.stringify(['recovered-active']));
+  check('SessionStart manager retry -> does not expose physical inactive skill',
+    !recovered.skills.includes('inactive-physical-skill'));
+  fs.rmSync(path.join(FAKE_HOME, '.codex', 'bin'), { recursive: true, force: true });
+  fs.rmSync(path.join(FAKE_HOME, '.codex', 'skills'), { recursive: true, force: true });
+  fs.rmSync(callCount, { force: true });
+  fs.rmSync(path.join(FAKE_HOME, '.codex', 'config.toml'), { force: true });
+  fs.rmSync(registry, { force: true });
+  fs.rmSync(dir, { recursive: true, force: true });
+}
+
+{
+  // A manager that exits successfully with malformed JSON has still failed.
+  // With no previous cache, the hook must not create a fake valid registry.
+  const dir = tmpProject();
+  const manager = path.join(FAKE_HOME, '.codex', 'bin', 'my-codex-skills');
+  const registry = path.join(FAKE_HOME, '.omc', 'state', 'capability-registry.json');
+  fs.mkdirSync(path.dirname(manager), { recursive: true });
+  fs.rmSync(registry, { force: true });
+  fs.writeFileSync(manager, '#!/bin/sh\nprintf \'invalid { json "quoted"\\nsecond line\\n\'\n', { mode: 0o755 });
+  const r = runResolvedFile(SESSION_START_CMD, {
+    cwd: dir,
+    input: JSON.stringify({ hook_event_name: 'SessionStart', session_id: 'bad-json', cwd: dir, source: 'startup' })
+  });
+  assertShape('SessionStart with invalid manager JSON', 'SessionStart', r);
+  const context = JSON.parse(r.stdout).hookSpecificOutput.additionalContext;
+  check('SessionStart invalid manager JSON -> emits useful diagnostic safely',
+    context.includes('invalid') && context.includes('quoted') && context.includes('second line'),
+    `context=${JSON.stringify(context)}`);
+  check('SessionStart invalid manager JSON -> creates no fake cache', !fs.existsSync(registry));
+  fs.rmSync(path.join(FAKE_HOME, '.codex', 'bin'), { recursive: true, force: true });
+  fs.rmSync(dir, { recursive: true, force: true });
+}
+
+{
   // session-start.sh splices other hooks' stdout into the JSON string. A helper
   // that emits newlines, double quotes or backslashes (session-start-state.js
   // writes a two-line message whenever it reports a session gap) must not be

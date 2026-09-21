@@ -111,5 +111,7 @@ jobs:
           node tests/hook-output-shape.test.js
           node tests/stop-session-enforcement.test.js
           node tests/context-budget.test.js
+          node tests/skill-catalog.test.js
+          node tests/skill-catalog-budget.test.js
           node tests/stop-final-report.test.js
           node tests/normalize-skill-english.test.js

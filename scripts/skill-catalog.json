@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "core": [
+    "boss-advanced", "boss-briefing", "briefing-vault", "gstack-sprint", "brainstorming", "writing-plans", "executing-plans", "systematic-debugging", "test-driven-development", "verification-before-completion", "requesting-code-review", "receiving-code-review", "using-git-worktrees", "using-superpowers", "gstack", "review", "investigate", "cso", "qa", "ship", "careful", "plan-eng-review", "coding-standards", "codebase-onboarding", "documentation-lookup", "context-budget", "api-design", "architecture-decision-records", "archify", "security-scan"
+  ],
+  "preserve": ["docx", "pdf", "computer-use", "find-skills", "laravel-verification", "orca-cli", "orchestration", "skill-stocktake"],
+  "laneDescriptions": {
+    "workflow-advanced": "Advanced planning, repository operations, and worktree workflows",
+    "qa-operations": "QA, browser checks, release, deployment, and operational safety",
+    "ai-engineering": "Agent systems, evaluation, prompts, retrieval, and MCP",
+    "backend-data": "Backend architecture, databases, caching, containers, and APIs",
+    "python": "Python, Django, and FastAPI implementation and testing",
+    "jvm": "Java, Kotlin, JPA, and Spring implementation and testing",
+    "web": "Web frameworks, accessibility, performance, and end-to-end testing",
+    "mobile": "Android, Flutter, Swift, and SwiftUI engineering",
+    "other-languages": "C++, Go, Laravel, Perl, and Rust engineering",
+    "research-content": "Research, technical content, market work, and outreach",
+    "media-documents": "Media generation, document processing, OCR, and translation",
+    "business-domains": "Logistics, quality, production, procurement, and trade",
+    "alternative-workflows": "Optional orchestration, TDD, review, and verification systems"
+  },
+  "lanes": {
+    "workflow-advanced": ["autoplan", "office-hours", "plan-ceo-review", "plan-design-review", "plan-devex-review", "subagent-driven-development", "finishing-a-development-branch", "diagnosing-superpowers", "writing-skills", "github-ops", "inherit-legacy-style", "code-tour", "repo-scan"],
+    "qa-operations": ["benchmark", "benchmark-optimization-loop", "browse", "canary", "design-consultation", "design-review", "document-release", "freeze", "guard", "land-and-deploy", "qa-only", "retro", "setup-browser-cookies", "setup-deploy", "unfreeze", "gstack-upgrade", "hackernews-frontpage", "codex", "click-path-audit", "latency-critical-systems"],
+    "ai-engineering": ["agent-architecture-audit", "agent-harness-construction", "agent-introspection-debugging", "agent-self-evaluation", "agent-eval", "agentic-engineering", "ai-first-engineering", "ai-regression-testing", "claude-api", "content-hash-cache-pattern", "continuous-learning-v2", "cost-aware-llm-pipeline", "eval-harness", "iterative-retrieval", "mcp-server-patterns", "prompt-optimizer", "regex-vs-llm-structured-text", "pytorch-patterns"],
+    "backend-data": ["api-connector-builder", "backend-patterns", "database-migrations", "deployment-patterns", "docker-patterns", "error-handling", "hexagonal-architecture", "kubernetes-patterns", "mysql-patterns", "postgres-patterns", "prisma-patterns", "redis-patterns", "clickhouse-io"],
+    "python": ["django-celery", "django-patterns", "django-security", "django-tdd", "django-verification", "fastapi-patterns", "generating-python-installer", "python-patterns", "python-testing"],
+    "jvm": ["java-coding-standards", "jpa-patterns", "kotlin-coroutines-flows", "kotlin-exposed-patterns", "kotlin-ktor-patterns", "kotlin-patterns", "kotlin-testing", "springboot-patterns", "springboot-security", "springboot-tdd", "springboot-verification"],
+    "web": ["accessibility", "bun-runtime", "e2e-testing", "frontend-a11y", "frontend-patterns", "motion-advanced", "motion-foundations", "motion-patterns", "nestjs-patterns", "nextjs-turbopack", "nuxt4-patterns", "react-patterns", "react-performance", "react-testing", "ui-to-vue", "vite-patterns", "vue-patterns", "windows-desktop-e2e"],
+    "mobile": ["android-clean-architecture", "compose-multiplatform-patterns", "flutter-dart-code-review", "foundation-models-on-device", "liquid-glass-design", "swift-actor-persistence", "swift-concurrency-6-2", "swift-protocol-di-testing", "swiftui-patterns"],
+    "other-languages": ["cpp-coding-standards", "cpp-testing", "golang-patterns", "golang-testing", "laravel-patterns", "laravel-security", "laravel-tdd", "laravel-verification", "perl-patterns", "perl-security", "perl-testing", "rust-patterns", "rust-testing"],
+    "research-content": ["deep-research", "exa-search", "article-writing", "content-engine", "crosspost", "market-research", "investor-materials", "investor-outreach", "frontend-slides", "product-lens", "x-api"],
+    "media-documents": ["computer-use", "data-scraper-agent", "fal-ai-media", "nutrient-document-processing", "video-editing", "videodb", "visa-doc-translate"],
+    "business-domains": ["carrier-relationship-management", "customs-trade-compliance", "energy-procurement", "inventory-demand-planning", "logistics-exception-management", "production-scheduling", "quality-nonconformance", "returns-reverse-logistics"],
+    "alternative-workflows": ["autonomous-loops", "blueprint", "browser-qa", "canary-watch", "claude-devfleet", "configure-ecc", "continuous-agent-loop", "continuous-learning", "design-system", "dmux-workflows", "enterprise-agent-ops", "find-skills", "nanoclaw-repl", "omc-plan", "orca-cli", "orchestration", "plankton-code-quality", "project-guidelines-example", "ralphinho-rfc-pipeline", "rules-distill", "safety-guard", "santa-method", "search-first", "security-review", "skill-comply", "skill-stocktake", "strategic-compact", "tdd-workflow", "team-builder", "verification-loop"]
+  },
+  "canonicalSources": {"benchmark": "gstack"},
+  "managedRepositories": ["sehoon787/my-codex", "sehoon787/my-claude"],
+  "sourceVersions": {"ecc": "07756cee15788a54506031462794ad645719b028", "gstack": "a6b3a57512ca6d5c6aa5b68f74f736195021f96e", "superpowers": "5bf4e78011075bcfc0dc295f0724994cd123ee71", "archify": "62904f3b73dc469ceb1f1fd500ff44c8dee70b06"}
+}

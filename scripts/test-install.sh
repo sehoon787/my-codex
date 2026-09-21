@@ -4,6 +4,7 @@ trap 'echo "FAILED at line $LINENO (exit $?)" >&2' ERR
 
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 TMP_PARENT="${TMPDIR:-$REPO_ROOT/.tmp-install-tests}"
+TMP_PARENT="${TMP_PARENT%/}"
 mkdir -p "$TMP_PARENT"
 TMP_ROOT="$TMP_PARENT/my-codex-install-test.$$"
 TEST_HOME="$TMP_ROOT/home"
@@ -238,6 +239,7 @@ chmod +x "$TEST_HOME/.codex/skills/gstack/setup" "$TEST_HOME/.codex/skills/gstac
 
 HOME="$TEST_HOME" CODEX_HOME="$HOSTILE_CODEX_HOME" PATH="$BIN_DIR:$PATH" MY_CODEX_TEST_LOG="$LOG_FILE" MY_CODEX_TEST_UV_STATE="$UV_STATE" MY_CODEX_TEST_SERVICE_ROOT="$SERVICE_ROOT" \
   bash "$REPO_ROOT/install.sh" > "$TMP_ROOT/install.out"
+test "$(node -p "JSON.parse(require('fs').readFileSync(process.argv[1],'utf8')).profile" "$TEST_HOME/.codex/my-codex/skill-catalog-state.json")" = "core"
 test "$(cat "$HOSTILE_CODEX_HOME/sentinel")" = "untouched"
 test ! -e "$HOSTILE_CODEX_HOME/skills"
 grep -q '^  codeburn:      OK (0.9.23)$' "$TMP_ROOT/install.out"
@@ -410,9 +412,9 @@ actual_skills=$(find "$TEST_HOME/.codex/skills" -name 'SKILL.md' | wc -l | tr -d
 # Post-dedup contract (2026-07-27): 17 auto-loaded agents (10 core/omo + 7 omx),
 # 17 vendored pack agents (data-ai 13 + llmops 4), packs disabled by default,
 # 105 allowlisted skills on a real install. In this sandboxed harness the
-# gstack network clone is unavailable, so the floor is ECC 61 + superpowers 13
-# + core 4 = 78. ECC 61 is the default lane; the 18 web/UI skills in
-# $ECC_SKILL_OPTIONAL_WEB only arrive with --skills=web (exercised below).
+# gstack network clone is unavailable, so assert a conservative physical floor.
+# Optional lane payloads are copied when first requested, then retained across
+# later profile changes and reinstalls.
 test "$actual_core" -ge 17
 test "$actual_active_pack_links" -eq 0
 test "$actual_packs" -eq 17
@@ -425,7 +427,6 @@ test ! -e "$TEST_HOME/.codex/agents/analyst.toml"
 test ! -e "$TEST_HOME/.codex/agents/superpowers-code-reviewer.toml"
 test -f "$TEST_HOME/.codex/skills/api-design/SKILL.md"
 test ! -e "$TEST_HOME/.codex/skills/laravel-patterns"
-# Default lane only: the web/UI lane stays out until asked for.
 test ! -e "$TEST_HOME/.codex/skills/react-patterns"
 test ! -e "$TEST_HOME/.codex/skills/vue-patterns"
 test -f "$TEST_HOME/.codex/enabled-skill-lanes.txt"
@@ -604,10 +605,23 @@ HOME="$TEST_HOME" "$TEST_HOME/.codex/bin/my-codex-packs" enable data-ai
 grep -q '^data-ai$' "$TEST_HOME/.codex/enabled-agent-packs.txt"
 test "$(find "$TEST_HOME/.codex/agents" -maxdepth 1 -type f -name '*.toml' | wc -l | tr -d ' ')" -ge 10
 
-mkdir -p "$TEST_HOME/.codex/agent-packs/custom" "$TEST_HOME/.codex/skills/custom-skill"
+mkdir -p "$TEST_HOME/.codex/agent-packs/custom" \
+  "$TEST_HOME/.codex/skills/custom-skill" \
+  "$TEST_HOME/.agents/skills/external-normalizer-trap"
 printf 'name = "custom-user-agent"\ndescription = "custom"\n[developer_instructions]\ncontent = "custom"\n' > "$TEST_HOME/.codex/agents/custom-user-agent.toml"
 printf 'name = "custom-pack-agent"\ndescription = "custom"\n[developer_instructions]\ncontent = "custom"\n' > "$TEST_HOME/.codex/agent-packs/custom/custom-pack-agent.toml"
-printf -- '---\nname: custom-skill\n---\n' > "$TEST_HOME/.codex/skills/custom-skill/SKILL.md"
+printf -- '---\nname: custom-skill\n---\nUser text: \u76f4\u63a5\u505a\n' > "$TEST_HOME/.codex/skills/custom-skill/SKILL.md"
+printf -- '---\nname: external-normalizer-trap\n---\nUser text: \u76f4\u63a5\u505a\n' > \
+  "$TEST_HOME/.agents/skills/external-normalizer-trap/SKILL.md"
+mkdir -p "$TEST_HOME/.codex/skills/docx" "$TEST_HOME/.codex/skills/pdf"
+[ -f "$TEST_HOME/.codex/skills/docx/SKILL.md" ] || \
+  printf -- '---\nname: docx\n---\nUser text: \u76f4\u63a5\u505a\n' > "$TEST_HOME/.codex/skills/docx/SKILL.md"
+[ -f "$TEST_HOME/.codex/skills/pdf/SKILL.md" ] || \
+  printf -- '---\nname: pdf\n---\nUser text: \u76f4\u63a5\u505a\n' > "$TEST_HOME/.codex/skills/pdf/SKILL.md"
+custom_skill_checksum="$(cksum "$TEST_HOME/.codex/skills/custom-skill/SKILL.md")"
+external_skill_checksum="$(cksum "$TEST_HOME/.agents/skills/external-normalizer-trap/SKILL.md")"
+docx_checksum="$(cksum "$TEST_HOME/.codex/skills/docx/SKILL.md")"
+pdf_checksum="$(cksum "$TEST_HOME/.codex/skills/pdf/SKILL.md")"
 
 # A second install must not re-append AGENTS.md sections, re-insert hooks = true,
 # or move hooks.json: snapshot the three managed files and diff them after.
@@ -622,6 +636,10 @@ HOME="$TEST_HOME" PATH="$BIN_DIR:$PATH" MY_CODEX_TEST_LOG="$LOG_FILE" MY_CODEX_T
 diff -u "$TMP_ROOT/idempotency-before/hooks.json" "$TEST_HOME/.codex/hooks.json"
 diff -u "$TMP_ROOT/idempotency-before/config.toml" "$TEST_HOME/.codex/config.toml"
 diff -u "$TMP_ROOT/idempotency-before/AGENTS.md" "$TEST_HOME/.codex/AGENTS.md"
+test "$(cksum "$TEST_HOME/.codex/skills/custom-skill/SKILL.md")" = "$custom_skill_checksum"
+test "$(cksum "$TEST_HOME/.agents/skills/external-normalizer-trap/SKILL.md")" = "$external_skill_checksum"
+test "$(cksum "$TEST_HOME/.codex/skills/docx/SKILL.md")" = "$docx_checksum"
+test "$(cksum "$TEST_HOME/.codex/skills/pdf/SKILL.md")" = "$pdf_checksum"
 test ! -f "$TEST_HOME/.codex/hooks/hooks.json"
 
 # The config.toml diff above already proves the MCP tables were not re-appended;
@@ -660,7 +678,14 @@ test -f "$TEST_HOME/.codex/skills/vue-patterns/SKILL.md"
 test -f "$TEST_HOME/.codex/skills/accessibility/SKILL.md"
 grep -q '^web$' "$TEST_HOME/.codex/enabled-skill-lanes.txt"
 skills_web_count=$(find "$TEST_HOME/.codex/skills" -name 'SKILL.md' | wc -l | tr -d ' ')
-test "$((skills_web_count - skills_default_count))" -eq 18
+test "$skills_web_count" -gt "$skills_default_count"
+react_skill_path="$TEST_HOME/.codex/skills/react-patterns/SKILL.md"
+awk -v wanted="$react_skill_path" '
+  /^\[\[skills\.config\]\]$/ { in_entry=1; path=""; enabled=""; next }
+  in_entry && /^path = / { path=$0; gsub(/^path = "|"$/, "", path) }
+  in_entry && /^enabled = / { enabled=$3; if (path == wanted && enabled == "true") found=1; in_entry=0 }
+  END { exit(found ? 0 : 1) }
+' "$TEST_HOME/.codex/config.toml"
 
 # The lane persists: a plain re-run keeps it without repeating the flag.
 HOME="$TEST_HOME" PATH="$BIN_DIR:$PATH" MY_CODEX_TEST_LOG="$LOG_FILE" MY_CODEX_TEST_UV_STATE="$UV_STATE" \
@@ -668,18 +693,43 @@ HOME="$TEST_HOME" PATH="$BIN_DIR:$PATH" MY_CODEX_TEST_LOG="$LOG_FILE" MY_CODEX_T
 test -f "$TEST_HOME/.codex/skills/react-patterns/SKILL.md"
 grep -q '^web$' "$TEST_HOME/.codex/enabled-skill-lanes.txt"
 
-# Upgrade path: turning the lane off removes every managed copy (this is the
-# same manifest mechanism that drops the 18 from an existing install) and
-# leaves unmanaged user skills alone.
+# Turning a lane off preserves its physical payload for fast re-enable and
+# disables each SKILL.md through path-scoped skills.config entries.
 HOME="$TEST_HOME" PATH="$BIN_DIR:$PATH" MY_CODEX_TEST_LOG="$LOG_FILE" MY_CODEX_TEST_UV_STATE="$UV_STATE" \
   bash "$REPO_ROOT/install.sh" --skills=none > "$TMP_ROOT/install-skills-none.out"
-test ! -e "$TEST_HOME/.codex/skills/react-patterns"
-test ! -e "$TEST_HOME/.codex/skills/vue-patterns"
-test ! -e "$TEST_HOME/.codex/skills/accessibility"
+test -f "$TEST_HOME/.codex/skills/react-patterns/SKILL.md"
+test -f "$TEST_HOME/.codex/skills/vue-patterns/SKILL.md"
+test -f "$TEST_HOME/.codex/skills/accessibility/SKILL.md"
+awk -v wanted="$react_skill_path" '
+  /^\[\[skills\.config\]\]$/ { in_entry=1; path=""; enabled=""; next }
+  in_entry && /^path = / { path=$0; gsub(/^path = "|"$/, "", path) }
+  in_entry && /^enabled = / { enabled=$3; if (path == wanted && enabled == "false") found=1; in_entry=0 }
+  END { exit(found ? 0 : 1) }
+' "$TEST_HOME/.codex/config.toml"
 ! grep -q '^web$' "$TEST_HOME/.codex/enabled-skill-lanes.txt"
 test -f "$TEST_HOME/.codex/skills/unmanaged-web-note/SKILL.md"
 test -f "$TEST_HOME/.codex/skills/custom-skill/SKILL.md"
-test "$(find "$TEST_HOME/.codex/skills" -name 'SKILL.md' | wc -l | tr -d ' ')" = "$skills_default_count"
+test "$(find "$TEST_HOME/.codex/skills" -name 'SKILL.md' | wc -l | tr -d ' ')" = "$skills_web_count"
+node -e 'const s=require(process.argv[1]);if(s.enabledLanes.length)process.exit(1)' \
+  "$TEST_HOME/.codex/my-codex/skill-catalog-state.json"
+
+# The environment compatibility path uses the same explicit-none semantics and
+# must not be mistaken for an unspecified default selection.
+HOME="$TEST_HOME" PATH="$BIN_DIR:$PATH" MY_CODEX_TEST_LOG="$LOG_FILE" MY_CODEX_TEST_UV_STATE="$UV_STATE" \
+  MY_CODEX_SKILLS=web bash "$REPO_ROOT/install.sh" > "$TMP_ROOT/install-skills-env-web.out"
+grep -q '^web$' "$TEST_HOME/.codex/enabled-skill-lanes.txt"
+HOME="$TEST_HOME" PATH="$BIN_DIR:$PATH" MY_CODEX_TEST_LOG="$LOG_FILE" MY_CODEX_TEST_UV_STATE="$UV_STATE" \
+  MY_CODEX_SKILLS=none bash "$REPO_ROOT/install.sh" > "$TMP_ROOT/install-skills-env-none.out"
+! grep -q '^web$' "$TEST_HOME/.codex/enabled-skill-lanes.txt"
+node -e 'const s=require(process.argv[1]);if(s.enabledLanes.length)process.exit(1)' \
+  "$TEST_HOME/.codex/my-codex/skill-catalog-state.json"
+test -f "$TEST_HOME/.codex/skills/react-patterns/SKILL.md"
+awk -v wanted="$react_skill_path" '
+  /^\[\[skills\.config\]\]$/ { in_entry=1; path=""; enabled=""; next }
+  in_entry && /^path = / { path=$0; gsub(/^path = "|"$/, "", path) }
+  in_entry && /^enabled = / { enabled=$3; if (path == wanted && enabled == "false") found=1; in_entry=0 }
+  END { exit(found ? 0 : 1) }
+' "$TEST_HOME/.codex/config.toml"
 
 # An unknown lane fails loudly instead of silently installing nothing. Assert
 # the reason, not just the exit code: a bare non-zero check would also pass if
@@ -692,7 +742,7 @@ fi
 grep -q 'unknown skill lane: nope' "$TMP_ROOT/install-skills-bad.out"
 # ...and it rejects before touching anything: the persisted set stays empty.
 ! grep -q '^web$' "$TEST_HOME/.codex/enabled-skill-lanes.txt"
-test ! -e "$TEST_HOME/.codex/skills/react-patterns"
+test -f "$TEST_HOME/.codex/skills/react-patterns/SKILL.md"
 
 PIPE_HOME="$TMP_ROOT/pipe-home"
 mkdir -p "$PIPE_HOME" "$PIPE_HOME/.agents/skills" "$PIPE_HOME/.claude/skills"
@@ -820,6 +870,7 @@ grep -q 'Only wrapper/session-level signals have been observed so far.\|Insuffic
 # tomllib then refuses the file with "Cannot declare ('features',) twice".
 LEGACY_HOME="$TMP_ROOT/legacy-home"
 mkdir -p "$LEGACY_HOME/.codex" "$LEGACY_HOME/.agents/skills" "$LEGACY_HOME/.claude/skills"
+printf 'pre-catalog-install\n' > "$LEGACY_HOME/.codex/.my-codex-version"
 cat > "$LEGACY_HOME/.codex/config.toml" << 'LEGACY_TOML'
 [features]  # my flags
 multi_agent = true
@@ -860,6 +911,8 @@ LEGACY_AGENTS
 
 HOME="$LEGACY_HOME" PATH="$BIN_DIR:$PATH" MY_CODEX_TEST_LOG="$LOG_FILE" MY_CODEX_TEST_UV_STATE="$UV_STATE" \
   bash "$REPO_ROOT/install.sh" > "$TMP_ROOT/install-legacy.out"
+test ! -e "$LEGACY_HOME/.codex/my-codex/skill-catalog-state.json"
+grep -q 'Existing noninteractive install: preserving current skill exposure' "$TMP_ROOT/install-legacy.out"
 
 assert_features_hooks_enabled "$LEGACY_HOME/.codex/config.toml"
 test "$(awk 'f && /^\[/ { exit } /^[[:space:]]*\[[[:space:]]*features[[:space:]]*\][[:space:]]*(#.*)?$/ { f = 1 } f' "$LEGACY_HOME/.codex/config.toml" | grep -c '^hooks = true$')" = "1"

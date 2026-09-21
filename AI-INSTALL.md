@@ -97,7 +97,7 @@ Why the installed counts are smaller than raw upstream totals:
 - Tier dedup applies on top: core > omo > omx > opt-in packs. A pack agent whose filename collides with an already-installed agent is skipped.
 - The counts above are the correct verification target.
 
-Note: Codex ships **no document skills** in this bundle — there is no `pdf`, `docx`, `pptx`, or `xlsx` skill.
+Note: Codex ships **no document skills** in this bundle — there is no `pdf`, `docx`, `pptx`, or `xlsx` skill. An existing `pdf` or `docx` skill under `~/.codex/skills` is user-owned: my-codex never installs, overwrites, or tracks it (see the `preserve` list in `scripts/skill-catalog.json`), it just leaves the files in place.
 
 Briefing Vault note:
 - `sessions/*-auto.md` and `learnings/*-auto-session.md` are auto-generated scaffolds.
@@ -264,7 +264,7 @@ Expected:
 - Core agents: 17 (Boss 1 + OMO 9 + OMX 7)
 - Active packs: 0 (packs are opt-in)
 - Agent packs: 17 (data-ai 13 + llmops 4)
-- Skills: 83 installed (the installer counts `SKILL.md` files without following the 29 gstack symlinks; 110 entries exist under `~/.codex/skills/`)
+- Skills: 83 on a clean install (more if personal skills were already present) — the installer counts `SKILL.md` files without following the 29 gstack symlinks; 110 entries exist under `~/.codex/skills/` for a clean install
 - AGENTS.md: OK
 - config.toml: OK
 - Enabled packs: (empty)

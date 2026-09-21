@@ -80,14 +80,41 @@ codeburn_healthy() {
   printf '%s' "$_body" | grep -Fq '<title>CodeBurn - Local Dashboard</title>'
 }
 
-retry_codeburn_identity() {
-  _attempts=2
-  while [ "$_attempts" -gt 0 ]; do
-    sleep 0.1
-    codeburn_healthy && return 0
-    _attempts=$((_attempts - 1))
-  done
-  return 1
+wait_for_codeburn_identity() {
+  python3 - "$1" "$CODEBURN_URL" <<'PY'
+import re
+import subprocess
+import sys
+import time
+
+deadline = float(sys.argv[1])
+url = sys.argv[2]
+expected = b"<title>CodeBurn - Local Dashboard</title>"
+
+while True:
+    remaining = deadline - time.monotonic()
+    if remaining <= 0:
+        raise SystemExit(2)
+    try:
+        result = subprocess.run(
+            ["curl", "--silent", "--show-error", "--fail", "--max-time", f"{remaining:.3f}", url],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.DEVNULL,
+            timeout=remaining,
+            check=False,
+        )
+    except subprocess.TimeoutExpired:
+        raise SystemExit(2)
+    if result.returncode == 0:
+        if expected in result.stdout:
+            raise SystemExit(0)
+        if re.search(br"<title>[^<]+</title>", result.stdout, re.IGNORECASE):
+            raise SystemExit(1)
+    remaining = deadline - time.monotonic()
+    if remaining <= 0:
+        raise SystemExit(2)
+    time.sleep(min(0.1, remaining))
+PY
 }
 
 headroom_healthy() {
@@ -161,6 +188,7 @@ close_inherited_lock_fd() {
 ensure_codeburn() {
   _log="$LOG_DIR/codeburn.log"
   _pid_file="$STATE_DIR/codeburn.pid"
+  _identity_deadline=$(python3 -c 'import sys,time; print(time.monotonic() + int(sys.argv[1]))' "$TIMEOUT_SECONDS")
 
   if codeburn_healthy; then
     echo "codeburn web: REUSED ($CODEBURN_URL)"
@@ -169,11 +197,17 @@ ensure_codeburn() {
   port_is_occupied 4747
   _port_status=$?
   if [ "$_port_status" = "0" ]; then
-    if retry_codeburn_identity; then
-      echo "codeburn web: REUSED ($CODEBURN_URL)"
+    wait_for_codeburn_identity "$_identity_deadline"
+    _identity_status=$?
+    if [ "$_identity_status" = "0" ]; then
+        echo "codeburn web: REUSED ($CODEBURN_URL)"
+        return 0
+    fi
+    if [ "$_identity_status" = "1" ]; then
+      echo "codeburn web: FAIL (port 4747 belongs to another service; left untouched; log: $_log)"
       return 0
     fi
-    echo "codeburn web: FAIL (port 4747 belongs to another service; left untouched; log: $_log)"
+    echo "codeburn web: FAIL (listener on port 4747 did not confirm CodeBurn identity before ${TIMEOUT_SECONDS}s deadline; left untouched; log: $_log)"
     return 0
   fi
   if ! command -v codeburn >/dev/null 2>&1; then

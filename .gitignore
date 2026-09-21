@@ -1,6 +1,7 @@
 .omc/
 .omx/
 .briefing/
+.serena/
 node_modules/
 .DS_Store
 *.log

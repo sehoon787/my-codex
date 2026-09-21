@@ -112,6 +112,18 @@ run_helper() {
     "$@" bash "$REPO/scripts/ensure-shared-local-services.sh" > "$_root/output" 2>&1
 }
 
+run_selected_helper() {
+  _case="$1"
+  _service="$2"
+  _root="$TMP/$_case"
+  mkdir -p "$_root/state"
+  env PATH="$SHIM:$PATH" SHIM_STATE="$_root/state" \
+    AGENT_HARNESS_STATE_DIR="$_root/shared" \
+    AGENT_HARNESS_SERVICE_TIMEOUT_SECONDS=1 \
+    CODEBURN_SHIM_MODE=success HEADROOM_SHIM_MODE=native \
+    bash "$REPO/scripts/ensure-shared-local-services.sh" "$_service" > "$_root/output" 2>&1
+}
+
 cleanup_pid() {
   _file="$1"
   if [ -f "$_file" ]; then
@@ -146,6 +158,20 @@ assert_not_contains "$TMP/start/state/headroom-calls" "--target"
 assert_contains "$TMP/start/output" "http://127.0.0.1:4747/"
 assert_contains "$TMP/start/output" "http://127.0.0.1:8787/stats"
 cleanup_pid "$TMP/start/shared/codeburn.pid"
+
+# A caller can request either service independently. The selection must survive
+# the Python lock supervisor recursion, and unselected services must not be
+# probed, started, or advertised.
+run_selected_helper codeburn-only codeburn
+assert_contains "$TMP/codeburn-only/output" "codeburn web: STARTED"
+assert_not_contains "$TMP/codeburn-only/output" "Headroom"
+[ ! -e "$TMP/codeburn-only/state/headroom-calls" ] || fail "codeburn-only run started Headroom"
+cleanup_pid "$TMP/codeburn-only/shared/codeburn.pid"
+
+run_selected_helper headroom-only headroom
+assert_contains "$TMP/headroom-only/output" "Headroom proxy: STARTED"
+assert_not_contains "$TMP/headroom-only/output" "codeburn"
+[ ! -e "$TMP/headroom-only/state/codeburn-calls" ] || fail "headroom-only run started codeburn"
 
 # A later installer reuses healthy endpoints and never starts duplicates.
 mkdir -p "$TMP/reuse/state"

@@ -342,7 +342,7 @@ Features built specifically for this project, beyond what upstream sources provi
 | **CI Dedup Detection** | Automated duplicate TOML agent detection across upstream syncs |
 ## Installation Options
 Re-running the same command refreshes to the latest `main` build, replaces only my-codex-managed files in `~/.codex/`, and removes stale skill copies from `~/.agents/skills/`.
-Interactive installs ask once before installing Serena, Headroom, and codeburn; press Enter or `y` to include them, or `n` to continue without them. Automation keeps them by default; use `--yes` to make that explicit or `--skip-tools` to omit only those tools, their MCP entries, and shared dashboards.
+Interactive installs show a numbered selector for Serena, Headroom, and codeburn: Enter, `all`, `a`, `y`, or `yes` selects all; `none`, `n`, `no`, or `0` selects none; numbers and names can be mixed, as in `1,3` or `serena codeburn`. Automation selects all by default; use `--tools=headroom` for an explicit subset, `--yes` for all, or `--skip-tools` for none.
 ### Agent Pack Profiles
 Packs are installed but **inactive by default** — a fresh install enables none of them and records the empty set in `~/.codex/enabled-agent-packs.txt`. Opt in per pack, or pick a profile:
 ```bash

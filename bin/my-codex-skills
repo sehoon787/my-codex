@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+set -euo pipefail
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+MANAGER_HOME="$HOME"
+case "$(uname -s 2>/dev/null || true)" in
+  MINGW*|MSYS*|CYGWIN*)
+    if command -v cygpath >/dev/null 2>&1; then
+      MANAGER_HOME="$(cygpath -w "$HOME")"
+    fi
+    ;;
+esac
+exec node "$SCRIPT_DIR/../lib/my-codex/skill-catalog.js" --home "$MANAGER_HOME" "$@"

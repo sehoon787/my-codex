@@ -35,6 +35,7 @@ fi
 REGISTRY_DIR="$HOME/.omc/state"
 REGISTRY_FILE="$REGISTRY_DIR/capability-registry.json"
 REGISTRY_STATUS="up-to-date"
+_registry_diagnostic=""
 mkdir -p "$REGISTRY_DIR"
 _needs_regen=0
 if [ ! -f "$REGISTRY_FILE" ]; then
@@ -44,9 +45,14 @@ else
     _needs_regen=1
   elif [ -d ".codex/agents" ] && find ".codex/agents" ".codex/skills" -name "*.md" -newer "$REGISTRY_FILE" 2>/dev/null | grep -q .; then
     _needs_regen=1
+  elif [ -f "$HOME/.codex/my-codex/skill-catalog-state.json" ] && [ "$HOME/.codex/my-codex/skill-catalog-state.json" -nt "$REGISTRY_FILE" ]; then
+    _needs_regen=1
+  elif [ -f "$HOME/.codex/config.toml" ] && [ "$HOME/.codex/config.toml" -nt "$REGISTRY_FILE" ]; then
+    _needs_regen=1
   fi
 fi
 if [ "$_needs_regen" -eq 1 ]; then
+  _registry_write_allowed=1
   _ts=$(date -u +"%Y-%m-%dT%H:%M:%SZ" 2>/dev/null || date -u +"%Y-%m-%dT%H:%M:%SZ")
 
   # Detect project type from current directory
@@ -72,15 +78,69 @@ if [ "$_needs_regen" -eq 1 ]; then
     _agents_json="${_agents_json}{\"name\":\"${_name}\",\"description\":\"${_desc}\",\"model\":\"${_model}\",\"scope\":\"${_scope}\"}"
   done
   _agents_json="${_agents_json}]"
-  _skills_json="["
-  _first_skill=1
-  for _f in "$HOME/.codex/skills/"*/SKILL.md .codex/skills/*/SKILL.md; do
+  _skills_json=""
+  _skill_lanes_json="{}"
+  _skill_manager_present=0
+  if [ -x "$HOME/.codex/bin/my-codex-skills" ] && command -v node >/dev/null 2>&1; then
+    _skill_manager_present=1
+    _skill_status_err_file=$(mktemp "${TMPDIR:-/tmp}/my-codex-skill-status.XXXXXX" 2>/dev/null)
+    if [ -n "$_skill_status_err_file" ]; then
+      _skill_status=$("$HOME/.codex/bin/my-codex-skills" status --json 2>"$_skill_status_err_file")
+      _skill_status_exit=$?
+      _skill_status_err=$(cat "$_skill_status_err_file" 2>/dev/null)
+      rm -f "$_skill_status_err_file"
+    else
+      _skill_status=$("$HOME/.codex/bin/my-codex-skills" status --json 2>&1)
+      _skill_status_exit=$?
+      _skill_status_err=""
+    fi
+    if [ "$_skill_status_exit" -eq 0 ]; then
+      _skill_status_parsed=$(printf '%s' "$_skill_status" | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{try{const j=JSON.parse(s);if(!Array.isArray(j.activeSkillNames)||!j.laneIndex||typeof j.laneIndex!=="object"||Array.isArray(j.laneIndex))process.exit(2);process.stdout.write(JSON.stringify({skills:j.activeSkillNames,lanes:j.laneIndex}))}catch(e){process.exit(2)}})')
+      _skill_status_parse_exit=$?
+    else
+      _skill_status_parsed=""
+      _skill_status_parse_exit=1
+    fi
+    if [ "$_skill_status_exit" -eq 0 ] && [ "$_skill_status_parse_exit" -eq 0 ]; then
+      _skills_json=$(printf '%s' "$_skill_status_parsed" | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>process.stdout.write(JSON.stringify(JSON.parse(s).skills)))')
+      _skill_lanes_json=$(printf '%s' "$_skill_status_parsed" | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>process.stdout.write(JSON.stringify(JSON.parse(s).lanes)))')
+    else
+      _registry_write_allowed=0
+      REGISTRY_STATUS="skill-catalog-error"
+      if [ "$_skill_status_exit" -ne 0 ]; then
+        _skill_status_detail=${_skill_status_err:-$_skill_status}
+        _registry_diagnostic="[SessionStart] Skill manager status failed (exit ${_skill_status_exit}): ${_skill_status_detail}"
+      else
+        _registry_diagnostic="[SessionStart] Skill manager returned invalid JSON: ${_skill_status}"
+      fi
+    fi
+  fi
+  if [ -z "$_skills_json" ]; then
+    if [ "$_skill_manager_present" -eq 1 ]; then
+      _skills_json=$(node -e 'const fs=require("fs");try{const j=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));process.stdout.write(JSON.stringify(j.skills||[]))}catch(e){process.stdout.write("[]")}' "$REGISTRY_FILE" 2>/dev/null || printf '[]')
+      REGISTRY_STATUS="skill-catalog-error"
+    else
+      _skills_json="["
+      _first_skill=1
+      for _f in "$HOME/.codex/skills/"*/SKILL.md .codex/skills/*/SKILL.md; do
+        [ -f "$_f" ] || continue
+        _sname=$(basename "$(dirname "$_f")")
+        if [ "$_first_skill" -eq 1 ]; then _first_skill=0; else _skills_json="${_skills_json},"; fi
+        _skills_json="${_skills_json}\"${_sname}\""
+      done
+      _skills_json="${_skills_json}]"
+    fi
+  fi
+  _project_skills_json="["
+  _first_project_skill=1
+  for _f in .codex/skills/*/SKILL.md; do
     [ -f "$_f" ] || continue
     _sname=$(basename "$(dirname "$_f")")
-    if [ "$_first_skill" -eq 1 ]; then _first_skill=0; else _skills_json="${_skills_json},"; fi
-    _skills_json="${_skills_json}\"${_sname}\""
+    if [ "$_first_project_skill" -eq 1 ]; then _first_project_skill=0; else _project_skills_json="${_project_skills_json},"; fi
+    _project_skills_json="${_project_skills_json}\"${_sname}\""
   done
-  _skills_json="${_skills_json}]"
+  _project_skills_json="${_project_skills_json}]"
+  _skills_json=$(node -e 'const a=JSON.parse(process.argv[1]),b=JSON.parse(process.argv[2]);process.stdout.write(JSON.stringify([...new Set([...a,...b])]))' "$_skills_json" "$_project_skills_json" 2>/dev/null || printf '%s' "$_skills_json")
   _mcp_json="["
   _first_mcp=1
   for _sf in ".mcp.json"; do
@@ -94,9 +154,14 @@ $(grep -o '"[^"]*"[[:space:]]*:' "$_sf" 2>/dev/null | sed -n '/mcpServers/,/}/p'
 EOF
   done
   _mcp_json="${_mcp_json}]"
-  printf '{"generated_at":"%s","agents":%s,"skills":%s,"mcp_servers":%s,"recommended_packs":%s}\n' \
-    "$_ts" "$_agents_json" "$_skills_json" "$_mcp_json" "$_recommended_packs" > "$REGISTRY_FILE" 2>/dev/null \
-    && REGISTRY_STATUS="regenerated" || REGISTRY_STATUS="failed"
+  if [ "$_registry_write_allowed" -eq 1 ]; then
+    if printf '{"generated_at":"%s","agents":%s,"skills":%s,"skill_lanes":%s,"mcp_servers":%s,"recommended_packs":%s}\n' \
+        "$_ts" "$_agents_json" "$_skills_json" "$_skill_lanes_json" "$_mcp_json" "$_recommended_packs" > "$REGISTRY_FILE" 2>/dev/null; then
+      [ "$REGISTRY_STATUS" = "skill-catalog-error" ] || REGISTRY_STATUS="regenerated"
+    else
+      REGISTRY_STATUS="failed"
+    fi
+  fi
 fi
 
 # 5b. .knowledge -> .briefing migration (one-time, backward compat)
@@ -234,6 +299,7 @@ if [ ${#MISSING[@]} -gt 0 ]; then
 fi
 
 MSG="${MSG}[SessionStart] Registry cache: ${REGISTRY_STATUS}."
+[ -n "$_registry_diagnostic" ] && MSG="${MSG} ${_registry_diagnostic}"
 [ -n "$_kv_msg" ] && MSG="${MSG} ${_kv_msg}"
 [ -n "$_update_msg" ] && MSG="${MSG} ${_update_msg}"
 if [ -n "$MSG" ]; then

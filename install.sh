@@ -93,8 +93,6 @@ BUN_SHIM_DIR=""
 NODE_PLATFORM_CACHE=""
 POWERSHELL_CMD=""
 WINGET_CMD=""
-AGENTS_SKILLS_ROOT="$HOME/.agents/skills"
-CLAUDE_SKILLS_ROOT="$HOME/.claude/skills"
 
 cleanup() {
   rm -f "$TMP_MANIFEST"
@@ -426,7 +424,8 @@ SKILL_LANES_FILE=""
 SKILL_LANES=""
 SKILL_LANES_OVERRIDE=""
 SKILL_LANES_SOURCE="default"
-KNOWN_SKILL_LANES="web"
+KNOWN_SKILL_LANES="workflow-advanced qa-operations ai-engineering backend-data python jvm web mobile other-languages research-content media-documents business-domains alternative-workflows"
+SKILL_PROFILE_OVERRIDE=""
 
 # ── Argument parsing ──
 SKIP_ECC=0
@@ -453,8 +452,13 @@ while [ "$#" -gt 0 ]; do
       SKILL_LANES_OVERRIDE="${1#*=}"
       shift
       ;;
+    --skill-profile=*)
+      SKILL_PROFILE_OVERRIDE="${1#*=}"
+      shift
+      ;;
     --full-skills)
       SKILL_LANES_OVERRIDE="$KNOWN_SKILL_LANES"
+      SKILL_PROFILE_OVERRIDE="full"
       shift
       ;;
     --skip-ecc)        SKIP_ECC=1; shift ;;
@@ -481,10 +485,14 @@ Usage:
 Options:
   --with-packs=<packs>  Comma-separated list of agent packs to symlink into ~/.codex/agents/
   --skills=<lanes>      Optional skill lanes to install on top of the default set.
-                        Known lanes: web (18 front-end/UI skills). Use "none" for
-                        the default set only. Also settable via MY_CODEX_SKILLS.
+                        Known lanes: workflow-advanced, qa-operations, ai-engineering,
+                        backend-data, python, jvm, web, mobile, other-languages,
+                        research-content, media-documents, business-domains, and
+                        alternative-workflows. Also settable via MY_CODEX_SKILLS.
                         The choice persists in ~/.codex/enabled-skill-lanes.txt.
-  --full-skills         Install every optional skill lane (same as --skills=web today)
+                        Use "none" to return to core without optional lanes.
+  --skill-profile=<p>   Skill exposure profile: core, legacy, or full.
+  --full-skills         Install all optional skill lanes and select the full profile
   --skip-ecc            Skip everything-claude-code upstream install
   --skip-omx            Skip oh-my-codex upstream install
   --skip-gstack         Skip gstack upstream install
@@ -503,6 +511,16 @@ EOF
       ;;
   esac
 done
+
+case "$SKILL_PROFILE_OVERRIDE" in
+  ""|core|legacy|full) ;;
+  *) echo "ERROR: unknown skill profile: $SKILL_PROFILE_OVERRIDE (known: core, legacy, full)" >&2; exit 1 ;;
+esac
+if [ -n "$SKILL_PROFILE_OVERRIDE" ] && [ "$SKILL_PROFILE_OVERRIDE" != "legacy" ] && \
+   { [ "$SKIP_ECC" = "1" ] || [ "$SKIP_GSTACK" = "1" ] || [ "$SKIP_SUPERPOWERS" = "1" ] || [ "$SKIP_ARCHIFY" = "1" ]; }; then
+  echo "ERROR: --skill-profile=$SKILL_PROFILE_OVERRIDE requires all skill sources; remove --skip-* skill source flags or use legacy" >&2
+  exit 1
+fi
 
 # These companions are independent and optional. Automation keeps the
 # historical install-all behavior. --skip-tools has precedence over every
@@ -661,12 +679,38 @@ resolve_skill_lanes() {
   elif [ -n "${MY_CODEX_SKILLS:-}" ]; then
     SKILL_LANES="$(normalize_skill_lanes "$MY_CODEX_SKILLS")" || exit 1
     SKILL_LANES_SOURCE="env"
+  elif [ -f "$CODEX_ROOT/my-codex/skill-catalog-state.json" ]; then
+    SKILL_LANES="$(node -e 'const fs=require("fs");const p=process.argv[1];const s=JSON.parse(fs.readFileSync(p,"utf8"));if(!Array.isArray(s.enabledLanes))throw new Error("invalid enabledLanes");process.stdout.write(s.enabledLanes.join(" "))' "$CODEX_ROOT/my-codex/skill-catalog-state.json")" || exit 1
+    SKILL_LANES="$(normalize_skill_lanes "$SKILL_LANES")" || exit 1
+    SKILL_LANES_SOURCE="catalog-state"
   else
     SKILL_LANES="$(normalize_skill_lanes "$(read_skill_lanes_file | tr '\n' ' ')")" || exit 1
     SKILL_LANES_SOURCE="persisted"
   fi
-  [ -n "$SKILL_LANES" ] || SKILL_LANES_SOURCE="default"
+  if [ -z "$SKILL_LANES" ] && [ "$SKILL_LANES_SOURCE" = "persisted" ]; then
+    SKILL_LANES_SOURCE="default"
+  fi
   write_skill_lanes_file "$SKILL_LANES"
+}
+
+catalog_skill_names() {
+  node -e '
+    const fs=require("fs");
+    const catalog=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));
+    const names=new Set([...catalog.core,...catalog.preserve,...Object.values(catalog.lanes).flat()]);
+    process.stdout.write([...names].sort().join(" "));
+  ' "$REPO_ROOT/scripts/skill-catalog.json"
+}
+
+catalog_lane_skill_names() {
+  node -e '
+    const fs=require("fs");
+    const catalog=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));
+    const requested=process.argv[2] === "full" ? Object.keys(catalog.lanes) : process.argv.slice(2);
+    const names=new Set();
+    for(const lane of requested) for(const name of catalog.lanes[lane] || []) names.add(name);
+    process.stdout.write([...names].sort().join(" "));
+  ' "$REPO_ROOT/scripts/skill-catalog.json" "$@"
 }
 
 skill_lane_enabled() {
@@ -691,10 +735,26 @@ current_install_version() {
 # which the prune pass below collects.
 remove_manifest_paths() {
   local manifest="$1"
+  local rel_path skill_name
   [ -f "$manifest" ] || return 1
 
   while IFS= read -r rel_path; do
     [ -n "$rel_path" ] || continue
+    case "$rel_path" in
+      skills/*)
+        skill_name="${rel_path#skills/}"
+        if [ "$skill_name" != "gstack" ] && [ "$skill_name" = "${skill_name%%/*}" ]; then
+          case " $CATALOG_SKILL_NAMES " in
+            *" $skill_name "*)
+              if [ -f "$CODEX_ROOT/$rel_path/SKILL.md" ]; then
+                add_manifest_entry "$rel_path"
+                continue
+              fi
+              ;;
+          esac
+        fi
+        ;;
+    esac
     rm -rf "$CODEX_ROOT/$rel_path" 2>/dev/null || true
   done < "$manifest"
 
@@ -933,41 +993,6 @@ count_managed_skills() {
   printf '%s' "$count"
 }
 
-cleanup_cross_tool_skills() {
-  local skill_dir skill_name source_skill installed_skill link_target
-  # Clean ECC skills from cross-tool locations
-  for skills_src in "$CODEX_ROOT/skills"; do
-    [ -d "$skills_src" ] || continue
-    for skill_dir in "$skills_src/"*/; do
-      [ -d "$skill_dir" ] || continue
-      skill_name="$(basename "$skill_dir")"
-      source_skill="$skill_dir/SKILL.md"
-      [ -f "$source_skill" ] || continue
-
-      installed_skill="$AGENTS_SKILLS_ROOT/$skill_name/SKILL.md"
-      if [ -f "$installed_skill" ] && [ -f "$source_skill" ]; then
-        if [ "$(head -n 1 "$installed_skill" | tr -d '\r')" != '---' ] && [ "$(head -n 1 "$source_skill" | tr -d '\r')" = '---' ]; then
-          rm -rf "$AGENTS_SKILLS_ROOT/$skill_name" 2>/dev/null || true
-        fi
-      fi
-
-      installed_skill="$CLAUDE_SKILLS_ROOT/$skill_name/SKILL.md"
-      if [ -L "$CLAUDE_SKILLS_ROOT/$skill_name" ]; then
-        link_target="$(readlink "$CLAUDE_SKILLS_ROOT/$skill_name" 2>/dev/null || true)"
-        case "$link_target" in
-          *".agents/skills/$skill_name"|*".agents/skills/$skill_name/")
-            rm -f "$CLAUDE_SKILLS_ROOT/$skill_name" 2>/dev/null || true
-            ;;
-        esac
-      elif [ -f "$installed_skill" ] && [ -f "$source_skill" ]; then
-        if [ "$(head -n 1 "$installed_skill" | tr -d '\r')" != '---' ] && [ "$(head -n 1 "$source_skill" | tr -d '\r')" = '---' ]; then
-          rm -rf "$CLAUDE_SKILLS_ROOT/$skill_name" 2>/dev/null || true
-        fi
-      fi
-    done
-  done
-}
-
 patch_npm_shims() {
   # Patch npm shims (codex.cmd, codex.ps1, extensionless codex) so they run
   # the SessionStart hook before delegating to the original npm shim, then
@@ -1132,10 +1157,11 @@ if [ -f "$VERSION_FILE" ]; then
 fi
 
 resolve_skill_lanes
+CATALOG_SKILL_NAMES="$(catalog_skill_names)"
 
 echo "=== my-codex installer ==="
 echo ""
-echo "Install footprint: 17 core agents + 17 opt-in AI agents (2 packs), 105 curated skills from 4 upstream sources"
+echo "Install footprint: 17 core agents + 17 opt-in AI agents (2 packs), curated skill catalog from 4 upstream sources"
 if [ -n "$SKILL_LANES" ]; then
   echo "Optional skill lanes: ${SKILL_LANES} (+18 with web)"
 fi
@@ -1169,7 +1195,6 @@ if [ -f "$MANIFEST_FILE" ]; then
 else
   echo "  No previous manifest found — skipping stale-file cleanup (safe default for first-time or pre-manifest legacy installs)"
 fi
-cleanup_cross_tool_skills
 echo "  Previous my-codex-managed files cleaned"
 
 echo "[1/7] Installing Codex agents..."
@@ -1301,18 +1326,18 @@ if [ "$SKIP_ECC" = "0" ]; then
       for ecc_skill in $ECC_SKILL_ALLOWLIST; do
         install_skill_copy "$UPSTREAM_DIR/skills/$ecc_skill" "$ecc_skill"
       done
-      # Optional lanes. Skills from a lane that is off are simply not copied;
-      # the manifest cleanup at [0.5/7] removes any copy a previous install left
-      # behind, which is what makes turning a lane off actually shrink context.
-      if skill_lane_enabled web; then
-        for ecc_skill in $ECC_SKILL_OPTIONAL_WEB; do
-          install_skill_copy "$UPSTREAM_DIR/skills/$ecc_skill" "$ecc_skill"
-        done
+      # Copy optional lane payloads only when explicitly active. Previously
+      # installed catalog payloads survive manifest cleanup even when disabled,
+      # while a fresh core install keeps the original physical footprint.
+      if [ "$SKILL_PROFILE_OVERRIDE" = "full" ]; then
+        catalog_lane_skills="$(catalog_lane_skill_names full)"
+      else
+        catalog_lane_skills="$(catalog_lane_skill_names $SKILL_LANES)"
       fi
-      # continuous-learning v1 is self-declared deprecated in favor of v2; never
-      # allowlisted — this also clears copies left by pre-allowlist installs.
-      rm -rf "$CODEX_ROOT/skills/continuous-learning"
-      grep -v '^skills/continuous-learning$' "$TMP_MANIFEST" > "$TMP_MANIFEST.tmp" 2>/dev/null && mv "$TMP_MANIFEST.tmp" "$TMP_MANIFEST"
+      for ecc_skill in $catalog_lane_skills; do
+        [ -f "$UPSTREAM_DIR/skills/$ecc_skill/SKILL.md" ] || continue
+        install_skill_copy "$UPSTREAM_DIR/skills/$ecc_skill" "$ecc_skill"
+      done
     fi
   fi
 fi
@@ -1410,6 +1435,7 @@ if [ "$SKIP_GSTACK" = "0" ]; then
     if [ -f "$GSTACK_DIR/.agents/skills/gstack/SKILL.md" ] && [ -d "$CODEX_ROOT/skills/gstack" ]; then
       [ -L "$CODEX_ROOT/skills/gstack/SKILL.md" ] && unlink "$CODEX_ROOT/skills/gstack/SKILL.md"
       cp "$GSTACK_DIR/.agents/skills/gstack/SKILL.md" "$CODEX_ROOT/skills/gstack/SKILL.md"
+      add_manifest_entry "skills/gstack/SKILL.md"
     fi
 
     # gstack generates Codex-correct skills under gstack-* directory names.
@@ -1558,12 +1584,20 @@ fi
 # Keep installed skill instructions English without modifying pinned upstream
 # checkouts. The normalizer follows runtime aliases once, backs up each changed
 # source, and applies only maintained overrides or exact known phrase mappings.
+normalizer_args=()
+while IFS= read -r managed_skill_path; do
+  case "$managed_skill_path" in
+    skills/*)
+      managed_skill_root="$CODEX_ROOT/$managed_skill_path"
+      [ -f "$managed_skill_root/SKILL.md" ] || managed_skill_root="$(dirname "$managed_skill_root")"
+      [ -f "$managed_skill_root/SKILL.md" ] || continue
+      normalizer_args+=(--root "$managed_skill_root" --allowed-write-root "$managed_skill_root")
+      ;;
+  esac
+done < "$TMP_MANIFEST"
+normalizer_args+=(--allowed-write-root "$CODEX_ROOT/vendor/gstack")
 node "$REPO_ROOT/scripts/normalize-skill-english.js" \
-  --root "$CODEX_ROOT/skills" \
-  --root "$HOME/.agents/skills" \
-  --allowed-write-root "$CODEX_ROOT/skills" \
-  --allowed-write-root "$CODEX_ROOT/vendor/gstack" \
-  --allowed-write-root "$HOME/.agents/skills" \
+  "${normalizer_args[@]}" \
   --backup-root "$CODEX_ROOT/backups/english-skill-originals" \
   --overrides "$REPO_ROOT/skill-overrides"
 
@@ -1571,7 +1605,8 @@ managed_skills="$(count_managed_skills)"
 total_skills="$(find "$CODEX_ROOT/skills" -name 'SKILL.md' 2>/dev/null | wc -l | tr -d ' ')"
 extra_skills=$((total_skills - managed_skills))
 echo "  Skills: ${managed_skills} installed"
-if [ -n "$SKILL_LANES" ]; then
+if [ -n "$SKILL_LANES" ] && [ "$SKILL_LANES_SOURCE" != "persisted" ] && \
+   [ "$SKILL_PROFILE_OVERRIDE" != "legacy" ] && [ "$SKILL_PROFILE_OVERRIDE" != "full" ]; then
   echo "  Optional skill lanes: ${SKILL_LANES} (source: ${SKILL_LANES_SOURCE})"
 else
   echo "  Optional skill lanes: none (default set only; enable with --skills=web)"
@@ -1925,6 +1960,13 @@ cp "$REPO_ROOT/bin/codex.ps1" "$CODEX_ROOT/bin/codex.ps1"
 patch_npm_shims
 cp "$REPO_ROOT/scripts/codex-mark-used.sh" "$CODEX_ROOT/bin/codex-mark-used"
 cp "$REPO_ROOT/scripts/agent-pack-manager.sh" "$CODEX_ROOT/bin/my-codex-packs"
+mkdir -p "$CODEX_ROOT/lib/my-codex"
+cp "$REPO_ROOT/scripts/skill-catalog.js" "$CODEX_ROOT/lib/my-codex/skill-catalog.js"
+cp "$REPO_ROOT/scripts/skill-catalog.json" "$CODEX_ROOT/lib/my-codex/skill-catalog.json"
+cp "$REPO_ROOT/scripts/skill-catalog-toml.py" "$CODEX_ROOT/lib/my-codex/skill-catalog-toml.py"
+cp "$REPO_ROOT/bin/my-codex-skills" "$CODEX_ROOT/bin/my-codex-skills"
+add_manifest_entry "lib/my-codex"
+add_manifest_entry "bin/my-codex-skills"
 cp "$REPO_ROOT/templates/git-hooks/prepare-commit-msg" "$CODEX_ROOT/git-hooks/prepare-commit-msg"
 cp "$REPO_ROOT/templates/git-hooks/commit-msg" "$CODEX_ROOT/git-hooks/commit-msg"
 cp "$REPO_ROOT/templates/git-hooks/post-commit" "$CODEX_ROOT/git-hooks/post-commit"
@@ -1932,6 +1974,7 @@ chmod +x "$CODEX_ROOT/lib/codex-attribution.sh" \
   "$CODEX_ROOT/bin/codex" \
   "$CODEX_ROOT/bin/codex-mark-used" \
   "$CODEX_ROOT/bin/my-codex-packs" \
+  "$CODEX_ROOT/bin/my-codex-skills" \
   "$CODEX_ROOT/git-hooks/prepare-commit-msg" \
   "$CODEX_ROOT/git-hooks/commit-msg" \
   "$CODEX_ROOT/git-hooks/post-commit"
@@ -2030,7 +2073,7 @@ ensure_mcp_server_toml() {
       return
     fi
     total=$(awk 'END { print NR }' "$CONFIG_FILE")
-    end_ln=$(awk -v s="$hdr_ln" 'NR > s && /^\[/ { print NR; exit }' "$CONFIG_FILE")
+    end_ln=$(awk -v s="$hdr_ln" 'NR > s && (/^\[/ || $0 == "# >>> my-codex skill catalog >>>") { print NR; exit }' "$CONFIG_FILE")
     [ -n "$end_ln" ] || end_ln=$((total + 1))
     # Blank lines trailing the old body are the separator before the next table;
     # re-emit exactly as many so the rest of the file stays byte-identical.
@@ -2178,6 +2221,39 @@ LC_ALL=C sort -u "$TMP_MANIFEST" > "$MANIFEST_FILE"
 printf '%s\n' "$INSTALLING_VERSION" > "$VERSION_FILE"
 echo "$REPO_ROOT" > "$CODEX_ROOT/.my-codex-repo-path" 2>/dev/null || true
 
+echo "  [6g] skill catalog exposure..."
+SKILL_CATALOG="$CODEX_ROOT/bin/my-codex-skills"
+if [ -n "$SKILL_PROFILE_OVERRIDE" ]; then
+  "$SKILL_CATALOG" set-profile "$SKILL_PROFILE_OVERRIDE"
+elif [ -f "$CODEX_ROOT/my-codex/skill-catalog-state.json" ]; then
+  "$SKILL_CATALOG" apply
+elif [ "$INSTALLED_VERSION" = "none" ]; then
+  if [ "$SKIP_ECC" = "1" ] || [ "$SKIP_GSTACK" = "1" ] || [ "$SKIP_SUPERPOWERS" = "1" ] || [ "$SKIP_ARCHIFY" = "1" ]; then
+    echo "    Reduced-source install: preserving exposure for installed components"
+  else
+    "$SKILL_CATALOG" set-profile core
+  fi
+elif [ -t 0 ] && [ "${CI+x}" != "x" ] && [ "$ASSUME_YES" = "0" ]; then
+  printf "Skill exposure profile: core / legacy / full [core]: "
+  if ! IFS= read -r skill_profile_answer; then skill_profile_answer="legacy"; fi
+  skill_profile_answer="${skill_profile_answer:-core}"
+  case "$skill_profile_answer" in
+    core|legacy|full) "$SKILL_CATALOG" set-profile "$skill_profile_answer" ;;
+    *) echo "Invalid profile; preserving legacy exposure."; "$SKILL_CATALOG" set-profile legacy ;;
+  esac
+else
+  echo "    Existing noninteractive install: preserving current skill exposure"
+fi
+
+if { [ "$SKILL_LANES_SOURCE" = "flag" ] || [ "$SKILL_LANES_SOURCE" = "env" ]; } && \
+   [ "$SKILL_PROFILE_OVERRIDE" != "legacy" ] && [ "$SKILL_PROFILE_OVERRIDE" != "full" ]; then
+  "$SKILL_CATALOG" set-profile core
+  if [ -n "$SKILL_LANES" ]; then
+    # shellcheck disable=SC2086
+    "$SKILL_CATALOG" enable $SKILL_LANES
+  fi
+fi
+
 echo ""
 echo "[7/7] Verification"
 echo "  Core agents:   $(find "$CODEX_ROOT/agents" -maxdepth 1 -type f -name '*.toml' 2>/dev/null | wc -l | tr -d ' ') files"
@@ -2209,7 +2285,8 @@ if [ -n "${MY_CODEX_BOOTSTRAP_SOURCE:-}" ]; then
   echo "Bootstrap source: ${MY_CODEX_BOOTSTRAP_SOURCE}"
 fi
 echo "Only my-codex-managed files tracked in $MANIFEST_FILE are replaced; custom files are preserved."
-echo "Stale invalid my-codex skills-only copies under ~/.agents/skills and ~/.claude/skills are removed during full install."
+echo "Skill files owned by other harnesses under ~/.agents/skills and ~/.claude/skills are preserved."
+echo "Manage Codex skill exposure with: ~/.codex/bin/my-codex-skills status"
 echo ""
 echo "Recommended agent packs are auto-activated on first install and remembered in:"
 echo "  ~/.codex/enabled-agent-packs.txt"

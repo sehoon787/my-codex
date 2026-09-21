@@ -81,6 +81,8 @@ Rules:
 
 ### Skill Lane Ownership
 
+The default `core` profile keeps the active skill catalog within its context budget. Use `~/.codex/bin/my-codex-skills list` for the concise lane index and `status` for the current profile. Boss may read one inactive `SKILL.md` directly for a one-off task; enable a lane only when it should appear automatically in future sessions.
+
 - Orchestration -> `$ralph`, `$autopilot`, `$ultrawork`, `$team` (OMC execution modes — installed only when the OMC skill set is also present under `~/.codex/skills`; confirm in the registry before routing)
 - Dev process -> superpowers (`brainstorming`, `test-driven-development`, `systematic-debugging`, `verification-before-completion`, `writing-plans`)
 - Ship/QA/deploy/security -> gstack (`/ship`, `/qa`, `/review`, `/cso`, `/investigate`)

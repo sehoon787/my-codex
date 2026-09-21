@@ -93,7 +93,7 @@ config.toml:  OK
 hooks.json:   OK
 ```
 
-Skills note: `find` without `-L` does not descend into the 29 gstack symlinks, so it reports 83 `SKILL.md` files while `~/.codex/skills/` actually holds 110 entries (81 directories + 29 symlinks). `my-codex-skills status` reports the exposed set instead.
+Skills note: `find` without `-L` does not descend into the 29 gstack symlinks, so it reports 83 `SKILL.md` files while `~/.codex/skills/` actually holds 110 entries (81 directories + 29 symlinks). `my-codex-skills status` reports the exposed set instead. The count is higher than 83 on a machine that already had personal skills under `~/.codex/skills` before install — my-codex preserves them (see the `preserve` list in `scripts/skill-catalog.json`); `~/.codex/bin/my-codex-skills status` reports them as `physicalPreservedSkillFiles`, and only `drift: true` in that output indicates an actual problem.
 
 Hooks note: `install.sh` sets `hooks = true` under `[features]` in `config.toml` and writes the registry to `~/.codex/hooks.json`. Codex asks once, on your next interactive start, to review and trust these hooks — choose "Trust all and continue". Until you do, no my-codex hook runs.
 

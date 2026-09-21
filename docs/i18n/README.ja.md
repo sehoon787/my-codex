@@ -318,7 +318,7 @@ my-codex は **5 つのアップストリームサブモジュール**に加え�
 | **Codex アトリビューション** | git フックが Codex が変更したファイルを記録し、コミットメッセージに `AI-Contributed-By: Codex` を追加 |
 | **CI 重複検出** | アップストリーム同期をまたいだ TOML エージェントの重複を自動検出 |
 ## インストールオプション
-対話型インストールでは Serena、Headroom、codeburn を入れるか一度だけ尋ねます。Enter または `y` で含め、`n` でこれらを省いて続行します。自動実行では既定で含まれ、`--yes` で明示でき、`--skip-tools` ではこの 3 ツール、MCP エントリ、共有ダッシュボードだけを省きます。
+対話型インストールでは Serena、Headroom、codeburn の番号付き選択肢を表示します。Enter、`all`、`a`、`y`、`yes` はすべて、`none`、`n`、`no`、`0` はなしを選び、`1,3` や `serena codeburn` のように番号と名前を組み合わせられます。自動実行は既定ですべてを選び、`--tools=headroom` で一部、`--yes` ですべて、`--skip-tools` でなしを明示できます。
 ### クイックインストール
 ```bash
 git clone --depth 1 https://github.com/sehoon787/my-codex.git /tmp/my-codex

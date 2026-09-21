@@ -318,7 +318,7 @@ my-codex 由 **5 个上游子模块**，加上 1 份内置快照、2 个适配/�
 | **Codex 归属** | git hooks 记录 Codex 修改的文件，并在提交信息中追加 `AI-Contributed-By: Codex` |
 | **CI 重复检测** | 跨上游同步自动检测重复 TOML Agent |
 ## 安装选项
-交互式安装会询问一次是否安装 Serena、Headroom 和 codeburn；Enter 或 `y` 会安装，`n` 会跳过它们并继续。自动运行默认保留这些工具；`--yes` 可明确确认，`--skip-tools` 只省略这三个工具、其 MCP 条目和共享面板。
+交互式安装会显示 Serena、Headroom 和 codeburn 的编号选择器：Enter、`all`、`a`、`y` 或 `yes` 选择全部；`none`、`n`、`no` 或 `0` 全部不选；编号和名称可像 `1,3` 或 `serena codeburn` 一样混用。自动运行默认选择全部；`--tools=headroom` 指定子集，`--yes` 指定全部，`--skip-tools` 指定不选。
 ### 快速安装
 ```bash
 git clone --depth 1 https://github.com/sehoon787/my-codex.git /tmp/my-codex

@@ -12,6 +12,21 @@ CODEBURN_URL="http://127.0.0.1:4747/"
 HEADROOM_URL="http://127.0.0.1:8787/stats"
 HEADROOM_HEALTH_URL="http://127.0.0.1:8787/livez"
 SPAWNED_CODEBURN_PID=""
+ENABLE_CODEBURN=0
+ENABLE_HEADROOM=0
+
+if [ "$#" -eq 0 ]; then
+  ENABLE_CODEBURN=1
+  ENABLE_HEADROOM=1
+else
+  for service_name in "$@"; do
+    case "$service_name" in
+      codeburn) ENABLE_CODEBURN=1 ;;
+      headroom) ENABLE_HEADROOM=1 ;;
+      *) echo "ERROR: unknown shared local service: $service_name" >&2; exit 2 ;;
+    esac
+  done
+fi
 
 case "$TIMEOUT_SECONDS" in
   ''|*[!0-9]*) TIMEOUT_SECONDS=12 ;;
@@ -42,10 +57,12 @@ prepare_log_file() {
 }
 
 print_locations() {
-  echo "  codeburn dashboard: $CODEBURN_URL"
-  echo "  Headroom stats:     $HEADROOM_URL"
+  [ "$ENABLE_CODEBURN" = "1" ] && echo "  codeburn dashboard: $CODEBURN_URL"
+  [ "$ENABLE_HEADROOM" = "1" ] && echo "  Headroom stats:     $HEADROOM_URL"
   echo "  Shared service logs: $LOG_DIR"
-  echo "  Headroom does not route Claude or Codex traffic until you explicitly configure a client."
+  if [ "$ENABLE_HEADROOM" = "1" ]; then
+    echo "  Headroom does not route Claude or Codex traffic until you explicitly configure a client."
+  fi
 }
 
 if [ "${AGENT_HARNESS_SERVICES_SKIP:-0}" = "1" ]; then
@@ -235,27 +252,31 @@ ensure_headroom() {
 }
 
 if ! prepare_private_dir "$STATE_DIR" || ! prepare_private_dir "$LOG_DIR"; then
-  echo "codeburn web: FAIL (shared state directory is unsafe or unwritable: $STATE_DIR)"
-  echo "Headroom proxy: FAIL (shared state directory is unsafe or unwritable: $STATE_DIR)"
+  [ "$ENABLE_CODEBURN" = "1" ] && echo "codeburn web: FAIL (shared state directory is unsafe or unwritable: $STATE_DIR)"
+  [ "$ENABLE_HEADROOM" = "1" ] && echo "Headroom proxy: FAIL (shared state directory is unsafe or unwritable: $STATE_DIR)"
   print_locations
   exit 0
 fi
 
 run_without_starting() {
   _reason="${AGENT_HARNESS_LOCK_ERROR:-shared startup lock timed out}"
-  codeburn_healthy \
-    && echo "codeburn web: REUSED ($CODEBURN_URL)" \
-    || echo "codeburn web: FAIL ($_reason; log: $LOG_DIR/codeburn.log)"
-  headroom_healthy \
-    && echo "Headroom proxy: REUSED ($HEADROOM_URL)" \
-    || echo "Headroom proxy: FAIL ($_reason; log: $LOG_DIR/headroom.log)"
+  if [ "$ENABLE_CODEBURN" = "1" ]; then
+    codeburn_healthy \
+      && echo "codeburn web: REUSED ($CODEBURN_URL)" \
+      || echo "codeburn web: FAIL ($_reason; log: $LOG_DIR/codeburn.log)"
+  fi
+  if [ "$ENABLE_HEADROOM" = "1" ]; then
+    headroom_healthy \
+      && echo "Headroom proxy: REUSED ($HEADROOM_URL)" \
+      || echo "Headroom proxy: FAIL ($_reason; log: $LOG_DIR/headroom.log)"
+  fi
   print_locations
 }
 
 case "${AGENT_HARNESS_LOCK_MODE:-}" in
   acquired)
-    ensure_codeburn
-    ensure_headroom
+    [ "$ENABLE_CODEBURN" = "1" ] && ensure_codeburn
+    [ "$ENABLE_HEADROOM" = "1" ] && ensure_headroom
     print_locations
     exit 0
     ;;
@@ -267,14 +288,14 @@ esac
 
 if ! command -v python3 >/dev/null 2>&1; then
   AGENT_HARNESS_LOCK_ERROR="python3 is required for the shared startup lock" \
-    AGENT_HARNESS_LOCK_MODE=no-start bash "$0"
+    AGENT_HARNESS_LOCK_MODE=no-start bash "$0" "$@"
   exit 0
 fi
 
 # A kernel-managed advisory lock is released automatically when the supervisor
 # exits, including after a crash. O_NOFOLLOW plus fstat prevents a pre-created
 # symlink or foreign-owned file from redirecting the lock outside STATE_DIR.
-exec python3 - "$LOCK_FILE" "$TIMEOUT_SECONDS" "$0" <<'PY'
+exec python3 - "$LOCK_FILE" "$TIMEOUT_SECONDS" "$0" "$@" <<'PY'
 import errno
 import os
 import signal
@@ -283,7 +304,7 @@ import subprocess
 import sys
 import time
 
-lock_path, timeout_text, script = sys.argv[1:]
+lock_path, timeout_text, script, *service_args = sys.argv[1:]
 timeout = max(1, int(timeout_text))
 child = None
 
@@ -300,7 +321,7 @@ def run_helper(mode: str, error: str = "") -> int:
         # supervisor cannot release the lock while startup is still running.
         env["AGENT_HARNESS_LOCK_FD"] = str(fd)
         popen_options["pass_fds"] = (fd,)
-    child = subprocess.Popen(["bash", script], **popen_options)
+    child = subprocess.Popen(["bash", script, *service_args], **popen_options)
     return child.wait()
 
 

@@ -173,10 +173,27 @@ verify_archify_probe() {
 
 verify_installed_tools() (
   local codex_root="$1"
-  local optional_tools_enabled="${2:-1}"
+  local install_serena install_headroom install_codeburn
+  if [ "$#" -ge 4 ]; then
+    install_serena="$2"
+    install_headroom="$3"
+    install_codeburn="$4"
+  elif [ "${2:-1}" = "0" ]; then
+    install_serena=0
+    install_headroom=0
+    install_codeburn=0
+  else
+    install_serena=1
+    install_headroom=1
+    install_codeburn=1
+  fi
   local timeout_seconds="${MY_CODEX_VERIFY_TIMEOUT_SECONDS:-2}"
   local temp_parent="${MY_CODEX_VERIFY_TMP_PARENT:-${TMPDIR:-/tmp}}"
-  local work_dir ok_count=0 fail_count=0
+  local work_dir ok_count=0 fail_count=0 skipped_count=0 selected_count=0
+
+  [ "$install_serena" = "1" ] && selected_count=$((selected_count + 1)) || skipped_count=$((skipped_count + 1))
+  [ "$install_headroom" = "1" ] && selected_count=$((selected_count + 1)) || skipped_count=$((skipped_count + 1))
+  [ "$install_codeburn" = "1" ] && selected_count=$((selected_count + 1)) || skipped_count=$((skipped_count + 1))
 
   cleanup_tool_verification() {
     if [ -n "${work_dir:-}" ] && [ -d "$work_dir" ]; then
@@ -187,35 +204,41 @@ verify_installed_tools() (
 
   if ! mkdir -p "$temp_parent" 2>/dev/null || \
     ! work_dir="$(mktemp -d "$temp_parent/my-codex-tool-verification.XXXXXX" 2>/dev/null)"; then
-    if [ "$optional_tools_enabled" = "1" ]; then
-      echo "  Tool probes:   0 OK, 4 FAIL (could not create temporary directory)"
+    [ "$install_codeburn" = "0" ] && echo "  codeburn:      SKIPPED (not selected)"
+    [ "$install_serena" = "0" ] && echo "  serena:        SKIPPED (not selected)"
+    [ "$install_headroom" = "0" ] && echo "  headroom:      SKIPPED (not selected)"
+    if [ "$skipped_count" -eq 0 ]; then
+      echo "  Tool probes:   0 OK, $((selected_count + 1)) FAIL (could not create temporary directory)"
     else
-      echo "  codeburn:      SKIPPED"
-      echo "  serena:        SKIPPED"
-      echo "  headroom:      SKIPPED"
-      echo "  Tool probes:   0 OK, 1 FAIL, 3 SKIPPED (could not create temporary directory)"
+      echo "  Tool probes:   0 OK, $((selected_count + 1)) FAIL, $skipped_count SKIPPED (could not create temporary directory)"
     fi
   else
-    if [ "$optional_tools_enabled" = "1" ]; then
+    if [ "$install_codeburn" = "1" ]; then
       if verify_version_probe codeburn codeburn 0.9.23 "$work_dir/codeburn.out" "$timeout_seconds"; then
         ok_count=$((ok_count + 1))
       else
         fail_count=$((fail_count + 1))
       fi
+    else
+      echo "  codeburn:      SKIPPED (not selected)"
+    fi
+    if [ "$install_serena" = "1" ]; then
       if verify_version_probe serena serena 'Serena 1.7.0' "$work_dir/serena.out" "$timeout_seconds"; then
         ok_count=$((ok_count + 1))
       else
         fail_count=$((fail_count + 1))
       fi
+    else
+      echo "  serena:        SKIPPED (not selected)"
+    fi
+    if [ "$install_headroom" = "1" ]; then
       if verify_version_probe headroom headroom 'headroom, version 0.37.0' "$work_dir/headroom.out" "$timeout_seconds"; then
         ok_count=$((ok_count + 1))
       else
         fail_count=$((fail_count + 1))
       fi
     else
-      echo "  codeburn:      SKIPPED"
-      echo "  serena:        SKIPPED"
-      echo "  headroom:      SKIPPED"
+      echo "  headroom:      SKIPPED (not selected)"
     fi
     if verify_archify_probe "$codex_root" "$work_dir" "$timeout_seconds"; then
       ok_count=$((ok_count + 1))
@@ -223,19 +246,25 @@ verify_installed_tools() (
       fail_count=$((fail_count + 1))
     fi
 
-    if [ "$optional_tools_enabled" = "1" ]; then
+    if [ "$skipped_count" -eq 0 ]; then
       printf '  Tool probes:   %s OK, %s FAIL\n' "$ok_count" "$fail_count"
     else
-      printf '  Tool probes:   %s OK, %s FAIL, 3 SKIPPED\n' "$ok_count" "$fail_count"
+      printf '  Tool probes:   %s OK, %s FAIL, %s SKIPPED\n' "$ok_count" "$fail_count" "$skipped_count"
     fi
   fi
-  if [ "$optional_tools_enabled" = "1" ]; then
+  if [ "$selected_count" -gt 0 ]; then
     echo ""
     echo "Tool access:"
-    echo "  Serena dashboard: http://localhost:24282/dashboard/index.html"
-    echo "  codeburn shared dashboard: http://127.0.0.1:4747/ (started or reused during installation)"
-    echo "  Headroom proxy stats: http://127.0.0.1:8787/stats (empty until traffic is explicitly routed)"
-    echo "  Serena/Headroom MCP: auto-start each Codex session"
+    [ "$install_serena" = "1" ] && echo "  Serena dashboard: http://localhost:24282/dashboard/index.html"
+    [ "$install_codeburn" = "1" ] && echo "  codeburn shared dashboard: http://127.0.0.1:4747/ (started or reused during installation)"
+    [ "$install_headroom" = "1" ] && echo "  Headroom proxy stats: http://127.0.0.1:8787/stats (empty until traffic is explicitly routed)"
+    if [ "$install_serena" = "1" ] && [ "$install_headroom" = "1" ]; then
+      echo "  Serena/Headroom MCP: auto-start each Codex session"
+    elif [ "$install_serena" = "1" ]; then
+      echo "  Serena MCP: auto-starts each Codex session"
+    elif [ "$install_headroom" = "1" ]; then
+      echo "  Headroom MCP: auto-starts each Codex session"
+    fi
   fi
 
   # Runtime verification is diagnostic. A missing or unhealthy optional tool

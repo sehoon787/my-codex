@@ -15,6 +15,7 @@ Boss 在运行时自动发现所有 Agent 和 Skill，
 <img src="./assets/owl-codex-social.svg" alt="The Maestro Owl — my-codex" width="700">
 
 </div>
+
 ## 安装
 ### 面向用户
 ```bash

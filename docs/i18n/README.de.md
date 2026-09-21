@@ -15,6 +15,7 @@ und leitet Ihre Aufgabe über `spawn_agent` an den richtigen Spezialisten weiter
 <img src="./assets/owl-codex-social.svg" alt="The Maestro Owl — my-codex" width="700">
 
 </div>
+
 ## Installation
 ### Für Menschen
 ```bash

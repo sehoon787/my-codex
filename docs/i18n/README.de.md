@@ -327,7 +327,7 @@ Funktionen, die speziell für dieses Projekt entwickelt wurden und über das hin
 | **Codex Attribution** | git hooks zeichnen von Codex berührte Dateien auf und hängen `AI-Contributed-By: Codex` an Commit-Nachrichten an |
 | **CI Dedup Detection** | Automatische Erkennung doppelter TOML-Agenten über Upstream-Syncs hinweg |
 ## Installationsoptionen
-Interaktive Installationen zeigen eine nummerierte Auswahl für Serena, Headroom und codeburn: Enter, `all`, `a`, `y` oder `yes` wählt alle; `none`, `n`, `no` oder `0` wählt keine; Nummern und Namen lassen sich wie in `1,3` oder `serena codeburn` mischen. Automatisierung wählt standardmäßig alle; `--tools=headroom` wählt eine Teilmenge, `--yes` alle und `--skip-tools` keine.
+Interaktive Terminals zeigen eine Checkbox-Auswahl für Serena, Headroom und codeburn, in der standardmäßig alle drei ausgewählt sind. Mit ↑/↓ oder `j`/`k` navigieren, mit der Leertaste umschalten, mit `a` alle oder mit `n` keine auswählen und die aktuelle Auswahl mit Enter oder Strg-D/EOF bestätigen. Ist `TERM` leer oder `dumb`, oder ist `stty` nicht verfügbar, akzeptiert die nummerierte Alternative Enter, `all`, `a`, `y` oder `yes` für alle; `none`, `n`, `no` oder `0` für keine; sowie gemischte Nummern oder Namen wie `1,3` oder `serena codeburn`. Automatisierung wählt standardmäßig alle; `--tools=headroom` wählt eine Teilmenge, `--yes` alle und `--skip-tools` keine.
 ### Schnellinstallation
 ```bash
 git clone --depth 1 https://github.com/sehoon787/my-codex.git /tmp/my-codex

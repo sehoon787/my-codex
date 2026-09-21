@@ -327,7 +327,7 @@ my-codex는 **5개의 업스트림 서브모듈**과 벤더링된 스냅샷 1개
 | **Codex Attribution** | git 훅이 Codex가 수정한 파일을 기록하고 커밋 메시지에 `AI-Contributed-By: Codex` 추가 |
 | **CI 중복 탐지** | 업스트림 동기화 시 TOML 에이전트 중복 자동 감지 |
 ## 설치 옵션
-대화형 설치는 Serena, Headroom, codeburn의 번호 선택지를 표시합니다. Enter, `all`, `a`, `y`, `yes`는 모두 선택하고 `none`, `n`, `no`, `0`은 모두 제외하며, `1,3` 또는 `serena codeburn`처럼 번호와 이름을 섞을 수 있습니다. 자동 실행은 기본적으로 모두 선택하며, `--tools=headroom`은 일부, `--yes`는 전부, `--skip-tools`는 없음을 명시합니다.
+대화형 터미널은 Serena, Headroom, codeburn 체크박스를 표시하며 기본값은 세 도구 모두 선택입니다. ↑/↓ 또는 `j`/`k`로 이동하고 Space로 전환하며, `a`는 모두 선택하고 `n`은 모두 해제하며, Enter 또는 Ctrl-D/EOF로 현재 선택을 확정합니다. `TERM`이 비어 있거나 `dumb`이거나 `stty`를 사용할 수 없으면 번호 선택 방식으로 전환하며, Enter, `all`, `a`, `y`, `yes`는 모두 선택하고 `none`, `n`, `no`, `0`은 모두 제외하며, `1,3` 또는 `serena codeburn`처럼 번호와 이름을 섞을 수 있습니다. 자동 실행은 기본적으로 모두 선택하며, `--tools=headroom`은 일부, `--yes`는 전부, `--skip-tools`는 없음을 명시합니다.
 ### 빠른 설치
 ```bash
 git clone --depth 1 https://github.com/sehoon787/my-codex.git /tmp/my-codex

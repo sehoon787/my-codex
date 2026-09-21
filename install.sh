@@ -93,16 +93,32 @@ BUN_SHIM_DIR=""
 NODE_PLATFORM_CACHE=""
 POWERSHELL_CMD=""
 WINGET_CMD=""
+SELECTOR_STTY_SAVED=""
+SELECTOR_CURSOR_HIDDEN=0
+
+restore_companion_selector_terminal() {
+  if [ -n "$SELECTOR_STTY_SAVED" ]; then
+    stty "$SELECTOR_STTY_SAVED" 2>/dev/null || true
+    SELECTOR_STTY_SAVED=""
+  fi
+  if [ "$SELECTOR_CURSOR_HIDDEN" = "1" ]; then
+    tput cnorm 2>/dev/null || true
+    SELECTOR_CURSOR_HIDDEN=0
+  fi
+}
 
 cleanup() {
+  restore_companion_selector_terminal
   rm -f "$TMP_MANIFEST"
 }
 trap cleanup EXIT
 
 # ── Upstream helper ──
 CLONE_TMPDIR=$(mktemp -d)
-cleanup_clone() { rm -rf "$CLONE_TMPDIR"; rm -f "$TMP_MANIFEST"; if [ -n "$NODEJS_SHIM_DIR" ] && [ -d "$NODEJS_SHIM_DIR" ]; then rm -rf "$NODEJS_SHIM_DIR"; fi; if [ -n "$BUN_SHIM_DIR" ] && [ -d "$BUN_SHIM_DIR" ]; then rm -rf "$BUN_SHIM_DIR"; fi; }
+cleanup_clone() { restore_companion_selector_terminal; rm -rf "$CLONE_TMPDIR"; rm -f "$TMP_MANIFEST"; if [ -n "$NODEJS_SHIM_DIR" ] && [ -d "$NODEJS_SHIM_DIR" ]; then rm -rf "$NODEJS_SHIM_DIR"; fi; if [ -n "$BUN_SHIM_DIR" ] && [ -d "$BUN_SHIM_DIR" ]; then rm -rf "$BUN_SHIM_DIR"; fi; }
 trap cleanup_clone EXIT
+trap 'restore_companion_selector_terminal; exit 130' INT
+trap 'restore_companion_selector_terminal; exit 143' TERM
 
 UPSTREAM_DIR=""
 # $3 (optional) — git ref to pin the clone fallback to. Only consulted when the
@@ -557,6 +573,143 @@ apply_tool_selection() {
   done
 }
 
+print_numbered_tool_selector() {
+  echo "Optional tools (select any; the my-codex harness works without them):"
+  echo "  1) serena — symbol-level code navigation and editing over MCP."
+  echo "  2) headroom — compresses large tool output and retrieves it on demand."
+  echo "  3) codeburn — local token and cost dashboard for agent sessions."
+}
+
+select_tools_by_number() {
+  local selection_attempt=1 optional_tools_answer
+  print_numbered_tool_selector
+  while :; do
+    printf "Select: all / none / numbers like 1,3 [all]: "
+    if ! IFS= read -r optional_tools_answer; then
+      optional_tools_answer="all"
+    fi
+    if apply_tool_selection "$optional_tools_answer"; then
+      return 0
+    fi
+    echo "Invalid selection. Choose all, none, or any of: 1,2,3,serena,headroom,codeburn."
+    if [ "$selection_attempt" -ge 3 ]; then
+      echo "Too many invalid selections; using all optional tools."
+      apply_tool_selection all
+      return 0
+    fi
+    selection_attempt=$((selection_attempt + 1))
+  done
+}
+
+checkbox_selector_available() {
+  [ -n "${TERM:-}" ] && [ "${TERM:-}" != "dumb" ] || return 1
+  command -v stty >/dev/null 2>&1 || return 1
+  if [ "${BASH_VERSINFO[0]}" -lt 4 ]; then
+    command -v dd >/dev/null 2>&1 || return 1
+  fi
+  SELECTOR_STTY_SAVED="$(stty -g 2>/dev/null)" || {
+    SELECTOR_STTY_SAVED=""
+    return 1
+  }
+  if ! stty -echo -icanon min 1 time 0 2>/dev/null; then
+    restore_companion_selector_terminal
+    return 1
+  fi
+  return 0
+}
+
+render_companion_tool_selector() {
+  local cursor="$1" drawn="$2" marker
+  if [ "$drawn" != "0" ]; then
+    printf '\0338'
+  fi
+  printf '\r\033[2KSelect companion tools  (↑↓ move · space toggle · a all · n none · enter confirm)\n'
+  marker=" "; [ "$cursor" = "1" ] && marker=">"
+  printf '\r\033[2K%s [%s] serena — symbol-level code navigation and editing over MCP.\n' "$marker" "$([ "$INSTALL_SERENA" = "1" ] && printf x || printf ' ')"
+  marker=" "; [ "$cursor" = "2" ] && marker=">"
+  printf '\r\033[2K%s [%s] headroom — compresses large tool output and retrieves it on demand.\n' "$marker" "$([ "$INSTALL_HEADROOM" = "1" ] && printf x || printf ' ')"
+  marker=" "; [ "$cursor" = "3" ] && marker=">"
+  printf '\r\033[2K%s [%s] codeburn — local token and cost dashboard for agent sessions.\n' "$marker" "$([ "$INSTALL_CODEBURN" = "1" ] && printf x || printf ' ')"
+}
+
+reserve_companion_selector_rows() {
+  local terminal_size columns rows=0 line line_width index=0
+  terminal_size="$(stty size 2>/dev/null || true)"
+  columns="${terminal_size##* }"
+  case "$columns" in
+    ""|*[!0-9]*|0) columns=80 ;;
+  esac
+  for line in \
+    "Select companion tools  (↑↓ move · space toggle · a all · n none · enter confirm)" \
+    "> [x] serena — symbol-level code navigation and editing over MCP." \
+    "  [x] headroom — compresses large tool output and retrieves it on demand." \
+    "  [x] codeburn — local token and cost dashboard for agent sessions."
+  do
+    line_width=${#line}
+    rows=$((rows + (line_width + columns - 1) / columns))
+  done
+  while [ "$index" -lt "$rows" ]; do
+    printf '\n'
+    index=$((index + 1))
+  done
+  printf '\033[%sA\0337' "$rows"
+}
+
+read_checkbox_escape_tail() {
+  local escape_tail=""
+  if [ "${BASH_VERSINFO[0]}" -ge 4 ]; then
+    IFS= read -rsn2 -t 0.01 escape_tail || true
+  else
+    # Bash 3.2 ignores terminal VMIN/VTIME for its read builtin. POSIX dd
+    # respects the one-decisecond terminal timeout, so a lone Escape cannot
+    # block while a complete ESC[A / ESC[B sequence is still decoded.
+    stty min 0 time 1 2>/dev/null || return 1
+    escape_tail="$(dd bs=1 count=2 2>/dev/null || true)"
+    stty min 1 time 0 2>/dev/null || return 1
+  fi
+  printf '%s' "$escape_tail"
+}
+
+select_tools_by_checkbox() {
+  local cursor=1 drawn=0 selector_key escape_tail
+  apply_tool_selection all
+  if command -v tput >/dev/null 2>&1 && tput civis 2>/dev/null; then
+    SELECTOR_CURSOR_HIDDEN=1
+  fi
+  echo "Optional tools; the my-codex harness works without them."
+  reserve_companion_selector_rows
+  while :; do
+    render_companion_tool_selector "$cursor" "$drawn"
+    drawn=1
+    if ! IFS= read -rsn1 selector_key; then
+      break
+    fi
+    case "$selector_key" in
+      ""|$'\n'|$'\r') break ;;
+      $'\004') break ;;
+      " ")
+        case "$cursor" in
+          1) [ "$INSTALL_SERENA" = "1" ] && INSTALL_SERENA=0 || INSTALL_SERENA=1 ;;
+          2) [ "$INSTALL_HEADROOM" = "1" ] && INSTALL_HEADROOM=0 || INSTALL_HEADROOM=1 ;;
+          3) [ "$INSTALL_CODEBURN" = "1" ] && INSTALL_CODEBURN=0 || INSTALL_CODEBURN=1 ;;
+        esac
+        ;;
+      a) apply_tool_selection all ;;
+      n) apply_tool_selection none ;;
+      j) [ "$cursor" -ge 3 ] || cursor=$((cursor + 1)) ;;
+      k) [ "$cursor" -le 1 ] || cursor=$((cursor - 1)) ;;
+      $'\033')
+        escape_tail="$(read_checkbox_escape_tail || true)"
+        case "$escape_tail" in
+          '[A') [ "$cursor" -le 1 ] || cursor=$((cursor - 1)) ;;
+          '[B') [ "$cursor" -ge 3 ] || cursor=$((cursor + 1)) ;;
+        esac
+        ;;
+    esac
+  done
+  restore_companion_selector_terminal
+}
+
 if [ "$TOOLS_SELECTION_SET" = "1" ] && ! apply_tool_selection "$TOOLS_SELECTION"; then
   echo "ERROR: invalid --tools selection: $TOOLS_SELECTION" >&2
   exit 1
@@ -569,30 +722,21 @@ elif [ "$TOOLS_SELECTION_SET" = "1" ]; then
 elif [ "$ASSUME_YES" = "1" ] || [ "${CI+x}" = "x" ] || [ ! -t 0 ]; then
   apply_tool_selection all
 else
-  echo "Optional tools (select any; the my-codex harness works without them):"
-  echo "  1) serena — symbol-level code navigation and editing over MCP."
-  echo "  2) headroom — compresses large tool output and retrieves it on demand."
-  echo "  3) codeburn — local token and cost dashboard for agent sessions."
-  selection_attempt=1
-  while :; do
-    printf "Select: all / none / numbers like 1,3 [all]: "
-    if ! IFS= read -r optional_tools_answer; then
-      optional_tools_answer="all"
-    fi
-    if apply_tool_selection "$optional_tools_answer"; then
-      break
-    fi
-    echo "Invalid selection. Choose all, none, or any of: 1,2,3,serena,headroom,codeburn."
-    if [ "$selection_attempt" -ge 3 ]; then
-      echo "Too many invalid selections; using all optional tools."
-      apply_tool_selection all
-      break
-    fi
-    selection_attempt=$((selection_attempt + 1))
-  done
+  if checkbox_selector_available; then
+    select_tools_by_checkbox
+  else
+    select_tools_by_number
+  fi
 fi
 
-echo "Optional tools: serena=$([ "$INSTALL_SERENA" = 1 ] && echo install || echo skip), headroom=$([ "$INSTALL_HEADROOM" = 1 ] && echo install || echo skip), codeburn=$([ "$INSTALL_CODEBURN" = 1 ] && echo install || echo skip)"
+companion_installing=""
+companion_skipping=""
+[ "$INSTALL_SERENA" = "1" ] && companion_installing="serena" || companion_skipping="serena"
+[ "$INSTALL_HEADROOM" = "1" ] && companion_installing="${companion_installing:+$companion_installing, }headroom" || companion_skipping="${companion_skipping:+$companion_skipping, }headroom"
+[ "$INSTALL_CODEBURN" = "1" ] && companion_installing="${companion_installing:+$companion_installing, }codeburn" || companion_skipping="${companion_skipping:+$companion_skipping, }codeburn"
+[ -n "$companion_installing" ] || companion_installing=none
+[ -n "$companion_skipping" ] || companion_skipping=none
+echo "Companion tools: installing $companion_installing; skipping $companion_skipping"
 
 add_manifest_entry() {
   printf '%s\n' "$1" >> "$TMP_MANIFEST"

@@ -15,6 +15,7 @@ Boss はランタイムですべてのエージェントとスキルを自動検
 <img src="./assets/owl-codex-social.svg" alt="The Maestro Owl — my-codex" width="700">
 
 </div>
+
 ## インストール
 ### 人間向け
 ```bash

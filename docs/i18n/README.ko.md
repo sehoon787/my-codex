@@ -15,6 +15,7 @@ Boss가 런타임에 모든 에이전트와 스킬을 자동으로 탐색하고,
 <img src="../../assets/owl-codex-social.svg" alt="The Maestro Owl — my-codex" width="700">
 
 </div>
+
 ## 설치
 ### 사람을 위한 설치
 ```bash

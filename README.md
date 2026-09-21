@@ -12,6 +12,7 @@ Boss discovers installed agents and skills at runtime and routes work via `spawn
 <img src="./assets/owl-codex-social.svg" alt="The Maestro Owl — my-codex" width="700">
 
 </div>
+
 ## Installation
 ### For Humans
 ```bash

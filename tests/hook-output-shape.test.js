@@ -151,6 +151,41 @@ const SESSION_START_CMD = findCommand('SessionStart', 'session-start.sh');
 }
 
 {
+  // An Orca-style CODEX_HOME shares the canonical global skills tree but owns
+  // the effective config.toml. A newer active config must invalidate the cache.
+  const dir = tmpProject();
+  const manager = path.join(FAKE_HOME, '.codex', 'bin', 'my-codex-skills');
+  const registry = path.join(FAKE_HOME, '.omc', 'state', 'capability-registry.json');
+  const activeHome = path.join(FAKE_HOME, 'active-codex-home');
+  fs.mkdirSync(path.dirname(manager), { recursive: true });
+  fs.mkdirSync(path.dirname(registry), { recursive: true });
+  fs.mkdirSync(path.join(FAKE_HOME, '.codex', 'skills'), { recursive: true });
+  fs.mkdirSync(activeHome, { recursive: true });
+  fs.symlinkSync(path.join(FAKE_HOME, '.codex', 'skills'), path.join(activeHome, 'skills'), 'dir');
+  fs.writeFileSync(manager, '#!/bin/sh\nprintf \'%s\\n\' \'{"activeSkillNames":["active-overlay-skill"],"laneIndex":{}}\'\n', { mode: 0o755 });
+  fs.writeFileSync(registry, '{"generated_at":"old","skills":["stale-skill"]}\n');
+  const oldTime = new Date('2020-01-02T03:04:05.000Z');
+  fs.utimesSync(registry, oldTime, oldTime);
+  fs.writeFileSync(path.join(activeHome, 'config.toml'), '# active override changed\n');
+  const future = new Date(Date.now() + 5000);
+  fs.utimesSync(path.join(activeHome, 'config.toml'), future, future);
+  const r = runResolvedFile(SESSION_START_CMD, {
+    cwd: dir,
+    env: { CODEX_HOME: activeHome },
+    input: JSON.stringify({ hook_event_name: 'SessionStart', session_id: 'overlay', cwd: dir, source: 'startup' })
+  });
+  assertShape('SessionStart with newer active CODEX_HOME config', 'SessionStart', r);
+  const updated = JSON.parse(fs.readFileSync(registry, 'utf8'));
+  check('SessionStart active config change -> regenerates active skill registry',
+    JSON.stringify(updated.skills) === JSON.stringify(['active-overlay-skill']));
+  fs.rmSync(activeHome, { recursive: true, force: true });
+  fs.rmSync(path.join(FAKE_HOME, '.codex', 'bin'), { recursive: true, force: true });
+  fs.rmSync(path.join(FAKE_HOME, '.codex', 'skills'), { recursive: true, force: true });
+  fs.rmSync(registry, { force: true });
+  fs.rmSync(dir, { recursive: true, force: true });
+}
+
+{
   // A transient manager failure must leave the old cache byte-for-byte intact
   // so its stale mtime forces the next session to retry. The second real hook
   // invocation then succeeds and replaces the catalog with the manager result.

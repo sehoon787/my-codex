@@ -37,6 +37,14 @@ REGISTRY_FILE="$REGISTRY_DIR/capability-registry.json"
 REGISTRY_STATUS="up-to-date"
 _registry_diagnostic=""
 mkdir -p "$REGISTRY_DIR"
+_effective_codex_config="$HOME/.codex/config.toml"
+if [ -n "${CODEX_HOME:-}" ] && [ -d "$HOME/.codex/skills" ] && [ -d "$CODEX_HOME/skills" ]; then
+  _base_skills=$(cd "$HOME/.codex/skills" 2>/dev/null && pwd -P || true)
+  _active_skills=$(cd "$CODEX_HOME/skills" 2>/dev/null && pwd -P || true)
+  if [ -n "$_base_skills" ] && [ "$_active_skills" = "$_base_skills" ]; then
+    _effective_codex_config="$CODEX_HOME/config.toml"
+  fi
+fi
 _needs_regen=0
 if [ ! -f "$REGISTRY_FILE" ]; then
   _needs_regen=1
@@ -47,7 +55,7 @@ else
     _needs_regen=1
   elif [ -f "$HOME/.codex/my-codex/skill-catalog-state.json" ] && [ "$HOME/.codex/my-codex/skill-catalog-state.json" -nt "$REGISTRY_FILE" ]; then
     _needs_regen=1
-  elif [ -f "$HOME/.codex/config.toml" ] && [ "$HOME/.codex/config.toml" -nt "$REGISTRY_FILE" ]; then
+  elif [ -f "$_effective_codex_config" ] && [ "$_effective_codex_config" -nt "$REGISTRY_FILE" ]; then
     _needs_regen=1
   fi
 fi

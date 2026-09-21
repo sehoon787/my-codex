@@ -2,11 +2,22 @@
 set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 MANAGER_HOME="$HOME"
+MANAGER_CONFIG_HOME=""
+if [ -n "${CODEX_HOME:-}" ] && [ -d "$HOME/.codex/skills" ] && [ -d "$CODEX_HOME/skills" ]; then
+  base_skills="$(cd "$HOME/.codex/skills" 2>/dev/null && pwd -P || true)"
+  active_skills="$(cd "$CODEX_HOME/skills" 2>/dev/null && pwd -P || true)"
+  if [ -n "$base_skills" ] && [ "$active_skills" = "$base_skills" ]; then
+    MANAGER_CONFIG_HOME="$CODEX_HOME"
+  fi
+fi
 case "$(uname -s 2>/dev/null || true)" in
   MINGW*|MSYS*|CYGWIN*)
     if command -v cygpath >/dev/null 2>&1; then
       MANAGER_HOME="$(cygpath -w "$HOME")"
+      [ -z "$MANAGER_CONFIG_HOME" ] || MANAGER_CONFIG_HOME="$(cygpath -w "$MANAGER_CONFIG_HOME")"
     fi
     ;;
 esac
-exec node "$SCRIPT_DIR/../lib/my-codex/skill-catalog.js" --home "$MANAGER_HOME" "$@"
+manager_args=(--home "$MANAGER_HOME")
+[ -z "$MANAGER_CONFIG_HOME" ] || manager_args+=(--config-home "$MANAGER_CONFIG_HOME")
+exec node "$SCRIPT_DIR/../lib/my-codex/skill-catalog.js" "${manager_args[@]}" "$@"

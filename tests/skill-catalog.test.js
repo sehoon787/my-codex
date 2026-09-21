@@ -9,6 +9,7 @@ const cp = require("child_process");
 
 const repo = path.resolve(__dirname, "..");
 const cli = path.join(repo, "scripts", "skill-catalog.js");
+const START = "# >>> my-codex skill catalog >>>";
 const root = fs.mkdtempSync(path.join(os.tmpdir(), "my-codex-skill-catalog-"));
 
 function skill(base, name, description = `${name} description`) {
@@ -194,6 +195,94 @@ try {
   const driftDoctor = JSON.parse(runAt(driftHome, ["doctor", "--json"], 2).stdout);
   assert.strictEqual(driftDoctor.drift, true);
   assert.strictEqual(driftDoctor.ok, false);
+
+  const overlayHome = path.join(root, "overlay-home");
+  const overlayConfigHome = path.join(overlayHome, "Library", "Application Support", "orca", "active-home");
+  fs.cpSync(path.join(root, ".codex"), path.join(overlayHome, ".codex"), { recursive: true });
+  skill(path.join(overlayHome, ".codex", "skills"), "boss-advanced");
+  fs.mkdirSync(overlayConfigHome, { recursive: true });
+  fs.symlinkSync(path.join(overlayHome, ".codex", "skills"), path.join(overlayConfigHome, "skills"), "dir");
+  fs.writeFileSync(path.join(overlayConfigHome, "config.toml"), 'model = "overlay-user-choice"\n');
+  fs.writeFileSync(path.join(overlayConfigHome, "auth.json"), '{"token":"untouched"}\n');
+  const baseConfigBeforeOverlay = fs.readFileSync(path.join(overlayHome, ".codex", "config.toml"), "utf8");
+  const overlayResult = runAt(overlayHome, ["--config-home", overlayConfigHome, "set-profile", "core", "--json"]);
+  const overlayApplied = JSON.parse(overlayResult.stdout);
+  assert(overlayApplied.snapshot, "overlay apply must create a rollback snapshot");
+  const overlayConfig = fs.readFileSync(path.join(overlayConfigHome, "config.toml"), "utf8");
+  assert(overlayConfig.includes(START));
+  assert(overlayConfig.includes('model = "overlay-user-choice"'));
+  assert.strictEqual(fs.readFileSync(path.join(overlayHome, ".codex", "config.toml"), "utf8"), baseConfigBeforeOverlay);
+  assert.strictEqual(fs.readFileSync(path.join(overlayConfigHome, "auth.json"), "utf8"), '{"token":"untouched"}\n');
+  const overlayStatus = JSON.parse(runAt(overlayHome, ["--config-home", overlayConfigHome, "status", "--json"]).stdout);
+  assert.strictEqual(overlayStatus.configHome, overlayConfigHome);
+  assert.strictEqual(overlayStatus.configPath, path.join(overlayConfigHome, "config.toml"));
+  assert.strictEqual(overlayStatus.drift, false);
+  runAt(overlayHome, ["--config-home", path.join(root, "wrong-overlay"), "restore", overlayApplied.snapshot], 1);
+  runAt(overlayHome, ["--config-home", overlayConfigHome, "restore", overlayApplied.snapshot]);
+  assert.strictEqual(fs.readFileSync(path.join(overlayConfigHome, "config.toml"), "utf8"), 'model = "overlay-user-choice"\n');
+  assert.strictEqual(fs.readFileSync(path.join(overlayConfigHome, "auth.json"), "utf8"), '{"token":"untouched"}\n');
+  const overlayDoctor = JSON.parse(runAt(overlayHome, ["--config-home", overlayConfigHome, "doctor", "--json"], 2).stdout);
+  assert.strictEqual(overlayDoctor.drift, true, "doctor must detect missing active overlay block");
+  const outsideConfigParent = path.join(root, "outside-config-parent");
+  const linkedConfigParent = path.join(overlayHome, "linked-config-parent");
+  fs.mkdirSync(path.join(outsideConfigParent, "active"), { recursive: true });
+  fs.writeFileSync(path.join(outsideConfigParent, "active", "config.toml"), 'model = "outside-untouched"\n');
+  fs.writeFileSync(path.join(outsideConfigParent, "active", "auth.json"), '{"token":"outside-untouched"}\n');
+  fs.symlinkSync(outsideConfigParent, linkedConfigParent, "dir");
+  runAt(overlayHome, ["--config-home", path.join(linkedConfigParent, "active"), "set-profile", "core"], 1);
+  assert.strictEqual(fs.readFileSync(path.join(outsideConfigParent, "active", "config.toml"), "utf8"), 'model = "outside-untouched"\n');
+  assert.strictEqual(fs.readFileSync(path.join(outsideConfigParent, "active", "auth.json"), "utf8"), '{"token":"outside-untouched"}\n');
+
+  const restoreMaterializeHome = path.join(root, "restore-materialize-home");
+  fs.cpSync(path.join(root, ".codex"), path.join(restoreMaterializeHome, ".codex"), { recursive: true });
+  skill(path.join(restoreMaterializeHome, ".codex", "skills"), "boss-advanced");
+  const restoreBackend = path.join(restoreMaterializeHome, ".codex", "skills", "backend-patterns");
+  fs.rmSync(restoreBackend, { recursive: true });
+  const restoreManifest = path.join(restoreMaterializeHome, ".codex", ".my-codex-manifest.txt");
+  fs.writeFileSync(restoreManifest, fs.readFileSync(restoreManifest, "utf8").replace(/^skills\/backend-patterns\n/m, ""));
+  skill(path.join(restoreMaterializeHome, ".codex", "vendor", "my-codex", "upstream", "ecc", "skills"), "backend-patterns");
+  fs.writeFileSync(path.join(restoreMaterializeHome, ".codex", "config.toml"), "");
+  runAt(restoreMaterializeHome, ["set-profile", "core"]);
+  const beforeMaterialize = JSON.parse(runAt(restoreMaterializeHome, ["apply", "--json"]).stdout);
+  runAt(restoreMaterializeHome, ["enable", "backend-data"]);
+  assert(fs.existsSync(path.join(restoreBackend, "SKILL.md")));
+  runAt(restoreMaterializeHome, ["restore", beforeMaterialize.snapshot]);
+  const restoredMaterializedConfig = fs.readFileSync(path.join(restoreMaterializeHome, ".codex", "config.toml"), "utf8");
+  assert(restoredMaterializedConfig.includes(`${JSON.stringify(path.join(restoreBackend, "SKILL.md"))}\nenabled = false`),
+    "restore must explicitly disable payloads materialized after the snapshot");
+  runAt(restoreMaterializeHome, ["enable", "backend-data"]);
+  const selectedSnapshot = JSON.parse(runAt(restoreMaterializeHome, ["apply", "--json"]).stdout).snapshot;
+  fs.rmSync(restoreBackend, { recursive: true });
+  fs.rmSync(path.join(restoreMaterializeHome, ".codex", "vendor", "my-codex", "upstream", "ecc", "skills", "backend-patterns"), { recursive: true });
+  const beforeUnavailableRestore = fs.readFileSync(path.join(restoreMaterializeHome, ".codex", "config.toml"), "utf8");
+  runAt(restoreMaterializeHome, ["restore", selectedSnapshot], 1);
+  assert.strictEqual(fs.readFileSync(path.join(restoreMaterializeHome, ".codex", "config.toml"), "utf8"), beforeUnavailableRestore,
+    "restore with an unavailable selected payload must fail before mutation");
+
+  const installedBin = path.join(overlayHome, ".codex", "bin");
+  const installedLib = path.join(overlayHome, ".codex", "lib", "my-codex");
+  fs.mkdirSync(installedBin, { recursive: true });
+  fs.mkdirSync(installedLib, { recursive: true });
+  fs.copyFileSync(path.join(repo, "bin", "my-codex-skills"), path.join(installedBin, "my-codex-skills"));
+  fs.chmodSync(path.join(installedBin, "my-codex-skills"), 0o755);
+  for (const file of ["skill-catalog.js", "skill-catalog.json", "skill-catalog-toml.py"]) {
+    fs.copyFileSync(path.join(repo, "scripts", file), path.join(installedLib, file));
+  }
+  const wrapperOverlay = cp.spawnSync("bash", [path.join(installedBin, "my-codex-skills"), "status", "--json"], {
+    encoding: "utf8", env: { ...process.env, HOME: overlayHome, CODEX_HOME: overlayConfigHome }
+  });
+  assert.strictEqual(wrapperOverlay.status, 0, wrapperOverlay.stderr);
+  assert.strictEqual(JSON.parse(wrapperOverlay.stdout).configHome, overlayConfigHome,
+    "wrapper must select an active CODEX_HOME sharing the canonical skills tree");
+  const unrelatedConfigHome = path.join(root, "unrelated-config-home");
+  fs.mkdirSync(path.join(unrelatedConfigHome, "skills"), { recursive: true });
+  fs.writeFileSync(path.join(unrelatedConfigHome, "config.toml"), 'model = "unrelated"\n');
+  const wrapperUnrelated = cp.spawnSync("bash", [path.join(installedBin, "my-codex-skills"), "status", "--json"], {
+    encoding: "utf8", env: { ...process.env, HOME: overlayHome, CODEX_HOME: unrelatedConfigHome }
+  });
+  assert.strictEqual(wrapperUnrelated.status, 0, wrapperUnrelated.stderr);
+  assert.strictEqual(JSON.parse(wrapperUnrelated.stdout).configHome, path.join(overlayHome, ".codex"));
+  assert.strictEqual(fs.readFileSync(path.join(unrelatedConfigHome, "config.toml"), "utf8"), 'model = "unrelated"\n');
 
   const interpreterHome = path.join(root, "interpreter-home");
   const interpreterBin = path.join(root, "interpreter-bin");

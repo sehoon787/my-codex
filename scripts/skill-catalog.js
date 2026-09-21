@@ -24,6 +24,8 @@ function parseArgs(argv) {
     else if (arg === "--dry-run") options.dryRun = true;
     else if (arg === "--home") options.home = argv[++i];
     else if (arg.startsWith("--home=")) options.home = arg.slice(7);
+    else if (arg === "--config-home") options.configHome = argv[++i];
+    else if (arg.startsWith("--config-home=")) options.configHome = arg.slice(14);
     else args.push(arg);
   }
   return { options, args };
@@ -32,12 +34,17 @@ function parseArgs(argv) {
 function resolveLayout(options) {
   const home = path.resolve(options.home);
   const codex = path.join(home, ".codex");
+  const configHome = path.resolve(options.configHome || codex);
+  const configRelative = path.relative(home, configHome);
+  if (configRelative.startsWith(`..${path.sep}`) || configRelative === ".." || path.isAbsolute(configRelative)) {
+    throw new Error(`config home must stay inside the selected home: ${configHome}`);
+  }
   const scriptDir = __dirname;
   const installedCatalog = path.join(scriptDir, "skill-catalog.json");
   const repoCatalog = path.join(scriptDir, "skill-catalog.json");
   return {
-    home, codex,
-    config: path.join(codex, "config.toml"),
+    home, codex, configHome,
+    config: path.join(configHome, "config.toml"),
     stateDir: path.join(codex, "my-codex"),
     state: path.join(codex, "my-codex", "skill-catalog-state.json"),
     snapshots: path.join(codex, "my-codex", "skill-catalog-snapshots"),
@@ -103,6 +110,15 @@ function assertSafePath(file, root) {
     const stat = fs.lstatSync(file);
     if (stat.isSymbolicLink() || !stat.isFile()) throw new Error(`unsafe managed file: ${file}`);
   } catch (error) { if (error.code !== "ENOENT") throw error; }
+}
+
+function assertSafeRoot(root) {
+  let stat;
+  try { stat = fs.lstatSync(root); } catch (error) {
+    if (error.code === "ENOENT") throw new Error(`managed root does not exist: ${root}`);
+    throw error;
+  }
+  if (stat.isSymbolicLink() || !stat.isDirectory()) throw new Error(`unsafe managed root: ${root}`);
 }
 
 function atomicWrite(file, content, mode, root) {
@@ -338,10 +354,13 @@ function replaceBlock(text, block) {
   return `${text}${separator}${block}`;
 }
 
-function snapshot(layout, state, oldBlock) {
+function snapshot(layout, state, oldBlock, configText) {
   const id = `${new Date().toISOString().replace(/[:.]/g, "-")}-${crypto.randomBytes(3).toString("hex")}`;
   assertSafePath(path.join(layout.snapshots, ".sentinel"), layout.codex);
-  atomicWrite(path.join(layout.snapshots, `${id}.json`), `${JSON.stringify({ version: 1, id, state, managedBlock: oldBlock }, null, 2)}\n`, 0o600, layout.codex);
+  atomicWrite(path.join(layout.snapshots, `${id}.json`), `${JSON.stringify({
+    version: 2, id, state, managedBlock: oldBlock, configPath: path.resolve(layout.config),
+    configOutside: splitManagedBlock(configText).outside
+  }, null, 2)}\n`, 0o600, layout.codex);
   return id;
 }
 
@@ -352,9 +371,12 @@ function apply(layout, catalog, state, options) {
   if (options.dryRun) return { ...plan, snapshot: null, changed: true };
   const lanesFile = path.join(layout.codex, "enabled-skill-lanes.txt");
   const manifestFile = path.join(layout.codex, ".my-codex-manifest.txt");
-  for (const target of [layout.config, layout.state, lanesFile, manifestFile]) assertSafePath(target, layout.codex);
+  assertSafeRoot(layout.configHome);
+  assertSafePath(layout.config, layout.home);
+  assertSafePath(layout.config, layout.configHome);
+  for (const target of [layout.state, lanesFile, manifestFile]) assertSafePath(target, layout.codex);
   // Snapshot path safety and writability are verified before payload changes.
-  const snapshotId = snapshot(layout, loadState(layout), parts.block);
+  const snapshotId = snapshot(layout, loadState(layout), parts.block, configText);
   const oldState = fs.existsSync(layout.state) ? fs.readFileSync(layout.state, "utf8") : null;
   const oldLanes = fs.existsSync(lanesFile) ? fs.readFileSync(lanesFile, "utf8") : null;
   let undoPayloads = null;
@@ -367,7 +389,7 @@ function apply(layout, catalog, state, options) {
     const block = renderBlock(plan.rows);
     const nextConfig = replaceBlock(configText, block);
     parseSkillConfigPaths(nextConfig); // Validate the complete generated TOML before writing.
-    atomicWrite(layout.config, nextConfig, 0o600, layout.codex);
+    atomicWrite(layout.config, nextConfig, 0o600, layout.configHome);
     state.version = 1;
     state.updatedAt = new Date().toISOString();
     atomicWrite(layout.state, `${JSON.stringify(state, null, 2)}\n`, 0o600, layout.codex);
@@ -375,7 +397,7 @@ function apply(layout, catalog, state, options) {
     atomicWrite(lanesFile, lanesText, 0o600, layout.codex);
     return { ...plan, snapshot: snapshotId, changed: parts.block !== block };
   } catch (error) {
-    try { if (fs.existsSync(layout.config) && fs.readFileSync(layout.config, "utf8") !== configText) atomicWrite(layout.config, configText, 0o600, layout.codex); } catch (_) {}
+    try { if (fs.existsSync(layout.config) && fs.readFileSync(layout.config, "utf8") !== configText) atomicWrite(layout.config, configText, 0o600, layout.configHome); } catch (_) {}
     try { if (oldState === null) fs.rmSync(layout.state, { force: true }); else atomicWrite(layout.state, oldState, 0o600, layout.codex); } catch (_) {}
     try { if (oldLanes === null) fs.rmSync(lanesFile, { force: true }); else atomicWrite(lanesFile, oldLanes, 0o600, layout.codex); } catch (_) {}
     try { if (undoPayloads) undoPayloads(); } catch (_) {}
@@ -419,6 +441,8 @@ function report(layout, catalog, state) {
     alternate_paths: (plan.inv.byName.get(x.name) || []).filter((other) => other.file !== x.file).map((other) => other.file)
   }));
   return {
+    configHome: layout.configHome,
+    configPath: layout.config,
     profile: state.profile,
     enabledLanes: state.enabledLanes,
     physicalSkillFiles: plan.inv.all.length,
@@ -450,7 +474,7 @@ function print(value, json) {
 }
 
 function help() {
-  return `Usage: my-codex-skills <command> [arguments]\n\nCommands:\n  list\n  status\n  doctor\n  apply\n  enable <lane...>\n  disable <lane...>\n  set-profile <core|legacy|full>\n  source <skill> <codex|agents|gstack|SKILL.md path>\n  restore <snapshot-id|latest>\n\nOptions:\n  --json      Machine-readable output\n  --dry-run   Calculate changes without writing\n  --home DIR  Use an alternate home directory (tests/migration preview)\n`;
+  return `Usage: my-codex-skills <command> [arguments]\n\nCommands:\n  list\n  status\n  doctor\n  apply\n  enable <lane...>\n  disable <lane...>\n  set-profile <core|legacy|full>\n  source <skill> <codex|agents|gstack|SKILL.md path>\n  restore <snapshot-id|latest>\n\nOptions:\n  --json             Machine-readable output\n  --dry-run          Calculate changes without writing\n  --home DIR         Use an alternate home directory (tests/migration preview)\n  --config-home DIR  Write the effective Codex config in this directory\n`;
 }
 
 function validateLanes(catalog, lanes) {
@@ -463,27 +487,55 @@ function restore(layout, catalog, id, options) {
   const chosen = id === "latest" ? files.at(-1) : `${id}.json`;
   if (!chosen || !files.includes(chosen)) throw new Error(`snapshot not found: ${id}`);
   const saved = readJson(path.join(layout.snapshots, chosen), null);
-  if (!saved || saved.version !== 1) throw new Error(`invalid snapshot: ${chosen}`);
+  if (!saved || ![1, 2].includes(saved.version)) throw new Error(`invalid snapshot: ${chosen}`);
+  if (saved.version === 2 && path.resolve(saved.configPath || "") !== path.resolve(layout.config)) {
+    throw new Error(`snapshot config target does not match active config: ${saved.configPath || "unknown"}`);
+  }
+  if (saved.version === 1 && layout.configHome !== layout.codex) {
+    throw new Error("version 1 snapshots can only restore the default ~/.codex/config.toml target");
+  }
   const savedState = validateState(saved.state || defaultState(), chosen);
   validateLanes(catalog, savedState.enabledLanes);
   const current = fs.existsSync(layout.config) ? fs.readFileSync(layout.config, "utf8") : "";
   const currentParts = splitManagedBlock(current);
-  const plan = makePlan(layout, catalog, savedState, current);
-  if (plan.missingSelected.length) throw new Error(`snapshot selected skills are unavailable: ${plan.missingSelected.join(", ")}`);
-  const restored = replaceBlock(current, renderBlock(plan.rows));
+  // An empty pre-migration block must restore to empty so the first overlay
+  // migration is genuinely reversible. Once a managed block existed, rebuild
+  // it from the saved state and current inventory so payloads materialized
+  // later receive explicit disabled rows rather than becoming default-enabled.
+  const restoringInitialConfig = saved.version === 2 && !saved.managedBlock;
+  const restorePlan = restoringInitialConfig ? null : makePlan(layout, catalog, savedState, current);
+  if (restorePlan && restorePlan.missingSelected.length) {
+    throw new Error(`snapshot selected skills are unavailable: ${restorePlan.missingSelected.join(", ")}`);
+  }
+  const restoredBlock = restoringInitialConfig
+    ? ""
+    : renderBlock(restorePlan.rows);
+  let restored = replaceBlock(current, restoredBlock);
+  if (restoringInitialConfig && typeof saved.configOutside === "string") {
+    const separator = saved.configOutside.length
+      ? (saved.configOutside.endsWith("\n") ? "\n" : "\n\n")
+      : "";
+    const generatedPrefix = `${saved.configOutside}${separator}`;
+    if (currentParts.outside.startsWith(generatedPrefix)) {
+      restored = `${saved.configOutside}${currentParts.outside.slice(generatedPrefix.length)}`;
+    }
+  }
   parseSkillConfigPaths(restored);
   if (options.dryRun) return chosen.replace(/\.json$/, "");
   const lanesFile = path.join(layout.codex, "enabled-skill-lanes.txt");
-  for (const target of [layout.config, layout.state, lanesFile]) assertSafePath(target, layout.codex);
-  snapshot(layout, loadState(layout), currentParts.block);
+  assertSafeRoot(layout.configHome);
+  assertSafePath(layout.config, layout.home);
+  assertSafePath(layout.config, layout.configHome);
+  for (const target of [layout.state, lanesFile]) assertSafePath(target, layout.codex);
+  snapshot(layout, loadState(layout), currentParts.block, current);
   const oldState = fs.existsSync(layout.state) ? fs.readFileSync(layout.state, "utf8") : null;
   const oldLanes = fs.existsSync(lanesFile) ? fs.readFileSync(lanesFile, "utf8") : null;
   try {
-    atomicWrite(layout.config, restored, 0o600, layout.codex);
+    atomicWrite(layout.config, restored, 0o600, layout.configHome);
     atomicWrite(layout.state, `${JSON.stringify(savedState, null, 2)}\n`, 0o600, layout.codex);
     atomicWrite(lanesFile, `# One optional skill lane name per line.\n# Managed by my-codex; skill-catalog-state.json is authoritative.\n${savedState.enabledLanes.join("\n")}${savedState.enabledLanes.length ? "\n" : ""}`, 0o600, layout.codex);
   } catch (error) {
-    try { atomicWrite(layout.config, current, 0o600, layout.codex); } catch (_) {}
+    try { atomicWrite(layout.config, current, 0o600, layout.configHome); } catch (_) {}
     try { if (oldState === null) fs.rmSync(layout.state, { force: true }); else atomicWrite(layout.state, oldState, 0o600, layout.codex); } catch (_) {}
     try { if (oldLanes === null) fs.rmSync(lanesFile, { force: true }); else atomicWrite(lanesFile, oldLanes, 0o600, layout.codex); } catch (_) {}
     throw error;

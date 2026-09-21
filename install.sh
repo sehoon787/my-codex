@@ -95,11 +95,21 @@ POWERSHELL_CMD=""
 WINGET_CMD=""
 SELECTOR_STTY_SAVED=""
 SELECTOR_CURSOR_HIDDEN=0
+SELECTOR_ESCAPE_TAIL=""
+# Scratch buffer for every stty read the selector makes. Allocated here, before
+# the INT trap exists and long before the menu is drawn, so the interruptible
+# region never has to run mktemp — or any other command substitution.
+SELECTOR_SCRATCH="$(mktemp)"
 
+# Deliberately re-runnable: `read -n`/`read -s` reinstate the terminal settings
+# they saved when the shell unwinds out of an interrupted read, which undoes the
+# restore the INT trap just did. Keeping SELECTOR_STTY_SAVED populated is what
+# lets the EXIT trap put the cooked settings back afterwards. An empty value
+# means the selector never reached raw mode, so skipping the stty is both safe
+# and correct — the terminal was never touched.
 restore_companion_selector_terminal() {
   if [ -n "$SELECTOR_STTY_SAVED" ]; then
     stty "$SELECTOR_STTY_SAVED" 2>/dev/null || true
-    SELECTOR_STTY_SAVED=""
   fi
   if [ "$SELECTOR_CURSOR_HIDDEN" = "1" ]; then
     tput cnorm 2>/dev/null || true
@@ -109,13 +119,13 @@ restore_companion_selector_terminal() {
 
 cleanup() {
   restore_companion_selector_terminal
-  rm -f "$TMP_MANIFEST"
+  rm -f "$TMP_MANIFEST" "$SELECTOR_SCRATCH"
 }
 trap cleanup EXIT
 
 # ── Upstream helper ──
 CLONE_TMPDIR=$(mktemp -d)
-cleanup_clone() { restore_companion_selector_terminal; rm -rf "$CLONE_TMPDIR"; rm -f "$TMP_MANIFEST"; if [ -n "$NODEJS_SHIM_DIR" ] && [ -d "$NODEJS_SHIM_DIR" ]; then rm -rf "$NODEJS_SHIM_DIR"; fi; if [ -n "$BUN_SHIM_DIR" ] && [ -d "$BUN_SHIM_DIR" ]; then rm -rf "$BUN_SHIM_DIR"; fi; }
+cleanup_clone() { restore_companion_selector_terminal; rm -rf "$CLONE_TMPDIR"; rm -f "$TMP_MANIFEST" "$SELECTOR_SCRATCH"; if [ -n "$NODEJS_SHIM_DIR" ] && [ -d "$NODEJS_SHIM_DIR" ]; then rm -rf "$NODEJS_SHIM_DIR"; fi; if [ -n "$BUN_SHIM_DIR" ] && [ -d "$BUN_SHIM_DIR" ]; then rm -rf "$BUN_SHIM_DIR"; fi; }
 trap cleanup_clone EXIT
 trap 'restore_companion_selector_terminal; exit 130' INT
 trap 'restore_companion_selector_terminal; exit 143' TERM
@@ -546,10 +556,14 @@ INSTALL_HEADROOM=0
 INSTALL_CODEBURN=0
 
 apply_tool_selection() {
-  local raw="$1" normalized token
+  local raw="$1" normalized="" token
   local -a selection_tokens=()
-  normalized="$(printf '%s' "$raw" | tr '[:upper:]' '[:lower:]' | tr ',[:space:]' ' ')"
-  normalized="$(printf '%s\n' "$normalized" | awk '{$1=$1; print}')"
+  # The a/n keys call this from inside the redraw loop, so it runs in the
+  # interruptible region: the normalized value goes through a file and the
+  # builtin read instead of $( … ).
+  printf '%s' "$raw" | tr '[:upper:]' '[:lower:]' | tr ',[:space:]' ' ' \
+    | awk '{$1=$1; print}' > "$SELECTOR_SCRATCH"
+  IFS= read -r normalized < "$SELECTOR_SCRATCH" || :
   INSTALL_SERENA=0
   INSTALL_HEADROOM=0
   INSTALL_CODEBURN=0
@@ -607,10 +621,14 @@ checkbox_selector_available() {
   if [ "${BASH_VERSINFO[0]}" -lt 4 ]; then
     command -v dd >/dev/null 2>&1 || return 1
   fi
-  SELECTOR_STTY_SAVED="$(stty -g 2>/dev/null)" || {
-    SELECTOR_STTY_SAVED=""
-    return 1
-  }
+  # Capture the cooked settings before raw mode is entered, and without a
+  # command substitution: a SIGINT taken while Bash is still inside an
+  # unfinished $( … ) kills the shell before the saved value exists, which is
+  # exactly the state in which the restore has nothing to restore.
+  SELECTOR_STTY_SAVED=""
+  stty -g > "$SELECTOR_SCRATCH" 2>/dev/null || return 1
+  IFS= read -r SELECTOR_STTY_SAVED < "$SELECTOR_SCRATCH" || :
+  [ -n "$SELECTOR_STTY_SAVED" ] || return 1
   if ! stty -echo -icanon min 1 time 0 2>/dev/null; then
     restore_companion_selector_terminal
     return 1
@@ -642,8 +660,12 @@ render_companion_tool_selector() {
 }
 
 reserve_companion_selector_rows() {
-  local terminal_size columns rows=0 line line_width index=0
-  terminal_size="$(stty size 2>/dev/null || true)"
+  local terminal_size="" columns rows=0 line line_width index=0
+  # Same reason as the -g capture above; the saved settings already live in
+  # SELECTOR_STTY_SAVED, so reusing the scratch file here is safe.
+  if stty size > "$SELECTOR_SCRATCH" 2>/dev/null; then
+    IFS= read -r terminal_size < "$SELECTOR_SCRATCH" || :
+  fi
   columns="${terminal_size##* }"
   case "$columns" in
     ""|*[!0-9]*|0) columns=80 ;;
@@ -664,23 +686,25 @@ reserve_companion_selector_rows() {
   printf '\033[%sA\0337' "$rows"
 }
 
+# Reports through SELECTOR_ESCAPE_TAIL rather than stdout so the caller does
+# not have to wrap it in a command substitution on the redraw path.
 read_checkbox_escape_tail() {
-  local escape_tail=""
+  SELECTOR_ESCAPE_TAIL=""
   if [ "${BASH_VERSINFO[0]}" -ge 4 ]; then
-    IFS= read -rsn2 -t 0.01 escape_tail || true
+    IFS= read -rsn2 -t 0.01 SELECTOR_ESCAPE_TAIL || :
   else
     # Bash 3.2 ignores terminal VMIN/VTIME for its read builtin. POSIX dd
     # respects the one-decisecond terminal timeout, so a lone Escape cannot
     # block while a complete ESC[A / ESC[B sequence is still decoded.
     stty min 0 time 1 2>/dev/null || return 1
-    escape_tail="$(dd bs=1 count=2 2>/dev/null || true)"
+    dd bs=1 count=2 > "$SELECTOR_SCRATCH" 2>/dev/null || :
+    IFS= read -r SELECTOR_ESCAPE_TAIL < "$SELECTOR_SCRATCH" || :
     stty min 1 time 0 2>/dev/null || return 1
   fi
-  printf '%s' "$escape_tail"
 }
 
 select_tools_by_checkbox() {
-  local cursor=1 drawn=0 selector_key escape_tail
+  local cursor=1 drawn=0 selector_key
   apply_tool_selection all
   if command -v tput >/dev/null 2>&1 && tput civis 2>/dev/null; then
     SELECTOR_CURSOR_HIDDEN=1
@@ -708,8 +732,8 @@ select_tools_by_checkbox() {
       j) [ "$cursor" -ge 3 ] || cursor=$((cursor + 1)) ;;
       k) [ "$cursor" -le 1 ] || cursor=$((cursor - 1)) ;;
       $'\033')
-        escape_tail="$(read_checkbox_escape_tail || true)"
-        case "$escape_tail" in
+        read_checkbox_escape_tail || :
+        case "$SELECTOR_ESCAPE_TAIL" in
           '[A') [ "$cursor" -le 1 ] || cursor=$((cursor - 1)) ;;
           '[B') [ "$cursor" -ge 3 ] || cursor=$((cursor + 1)) ;;
         esac
@@ -717,6 +741,9 @@ select_tools_by_checkbox() {
     esac
   done
   restore_companion_selector_terminal
+  # The menu closed on its own, so no pending read unwind can put the terminal
+  # back into raw mode; the saved settings only have to outlive an interrupt.
+  SELECTOR_STTY_SAVED=""
 }
 
 if [ "$TOOLS_SELECTION_SET" = "1" ] && ! apply_tool_selection "$TOOLS_SELECTION"; then

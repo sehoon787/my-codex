@@ -107,7 +107,7 @@ Boss 会以一份无需打开 diff 即可浏览的结构化最终报告来结束
 |----------|------:|--------|
 | **核心 Agent**（始终加载） | 17 | Boss 1 + OMO 9 + OMX 7 |
 | **Agent 包**（可选启用，默认全部关闭） | 17 | 2 个内置分类：data-ai 13 + llmops 4 |
-| **Skills** | 106 | ECC 61 · gstack 27 · Superpowers 13 · Core 4 · archify 1 |
+| **Skills** | 已安装 106 个 | ECC 61 · gstack 27 · Superpowers 13 · Core 4 · archify 1；暴露范围由配置文件控制 |
 | **MCP 服务器** | 5 | Context7、Exa、grep.app、Serena、Headroom |
 | **config.toml** | 1 | my-codex |
 | **AGENTS.md** | 1 | my-codex |
@@ -186,7 +186,16 @@ bash /tmp/my-codex/install.sh --profile full      # 已安装的全部包
 | [my-codex Core](https://github.com/sehoon787/my-codex) | 4 | boss-advanced, boss-briefing, briefing-vault, gstack-sprint |
 | [archify](https://github.com/tt-a1i/archify) | 1 | archify（架构 / 工作流 / 时序 / 数据流 / 生命周期图） |
 gstack 按允许列表的 26 个技能加上仓库根条目计为 27。完整 checkout 位于 `~/.codex/vendor/gstack`；`~/.codex/skills/gstack` 是运行时门面。ECC 另外提供 9 个允许列表规则文件。
-Codex **不提供文档类 skill** — 本捆绑包中没有 `pdf`、`docx`、`pptx`、`xlsx` skill。
+物理 skill 文件会继续保留。默认 `core` 配置文件会暴露 30 个受管 skill，并保留从外部安装的 `docx`、`pdf`、系统、插件和用户 skill；此捆绑包本身仍不提供 `pdf`、`docx`、`pptx` 或 `xlsx`。可选项通过 Codex 支持的按路径 skill 配置隐藏。未知 skill 以及 `~/.agents/skills/`、`~/.claude/skills/` 下的文件不会被修改。
+
+配置文件：新安装默认使用 `core`；`legacy` 恢复迁移前的暴露状态；`full` 启用所有 lane，可能超过上下文预算。没有状态文件的现有非交互安装保留当前暴露状态。已保存的配置文件和 lane 持久化在 `~/.codex/my-codex/skill-catalog-state.json`；使用 `--skill-profile=core|legacy|full` 选择。`bash install.sh --skills=web` 和 `MY_CODEX_SKILLS=web` 及兼容记录 `~/.codex/enabled-skill-lanes.txt` 继续受支持。
+
+目录位于 `~/.codex/lib/my-codex/skill-catalog.json`；快照位于 `~/.codex/my-codex/skill-catalog-snapshots/<id>.json`。使用 `my-codex-skills restore latest` 或快照 ID 恢复。
+
+可选 lane：`workflow-advanced` (13)、`qa-operations` (20)、`ai-engineering` (18)、`backend-data` (13)、`python` (9)、`jvm` (11)、`web` (18)、`mobile` (9)、`other-languages` (13)、`research-content` (11)、`media-documents` (7)、`business-domains` (8)、`alternative-workflows` (30)。
+
+查看和修改 lane：`my-codex-skills list`、`my-codex-skills status`、`my-codex-skills doctor`、`my-codex-skills enable python web`、`my-codex-skills disable web`。
+切换配置文件：`my-codex-skills set-profile core`、`my-codex-skills set-profile legacy`、`my-codex-skills set-profile full`；用 `my-codex-skills source benchmark gstack` 选择重复来源，用 `my-codex-skills restore <snapshot>` 回滚。
 
 </details>
 

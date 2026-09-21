@@ -113,7 +113,7 @@ It fires only at the very end of the request — never on a turn that launches o
 |----------|------:|--------|
 | **Core agents** (always loaded) | 17 | Boss 1 + OMO 9 + OMX 7 |
 | **Agent packs** (opt-in, none enabled by default) | 17 | 2 vendored categories: data-ai 13 + llmops 4 |
-| **Skills** | 106 | ECC 61 · gstack 27 · Superpowers 13 · Core 4 · archify 1 |
+| **Skills** | 106 installed | ECC 61 · gstack 27 · Superpowers 13 · Core 4 · archify 1; exposure is profile-controlled |
 | **MCP Servers** | 5 | Context7, Exa, grep.app, Serena, Headroom |
 | **config.toml** | 1 | my-codex |
 | **AGENTS.md** | 1 | my-codex |
@@ -192,11 +192,12 @@ Curated per-skill allowlists live in `scripts/skill-allowlists.sh` — that file
 | [my-codex Core](https://github.com/sehoon787/my-codex) | 4 | boss-advanced, boss-briefing, briefing-vault, gstack-sprint |
 | [archify](https://github.com/tt-a1i/archify) | 1 | archify (architecture / workflow / sequence / data-flow / lifecycle diagrams) |
 gstack is counted as 26 allowlisted skills plus the repo root entry. Its full checkout lives at `~/.codex/vendor/gstack`; `~/.codex/skills/gstack` is the runtime facade.
-A further 18 ECC web/UI skills (React, Vue, Nuxt, Nest, motion, a11y, E2E) sit in an **optional lane that is off by default**, because every installed skill spends context in every session. Add them with `bash install.sh --skills=web`; the choice persists in `~/.codex/enabled-skill-lanes.txt`.
-Codex ships **no document skills** — there is no `pdf`, `docx`, `pptx`, or `xlsx` skill in this bundle.
-
-</details>
-
+Physical skill files remain installed. The default `core` profile exposes 30 managed skills and preserves externally installed `docx`, `pdf`, system, plugin, and user skills; this bundle still does not ship `pdf`, `docx`, `pptx`, or `xlsx`. Optional entries are hidden through Codex's supported path-based skill configuration. Unknown skills and files under `~/.agents/skills/` or `~/.claude/skills/` are left untouched.
+Profiles: `core` is the new-install default; `legacy` restores pre-migration exposure; `full` enables every lane and can exceed the context budget. Existing noninteractive installs without state retain their current exposure. The saved profile and lanes persist in `~/.codex/my-codex/skill-catalog-state.json`; select with `--skill-profile=core|legacy|full`. `bash install.sh --skills=web` and `MY_CODEX_SKILLS=web` remain supported, including the compatibility record in `~/.codex/enabled-skill-lanes.txt`.
+The catalog is `~/.codex/lib/my-codex/skill-catalog.json`; snapshots are under `~/.codex/my-codex/skill-catalog-snapshots/<id>.json`. Restore with `my-codex-skills restore latest` or a snapshot ID.
+Optional lanes: `workflow-advanced` (13), `qa-operations` (20), `ai-engineering` (18), `backend-data` (13), `python` (9), `jvm` (11), `web` (18), `mobile` (9), `other-languages` (13), `research-content` (11), `media-documents` (7), `business-domains` (8), `alternative-workflows` (30).
+Inspect and change lanes with `my-codex-skills list`, `my-codex-skills status`, `my-codex-skills doctor`, `my-codex-skills enable python web`, and `my-codex-skills disable web`.
+Switch with `my-codex-skills set-profile core`, `my-codex-skills set-profile legacy`, or `my-codex-skills set-profile full`; choose a duplicate source with `my-codex-skills source benchmark gstack`, and roll back with `my-codex-skills restore <snapshot>`.</details>
 <details>
 <summary><strong>Hosted MCP Servers (3)</strong></summary>
 

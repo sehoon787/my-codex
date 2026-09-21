@@ -107,7 +107,7 @@ Boss は作業が発生したすべてのターン — ファイルの編集・�
 |----------|------:|--------|
 | **コアエージェント**（常時ロード） | 17 | Boss 1 + OMO 9 + OMX 7 |
 | **エージェントパック**（オプトイン、デフォルトでは無効） | 17 | ベンダリング済み 2 カテゴリ: data-ai 13 + llmops 4 |
-| **スキル** | 106 | ECC 61 · gstack 27 · Superpowers 13 · Core 4 · archify 1 |
+| **スキル** | 106 インストール済み | ECC 61 · gstack 27 · Superpowers 13 · Core 4 · archify 1。公開範囲はプロファイルで制御 |
 | **MCP サーバー** | 5 | Context7、Exa、grep.app、Serena、Headroom |
 | **config.toml** | 1 | my-codex |
 | **AGENTS.md** | 1 | my-codex |
@@ -186,7 +186,16 @@ bash /tmp/my-codex/install.sh --profile full      # インストール済みの�
 | [my-codex Core](https://github.com/sehoon787/my-codex) | 4 | boss-advanced, boss-briefing, briefing-vault, gstack-sprint |
 | [archify](https://github.com/tt-a1i/archify) | 1 | archify（アーキテクチャ・ワークフロー・シーケンス・データフロー・ライフサイクル図） |
 gstack は許可リストのスキル 26 個にリポジトリルートのエントリを加えて 27 として集計されます。完全なチェックアウトは `~/.codex/vendor/gstack` にあり、`~/.codex/skills/gstack` はランタイムファサードです。
-Codex には**ドキュメントスキルがありません** — このバンドルに `pdf`、`docx`、`pptx`、`xlsx` スキルは含まれません。
+物理的なスキルファイルはインストールされたままです。デフォルトの `core` プロファイルは管理対象の 30 スキルを公開し、外部からインストールされた `docx`、`pdf`、システム、プラグイン、ユーザースキルを保持します。このバンドル自体は引き続き `pdf`、`docx`、`pptx`、`xlsx` を提供しません。オプション項目は Codex がサポートするパス単位のスキル設定で非表示にします。未知のスキルと `~/.agents/skills/`、`~/.claude/skills/` 配下のファイルは変更しません。
+
+プロファイル: 新規インストールのデフォルトは `core`、`legacy` は移行前の公開状態を復元し、`full` は全レーンを有効化するためコンテキスト予算を超える場合があります。状態がない既存の非対話インストールは現在の公開状態を保持します。保存済みのプロファイルとレーンは `~/.codex/my-codex/skill-catalog-state.json` に維持され、`--skill-profile=core|legacy|full` で選択できます。`bash install.sh --skills=web` と `MY_CODEX_SKILLS=web` も互換記録 `~/.codex/enabled-skill-lanes.txt` を含めて引き続き利用できます。
+
+カタログは `~/.codex/lib/my-codex/skill-catalog.json`、スナップショットは `~/.codex/my-codex/skill-catalog-snapshots/<id>.json` にあります。`my-codex-skills restore latest` またはスナップショット ID で復元できます。
+
+オプションレーン: `workflow-advanced` (13)、`qa-operations` (20)、`ai-engineering` (18)、`backend-data` (13)、`python` (9)、`jvm` (11)、`web` (18)、`mobile` (9)、`other-languages` (13)、`research-content` (11)、`media-documents` (7)、`business-domains` (8)、`alternative-workflows` (30)。
+
+レーンの確認と変更: `my-codex-skills list`、`my-codex-skills status`、`my-codex-skills doctor`、`my-codex-skills enable python web`、`my-codex-skills disable web`。
+プロファイルの切り替え: `my-codex-skills set-profile core`、`my-codex-skills set-profile legacy`、`my-codex-skills set-profile full`。重複ソースは `my-codex-skills source benchmark gstack`、復元は `my-codex-skills restore <snapshot>` を使用します。
 
 </details>
 

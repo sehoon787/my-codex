@@ -107,7 +107,7 @@ Er wird nur ganz am Ende der Anfrage ausgelöst — niemals in einem Turn, der H
 |-----------|-------:|--------|
 | **Kern-Agenten** (immer geladen) | 17 | Boss 1 + OMO 9 + OMX 7 |
 | **Agenten-Packs** (Opt-in, standardmäßig keines aktiv) | 17 | 2 eingebundene Kategorien: data-ai 13 + llmops 4 |
-| **Skills** | 106 | ECC 61 · gstack 27 · Superpowers 13 · Core 4 · archify 1 |
+| **Skills** | 106 installiert | ECC 61 · gstack 27 · Superpowers 13 · Core 4 · archify 1; Sichtbarkeit wird über Profile gesteuert |
 | **MCP-Server** | 5 | Context7, Exa, grep.app, Serena, Headroom |
 | **config.toml** | 1 | my-codex |
 | **AGENTS.md** | 1 | my-codex |
@@ -186,7 +186,16 @@ Die kuratierten Allowlists pro Skill stehen in `scripts/skill-allowlists.sh` —
 | [my-codex Core](https://github.com/sehoon787/my-codex) | 4 | boss-advanced, boss-briefing, briefing-vault, gstack-sprint |
 | [archify](https://github.com/tt-a1i/archify) | 1 | archify (Architektur-, Workflow-, Sequenz-, Datenfluss- und Lifecycle-Diagramme) |
 gstack zählt als 26 Allowlist-Skills plus den Repository-Root-Eintrag. Der vollständige Checkout liegt unter `~/.codex/vendor/gstack`; `~/.codex/skills/gstack` ist die Runtime-Fassade.
-Codex bringt **keine Dokument-Skills** mit — in diesem Bundle gibt es kein `pdf`, `docx`, `pptx` oder `xlsx`.
+Die physischen Skill-Dateien bleiben installiert. Das Standardprofil `core` stellt 30 verwaltete Skills bereit und erhält extern installierte `docx`-, `pdf`-, System-, Plugin- und Benutzer-Skills; dieses Bundle liefert weiterhin weder `pdf`, `docx`, `pptx` noch `xlsx` aus. Optionale Einträge werden über die unterstützte pfadbasierte Skill-Konfiguration von Codex ausgeblendet. Unbekannte Skills sowie Dateien unter `~/.agents/skills/` und `~/.claude/skills/` bleiben unverändert.
+
+Profile: `core` ist der Standard für Neuinstallationen; `legacy` stellt die Sichtbarkeit vor der Migration wieder her; `full` aktiviert alle Lanes und kann das Kontextbudget überschreiten. Bestehende nicht interaktive Installationen ohne Status behalten ihre bisherige Sichtbarkeit. Das gespeicherte Profil und die Lanes bleiben in `~/.codex/my-codex/skill-catalog-state.json` erhalten; Auswahl mit `--skill-profile=core|legacy|full`. `bash install.sh --skills=web` und `MY_CODEX_SKILLS=web` werden einschließlich des Kompatibilitätseintrags `~/.codex/enabled-skill-lanes.txt` weiterhin unterstützt.
+
+Der Katalog liegt unter `~/.codex/lib/my-codex/skill-catalog.json`; Snapshots liegen unter `~/.codex/my-codex/skill-catalog-snapshots/<id>.json`. Wiederherstellung mit `my-codex-skills restore latest` oder einer Snapshot-ID.
+
+Optionale Lanes: `workflow-advanced` (13), `qa-operations` (20), `ai-engineering` (18), `backend-data` (13), `python` (9), `jvm` (11), `web` (18), `mobile` (9), `other-languages` (13), `research-content` (11), `media-documents` (7), `business-domains` (8), `alternative-workflows` (30).
+
+Lanes prüfen und ändern: `my-codex-skills list`, `my-codex-skills status`, `my-codex-skills doctor`, `my-codex-skills enable python web`, `my-codex-skills disable web`.
+Profile wechseln: `my-codex-skills set-profile core`, `my-codex-skills set-profile legacy`, `my-codex-skills set-profile full`; Quelle mit `my-codex-skills source benchmark gstack` wählen und mit `my-codex-skills restore <snapshot>` zurückrollen.
 
 </details>
 

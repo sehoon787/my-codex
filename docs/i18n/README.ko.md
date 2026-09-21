@@ -107,7 +107,7 @@ Boss는 작업이 있던 모든 턴 — 파일 편집·생성, 커밋/PR/머지,
 |----------|------:|--------|
 | **핵심 에이전트** (항상 로드됨) | 17 | Boss 1 + OMO 9 + OMX 7 |
 | **에이전트 팩** (옵트인, 기본 비활성) | 17 | 벤더링된 2개 카테고리: data-ai 13 + llmops 4 |
-| **스킬** | 106 | ECC 61 · gstack 27 · Superpowers 13 · Core 4 · archify 1 |
+| **스킬** | 106개 설치 | ECC 61 · gstack 27 · Superpowers 13 · Core 4 · archify 1, 노출 범위는 프로필로 제어 |
 | **MCP 서버** | 5 | Context7, Exa, grep.app, Serena, Headroom |
 | **config.toml** | 1 | my-codex |
 | **AGENTS.md** | 1 | my-codex |
@@ -186,7 +186,16 @@ bash /tmp/my-codex/install.sh --profile full      # 설치된 모든 팩
 | [my-codex Core](https://github.com/sehoon787/my-codex) | 4 | boss-advanced, boss-briefing, briefing-vault, gstack-sprint |
 | [archify](https://github.com/tt-a1i/archify) | 1 | archify (아키텍처·워크플로·시퀀스·데이터 흐름·라이프사이클 다이어그램) |
 gstack은 허용목록 스킬 26개에 저장소 루트 항목을 더해 27개로 집계됩니다. 전체 체크아웃은 `~/.codex/vendor/gstack`에 있고, `~/.codex/skills/gstack`은 런타임 퍼사드입니다.
-Codex에는 **문서 스킬이 없습니다** — 이 번들에 `pdf`, `docx`, `pptx`, `xlsx` 스킬은 포함되지 않습니다.
+실제 스킬 파일은 설치된 상태로 유지됩니다. 기본 `core` 프로필은 관리 대상 스킬 30개를 노출하고 외부에서 설치한 `docx`, `pdf`, 시스템·플러그인·사용자 스킬은 보존합니다. 이 번들 자체는 계속 `pdf`, `docx`, `pptx`, `xlsx`를 제공하지 않습니다. 선택 항목은 Codex가 지원하는 경로별 스킬 설정으로 숨기며, 알 수 없는 스킬과 `~/.agents/skills/`, `~/.claude/skills/` 아래 파일은 건드리지 않습니다.
+
+프로필: 신규 설치 기본값은 `core`, `legacy`는 마이그레이션 이전 노출 상태를 복원하고, `full`은 모든 레인을 활성화하므로 컨텍스트 예산을 넘을 수 있습니다. 상태가 없는 기존 비대화형 설치는 현재 노출 상태를 유지합니다. 저장된 프로필과 레인은 `~/.codex/my-codex/skill-catalog-state.json`에 유지되며 `--skill-profile=core|legacy|full`로 선택합니다. `bash install.sh --skills=web`과 `MY_CODEX_SKILLS=web`도 호환 기록 `~/.codex/enabled-skill-lanes.txt`와 함께 계속 지원합니다.
+
+카탈로그는 `~/.codex/lib/my-codex/skill-catalog.json`, 스냅샷은 `~/.codex/my-codex/skill-catalog-snapshots/<id>.json`에 있습니다. `my-codex-skills restore latest` 또는 스냅샷 ID로 복원합니다.
+
+선택 레인: `workflow-advanced` (13), `qa-operations` (20), `ai-engineering` (18), `backend-data` (13), `python` (9), `jvm` (11), `web` (18), `mobile` (9), `other-languages` (13), `research-content` (11), `media-documents` (7), `business-domains` (8), `alternative-workflows` (30).
+
+레인 확인·변경: `my-codex-skills list`, `my-codex-skills status`, `my-codex-skills doctor`, `my-codex-skills enable python web`, `my-codex-skills disable web`.
+프로필 전환: `my-codex-skills set-profile core`, `my-codex-skills set-profile legacy`, `my-codex-skills set-profile full`. 중복 출처는 `my-codex-skills source benchmark gstack`, 복원은 `my-codex-skills restore <snapshot>`을 사용합니다.
 
 </details>
 

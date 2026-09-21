@@ -377,12 +377,20 @@ Codex lädt diese aus `~/.codex/hooks.json` und nur, wenn `features.hooks = true
 
 Jedes installierte Werkzeug schreibt seine Ausgabe irgendwohin. Hier ist wohin.
 
-| Werkzeug | Wie ausführen | Wo nachsehen |
-|------|------------|----------------------|
-| **codeburn** | Das Installationsskript startet `codeburn web --provider all --port 4747 --no-open`; `codeburn` öffnet das interaktive Dashboard; nicht-interaktiv: `codeburn report --format json --period week --provider codex` (auch `--day`, `--from`/`--to`) | Gemeinsames Browser-Dashboard unter <http://127.0.0.1:4747/>, Terminal-TUI oder JSON auf stdout. Sitzungsdateien werden nur gelesen, und die Beträge sind Schätzungen zu öffentlichen Listenpreisen, keine Rechnung. |
-| **Serena** | Wird von Codex über `[mcp_servers.serena]` gestartet; die Werkzeuge erscheinen als `get_symbols_overview`, `find_symbol`, `find_referencing_symbols`, `replace_symbol_body`, `insert_after_symbol` | Dashboard und Werkzeugaufruf-Statistiken unter <http://localhost:24282/dashboard/index.html>, solange ein Server läuft. Projektindex und -notizen liegen unter `<repo>/.serena/`; der Browser öffnet sich nicht automatisch (`--open-web-dashboard False`). |
-| **Headroom** | Codex startet den MCP-Server über `[mcp_servers.headroom]` (`headroom mcp serve`); das Installationsskript führt `headroom install apply --profile agent-harness-shared --preset persistent-service --runtime python --providers manual --port 8787 --no-telemetry --env HEADROOM_NO_SUBSCRIPTION_TRACKING=1` aus | Proxy-Statistiken unter <http://127.0.0.1:8787/stats>, leer, bis ein Client ausdrücklich mit `headroom wrap` oder einer Basis-URL darüber geleitet wird. |
-| **Archify** | Aus `~/.codex/skills/archify`: `node bin/archify.mjs render <type> <input>.json <output>.html`, danach `node bin/archify.mjs check <output>.html` | Die von Ihnen benannte `<output>.html` — einfach im Browser öffnen. Die mitgelieferten `examples/*.json` des Skills sind fertige Eingaben zum Abschauen. |
+| Werkzeug | Öffnen | Wie ausführen | Wo nachsehen |
+|------|------|------------|----------------------|
+| **codeburn** | <http://127.0.0.1:4747/> | Das Installationsskript startet `codeburn web --provider all --port 4747 --no-open`; `codeburn` öffnet das interaktive Dashboard; nicht-interaktiv: `codeburn report --format json --period week --provider codex` (auch `--day`, `--from`/`--to`) | Gemeinsames Browser-Dashboard, Terminal-TUI oder JSON auf stdout. Sitzungsdateien werden nur gelesen, und die Beträge sind Schätzungen zu öffentlichen Listenpreisen, keine Rechnung. |
+| **Serena** | <http://localhost:24282/dashboard/index.html> | Wird von Codex über `[mcp_servers.serena]` gestartet; die Werkzeuge erscheinen als `get_symbols_overview`, `find_symbol`, `find_referencing_symbols`, `replace_symbol_body`, `insert_after_symbol` | Dashboard und Werkzeugaufruf-Statistiken, solange ein Server läuft. Projektindex und -notizen liegen unter `<repo>/.serena/`; der Browser öffnet sich nicht automatisch (`--open-web-dashboard False`). |
+| **Headroom** | <http://127.0.0.1:8787/stats> | Codex startet den MCP-Server über `[mcp_servers.headroom]` (`headroom mcp serve`); das Installationsskript wendet das gemeinsame Profil `agent-harness-shared` an (Befehl unten) | Proxy-Statistiken, leer, bis ein Client ausdrücklich mit `headroom wrap` oder einer Basis-URL darüber geleitet wird. |
+| **Archify** | `<output>.html` | Aus `~/.codex/skills/archify`: `node bin/archify.mjs render <type> <input>.json <output>.html`, danach `node bin/archify.mjs check <output>.html` | Die von Ihnen benannte Datei — einfach im Browser öffnen. Die mitgelieferten `examples/*.json` des Skills sind fertige Eingaben zum Abschauen. |
+
+Das Installationsskript wendet das Headroom-Dienstprofil mit folgendem Befehl an:
+
+```bash
+headroom install apply --profile agent-harness-shared --preset persistent-service \
+  --runtime python --providers manual --port 8787 --no-telemetry \
+  --env HEADROOM_NO_SUBSCRIPTION_TRACKING=1
+```
 
 ---
 

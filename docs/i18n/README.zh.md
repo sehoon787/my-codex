@@ -376,12 +376,20 @@ Stop 钩子会检查今天是否运行过 `/boss-briefing`。若没有，它会�
 
 每个已安装的工具都会把输出写到某处。这里就是那些位置。
 
-| 工具 | 运行方式 | 查看位置 |
-|------|------------|----------------------|
-| **codeburn** | 安装脚本会启动 `codeburn web --provider all --port 4747 --no-open`；`codeburn` 打开交互式面板；非交互可用 `codeburn report --format json --period week --provider codex`（也支持 `--day`、`--from`/`--to`） | 共享浏览器面板 <http://127.0.0.1:4747/>、终端 TUI，或 stdout 上的 JSON。会话文件只读，金额是按公开价目表估算的结果，不是账单。 |
-| **Serena** | 由 Codex 依据 `[mcp_servers.serena]` 启动；工具呈现为 `get_symbols_overview`、`find_symbol`、`find_referencing_symbols`、`replace_symbol_body`、`insert_after_symbol` | 服务器运行期间可在 <http://localhost:24282/dashboard/index.html> 查看面板和工具调用统计。按项目的索引与记忆位于 `<repo>/.serena/`；浏览器不会自动打开（`--open-web-dashboard False`）。 |
-| **Headroom** | Codex 依据 `[mcp_servers.headroom]`（`headroom mcp serve`）启动 MCP 服务器；安装脚本运行 `headroom install apply --profile agent-harness-shared --preset persistent-service --runtime python --providers manual --port 8787 --no-telemetry --env HEADROOM_NO_SUBSCRIPTION_TRACKING=1` | 代理统计在 <http://127.0.0.1:8787/stats>，在用 `headroom wrap` 或 base URL 显式路由客户端之前一直为空。 |
-| **Archify** | 在 `~/.codex/skills/archify` 中运行 `node bin/archify.mjs render <type> <input>.json <output>.html`，然后 `node bin/archify.mjs check <output>.html` | 你指定的 `<output>.html` —— 用任意浏览器打开即可。Skill 自带的 `examples/*.json` 是可直接照抄的输入示例。 |
+| 工具 | 打开 | 运行方式 | 查看位置 |
+|------|------|------------|----------------------|
+| **codeburn** | <http://127.0.0.1:4747/> | 安装脚本会启动 `codeburn web --provider all --port 4747 --no-open`；`codeburn` 打开交互式面板；非交互可用 `codeburn report --format json --period week --provider codex`（也支持 `--day`、`--from`/`--to`） | 共享浏览器面板、终端 TUI，或 stdout 上的 JSON。会话文件只读，金额是按公开价目表估算的结果，不是账单。 |
+| **Serena** | <http://localhost:24282/dashboard/index.html> | 由 Codex 依据 `[mcp_servers.serena]` 启动；工具呈现为 `get_symbols_overview`、`find_symbol`、`find_referencing_symbols`、`replace_symbol_body`、`insert_after_symbol` | 服务器运行期间可查看面板和工具调用统计。按项目的索引与记忆位于 `<repo>/.serena/`；浏览器不会自动打开（`--open-web-dashboard False`）。 |
+| **Headroom** | <http://127.0.0.1:8787/stats> | Codex 依据 `[mcp_servers.headroom]`（`headroom mcp serve`）启动 MCP 服务器；安装脚本应用共享配置 `agent-harness-shared`（命令见下） | 代理统计，在用 `headroom wrap` 或 base URL 显式路由客户端之前一直为空。 |
+| **Archify** | `<output>.html` | 在 `~/.codex/skills/archify` 中运行 `node bin/archify.mjs render <type> <input>.json <output>.html`，然后 `node bin/archify.mjs check <output>.html` | 你指定的文件 —— 用任意浏览器打开即可。Skill 自带的 `examples/*.json` 是可直接照抄的输入示例。 |
+
+安装脚本用下面的命令应用 Headroom 服务配置：
+
+```bash
+headroom install apply --profile agent-harness-shared --preset persistent-service \
+  --runtime python --providers manual --port 8787 --no-telemetry \
+  --env HEADROOM_NO_SUBSCRIPTION_TRACKING=1
+```
 
 ---
 

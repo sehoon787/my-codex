@@ -56,7 +56,7 @@ What gets installed:
 |---|---|
 | `~/.codex/agents/` | 17 core agents (Boss 1 + OMO 9 + OMX 7), deduplicated by tier |
 | `~/.codex/agent-packs/` | 17 opt-in pack agents across 2 packs (data-ai 13, llmops 4) |
-| `~/.codex/skills/` | 106 skills (ECC 61 + gstack 27 + superpowers 13 + core 4 + archify 1) |
+| `~/.codex/skills/` | 107 skill files (ECC 61 + gstack 27 + superpowers 14 + core 4 + archify 1); the default `core` profile exposes 30 of them |
 | `~/.codex/AGENTS.md` | Agent catalog and routing instructions |
 | `~/.codex/enabled-agent-packs.txt` | Persisted active pack set; first install writes an empty set (packs are opt-in) |
 | `~/.codex/enabled-skill-lanes.txt` | Persisted optional skill lanes; first install writes an empty set (default lane only) |

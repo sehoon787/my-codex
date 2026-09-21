@@ -376,12 +376,20 @@ Codex loads these from `~/.codex/hooks.json` and only when `features.hooks = tru
 
 Every installed tool writes its output somewhere. This is where.
 
-| Tool | How to Run | Where to Look |
-|------|------------|---------------|
-| **codeburn** | The installer starts `codeburn web --provider all --port 4747 --no-open`; `codeburn` opens the interactive dashboard; non-interactive: `codeburn report --format json --period week --provider codex` (also `--day`, `--from`/`--to`) | Shared browser dashboard at <http://127.0.0.1:4747/>, terminal TUI, or JSON on stdout. Session files are read-only and dollar figures are estimates at public list rates, not an invoice. |
-| **Serena** | Started by Codex from `[mcp_servers.serena]`; tools appear as `get_symbols_overview`, `find_symbol`, `find_referencing_symbols`, `replace_symbol_body`, `insert_after_symbol` | Live dashboard and tool-call stats at <http://localhost:24282/dashboard/index.html> while a server is running. Per-project index and memories are under `<repo>/.serena/`; the browser does not auto-open (`--open-web-dashboard False`). |
-| **Headroom** | Codex starts the MCP server from `[mcp_servers.headroom]` (`headroom mcp serve`); the installer runs `headroom install apply --profile agent-harness-shared --preset persistent-service --runtime python --providers manual --port 8787 --no-telemetry --env HEADROOM_NO_SUBSCRIPTION_TRACKING=1` | Proxy stats at <http://127.0.0.1:8787/stats>, empty until a client is explicitly routed with `headroom wrap` or a base URL. |
-| **Archify** | From `~/.codex/skills/archify`: `node bin/archify.mjs render <type> <input>.json <output>.html`, then `node bin/archify.mjs check <output>.html` | The `<output>.html` you named — open it in any browser. The skill's own `examples/*.json` are worked inputs to copy from. |
+| Tool | Open | How to Run | Where to Look |
+|------|------|------------|---------------|
+| **codeburn** | <http://127.0.0.1:4747/> | The installer starts `codeburn web --provider all --port 4747 --no-open`; `codeburn` opens the interactive dashboard; non-interactive: `codeburn report --format json --period week --provider codex` (also `--day`, `--from`/`--to`) | Shared browser dashboard, terminal TUI, or JSON on stdout. Session files are read-only and dollar figures are estimates at public list rates, not an invoice. |
+| **Serena** | <http://localhost:24282/dashboard/index.html> | Started by Codex from `[mcp_servers.serena]`; tools appear as `get_symbols_overview`, `find_symbol`, `find_referencing_symbols`, `replace_symbol_body`, `insert_after_symbol` | Live dashboard and tool-call stats while a server is running. Per-project index and memories are under `<repo>/.serena/`; the browser does not auto-open (`--open-web-dashboard False`). |
+| **Headroom** | <http://127.0.0.1:8787/stats> | Codex starts the MCP server from `[mcp_servers.headroom]` (`headroom mcp serve`); the installer applies the shared `agent-harness-shared` profile (command below) | Proxy stats, empty until a client is explicitly routed with `headroom wrap` or a base URL. |
+| **Archify** | `<output>.html` | From `~/.codex/skills/archify`: `node bin/archify.mjs render <type> <input>.json <output>.html`, then `node bin/archify.mjs check <output>.html` | The file you named — open it in any browser. The skill's own `examples/*.json` are worked inputs to copy from. |
+
+The installer applies the Headroom service profile with:
+
+```bash
+headroom install apply --profile agent-harness-shared --preset persistent-service \
+  --runtime python --providers manual --port 8787 --no-telemetry \
+  --env HEADROOM_NO_SUBSCRIPTION_TRACKING=1
+```
 
 ---
 

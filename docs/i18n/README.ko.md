@@ -376,12 +376,20 @@ Codex는 `features.hooks = true`일 때만 `~/.codex/hooks.json`에서 이 훅�
 
 설치된 도구는 저마다 결과를 남깁니다. 그 위치입니다.
 
-| 도구 | 실행 방법 | 결과 확인 위치 |
-|------|------------|----------------------|
-| **codeburn** | 설치 프로그램이 `codeburn web --provider all --port 4747 --no-open`을 시작합니다. `codeburn`은 대화형 대시보드를, 비대화형은 `codeburn report --format json --period week --provider codex`(`--day`, `--from`/`--to`도 가능)를 사용합니다 | 공유 브라우저 대시보드 <http://127.0.0.1:4747/>, 터미널 TUI, 또는 stdout JSON. 세션 파일은 읽기 전용이며 금액은 공개 정가 기준 추정치이지 청구서가 아닙니다. |
-| **Serena** | Codex가 `[mcp_servers.serena]`로 기동합니다. 도구는 `get_symbols_overview`, `find_symbol`, `find_referencing_symbols`, `replace_symbol_body`, `insert_after_symbol`로 나타납니다 | 서버 실행 중 <http://localhost:24282/dashboard/index.html> 에서 대시보드와 도구 호출 통계를 확인합니다. 프로젝트별 인덱스·메모리는 `<저장소>/.serena/`에 있고 브라우저는 자동으로 열리지 않습니다(`--open-web-dashboard False`). |
-| **Headroom** | Codex가 `[mcp_servers.headroom]`(`headroom mcp serve`)로 MCP 서버를 기동하고, 설치 프로그램이 `headroom install apply --profile agent-harness-shared --preset persistent-service --runtime python --providers manual --port 8787 --no-telemetry --env HEADROOM_NO_SUBSCRIPTION_TRACKING=1`을 실행합니다 | 프록시 통계는 <http://127.0.0.1:8787/stats>. `headroom wrap` 또는 base URL로 클라이언트를 명시적으로 라우팅하기 전에는 비어 있습니다. |
-| **Archify** | `~/.codex/skills/archify`에서 `node bin/archify.mjs render <type> <input>.json <output>.html` 실행 후 `node bin/archify.mjs check <output>.html` | 지정한 `<output>.html` — 브라우저로 열면 됩니다. 스킬에 함께 설치되는 `examples/*.json`이 그대로 베껴 쓸 수 있는 완성된 입력 예제입니다. |
+| 도구 | 열기 | 실행 방법 | 결과 확인 위치 |
+|------|------|------------|----------------------|
+| **codeburn** | <http://127.0.0.1:4747/> | 설치 프로그램이 `codeburn web --provider all --port 4747 --no-open`을 시작합니다. `codeburn`은 대화형 대시보드를, 비대화형은 `codeburn report --format json --period week --provider codex`(`--day`, `--from`/`--to`도 가능)를 사용합니다 | 공유 브라우저 대시보드, 터미널 TUI, 또는 stdout JSON. 세션 파일은 읽기 전용이며 금액은 공개 정가 기준 추정치이지 청구서가 아닙니다. |
+| **Serena** | <http://localhost:24282/dashboard/index.html> | Codex가 `[mcp_servers.serena]`로 기동합니다. 도구는 `get_symbols_overview`, `find_symbol`, `find_referencing_symbols`, `replace_symbol_body`, `insert_after_symbol`로 나타납니다 | 서버 실행 중 대시보드와 도구 호출 통계를 확인합니다. 프로젝트별 인덱스·메모리는 `<저장소>/.serena/`에 있고 브라우저는 자동으로 열리지 않습니다(`--open-web-dashboard False`). |
+| **Headroom** | <http://127.0.0.1:8787/stats> | Codex가 `[mcp_servers.headroom]`(`headroom mcp serve`)로 MCP 서버를 기동하고, 설치 프로그램이 공유 프로필 `agent-harness-shared`를 적용합니다(아래 명령) | 프록시 통계입니다. `headroom wrap` 또는 base URL로 클라이언트를 명시적으로 라우팅하기 전에는 비어 있습니다. |
+| **Archify** | `<output>.html` | `~/.codex/skills/archify`에서 `node bin/archify.mjs render <type> <input>.json <output>.html` 실행 후 `node bin/archify.mjs check <output>.html` | 지정한 파일 — 브라우저로 열면 됩니다. 스킬에 함께 설치되는 `examples/*.json`이 그대로 베껴 쓸 수 있는 완성된 입력 예제입니다. |
+
+설치 프로그램은 다음 명령으로 Headroom 서비스 프로필을 적용합니다:
+
+```bash
+headroom install apply --profile agent-harness-shared --preset persistent-service \
+  --runtime python --providers manual --port 8787 --no-telemetry \
+  --env HEADROOM_NO_SUBSCRIPTION_TRACKING=1
+```
 
 ---
 

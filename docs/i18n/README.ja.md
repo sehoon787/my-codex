@@ -377,12 +377,20 @@ Codex はこれらを `~/.codex/hooks.json` から、しかも `features.hooks =
 
 インストールされたツールはそれぞれどこかに出力を書きます。その場所です。
 
-| ツール | 実行方法 | 確認場所 |
-|------|------------|----------------------|
-| **codeburn** | インストーラーが `codeburn web --provider all --port 4747 --no-open` を起動します。`codeburn` は対話型ダッシュボード、非対話では `codeburn report --format json --period week --provider codex`（`--day`、`--from`/`--to` も可） | 共有ブラウザダッシュボード <http://127.0.0.1:4747/>、ターミナル TUI、または stdout の JSON。セッションファイルは読み取り専用で、金額は公開価格表に基づく推定であり請求書ではありません。 |
-| **Serena** | Codex が `[mcp_servers.serena]` から起動します。ツールは `get_symbols_overview`、`find_symbol`、`find_referencing_symbols`、`replace_symbol_body`、`insert_after_symbol` として現れます | サーバー稼働中は <http://localhost:24282/dashboard/index.html> でダッシュボードとツール呼び出し統計を確認できます。プロジェクトごとのインデックスとメモリは `<repo>/.serena/` 配下にあり、ブラウザは自動で開きません（`--open-web-dashboard False`）。 |
-| **Headroom** | Codex が `[mcp_servers.headroom]`（`headroom mcp serve`）から MCP サーバーを起動し、インストーラーが `headroom install apply --profile agent-harness-shared --preset persistent-service --runtime python --providers manual --port 8787 --no-telemetry --env HEADROOM_NO_SUBSCRIPTION_TRACKING=1` を実行します | プロキシ統計は <http://127.0.0.1:8787/stats>。`headroom wrap` または base URL でクライアントを明示的にルーティングするまでは空のままです。 |
-| **Archify** | `~/.codex/skills/archify` から `node bin/archify.mjs render <type> <input>.json <output>.html` を実行し、その後 `node bin/archify.mjs check <output>.html` | 指定した `<output>.html` — ブラウザで開くだけです。スキル同梱の `examples/*.json` はそのまま写して使える入力例です。 |
+| ツール | 開く | 実行方法 | 確認場所 |
+|------|------|------------|----------------------|
+| **codeburn** | <http://127.0.0.1:4747/> | インストーラーが `codeburn web --provider all --port 4747 --no-open` を起動します。`codeburn` は対話型ダッシュボード、非対話では `codeburn report --format json --period week --provider codex`（`--day`、`--from`/`--to` も可） | 共有ブラウザダッシュボード、ターミナル TUI、または stdout の JSON。セッションファイルは読み取り専用で、金額は公開価格表に基づく推定であり請求書ではありません。 |
+| **Serena** | <http://localhost:24282/dashboard/index.html> | Codex が `[mcp_servers.serena]` から起動します。ツールは `get_symbols_overview`、`find_symbol`、`find_referencing_symbols`、`replace_symbol_body`、`insert_after_symbol` として現れます | サーバー稼働中にダッシュボードとツール呼び出し統計を確認できます。プロジェクトごとのインデックスとメモリは `<repo>/.serena/` 配下にあり、ブラウザは自動で開きません（`--open-web-dashboard False`）。 |
+| **Headroom** | <http://127.0.0.1:8787/stats> | Codex が `[mcp_servers.headroom]`（`headroom mcp serve`）から MCP サーバーを起動し、インストーラーが共有プロファイル `agent-harness-shared` を適用します（下記コマンド） | プロキシ統計です。`headroom wrap` または base URL でクライアントを明示的にルーティングするまでは空のままです。 |
+| **Archify** | `<output>.html` | `~/.codex/skills/archify` から `node bin/archify.mjs render <type> <input>.json <output>.html` を実行し、その後 `node bin/archify.mjs check <output>.html` | 指定したファイル — ブラウザで開くだけです。スキル同梱の `examples/*.json` はそのまま写して使える入力例です。 |
+
+インストーラーは次のコマンドで Headroom のサービスプロファイルを適用します:
+
+```bash
+headroom install apply --profile agent-harness-shared --preset persistent-service \
+  --runtime python --providers manual --port 8787 --no-telemetry \
+  --env HEADROOM_NO_SUBSCRIPTION_TRACKING=1
+```
 
 ---
 

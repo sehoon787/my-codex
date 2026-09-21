@@ -10,7 +10,7 @@
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 ![Agents](https://img.shields.io/badge/agents-17_core_%2B_17_opt--in-blue)
-![Skills](https://img.shields.io/badge/skills-30_default_%2F_107_installed-purple)
+![Skills](https://img.shields.io/badge/skills-30_default_%2F_110_installed-purple)
 ![MCP](https://img.shields.io/badge/MCP-5-green)
 ![Auto Sync](https://img.shields.io/badge/upstream_sync-every_3_days-brightgreen)
 
@@ -45,7 +45,7 @@ rm -rf /tmp/my-codex
 Si l'installation par défaut n'expose qu'un jeu restreint de skills, c'est
 volontaire : Codex tronque les descriptions de skills dès que son budget de
 skills est dépassé. Le profil par défaut `core` ne montre donc à Codex que 30
-des 107 skills installés, le reste restant à un drapeau de distance :
+des 110 entrées de skills installées, le reste restant à un drapeau de distance :
 
 ```bash
 bash install.sh --skills=web          # ajoute les 18 skills de la voie web/UI
@@ -80,7 +80,7 @@ Chaque projet sur lequel my-codex s'appuie, ce qu'il apporte et comment il arriv
 | # | Projet | Ce que my-codex en tire | Comment il arrive |
 |---|--------|-------------------------|-------------------|
 | 1 | <img src="https://github.com/affaan-m.png?size=32" width="20" height="20" align="center"/> **[everything-claude-code](https://github.com/affaan-m/everything-claude-code)** — affaan-m | 61 skills autorisés : motifs par pile technique (TypeScript, React, Python/Django/FastAPI, Spring Boot/Kotlin, SQL/Redis/Prisma, Docker/Kubernetes), ingénierie IA et agents, et outillage générique de codebase comme l'onboarding, les visites de code et les ADR. Le contenu propre à Claude Code est retiré, et une voie de 18 skills web/UI reste hors de l'installation par défaut. | sous-module `upstream/ecc` ; `install.sh` ne copie que les noms autorisés dans `scripts/skill-allowlists.sh` |
-| 2 | <img src="https://github.com/garrytan.png?size=32" width="20" height="20" align="center"/> **[gstack](https://github.com/garrytan/gstack)** — garrytan | 27 skills de processus de sprint — QA navigateur (`qa`), revue de code sur dérive de périmètre (`review`), audit de sécurité (`cso`) et le flux complet plan → revue → livraison — plus un démon navigateur Playwright compilé. | sous-module `upstream/gstack`, déployé dans `~/.codex/vendor/gstack` où son propre `./setup --host codex` s'exécute sous bun ; les 7 skills ECC qu'il remplace (`benchmark`, `canary-watch`, `safety-guard`, `browser-qa`, `verification-loop`, `security-review`, `design-system`) sont supprimés pour que seule la version gstack reste routable |
+| 2 | <img src="https://github.com/garrytan.png?size=32" width="20" height="20" align="center"/> **[gstack](https://github.com/garrytan/gstack)** — garrytan | 30 entrées de skills de processus de sprint — QA navigateur (`qa`), revue de code sur dérive de périmètre (`review`), audit de sécurité (`cso`) et le flux complet plan → revue → livraison — plus un démon navigateur Playwright compilé. | sous-module `upstream/gstack`, déployé dans `~/.codex/vendor/gstack` où son propre `./setup --host codex` s'exécute sous bun et crée 29 liens symboliques sous `~/.codex/skills/`, à côté du répertoire routeur `gstack` ; les 7 skills ECC qu'il remplace (`benchmark`, `canary-watch`, `safety-guard`, `browser-qa`, `verification-loop`, `security-review`, `design-system`) sont supprimés pour que seule la version gstack reste routable |
 | 3 | <img src="https://github.com/Yeachan-Heo.png?size=32" width="20" height="20" align="center"/> **[oh-my-codex](https://github.com/Yeachan-Heo/oh-my-codex)** — Yeachan Heo | 7 agents de travail autorisés : `executor`, `planner`, `architect`, `test-engineer`, `security-reviewer`, `code-reviewer`, `debugger`. Les autres prompts et skills doublonnent des agents déjà fournis par ce dépôt et ne sont volontairement pas installés. | sous-module `upstream/omx` ; `scripts/md-to-toml.sh` convertit les prompts autorisés du Markdown vers `~/.codex/agents/*.toml` |
 | 4 | <img src="https://github.com/obra.png?size=32" width="20" height="20" align="center"/> **[superpowers](https://github.com/obra/superpowers)** — Jesse Vincent | 14 skills de processus de développement : brainstorming, débogage systématique, développement piloté par les tests, rédaction et exécution de plans, gestion des worktrees et étiquette de revue de code. Aucun agent n'en est repris — son unique prompt `code-reviewer` recoupe celui d'oh-my-codex. | sous-module `upstream/superpowers` ; les 15 répertoires de skills sont installés sauf `dispatching-parallel-agents`, qui double le chemin de délégation de Boss |
 | 5 | <img src="https://github.com/tt-a1i.png?size=32" width="20" height="20" align="center"/> **[archify](https://github.com/tt-a1i/archify)** — tt-a1i | 1 skill de diagrammes qui transforme des descriptions d'architecture, de workflow, de séquence, de flux de données et de cycle de vie en un unique fichier HTML autonome avec SVG en ligne, bascule clair/sombre et export PNG/JPEG/WebP/SVG. | sous-module `upstream/archify`, figé sur le tag `v2.9.0` pour que la tâche de synchronisation n'y touche pas ; seul le répertoire `archify/` à la racine du dépôt est copié vers `~/.codex/skills/archify`, donc aucun `npx skills add` ne s'exécute à l'installation |
@@ -176,7 +176,7 @@ Il ne se déclenche qu'à la toute fin de la demande — jamais sur un tour qui 
 | **Agents principaux** (toujours chargés) | 17 | Boss 1 + OMO 9 + OMX 7 |
 | **Packs d'agents** (optionnels, aucun actif par défaut) | 17 | 2 catégories intégrées : data-ai 13 + llmops 4 |
 | **Skills exposés** (profil `core` par défaut) | 30 | L'ensemble toujours actif ; tout le reste est à un drapeau de voie de distance |
-| **Skills installés** (fichiers sur le disque) | 107 | ECC 61 · gstack 27 · Superpowers 14 · Core 4 · archify 1 |
+| **Skills installés** (entrées sous `~/.codex/skills/`) | 110 | ECC 61 · gstack 30 · Superpowers 14 · Core 4 · archify 1 |
 | **Serveurs MCP** | 5 | Context7, Exa, grep.app, Serena, Headroom |
 | **config.toml** | 1 | my-codex |
 | **AGENTS.md** | 1 | my-codex |
@@ -237,17 +237,17 @@ Installés dans `~/.codex/agent-packs/` et désactivés tant que vous ne les act
 </details>
 
 <details>
-<summary><strong>Skills — 30 exposés par défaut, 107 installés depuis 5 sources</strong></summary>
+<summary><strong>Skills — 30 exposés par défaut, 110 installés depuis 5 sources</strong></summary>
 
 | Source | Installés | Skills clés |
 |--------|------:|------------|
 | everything-claude-code | 61 | coding-standards, python-testing, api-design, deep-research |
-| gstack | 27 | /qa, /review, /ship, /cso, /investigate, /office-hours |
+| gstack | 30 | /qa, /review, /ship, /cso, /investigate, /office-hours |
 | superpowers | 14 | brainstorming, systematic-debugging, TDD, writing-plans |
 | [my-codex Core](https://github.com/sehoon787/my-codex) | 4 | boss-advanced, boss-briefing, briefing-vault, gstack-sprint |
 | archify | 1 | archify (diagrammes d'architecture / workflow / séquence / flux de données / cycle de vie) |
 
-gstack compte 26 skills autorisés plus l'entrée racine du dépôt. Sa copie complète se trouve dans `~/.codex/vendor/gstack`, et `~/.codex/skills/gstack` sert de façade à l'exécution. Quel que soit le profil actif, les fichiers de skills restent installés — seule l'exposition change. Voir [Profils de skills et voies](#profils-de-skills-et-voies).
+Les entrées gstack sont le répertoire routeur `gstack` plus 29 liens symboliques vers `~/.codex/vendor/gstack/.agents/skills/`, créés par le `./setup` de gstack : les 26 noms de `GSTACK_SKILL_ALLOWLIST` et trois autres qu'il installe toujours (`gstack-upgrade`, `hackernews-frontpage`, `codex`). Les 29 figurent tous dans le catalogue géré, donc aucun n'est un simple lien — chacun peut être exposé par `core` ou par une voie. Sur les 110 entrées, 81 sont de vrais répertoires et 29 sont ces liens ; `find ~/.codex/skills -name SKILL.md | wc -l` renvoie 83 car `find` ne les suit pas sans `-L`. Quel que soit le profil actif, les fichiers de skills restent installés — seule l'exposition change. Voir [Profils de skills et voies](#profils-de-skills-et-voies).
 
 </details>
 
@@ -447,13 +447,13 @@ Relancer la même commande met à jour vers la dernière build de `main`, ne rem
 
 ### Profils de skills et voies
 
-my-claude installe une unique liste d'autorisation figée ; my-codex installe 107 fichiers de skills puis contrôle combien d'entre eux Codex voit réellement. Codex tronque les descriptions de skills dès que son budget de skills est dépassé : un catalogue sans priorité rend donc chaque description moins utile. `core` — le profil par défaut d'une installation neuve avec toutes les sources de skills groupées — expose 30 skills, et chaque voie s'y ajoute :
+my-claude installe une unique liste d'autorisation figée ; my-codex installe 110 entrées de skills puis contrôle combien d'entre eux Codex voit réellement. Codex tronque les descriptions de skills dès que son budget de skills est dépassé : un catalogue sans priorité rend donc chaque description moins utile. `core` — le profil par défaut d'une installation neuve avec toutes les sources de skills groupées — expose 30 skills, et chaque voie s'y ajoute :
 
 | Profil / voie | Ce qu'elle ajoute | Nombre | Activation |
 |----------------|--------------|------:|---------------|
 | `core` | L'ensemble toujours actif : skills de base my-codex, voie processus de développement superpowers, routeurs gstack livraison/QA/revue et standards ECC | 30 | par défaut ; `--skill-profile=core` pour y revenir |
 | `legacy` | Exposition d'avant la migration ; choisie automatiquement quand `--skip-ecc`, `--skip-gstack`, `--skip-superpowers` ou `--skip-archify` omet une source principale sans profil explicite | variable | `--skill-profile=legacy` |
-| `full` | Toutes les voies d'un coup ; peut dépasser le budget de contexte | 210 | `--skill-profile=full` ou `--full-skills` |
+| `full` | Toutes les voies d'un coup — les 110 entrées installées ; le catalogue nomme 210 entrées, celles qui ne sont pas encore installées sont matérialisées à la demande. Peut dépasser le budget de contexte | 110 | `--skill-profile=full` ou `--full-skills` |
 | `workflow-advanced` | Planification avancée, opérations sur le dépôt et workflows worktree | 13 | `--skills=workflow-advanced` |
 | `qa-operations` | QA, contrôles navigateur, release, déploiement et sûreté opérationnelle | 20 | `--skills=qa-operations` |
 | `ai-engineering` | Systèmes d'agents, évaluation, prompts, recherche d'information et MCP | 18 | `--skills=ai-engineering` |

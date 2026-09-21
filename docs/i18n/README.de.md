@@ -10,7 +10,7 @@
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 ![Agents](https://img.shields.io/badge/agents-17_core_%2B_17_opt--in-blue)
-![Skills](https://img.shields.io/badge/skills-30_default_%2F_107_installed-purple)
+![Skills](https://img.shields.io/badge/skills-30_default_%2F_110_installed-purple)
 ![MCP](https://img.shields.io/badge/MCP-5-green)
 ![Auto Sync](https://img.shields.io/badge/upstream_sync-every_3_days-brightgreen)
 
@@ -44,8 +44,8 @@ rm -rf /tmp/my-codex
 
 Dass die Standardinstallation nur wenige Skills sichtbar macht, ist Absicht:
 Codex kürzt Skill-Beschreibungen, sobald sein Skill-Budget überschritten ist.
-Deshalb zeigt das Standardprofil `core` Codex nur 30 der 107 installierten
-Skills; der Rest ist einen Schalter entfernt:
+Deshalb zeigt das Standardprofil `core` Codex nur 30 der 110 installierten
+Skill-Einträge; der Rest ist einen Schalter entfernt:
 
 ```bash
 bash install.sh --skills=web          # ergänzt die 18 Skills der Web-/UI-Spur
@@ -80,7 +80,7 @@ Jedes Projekt, auf dem my-codex aufbaut, was es beiträgt und wie es hineinkommt
 | # | Projekt | Was my-codex davon übernimmt | Wie es hineinkommt |
 |---|---------|------------------------------|--------------------|
 | 1 | <img src="https://github.com/affaan-m.png?size=32" width="20" height="20" align="center"/> **[everything-claude-code](https://github.com/affaan-m/everything-claude-code)** — affaan-m | 61 freigegebene Skills: Stack-Muster (TypeScript, React, Python/Django/FastAPI, Spring Boot/Kotlin, SQL/Redis/Prisma, Docker/Kubernetes), KI- und Agenten-Engineering sowie generische Codebase-Werkzeuge wie Onboarding, Code-Touren und ADRs. Claude-Code-spezifische Inhalte werden entfernt, und eine Spur mit 18 Web-/UI-Skills bleibt außerhalb der Standardinstallation. | Submodul `upstream/ecc`; `install.sh` kopiert nur die in `scripts/skill-allowlists.sh` freigegebenen Namen |
-| 2 | <img src="https://github.com/garrytan.png?size=32" width="20" height="20" align="center"/> **[gstack](https://github.com/garrytan/gstack)** — garrytan | 27 Sprint-Prozess-Skills — Browser-QA (`qa`), Code-Review auf Scope-Abweichung (`review`), Sicherheitsaudit (`cso`) und der vollständige Ablauf Plan → Review → Ship — dazu ein kompilierter Playwright-Browser-Daemon. | Submodul `upstream/gstack`, abgelegt unter `~/.codex/vendor/gstack`, wo sein eigenes `./setup --host codex` unter bun läuft; die 7 davon abgelösten ECC-Skills (`benchmark`, `canary-watch`, `safety-guard`, `browser-qa`, `verification-loop`, `security-review`, `design-system`) werden entfernt, sodass nur die gstack-Variante routingfähig bleibt |
+| 2 | <img src="https://github.com/garrytan.png?size=32" width="20" height="20" align="center"/> **[gstack](https://github.com/garrytan/gstack)** — garrytan | 30 Sprint-Prozess-Einträge — Browser-QA (`qa`), Code-Review auf Scope-Abweichung (`review`), Sicherheitsaudit (`cso`) und der vollständige Ablauf Plan → Review → Ship — dazu ein kompilierter Playwright-Browser-Daemon. | Submodul `upstream/gstack`, abgelegt unter `~/.codex/vendor/gstack`, wo sein eigenes `./setup --host codex` unter bun läuft und neben dem `gstack`-Router-Verzeichnis 29 Symlinks unter `~/.codex/skills/` anlegt; die 7 davon abgelösten ECC-Skills (`benchmark`, `canary-watch`, `safety-guard`, `browser-qa`, `verification-loop`, `security-review`, `design-system`) werden entfernt, sodass nur die gstack-Variante routingfähig bleibt |
 | 3 | <img src="https://github.com/Yeachan-Heo.png?size=32" width="20" height="20" align="center"/> **[oh-my-codex](https://github.com/Yeachan-Heo/oh-my-codex)** — Yeachan Heo | 7 freigegebene Arbeitsagenten: `executor`, `planner`, `architect`, `test-engineer`, `security-reviewer`, `code-reviewer`, `debugger`. Die übrigen Prompts und Skills überschneiden sich mit Agenten, die dieses Repository bereits mitbringt, und werden bewusst nicht installiert. | Submodul `upstream/omx`; `scripts/md-to-toml.sh` wandelt die freigegebenen Prompts aus Markdown in `~/.codex/agents/*.toml` um |
 | 4 | <img src="https://github.com/obra.png?size=32" width="20" height="20" align="center"/> **[superpowers](https://github.com/obra/superpowers)** — Jesse Vincent | 14 Entwicklungsprozess-Skills: Brainstorming, systematisches Debuggen, testgetriebene Entwicklung, Planerstellung und -ausführung, Worktree-Handhabung und Code-Review-Etikette. Es wird kein Agent übernommen — sein einziger `code-reviewer`-Prompt überschneidet sich mit dem von oh-my-codex. | Submodul `upstream/superpowers`; alle 15 Skill-Verzeichnisse werden installiert außer `dispatching-parallel-agents`, das den Delegationspfad von Boss dupliziert |
 | 5 | <img src="https://github.com/tt-a1i.png?size=32" width="20" height="20" align="center"/> **[archify](https://github.com/tt-a1i/archify)** — tt-a1i | 1 Diagramm-Skill, der Beschreibungen von Architektur, Workflow, Sequenz, Datenfluss und Lebenszyklus in eine einzige eigenständige HTML-Datei mit Inline-SVG, Hell-/Dunkel-Umschalter und PNG-/JPEG-/WebP-/SVG-Export verwandelt. | Submodul `upstream/archify`, auf Tag `v2.9.0` gepinnt, damit der Sync-Job es in Ruhe lässt; nur das Verzeichnis `archify/` auf oberster Repository-Ebene wird nach `~/.codex/skills/archify` kopiert, sodass bei der Installation kein `npx skills add` läuft |
@@ -176,7 +176,7 @@ Er erscheint nur ganz am Ende der Anfrage — nie in einer Runde, die Hintergrun
 | **Kernagenten** (immer geladen) | 17 | Boss 1 + OMO 9 + OMX 7 |
 | **Agenten-Packs** (Opt-in, standardmäßig keines aktiv) | 17 | 2 eingebettete Kategorien: data-ai 13 + llmops 4 |
 | **Sichtbare Skills** (Standardprofil `core`) | 30 | Die immer aktive Auswahl; alles andere ist einen Spur-Schalter entfernt |
-| **Installierte Skills** (Dateien auf der Platte) | 107 | ECC 61 · gstack 27 · Superpowers 14 · Core 4 · archify 1 |
+| **Installierte Skills** (Einträge unter `~/.codex/skills/`) | 110 | ECC 61 · gstack 30 · Superpowers 14 · Core 4 · archify 1 |
 | **MCP-Server** | 5 | Context7, Exa, grep.app, Serena, Headroom |
 | **config.toml** | 1 | my-codex |
 | **AGENTS.md** | 1 | my-codex |
@@ -237,17 +237,17 @@ Installiert nach `~/.codex/agent-packs/` und deaktiviert, bis Sie sie einschalte
 </details>
 
 <details>
-<summary><strong>Skills — 30 standardmäßig sichtbar, 107 aus 5 Quellen installiert</strong></summary>
+<summary><strong>Skills — 30 standardmäßig sichtbar, 110 aus 5 Quellen installiert</strong></summary>
 
 | Quelle | Installiert | Wichtige Skills |
 |--------|------:|------------|
 | everything-claude-code | 61 | coding-standards, python-testing, api-design, deep-research |
-| gstack | 27 | /qa, /review, /ship, /cso, /investigate, /office-hours |
+| gstack | 30 | /qa, /review, /ship, /cso, /investigate, /office-hours |
 | superpowers | 14 | brainstorming, systematic-debugging, TDD, writing-plans |
 | [my-codex Core](https://github.com/sehoon787/my-codex) | 4 | boss-advanced, boss-briefing, briefing-vault, gstack-sprint |
 | archify | 1 | archify (Architektur- / Workflow- / Sequenz- / Datenfluss- / Lebenszyklusdiagramme) |
 
-gstack zählt als 26 freigegebene Skills plus den Repository-Wurzeleintrag. Der vollständige Checkout liegt unter `~/.codex/vendor/gstack`, `~/.codex/skills/gstack` ist die Laufzeitfassade. Unabhängig vom aktiven Profil bleiben die physischen Skill-Dateien installiert — es ändert sich nur die Sichtbarkeit. Siehe [Skill-Profile und Spuren](#skill-profile-und-spuren).
+Die gstack-Einträge sind das `gstack`-Router-Verzeichnis plus 29 Symlinks nach `~/.codex/vendor/gstack/.agents/skills/`, angelegt von gstacks eigenem `./setup`: die 26 Namen aus `GSTACK_SKILL_ALLOWLIST` und drei weitere, die es immer installiert (`gstack-upgrade`, `hackernews-frontpage`, `codex`). Alle 29 stehen im verwalteten Katalog, keiner ist also nur ein Link — jeder kann über `core` oder eine Spur sichtbar werden. Von den 110 Einträgen sind 81 echte Verzeichnisse und 29 diese Symlinks; `find ~/.codex/skills -name SKILL.md | wc -l` meldet 83, weil `find` ihnen ohne `-L` nicht folgt. Unabhängig vom aktiven Profil bleiben die Skill-Dateien installiert — es ändert sich nur die Sichtbarkeit. Siehe [Skill-Profile und Spuren](#skill-profile-und-spuren).
 
 </details>
 
@@ -447,13 +447,13 @@ Führt man denselben Befehl erneut aus, wird auf den neuesten `main`-Stand aktua
 
 ### Skill-Profile und Spuren
 
-my-claude installiert eine einzige feste Freigabeliste; my-codex installiert 107 Skill-Dateien und steuert anschließend, wie viele davon Codex tatsächlich sieht. Codex kürzt Skill-Beschreibungen, sobald sein Skill-Budget überschritten ist, und ein unfokussierter Katalog macht damit jede Beschreibung weniger nützlich. `core` — der Standard bei einer Neuinstallation mit allen gebündelten Skill-Quellen — zeigt 30 Skills, und jede Spur kommt obendrauf:
+my-claude installiert eine einzige feste Freigabeliste; my-codex installiert 110 Skill-Einträge und steuert anschließend, wie viele davon Codex tatsächlich sieht. Codex kürzt Skill-Beschreibungen, sobald sein Skill-Budget überschritten ist, und ein unfokussierter Katalog macht damit jede Beschreibung weniger nützlich. `core` — der Standard bei einer Neuinstallation mit allen gebündelten Skill-Quellen — zeigt 30 Skills, und jede Spur kommt obendrauf:
 
 | Profil / Spur | Was sie ergänzt | Anzahl | Aktivierung |
 |----------------|--------------|------:|---------------|
 | `core` | Die immer aktive Auswahl: my-codex-Kern-Skills, die superpowers-Entwicklungsprozessspur, die gstack-Router für Ship/QA/Review und die ECC-Standards | 30 | Standard; mit `--skill-profile=core` zurückkehren |
 | `legacy` | Sichtbarkeit vor der Migration; wird automatisch gewählt, wenn `--skip-ecc`, `--skip-gstack`, `--skip-superpowers` oder `--skip-archify` eine Kernquelle ohne explizites Profil auslässt | variabel | `--skill-profile=legacy` |
-| `full` | Alle Spuren auf einmal; kann das Kontextbudget übersteigen | 210 | `--skill-profile=full` oder `--full-skills` |
+| `full` | Alle Spuren auf einmal — alle 110 installierten Einträge; der Katalog nennt 210 Namen, die noch nicht installierten werden bei Bedarf nachgezogen. Kann das Kontextbudget übersteigen | 110 | `--skill-profile=full` oder `--full-skills` |
 | `workflow-advanced` | Fortgeschrittene Planung, Repository-Operationen und Worktree-Workflows | 13 | `--skills=workflow-advanced` |
 | `qa-operations` | QA, Browserprüfungen, Release, Deployment und betriebliche Sicherheit | 20 | `--skills=qa-operations` |
 | `ai-engineering` | Agentensysteme, Evaluation, Prompts, Retrieval und MCP | 18 | `--skills=ai-engineering` |

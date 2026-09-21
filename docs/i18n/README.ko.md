@@ -10,7 +10,7 @@
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 ![Agents](https://img.shields.io/badge/agents-17_core_%2B_17_opt--in-blue)
-![Skills](https://img.shields.io/badge/skills-30_default_%2F_107_installed-purple)
+![Skills](https://img.shields.io/badge/skills-30_default_%2F_110_installed-purple)
 ![MCP](https://img.shields.io/badge/MCP-5-green)
 ![Auto Sync](https://img.shields.io/badge/upstream_sync-every_3_days-brightgreen)
 
@@ -43,7 +43,7 @@ rm -rf /tmp/my-codex
 ```
 
 기본 설치가 노출하는 스킬 집합이 적은 것은 의도된 설계입니다. Codex는 스킬
-예산을 넘어서면 스킬 설명을 잘라내므로, 기본 `core` 프로필은 설치된 스킬 107개
+예산을 넘어서면 스킬 설명을 잘라내므로, 기본 `core` 프로필은 설치된 스킬 항목 110개
 가운데 30개만 Codex에 보여 주고 나머지는 플래그 하나로 열어 둡니다:
 
 ```bash
@@ -79,7 +79,7 @@ my-codex가 기반으로 삼는 모든 프로젝트와 그 기여 내용, 그리
 | # | 프로젝트 | my-codex가 가져오는 것 | 도입 방식 |
 |---|----------|------------------------|-----------|
 | 1 | <img src="https://github.com/affaan-m.png?size=32" width="20" height="20" align="center"/> **[everything-claude-code](https://github.com/affaan-m/everything-claude-code)** — affaan-m | 허용목록 스킬 61개: 스택 패턴(TypeScript, React, Python/Django/FastAPI, Spring Boot/Kotlin, SQL/Redis/Prisma, Docker/Kubernetes), AI·에이전트 엔지니어링, 온보딩·코드 투어·ADR 같은 범용 코드베이스 도구입니다. Claude Code 전용 콘텐츠는 제거되며, 웹/UI 스킬 18개 레인은 기본 설치에서 빠져 있습니다. | 서브모듈 `upstream/ecc`. `install.sh`는 `scripts/skill-allowlists.sh`에 허용된 이름만 복사합니다 |
-| 2 | <img src="https://github.com/garrytan.png?size=32" width="20" height="20" align="center"/> **[gstack](https://github.com/garrytan/gstack)** — garrytan | 스프린트 프로세스 스킬 27개 — 브라우저 QA(`qa`), 범위 이탈을 보는 코드 리뷰(`review`), 보안 감사(`cso`), 계획 → 리뷰 → 배포 전체 흐름 — 과 컴파일된 Playwright 브라우저 데몬입니다. | 서브모듈 `upstream/gstack`. `~/.codex/vendor/gstack`에 두고 그 안에서 gstack 자체의 `./setup --host codex`를 bun으로 실행합니다. 이를 대체하는 ECC 스킬 7개(`benchmark`, `canary-watch`, `safety-guard`, `browser-qa`, `verification-loop`, `security-review`, `design-system`)는 제거되어 gstack 버전만 라우팅 대상으로 남습니다 |
+| 2 | <img src="https://github.com/garrytan.png?size=32" width="20" height="20" align="center"/> **[gstack](https://github.com/garrytan/gstack)** — garrytan | 스프린트 프로세스 스킬 항목 30개 — 브라우저 QA(`qa`), 범위 이탈을 보는 코드 리뷰(`review`), 보안 감사(`cso`), 계획 → 리뷰 → 배포 전체 흐름 — 과 컴파일된 Playwright 브라우저 데몬입니다. | 서브모듈 `upstream/gstack`. `~/.codex/vendor/gstack`에 두고 그 안에서 gstack 자체의 `./setup --host codex`를 bun으로 실행하며, `gstack` 루트 라우터 디렉터리와 함께 `~/.codex/skills/` 아래에 심볼릭 링크 29개를 만듭니다. 이를 대체하는 ECC 스킬 7개(`benchmark`, `canary-watch`, `safety-guard`, `browser-qa`, `verification-loop`, `security-review`, `design-system`)는 제거되어 gstack 버전만 라우팅 대상으로 남습니다 |
 | 3 | <img src="https://github.com/Yeachan-Heo.png?size=32" width="20" height="20" align="center"/> **[oh-my-codex](https://github.com/Yeachan-Heo/oh-my-codex)** — Yeachan Heo | 허용목록 작업자 에이전트 7개: `executor`, `planner`, `architect`, `test-engineer`, `security-reviewer`, `code-reviewer`, `debugger`. 나머지 프롬프트와 스킬은 이 저장소가 이미 제공하는 에이전트와 중복되어 의도적으로 설치하지 않습니다. | 서브모듈 `upstream/omx`. `scripts/md-to-toml.sh`가 허용된 프롬프트를 Markdown에서 `~/.codex/agents/*.toml`로 변환합니다 |
 | 4 | <img src="https://github.com/obra.png?size=32" width="20" height="20" align="center"/> **[superpowers](https://github.com/obra/superpowers)** — Jesse Vincent | 개발 프로세스 스킬 14개: 브레인스토밍, 체계적 디버깅, 테스트 주도 개발, 계획 작성과 실행, worktree 운용, 코드 리뷰 예절입니다. 에이전트는 가져오지 않습니다 — 유일한 `code-reviewer` 프롬프트가 oh-my-codex 쪽과 겹치기 때문입니다. | 서브모듈 `upstream/superpowers`. 스킬 디렉터리 15개 중 Boss 위임 경로와 중복되는 `dispatching-parallel-agents`만 빼고 모두 설치합니다 |
 | 5 | <img src="https://github.com/tt-a1i.png?size=32" width="20" height="20" align="center"/> **[archify](https://github.com/tt-a1i/archify)** — tt-a1i | 아키텍처·워크플로·시퀀스·데이터 흐름·라이프사이클 설명을 인라인 SVG, 다크/라이트 전환, PNG/JPEG/WebP/SVG 내보내기를 갖춘 단일 자립형 HTML 파일로 만드는 다이어그램 스킬 1개입니다. | 서브모듈 `upstream/archify`, 태그 `v2.9.0`에 고정되어 동기화 작업이 건드리지 않습니다. 저장소 최상위 `archify/` 디렉터리만 `~/.codex/skills/archify`로 복사하므로 설치 시 `npx skills add`는 실행되지 않습니다 |
@@ -175,7 +175,7 @@ Boss는 작업이 있던 모든 턴 — 파일 편집, 커밋/PR, 설정 변경,
 | **핵심 에이전트** (항상 로드됨) | 17 | Boss 1 + OMO 9 + OMX 7 |
 | **에이전트 팩** (옵트인, 기본 비활성) | 17 | 벤더링된 2개 카테고리: data-ai 13 + llmops 4 |
 | **노출 스킬** (기본 `core` 프로필) | 30 | 항상 켜져 있는 집합. 나머지는 레인 플래그 하나로 추가 |
-| **설치 스킬** (디스크상의 파일) | 107 | ECC 61 · gstack 27 · Superpowers 14 · Core 4 · archify 1 |
+| **설치 스킬** (`~/.codex/skills/` 항목) | 110 | ECC 61 · gstack 30 · Superpowers 14 · Core 4 · archify 1 |
 | **MCP 서버** | 5 | Context7, Exa, grep.app, Serena, Headroom |
 | **config.toml** | 1 | my-codex |
 | **AGENTS.md** | 1 | my-codex |
@@ -236,17 +236,17 @@ Boss는 작업이 있던 모든 턴 — 파일 편집, 커밋/PR, 설정 변경,
 </details>
 
 <details>
-<summary><strong>스킬 — 기본 노출 30개, 5개 출처에서 107개 설치</strong></summary>
+<summary><strong>스킬 — 기본 노출 30개, 5개 출처에서 110개 설치</strong></summary>
 
 | 출처 | 설치 | 주요 스킬 |
 |--------|------:|------------|
 | everything-claude-code | 61 | coding-standards, python-testing, api-design, deep-research |
-| gstack | 27 | /qa, /review, /ship, /cso, /investigate, /office-hours |
+| gstack | 30 | /qa, /review, /ship, /cso, /investigate, /office-hours |
 | superpowers | 14 | brainstorming, systematic-debugging, TDD, writing-plans |
 | [my-codex Core](https://github.com/sehoon787/my-codex) | 4 | boss-advanced, boss-briefing, briefing-vault, gstack-sprint |
 | archify | 1 | archify (아키텍처·워크플로·시퀀스·데이터 흐름·라이프사이클 다이어그램) |
 
-gstack은 허용목록 스킬 26개에 저장소 루트 항목을 더해 27개로 집계됩니다. 전체 체크아웃은 `~/.codex/vendor/gstack`에 있고 `~/.codex/skills/gstack`은 런타임 퍼사드입니다. 어떤 프로필을 쓰든 실제 스킬 파일은 설치된 상태로 남고 바뀌는 것은 노출 범위뿐입니다. [스킬 프로필과 레인](#스킬-프로필과-레인)을 참조하세요.
+gstack 항목은 `gstack` 루트 라우터 디렉터리와 `~/.codex/vendor/gstack/.agents/skills/`를 가리키는 심볼릭 링크 29개입니다. 링크는 gstack 자체의 `./setup`이 만들며, `GSTACK_SKILL_ALLOWLIST`의 26개에 항상 설치되는 3개(`gstack-upgrade`, `hackernews-frontpage`, `codex`)가 더해집니다. 29개 모두 관리 카탈로그에 있으므로 링크 전용 항목은 없고, 각각 `core`나 레인으로 노출될 수 있습니다. 전체 110개 항목 중 81개는 실제 디렉터리, 29개는 이 심볼릭 링크이며, `find ~/.codex/skills -name SKILL.md | wc -l`은 `-L` 없이는 링크를 따라가지 않으므로 83을 반환합니다. 어떤 프로필을 쓰든 스킬 파일은 설치된 상태로 남고 바뀌는 것은 노출 범위뿐입니다. [스킬 프로필과 레인](#스킬-프로필과-레인)을 참조하세요.
 
 </details>
 
@@ -446,13 +446,13 @@ git 서브모듈로 연결합니다. 고정 커밋은 `.gitmodules`가 기본으
 
 ### 스킬 프로필과 레인
 
-my-claude는 고정된 허용목록 하나를 설치하지만, my-codex는 스킬 파일 107개를 설치한 뒤 그중 몇 개를 Codex가 실제로 보게 할지 제어합니다. Codex는 스킬 예산을 넘어서면 스킬 설명을 잘라내므로, 초점 없는 카탈로그는 모든 설명의 유용성을 떨어뜨립니다. 번들 스킬 소스를 모두 선택한 신규 설치의 기본값인 `core`는 스킬 30개를 노출하고, 각 레인은 그 위에 더해집니다:
+my-claude는 고정된 허용목록 하나를 설치하지만, my-codex는 스킬 항목 110개를 설치한 뒤 그중 몇 개를 Codex가 실제로 보게 할지 제어합니다. Codex는 스킬 예산을 넘어서면 스킬 설명을 잘라내므로, 초점 없는 카탈로그는 모든 설명의 유용성을 떨어뜨립니다. 번들 스킬 소스를 모두 선택한 신규 설치의 기본값인 `core`는 스킬 30개를 노출하고, 각 레인은 그 위에 더해집니다:
 
 | 프로필 / 레인 | 추가되는 것 | 수량 | 활성화 방법 |
 |----------------|--------------|------:|---------------|
 | `core` | 항상 켜져 있는 집합: my-codex 코어 스킬, superpowers 개발 프로세스 레인, gstack 배포/QA/리뷰 라우터, ECC 표준 | 30 | 기본값. 되돌릴 때는 `--skill-profile=core` |
 | `legacy` | 마이그레이션 이전 노출. `--skip-ecc`, `--skip-gstack`, `--skip-superpowers`, `--skip-archify`로 core 소스를 생략하고 프로필을 명시하지 않으면 자동 선택 | 가변 | `--skill-profile=legacy` |
-| `full` | 모든 레인을 한 번에. 컨텍스트 예산을 넘을 수 있습니다 | 210 | `--skill-profile=full` 또는 `--full-skills` |
+| `full` | 모든 레인을 한 번에 — 설치된 110개 항목 전부. 카탈로그에는 210개 이름이 있고 아직 설치되지 않은 것은 필요할 때 채워집니다. 컨텍스트 예산을 넘을 수 있습니다 | 110 | `--skill-profile=full` 또는 `--full-skills` |
 | `workflow-advanced` | 고급 계획 수립, 저장소 운영, worktree 워크플로 | 13 | `--skills=workflow-advanced` |
 | `qa-operations` | QA, 브라우저 점검, 릴리스, 배포, 운영 안전 | 20 | `--skills=qa-operations` |
 | `ai-engineering` | 에이전트 시스템, 평가, 프롬프트, 검색, MCP | 18 | `--skills=ai-engineering` |

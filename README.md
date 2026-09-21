@@ -10,7 +10,7 @@
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 ![Agents](https://img.shields.io/badge/agents-17_core_%2B_17_opt--in-blue)
-![Skills](https://img.shields.io/badge/skills-30_default_%2F_107_installed-purple)
+![Skills](https://img.shields.io/badge/skills-30_default_%2F_110_installed-purple)
 ![MCP](https://img.shields.io/badge/MCP-5-green)
 ![Auto Sync](https://img.shields.io/badge/upstream_sync-every_3_days-brightgreen)
 
@@ -44,7 +44,7 @@ rm -rf /tmp/my-codex
 
 The default install exposes a lean skill set on purpose: Codex truncates skill
 descriptions once its skills budget is hit, so the default `core` profile shows
-Codex 30 of the 107 installed skills and keeps the rest one flag away:
+Codex 30 of the 110 installed skill entries and keeps the rest one flag away:
 
 ```bash
 bash install.sh --skills=web          # add the 18-skill web/UI lane
@@ -79,7 +79,7 @@ Every project my-codex builds on, what it contributes, and exactly how it arrive
 | # | Project | What my-codex takes from it | How it arrives |
 |---|---------|-----------------------------|----------------|
 | 1 | <img src="https://github.com/affaan-m.png?size=32" width="20" height="20" align="center"/> **[everything-claude-code](https://github.com/affaan-m/everything-claude-code)** — affaan-m | 61 allowlisted skills: stack patterns (TypeScript, React, Python/Django/FastAPI, Spring Boot/Kotlin, SQL/Redis/Prisma, Docker/Kubernetes), AI and agent engineering, and generic codebase tooling such as onboarding, code tours, and ADRs. Claude Code-specific content is stripped, and an 18-skill web/UI lane stays out of the default install. | submodule `upstream/ecc`; `install.sh` copies only the names allowlisted in `scripts/skill-allowlists.sh` |
-| 2 | <img src="https://github.com/garrytan.png?size=32" width="20" height="20" align="center"/> **[gstack](https://github.com/garrytan/gstack)** — garrytan | 27 sprint-process skills — browser QA (`qa`), scope-drift code review (`review`), security audit (`cso`), and the full plan → review → ship workflow — plus a compiled Playwright browser daemon. | submodule `upstream/gstack`, vendored to `~/.codex/vendor/gstack` where its own `./setup --host codex` runs under bun; the 7 ECC skills it supersedes (`benchmark`, `canary-watch`, `safety-guard`, `browser-qa`, `verification-loop`, `security-review`, `design-system`) are removed so only the gstack version stays routable |
+| 2 | <img src="https://github.com/garrytan.png?size=32" width="20" height="20" align="center"/> **[gstack](https://github.com/garrytan/gstack)** — garrytan | 30 sprint-process skill entries — browser QA (`qa`), scope-drift code review (`review`), security audit (`cso`), and the full plan → review → ship workflow — plus a compiled Playwright browser daemon. | submodule `upstream/gstack`, vendored to `~/.codex/vendor/gstack` where its own `./setup --host codex` runs under bun and creates the 29 symlinks under `~/.codex/skills/` alongside the `gstack` root router directory; the 7 ECC skills it supersedes (`benchmark`, `canary-watch`, `safety-guard`, `browser-qa`, `verification-loop`, `security-review`, `design-system`) are removed so only the gstack version stays routable |
 | 3 | <img src="https://github.com/Yeachan-Heo.png?size=32" width="20" height="20" align="center"/> **[oh-my-codex](https://github.com/Yeachan-Heo/oh-my-codex)** — Yeachan Heo | 7 allowlisted worker agents: `executor`, `planner`, `architect`, `test-engineer`, `security-reviewer`, `code-reviewer`, `debugger`. Its remaining prompts and its skills duplicate agents this repo already ships, so they are deliberately not installed. | submodule `upstream/omx`; `scripts/md-to-toml.sh` converts the allowlisted prompts from Markdown into `~/.codex/agents/*.toml` |
 | 4 | <img src="https://github.com/obra.png?size=32" width="20" height="20" align="center"/> **[superpowers](https://github.com/obra/superpowers)** — Jesse Vincent | 14 development-process skills: brainstorming, systematic debugging, test-driven development, plan writing and execution, worktree handling, and code-review etiquette. No agent is taken from it — its single `code-reviewer` prompt overlaps the oh-my-codex one. | submodule `upstream/superpowers`; all 15 skill directories install except `dispatching-parallel-agents`, which duplicates the Boss delegation path this repo already owns |
 | 5 | <img src="https://github.com/tt-a1i.png?size=32" width="20" height="20" align="center"/> **[archify](https://github.com/tt-a1i/archify)** — tt-a1i | 1 diagram skill that turns architecture, workflow, sequence, data-flow, and lifecycle descriptions into one self-contained HTML file with inline SVG, a dark/light toggle, and PNG/JPEG/WebP/SVG export. | submodule `upstream/archify`, pinned to tag `v2.9.0` so the sync job leaves it alone; only the repo's top-level `archify/` directory is copied to `~/.codex/skills/archify`, so no `npx skills add` runs at install time |
@@ -175,7 +175,7 @@ It fires only at the very end of the request — never on a turn that launches o
 | **Core agents** (always loaded) | 17 | Boss 1 + OMO 9 + OMX 7 |
 | **Agent packs** (opt-in, none enabled by default) | 17 | 2 vendored categories: data-ai 13 + llmops 4 |
 | **Skills exposed** (default `core` profile) | 30 | The always-on set; every other entry is one lane flag away |
-| **Skills installed** (files on disk) | 107 | ECC 61 · gstack 27 · Superpowers 14 · Core 4 · archify 1 |
+| **Skills installed** (entries under `~/.codex/skills/`) | 110 | ECC 61 · gstack 30 · Superpowers 14 · Core 4 · archify 1 |
 | **MCP Servers** | 5 | Context7, Exa, grep.app, Serena, Headroom |
 | **config.toml** | 1 | my-codex |
 | **AGENTS.md** | 1 | my-codex |
@@ -236,17 +236,17 @@ Installed to `~/.codex/agent-packs/` and disabled until you opt in — see [Agen
 </details>
 
 <details>
-<summary><strong>Skills — 30 exposed by default, 107 installed from 5 sources</strong></summary>
+<summary><strong>Skills — 30 exposed by default, 110 installed from 5 sources</strong></summary>
 
 | Source | Installed | Key Skills |
 |--------|----------:|------------|
 | everything-claude-code | 61 | coding-standards, python-testing, api-design, deep-research |
-| gstack | 27 | /qa, /review, /ship, /cso, /investigate, /office-hours |
+| gstack | 30 | /qa, /review, /ship, /cso, /investigate, /office-hours |
 | superpowers | 14 | brainstorming, systematic-debugging, TDD, writing-plans |
 | [my-codex Core](https://github.com/sehoon787/my-codex) | 4 | boss-advanced, boss-briefing, briefing-vault, gstack-sprint |
 | archify | 1 | archify (architecture / workflow / sequence / data-flow / lifecycle diagrams) |
 
-gstack counts as 26 allowlisted skills plus the repo root entry; its full checkout lives at `~/.codex/vendor/gstack` and `~/.codex/skills/gstack` is the runtime facade. Physical skill files stay installed no matter which profile is active — exposure is what changes. See [Skill Profiles and Lanes](#skill-profiles-and-lanes).
+The gstack entries are the `gstack` root router directory plus 29 symlinks into `~/.codex/vendor/gstack/.agents/skills/`, created by gstack’s own `./setup`: the 26 names in `GSTACK_SKILL_ALLOWLIST` and three more it always installs (`gstack-upgrade`, `hackernews-frontpage`, `codex`). All 29 are in the managed catalog, so none of them is link-only — each can be exposed by `core` or by a lane. Of the 110 entries, 81 are real directories and 29 are those symlinks; `find ~/.codex/skills -name SKILL.md | wc -l` reports 83 because `find` does not follow them without `-L`. Skill files stay installed no matter which profile is active — exposure is what changes. See [Skill Profiles and Lanes](#skill-profiles-and-lanes).
 
 </details>
 
@@ -446,13 +446,13 @@ Re-running the same command refreshes to the latest `main` build, replaces only 
 
 ### Skill Profiles and Lanes
 
-my-claude installs one fixed allowlist; my-codex installs 107 skill files and then controls how many of them Codex actually sees. Codex truncates skill descriptions once its skills budget is hit, so an unfocused catalog makes every description less useful. `core` — the default on a fresh install with all bundled skill sources selected — exposes 30 skills, and each lane is added on top of it:
+my-claude installs one fixed allowlist; my-codex installs 110 skill entries and then controls how many of them Codex actually sees. Codex truncates skill descriptions once its skills budget is hit, so an unfocused catalog makes every description less useful. `core` — the default on a fresh install with all bundled skill sources selected — exposes 30 skills, and each lane is added on top of it:
 
 | Profile / lane | What it adds | Count | How to enable |
 |----------------|--------------|------:|---------------|
 | `core` | The always-on set: my-codex core skills, the superpowers dev-process lane, the gstack ship/QA/review routers, and the ECC standards | 30 | default; `--skill-profile=core` to return to it |
 | `legacy` | Pre-migration exposure; chosen automatically when `--skip-ecc`, `--skip-gstack`, `--skip-superpowers`, or `--skip-archify` omits a core source without an explicit profile | varies | `--skill-profile=legacy` |
-| `full` | Every lane at once; can exceed the context budget | 210 | `--skill-profile=full` or `--full-skills` |
+| `full` | Every lane at once — all 110 installed entries; the catalog names 210, and the ones not installed yet materialize on demand. Can exceed the context budget | 110 | `--skill-profile=full` or `--full-skills` |
 | `workflow-advanced` | Advanced planning, repository operations, and worktree workflows | 13 | `--skills=workflow-advanced` |
 | `qa-operations` | QA, browser checks, release, deployment, and operational safety | 20 | `--skills=qa-operations` |
 | `ai-engineering` | Agent systems, evaluation, prompts, retrieval, and MCP | 18 | `--skills=ai-engineering` |

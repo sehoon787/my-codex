@@ -10,7 +10,7 @@
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 ![Agents](https://img.shields.io/badge/agents-17_core_%2B_17_opt--in-blue)
-![Skills](https://img.shields.io/badge/skills-30_default_%2F_107_installed-purple)
+![Skills](https://img.shields.io/badge/skills-30_default_%2F_110_installed-purple)
 ![MCP](https://img.shields.io/badge/MCP-5-green)
 ![Auto Sync](https://img.shields.io/badge/upstream_sync-every_3_days-brightgreen)
 
@@ -44,7 +44,7 @@ rm -rf /tmp/my-codex
 
 既定のインストールが公開するスキルを絞っているのは意図的です。Codex はスキル
 予算を超えるとスキルの説明を切り詰めるため、既定の `core` プロファイルは
-インストール済みの 107 スキルのうち 30 だけを Codex に見せ、残りはフラグ 1 つで
+インストール済みの 110 スキル項目のうち 30 だけを Codex に見せ、残りはフラグ 1 つで
 開けるようにしています:
 
 ```bash
@@ -80,7 +80,7 @@ my-codex が基盤とするすべてのプロジェクトと、その貢献内�
 | # | プロジェクト | my-codex が取り入れているもの | 導入方法 |
 |---|--------------|-------------------------------|----------|
 | 1 | <img src="https://github.com/affaan-m.png?size=32" width="20" height="20" align="center"/> **[everything-claude-code](https://github.com/affaan-m/everything-claude-code)** — affaan-m | 許可済みスキル 61 個: スタック別パターン（TypeScript、React、Python/Django/FastAPI、Spring Boot/Kotlin、SQL/Redis/Prisma、Docker/Kubernetes）、AI・エージェント開発、オンボーディングやコードツアー、ADR といった汎用のコードベース支援です。Claude Code 固有の内容は取り除かれ、Web/UI 向けの 18 スキルのレーンは既定のインストールから外れています。 | サブモジュール `upstream/ecc`。`install.sh` は `scripts/skill-allowlists.sh` で許可された名前だけをコピーします |
-| 2 | <img src="https://github.com/garrytan.png?size=32" width="20" height="20" align="center"/> **[gstack](https://github.com/garrytan/gstack)** — garrytan | スプリント運用スキル 27 個 — ブラウザ QA（`qa`）、スコープ逸脱を見るコードレビュー（`review`）、セキュリティ監査（`cso`）、計画 → レビュー → 出荷の一連の流れ — と、コンパイル済みの Playwright ブラウザデーモンです。 | サブモジュール `upstream/gstack`。`~/.codex/vendor/gstack` に配置し、そこで gstack 自身の `./setup --host codex` を bun 上で実行します。置き換え対象の ECC スキル 7 個（`benchmark`、`canary-watch`、`safety-guard`、`browser-qa`、`verification-loop`、`security-review`、`design-system`）は削除され、gstack 版だけがルーティング対象として残ります |
+| 2 | <img src="https://github.com/garrytan.png?size=32" width="20" height="20" align="center"/> **[gstack](https://github.com/garrytan/gstack)** — garrytan | スプリント運用スキル項目 30 個 — ブラウザ QA（`qa`）、スコープ逸脱を見るコードレビュー（`review`）、セキュリティ監査（`cso`）、計画 → レビュー → 出荷の一連の流れ — と、コンパイル済みの Playwright ブラウザデーモンです。 | サブモジュール `upstream/gstack`。`~/.codex/vendor/gstack` に配置し、そこで gstack 自身の `./setup --host codex` を bun 上で実行して、`gstack` ルートルーターのディレクトリとともに `~/.codex/skills/` 配下に 29 個のシンボリックリンクを作ります。置き換え対象の ECC スキル 7 個（`benchmark`、`canary-watch`、`safety-guard`、`browser-qa`、`verification-loop`、`security-review`、`design-system`）は削除され、gstack 版だけがルーティング対象として残ります |
 | 3 | <img src="https://github.com/Yeachan-Heo.png?size=32" width="20" height="20" align="center"/> **[oh-my-codex](https://github.com/Yeachan-Heo/oh-my-codex)** — Yeachan Heo | 許可済みのワーカーエージェント 7 体: `executor`、`planner`、`architect`、`test-engineer`、`security-reviewer`、`code-reviewer`、`debugger`。残りのプロンプトとスキルは本リポジトリが既に備えるエージェントと重複するため、意図的にインストールしません。 | サブモジュール `upstream/omx`。`scripts/md-to-toml.sh` が許可済みプロンプトを Markdown から `~/.codex/agents/*.toml` へ変換します |
 | 4 | <img src="https://github.com/obra.png?size=32" width="20" height="20" align="center"/> **[superpowers](https://github.com/obra/superpowers)** — Jesse Vincent | 開発プロセススキル 14 個: ブレインストーミング、体系的なデバッグ、テスト駆動開発、計画の作成と実行、worktree の扱い、コードレビューの作法です。エージェントは取り込みません — 唯一の `code-reviewer` プロンプトが oh-my-codex のものと重なるためです。 | サブモジュール `upstream/superpowers`。スキルディレクトリ 15 個のうち、Boss の委譲経路と重複する `dispatching-parallel-agents` を除いてすべてインストールします |
 | 5 | <img src="https://github.com/tt-a1i.png?size=32" width="20" height="20" align="center"/> **[archify](https://github.com/tt-a1i/archify)** — tt-a1i | アーキテクチャ、ワークフロー、シーケンス、データフロー、ライフサイクルの記述を、インライン SVG・ダーク/ライト切り替え・PNG/JPEG/WebP/SVG エクスポートを備えた単一の自己完結型 HTML ファイルに変換する図版スキル 1 個です。 | サブモジュール `upstream/archify`、タグ `v2.9.0` にピン留めしてあるため同期ジョブは対象外とします。リポジトリ直下の `archify/` ディレクトリだけを `~/.codex/skills/archify` にコピーするので、インストール時に `npx skills add` は実行されません |
@@ -176,7 +176,7 @@ Boss は作業のあったすべてのターン — ファイル編集、コミ�
 | **コアエージェント**（常時ロード） | 17 | Boss 1 + OMO 9 + OMX 7 |
 | **エージェントパック**（オプトイン、既定では無効） | 17 | ベンダリング済みの 2 カテゴリ: data-ai 13 + llmops 4 |
 | **公開スキル**（既定の `core` プロファイル） | 30 | 常時有効な集合。それ以外はレーンのフラグ 1 つで追加 |
-| **インストール済みスキル**（ディスク上のファイル） | 107 | ECC 61 · gstack 27 · Superpowers 14 · Core 4 · archify 1 |
+| **インストール済みスキル**（`~/.codex/skills/` の項目） | 110 | ECC 61 · gstack 30 · Superpowers 14 · Core 4 · archify 1 |
 | **MCP サーバー** | 5 | Context7、Exa、grep.app、Serena、Headroom |
 | **config.toml** | 1 | my-codex |
 | **AGENTS.md** | 1 | my-codex |
@@ -237,17 +237,17 @@ Boss は作業のあったすべてのターン — ファイル編集、コミ�
 </details>
 
 <details>
-<summary><strong>スキル — 既定で 30 公開、5 つの出典から 107 をインストール</strong></summary>
+<summary><strong>スキル — 既定で 30 公開、5 つの出典から 110 をインストール</strong></summary>
 
 | 出典 | インストール | 主なスキル |
 |--------|------:|------------|
 | everything-claude-code | 61 | coding-standards, python-testing, api-design, deep-research |
-| gstack | 27 | /qa, /review, /ship, /cso, /investigate, /office-hours |
+| gstack | 30 | /qa, /review, /ship, /cso, /investigate, /office-hours |
 | superpowers | 14 | brainstorming, systematic-debugging, TDD, writing-plans |
 | [my-codex Core](https://github.com/sehoon787/my-codex) | 4 | boss-advanced, boss-briefing, briefing-vault, gstack-sprint |
 | archify | 1 | archify（アーキテクチャ・ワークフロー・シーケンス・データフロー・ライフサイクル図） |
 
-gstack は許可済みスキル 26 個にリポジトリルートのエントリを加えて 27 と数えます。フルチェックアウトは `~/.codex/vendor/gstack` にあり、`~/.codex/skills/gstack` はランタイムのファサードです。どのプロファイルでも実際のスキルファイルはインストールされたままで、変わるのは公開範囲だけです。[スキルプロファイルとレーン](#スキルプロファイルとレーン)を参照してください。
+gstack の項目は `gstack` ルートルーターのディレクトリと、`~/.codex/vendor/gstack/.agents/skills/` を指す 29 個のシンボリックリンクです。リンクは gstack 自身の `./setup` が作成し、`GSTACK_SKILL_ALLOWLIST` の 26 個に常に導入される 3 個（`gstack-upgrade`、`hackernews-frontpage`、`codex`）が加わります。29 個すべてが管理カタログにあるためリンク専用の項目はなく、いずれも `core` かレーンで公開できます。110 項目のうち 81 は実ディレクトリ、29 はこのシンボリックリンクで、`find ~/.codex/skills -name SKILL.md | wc -l` は `-L` なしではリンクをたどらないため 83 を返します。どのプロファイルでもスキルファイルはインストールされたままで、変わるのは公開範囲だけです。[スキルプロファイルとレーン](#スキルプロファイルとレーン)を参照してください。
 
 </details>
 
@@ -447,13 +447,13 @@ git サブモジュールでリンクしています。固定コミットは `.g
 
 ### スキルプロファイルとレーン
 
-my-claude は固定の許可リストを 1 つインストールしますが、my-codex はスキルファイル 107 個をインストールしたうえで、そのうち何個を Codex に実際に見せるかを制御します。Codex はスキル予算を超えるとスキルの説明を切り詰めるため、焦点のないカタログはすべての説明の有用性を下げます。同梱スキルソースをすべて選択した新規インストールの既定値である `core` はスキル 30 個を公開し、各レーンはその上に追加されます:
+my-claude は固定の許可リストを 1 つインストールしますが、my-codex はスキル項目 110 個をインストールしたうえで、そのうち何個を Codex に実際に見せるかを制御します。Codex はスキル予算を超えるとスキルの説明を切り詰めるため、焦点のないカタログはすべての説明の有用性を下げます。同梱スキルソースをすべて選択した新規インストールの既定値である `core` はスキル 30 個を公開し、各レーンはその上に追加されます:
 
 | プロファイル / レーン | 追加されるもの | 数量 | 有効化方法 |
 |----------------|--------------|------:|---------------|
 | `core` | 常時有効な集合: my-codex コアスキル、superpowers の開発プロセスレーン、gstack の出荷/QA/レビュールーター、ECC の標準 | 30 | 既定。戻すときは `--skill-profile=core` |
 | `legacy` | 移行前の公開範囲。`--skip-ecc`、`--skip-gstack`、`--skip-superpowers`、`--skip-archify` で core ソースを省き、プロファイルを明示しなかった場合に自動選択 | 可変 | `--skill-profile=legacy` |
-| `full` | すべてのレーンを一度に。コンテキスト予算を超える可能性があります | 210 | `--skill-profile=full` または `--full-skills` |
+| `full` | すべてのレーンを一度に — インストール済みの 110 項目すべて。カタログには 210 の名前があり、未導入のものは必要時に取得されます。コンテキスト予算を超える可能性があります | 110 | `--skill-profile=full` または `--full-skills` |
 | `workflow-advanced` | 高度な計画、リポジトリ操作、worktree ワークフロー | 13 | `--skills=workflow-advanced` |
 | `qa-operations` | QA、ブラウザ検証、リリース、デプロイ、運用上の安全策 | 20 | `--skills=qa-operations` |
 | `ai-engineering` | エージェントシステム、評価、プロンプト、検索、MCP | 18 | `--skills=ai-engineering` |

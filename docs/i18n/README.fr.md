@@ -334,7 +334,7 @@ Fonctionnalités construites spécifiquement pour ce projet, au-delà de ce que 
 | **Attribution Codex** | Les hooks git enregistrent les fichiers modifiés par Codex et ajoutent `AI-Contributed-By: Codex` aux messages de commit |
 | **Détection de doublon CI** | Détection automatisée des agents TOML en double entre les syncs upstream |
 ## Options d'installation
-Une installation interactive affiche un sélecteur numéroté pour Serena, Headroom et codeburn : Entrée, `all`, `a`, `y` ou `yes` les sélectionne tous ; `none`, `n`, `no` ou `0` n’en sélectionne aucun ; les numéros et noms se combinent comme dans `1,3` ou `serena codeburn`. L’automatisation sélectionne tout par défaut ; utilisez `--tools=headroom` pour un sous-ensemble, `--yes` pour tout ou `--skip-tools` pour aucun.
+Un terminal interactif affiche un sélecteur à cases pour Serena, Headroom et codeburn, tous trois cochés par défaut. Déplacez-vous avec ↑/↓ ou `j`/`k`, basculez avec Espace, utilisez `a` pour tout ou `n` pour rien, puis confirmez la sélection courante avec Entrée ou Ctrl-D/EOF. Si `TERM` est vide ou vaut `dumb`, ou si `stty` est indisponible, le sélecteur numéroté accepte Entrée, `all`, `a`, `y` ou `yes` pour tout ; `none`, `n`, `no` ou `0` pour rien ; ainsi que des numéros et noms mélangés comme `1,3` ou `serena codeburn`. L’automatisation sélectionne tout par défaut ; utilisez `--tools=headroom` pour un sous-ensemble, `--yes` pour tout ou `--skip-tools` pour aucun.
 ### Installation rapide
 ```bash
 git clone --depth 1 https://github.com/sehoon787/my-codex.git /tmp/my-codex

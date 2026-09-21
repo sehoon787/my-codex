@@ -618,18 +618,27 @@ checkbox_selector_available() {
   return 0
 }
 
+# Deliberately free of command substitution. A SIGINT that lands while Bash is
+# working on a $( … ) is taken with the parser still inside the unfinished
+# substitution, so the INT trap body is parsed in that state, dies with
+# "unexpected EOF while looking for matching `)'", and the shell exits with the
+# parser's status 2 instead of reaching "exit 130". This function redraws on
+# every keystroke, so it is exactly where a Ctrl-C at the menu lands.
 render_companion_tool_selector() {
-  local cursor="$1" drawn="$2" marker
+  local cursor="$1" drawn="$2" marker box
   if [ "$drawn" != "0" ]; then
     printf '\0338'
   fi
   printf '\r\033[2KSelect companion tools  (↑↓ move · space toggle · a all · n none · enter confirm)\n'
   marker=" "; [ "$cursor" = "1" ] && marker=">"
-  printf '\r\033[2K%s [%s] serena — symbol-level code navigation and editing over MCP.\n' "$marker" "$([ "$INSTALL_SERENA" = "1" ] && printf x || printf ' ')"
+  box=" "; [ "$INSTALL_SERENA" = "1" ] && box="x"
+  printf '\r\033[2K%s [%s] serena — symbol-level code navigation and editing over MCP.\n' "$marker" "$box"
   marker=" "; [ "$cursor" = "2" ] && marker=">"
-  printf '\r\033[2K%s [%s] headroom — compresses large tool output and retrieves it on demand.\n' "$marker" "$([ "$INSTALL_HEADROOM" = "1" ] && printf x || printf ' ')"
+  box=" "; [ "$INSTALL_HEADROOM" = "1" ] && box="x"
+  printf '\r\033[2K%s [%s] headroom — compresses large tool output and retrieves it on demand.\n' "$marker" "$box"
   marker=" "; [ "$cursor" = "3" ] && marker=">"
-  printf '\r\033[2K%s [%s] codeburn — local token and cost dashboard for agent sessions.\n' "$marker" "$([ "$INSTALL_CODEBURN" = "1" ] && printf x || printf ' ')"
+  box=" "; [ "$INSTALL_CODEBURN" = "1" ] && box="x"
+  printf '\r\033[2K%s [%s] codeburn — local token and cost dashboard for agent sessions.\n' "$marker" "$box"
 }
 
 reserve_companion_selector_rows() {

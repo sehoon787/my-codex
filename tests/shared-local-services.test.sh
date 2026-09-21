@@ -13,6 +13,52 @@ url="${*: -1}"
 state="${SHIM_STATE:?}"
 case "$url" in
   http://127.0.0.1:4747/)
+    if [ -f "$state/codeburn-http-error" ]; then
+      attempts_file="$state/codeburn-http-error-attempts"
+      attempts=0
+      [ -f "$attempts_file" ] && attempts=$(cat "$attempts_file")
+      attempts=$((attempts + 1))
+      printf '%s\n' "$attempts" > "$attempts_file"
+      if [ "$attempts" -lt 4 ]; then
+        printf '<html><title>Service Unavailable</title></html>'
+        case " $* " in *" --fail "*) exit 22 ;; esac
+        exit 0
+      fi
+      printf '<html><title>CodeBurn - Local Dashboard</title></html>'
+      exit 0
+    fi
+    if [ -f "$state/codeburn-slow-response" ]; then
+      max_time=1
+      previous=""
+      for argument in "$@"; do
+        [ "$previous" = "--max-time" ] && max_time="$argument"
+        previous="$argument"
+      done
+      if python3 - "$max_time" <<'PY'
+import sys
+raise SystemExit(0 if float(sys.argv[1]) < 1.2 else 1)
+PY
+      then
+        python3 -c 'import sys,time; time.sleep(float(sys.argv[1]))' "$max_time"
+        exit 28
+      fi
+      sleep 1.2
+      printf '<html><title>CodeBurn - Local Dashboard</title></html>'
+      exit 0
+    fi
+    if [ -f "$state/codeburn-slow-transient" ]; then
+      attempts_file="$state/codeburn-slow-transient-attempts"
+      attempts=0
+      [ -f "$attempts_file" ] && attempts=$(cat "$attempts_file")
+      attempts=$((attempts + 1))
+      printf '%s\n' "$attempts" > "$attempts_file"
+      if [ "$attempts" -lt 5 ]; then
+        exit 28
+      fi
+      sleep 0.2
+      printf '<html><title>CodeBurn - Local Dashboard</title></html>'
+      exit 0
+    fi
     if [ -f "$state/codeburn-transient" ]; then
       if [ ! -f "$state/codeburn-transient-seen" ]; then
         touch "$state/codeburn-transient-seen"
@@ -132,6 +178,19 @@ run_selected_helper() {
     bash "$REPO/scripts/ensure-shared-local-services.sh" "$_service" > "$_root/output" 2>&1
 }
 
+run_selected_helper_with_timeout() {
+  _case="$1"
+  _service="$2"
+  _timeout="$3"
+  _root="$TMP/$_case"
+  mkdir -p "$_root/state"
+  env PATH="$SHIM:$PATH" SHIM_STATE="$_root/state" \
+    AGENT_HARNESS_STATE_DIR="$_root/shared" \
+    AGENT_HARNESS_SERVICE_TIMEOUT_SECONDS="$_timeout" \
+    CODEBURN_SHIM_MODE=success HEADROOM_SHIM_MODE=native \
+    bash "$REPO/scripts/ensure-shared-local-services.sh" "$_service" > "$_root/output" 2>&1
+}
+
 cleanup_pid() {
   _file="$1"
   if [ -f "$_file" ]; then
@@ -200,6 +259,64 @@ run_selected_helper transient-codeburn codeburn
 assert_contains "$TMP/transient-codeburn/output" "codeburn web: REUSED"
 [ ! -e "$TMP/transient-codeburn/state/codeburn-calls" ] || fail "transient healthy listener started duplicate codeburn"
 
+# More than two transient HTTP failures followed by a slow healthy response is
+# still the existing CodeBurn listener. Identity probing must reuse it within
+# the configured overall deadline and must never start or kill another daemon.
+mkdir -p "$TMP/slow-transient-codeburn/state"
+touch "$TMP/slow-transient-codeburn/state/codeburn-slow-transient" \
+  "$TMP/slow-transient-codeburn/state/codeburn-listener"
+slow_started=$(python3 -c 'import time; print(time.monotonic())')
+run_selected_helper slow-transient-codeburn codeburn
+slow_elapsed=$(python3 - "$slow_started" <<'PY'
+import sys, time
+print(time.monotonic() - float(sys.argv[1]))
+PY
+)
+assert_contains "$TMP/slow-transient-codeburn/output" "codeburn web: REUSED"
+[ "$(cat "$TMP/slow-transient-codeburn/state/codeburn-slow-transient-attempts")" -ge 5 ] \
+  || fail "slow transient listener was not retried"
+[ ! -e "$TMP/slow-transient-codeburn/state/codeburn-calls" ] \
+  || fail "slow transient healthy listener started duplicate codeburn"
+python3 - "$slow_elapsed" <<'PY' || fail "identity check exceeded its bounded deadline"
+import sys
+raise SystemExit(0 if float(sys.argv[1]) < 2.0 else 1)
+PY
+
+# The observed failure involved a healthy dashboard taking longer than the old
+# fixed one-second curl limit. The first fast probe times out at one second;
+# the occupied-port retry receives the remaining three-second overall budget
+# and accepts the same listener's 1.2-second response without restarting it.
+mkdir -p "$TMP/slow-response-codeburn/state"
+touch "$TMP/slow-response-codeburn/state/codeburn-slow-response" \
+  "$TMP/slow-response-codeburn/state/codeburn-listener"
+slow_response_started=$(python3 -c 'import time; print(time.monotonic())')
+run_selected_helper_with_timeout slow-response-codeburn codeburn 3
+slow_response_elapsed=$(python3 - "$slow_response_started" <<'PY'
+import sys, time
+print(time.monotonic() - float(sys.argv[1]))
+PY
+)
+assert_contains "$TMP/slow-response-codeburn/output" "codeburn web: REUSED"
+[ ! -e "$TMP/slow-response-codeburn/state/codeburn-calls" ] \
+  || fail "slow healthy listener started duplicate codeburn"
+python3 - "$slow_response_elapsed" <<'PY' || fail "slow identity check exceeded its overall deadline"
+import sys
+raise SystemExit(0 if float(sys.argv[1]) < 4.0 else 1)
+PY
+
+# HTTP 5xx error pages can carry a different title without proving a foreign
+# listener. curl --fail converts those responses into retryable transport
+# failures; the later healthy response must be reused within the same deadline.
+mkdir -p "$TMP/http-error-codeburn/state"
+touch "$TMP/http-error-codeburn/state/codeburn-http-error" \
+  "$TMP/http-error-codeburn/state/codeburn-listener"
+run_selected_helper http-error-codeburn codeburn
+assert_contains "$TMP/http-error-codeburn/output" "codeburn web: REUSED"
+[ "$(cat "$TMP/http-error-codeburn/state/codeburn-http-error-attempts")" -ge 4 ] \
+  || fail "HTTP error listener was classified before recovery"
+[ ! -e "$TMP/http-error-codeburn/state/codeburn-calls" ] \
+  || fail "recovering HTTP error listener started duplicate codeburn"
+
 # A foreign HTTP owner is reported and left alone. The lsof shim models the
 # listener independently from the response identity.
 mkdir -p "$TMP/foreign/state"
@@ -211,11 +328,12 @@ assert_contains "$TMP/foreign/output" "Headroom proxy: FAIL (port 8787 belongs t
 [ ! -e "$TMP/foreign/state/codeburn-calls" ] || fail "foreign port owner triggered codeburn"
 [ ! -e "$TMP/foreign/state/headroom-calls" ] || fail "foreign port owner triggered Headroom"
 
-# Non-HTTP listeners are also detected and never touched.
+# Non-HTTP listeners are unconfirmed rather than mislabeled as foreign, and are
+# still left untouched.
 mkdir -p "$TMP/non-http/state"
 touch "$TMP/non-http/state/codeburn-listener" "$TMP/non-http/state/headroom-listener"
 run_helper non-http env CODEBURN_SHIM_MODE=success HEADROOM_SHIM_MODE=native
-assert_contains "$TMP/non-http/output" "codeburn web: FAIL (port 4747 belongs to another service; left untouched"
+assert_contains "$TMP/non-http/output" "codeburn web: FAIL (listener on port 4747 did not confirm CodeBurn identity before 1s deadline; left untouched"
 assert_contains "$TMP/non-http/output" "Headroom proxy: FAIL (port 8787 belongs to another service; left untouched"
 [ ! -e "$TMP/non-http/state/codeburn-calls" ] || fail "non-HTTP listener triggered codeburn"
 [ ! -e "$TMP/non-http/state/headroom-calls" ] || fail "non-HTTP listener triggered Headroom"

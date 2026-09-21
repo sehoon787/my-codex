@@ -13,6 +13,14 @@ url="${*: -1}"
 state="${SHIM_STATE:?}"
 case "$url" in
   http://127.0.0.1:4747/)
+    if [ -f "$state/codeburn-transient" ]; then
+      if [ ! -f "$state/codeburn-transient-seen" ]; then
+        touch "$state/codeburn-transient-seen"
+        exit 7
+      fi
+      printf '<html><title>CodeBurn - Local Dashboard</title></html>'
+      exit 0
+    fi
     if [ -f "$state/codeburn-healthy" ]; then
       printf '<html><title>CodeBurn - Local Dashboard</title></html>'
       exit 0
@@ -181,6 +189,16 @@ assert_contains "$TMP/reuse/output" "codeburn web: REUSED"
 assert_contains "$TMP/reuse/output" "Headroom proxy: REUSED"
 [ ! -e "$TMP/reuse/state/codeburn-calls" ] || fail "reuse started codeburn"
 [ ! -e "$TMP/reuse/state/headroom-calls" ] || fail "reuse started Headroom"
+
+# A healthy Codeburn listener can briefly miss the first identity request while
+# its dashboard finishes loading. Recheck the exact title before classifying
+# the occupied port as foreign; reuse it without spawning another process.
+mkdir -p "$TMP/transient-codeburn/state"
+touch "$TMP/transient-codeburn/state/codeburn-transient" \
+  "$TMP/transient-codeburn/state/codeburn-listener"
+run_selected_helper transient-codeburn codeburn
+assert_contains "$TMP/transient-codeburn/output" "codeburn web: REUSED"
+[ ! -e "$TMP/transient-codeburn/state/codeburn-calls" ] || fail "transient healthy listener started duplicate codeburn"
 
 # A foreign HTTP owner is reported and left alone. The lsof shim models the
 # listener independently from the response identity.

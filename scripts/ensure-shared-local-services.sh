@@ -80,6 +80,16 @@ codeburn_healthy() {
   printf '%s' "$_body" | grep -Fq '<title>CodeBurn - Local Dashboard</title>'
 }
 
+retry_codeburn_identity() {
+  _attempts=2
+  while [ "$_attempts" -gt 0 ]; do
+    sleep 0.1
+    codeburn_healthy && return 0
+    _attempts=$((_attempts - 1))
+  done
+  return 1
+}
+
 headroom_healthy() {
   _body=$(fetch_url "$HEADROOM_HEALTH_URL") || return 1
   printf '%s' "$_body" | grep -Eq '"service"[[:space:]]*:[[:space:]]*"headroom-proxy"' || return 1
@@ -159,6 +169,10 @@ ensure_codeburn() {
   port_is_occupied 4747
   _port_status=$?
   if [ "$_port_status" = "0" ]; then
+    if retry_codeburn_identity; then
+      echo "codeburn web: REUSED ($CODEBURN_URL)"
+      return 0
+    fi
     echo "codeburn web: FAIL (port 4747 belongs to another service; left untouched; log: $_log)"
     return 0
   fi

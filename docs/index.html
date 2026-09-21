@@ -4,9 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>my-codex — All-in-one agent harness for OpenAI Codex CLI</title>
-<meta name="description" content="All-in-one Codex CLI multi-agent orchestration. 17 curated agents, 105 skills, 3 MCP servers. Boss orchestrator with runtime discovery.">
+<meta name="description" content="All-in-one Codex CLI multi-agent orchestration. 17 curated agents, 106 installed skills with profile-controlled exposure, and 3 MCP servers.">
 <meta property="og:title" content="my-codex — All-in-one agent harness for OpenAI Codex CLI">
-<meta property="og:description" content="Boss orchestrates 17 curated agents, 105 skills, 3 MCP servers. Dynamic runtime discovery. One install.">
+<meta property="og:description" content="Boss orchestrates 17 curated agents, 106 installed skills with profile-controlled exposure, and 3 MCP servers.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://sehoon787.github.io/my-codex/">
 <meta name="twitter:card" content="summary_large_image">
@@ -337,7 +337,7 @@ section{padding:80px 0}
     <div class="arch-conn"></div>
     <div class="arch-row" style="grid-template-columns:repeat(3,1fr)">
       <div class="arch-layer"><h4><span class="lang" data-en="Agents" data-ko="에이전트"></span><span class="cnt">17</span></h4></div>
-      <div class="arch-layer"><h4><span class="lang" data-en="Skills" data-ko="스킬"></span><span class="cnt">105</span></h4></div>
+      <div class="arch-layer"><h4><span class="lang" data-en="Installed Skills" data-ko="설치된 스킬"></span><span class="cnt">106</span></h4></div>
       <div class="arch-layer" style="border-color:var(--accent)"><h4 style="color:var(--accent)">MCP<span class="cnt">3</span></h4></div>
     </div>
   </div>
@@ -351,7 +351,7 @@ section{padding:80px 0}
   <p class="ss"><span class="lang" data-en="Everything bundled with a single install." data-ko="단 한 번의 설치로 함께 제공되는 모든 것."></span></p>
   <div class="inside-grid fade-in" style="margin-bottom:40px">
     <div class="inside-card"><span class="inside-num">17</span><span class="inside-label">Agents</span><span class="inside-desc">Boss 1, OMO 9, OMX 7 &middot; +17 opt-in pack agents</span></div>
-    <div class="inside-card"><span class="inside-num">106</span><span class="inside-label">Skills</span><span class="inside-desc"><span class="lang" data-en="Task-specific workflows and patterns" data-ko="작업별 워크플로우 및 패턴"></span></span></div>
+    <div class="inside-card"><span class="inside-num">106</span><span class="inside-label">Skills</span><span class="inside-desc"><span class="lang" data-en="Installed; exposure is profile-controlled" data-ko="설치됨, 노출 범위는 프로필로 제어"></span></span></div>
     <div class="inside-card"><span class="inside-num">2</span><span class="inside-label">Agent Packs</span><span class="inside-desc"><span class="lang" data-en="data-ai, llmops — opt-in, off by default" data-ko="data-ai, llmops — 옵트인, 기본 비활성"></span></span></div>
     <div class="inside-card"><span class="inside-num">5</span><span class="inside-label">MCP</span><span class="inside-desc">context7, exa, grep_app, serena, headroom</span></div>
     <div class="inside-card"><span class="inside-num">8</span><span class="inside-label">Hooks</span><span class="inside-desc">SessionStart, UserPromptSubmit, PreToolUse, PostToolUse, SubagentStop, TeammateIdle, TaskCompleted, Stop</span></div>
@@ -393,8 +393,23 @@ section{padding:80px 0}
       <div class="cat-body"><span class="lang" data-en="17 AI/LLM specialist agents vendored from awesome-codex-subagents into 2 packs: data-ai (13) and llmops (4). Installed but disabled by default — enable with `my-codex-packs enable data-ai`." data-ko="awesome-codex-subagents에서 벤더링한 AI/LLM 전문 에이전트 17개, 2개 팩 구성: data-ai(13), llmops(4). 설치되지만 기본 비활성 — `my-codex-packs enable data-ai`로 활성화."></span></div>
     </details>
     <details>
-      <summary>Skills <span class="cat-count">105</span></summary>
-      <div class="cat-body"><span class="lang" data-en="Curated per-skill allowlists (scripts/skill-allowlists.sh): ECC 61, gstack 27, superpowers 13, my-codex core 4. Development patterns, testing workflows, deployment automation, code review, security scanning. No document skills (pdf/docx/pptx/xlsx) ship with Codex." data-ko="스킬 단위 큐레이션 허용목록(scripts/skill-allowlists.sh): ECC 61, gstack 27, superpowers 13, my-codex 코어 4. 개발 패턴, 테스트 워크플로우, 배포 자동화, 코드 리뷰, 보안 스캔. Codex에는 문서 스킬(pdf/docx/pptx/xlsx)이 없습니다."></span></div>
+      <summary>Skills <span class="cat-count"><span class="lang" data-en="106 installed · profile-controlled" data-ko="106개 설치 · 프로필 제어"></span></span></summary>
+      <div class="cat-body">
+        <span class="lang" data-en="Physical skill files remain installed. The default <code>core</code> profile exposes 30 managed skills and preserves externally installed <code>docx</code>, <code>pdf</code>, system, plugin, and user skills; this bundle still does not ship <code>pdf</code>, <code>docx</code>, <code>pptx</code>, or <code>xlsx</code>. Optional entries are hidden with Codex's supported path-based configuration; unknown skills and files under <code>~/.agents/skills/</code> or <code>~/.claude/skills/</code> are untouched." data-ko="실제 스킬 파일은 설치된 상태로 유지됩니다. 기본 <code>core</code> 프로필은 관리 대상 스킬 30개를 노출하고 외부에서 설치한 <code>docx</code>, <code>pdf</code>, 시스템·플러그인·사용자 스킬을 보존합니다. 이 번들 자체는 계속 <code>pdf</code>, <code>docx</code>, <code>pptx</code>, <code>xlsx</code>를 제공하지 않습니다. 선택 항목은 Codex가 지원하는 경로별 설정으로 숨기며, 알 수 없는 스킬과 <code>~/.agents/skills/</code>, <code>~/.claude/skills/</code> 아래 파일은 건드리지 않습니다."></span>
+        <p><span class="lang" data-en="Profiles: <code>core</code> is the new-install default; <code>legacy</code> restores pre-migration exposure; <code>full</code> enables every lane and can exceed the context budget. Existing noninteractive installs without state retain their exposure. The saved choice persists in <code>~/.codex/my-codex/skill-catalog-state.json</code>. Use <code>--skill-profile=core|legacy|full</code>; <code>bash install.sh --skills=web</code> and <code>MY_CODEX_SKILLS=web</code> remain supported, including <code>~/.codex/enabled-skill-lanes.txt</code>." data-ko="프로필: 신규 설치 기본값은 <code>core</code>, <code>legacy</code>는 마이그레이션 이전 노출 상태를 복원하고, <code>full</code>은 모든 레인을 활성화해 컨텍스트 예산을 넘을 수 있습니다. 상태가 없는 기존 비대화형 설치는 현재 노출을 유지합니다. 선택은 <code>~/.codex/my-codex/skill-catalog-state.json</code>에 저장됩니다. <code>--skill-profile=core|legacy|full</code>을 사용하며 <code>bash install.sh --skills=web</code>과 <code>MY_CODEX_SKILLS=web</code>도 <code>~/.codex/enabled-skill-lanes.txt</code>를 포함해 계속 지원합니다."></span></p>
+        <p><span class="lang" data-en="Optional lanes" data-ko="선택 레인"></span>: <code>workflow-advanced</code> (13), <code>qa-operations</code> (20), <code>ai-engineering</code> (18), <code>backend-data</code> (13), <code>python</code> (9), <code>jvm</code> (11), <code>web</code> (18), <code>mobile</code> (9), <code>other-languages</code> (13), <code>research-content</code> (11), <code>media-documents</code> (7), <code>business-domains</code> (8), <code>alternative-workflows</code> (30).</p>
+        <pre>my-codex-skills list
+my-codex-skills status
+my-codex-skills doctor
+my-codex-skills enable python web
+my-codex-skills disable web
+my-codex-skills set-profile core
+my-codex-skills set-profile legacy
+my-codex-skills set-profile full
+my-codex-skills source benchmark gstack
+my-codex-skills restore &lt;snapshot&gt;</pre>
+        <span class="lang" data-en="Catalog: <code>~/.codex/lib/my-codex/skill-catalog.json</code>. Snapshots: <code>~/.codex/my-codex/skill-catalog-snapshots/&lt;id&gt;.json</code>. Restore <code>latest</code> or a snapshot ID." data-ko="카탈로그: <code>~/.codex/lib/my-codex/skill-catalog.json</code>. 스냅샷: <code>~/.codex/my-codex/skill-catalog-snapshots/&lt;id&gt;.json</code>. <code>latest</code> 또는 스냅샷 ID로 복원합니다."></span>
+      </div>
     </details>
     <details>
       <summary>MCP + Hooks <span class="cat-count">3 MCP &middot; 9 hook files</span></summary>
@@ -575,6 +590,7 @@ section{padding:80px 0}
   <p class="ss"><span class="lang" data-en="Two ways to get everything in under a minute." data-ko="1분 안에 모든 것을 설치하는 두 가지 방법."></span></p>
   <p class="ss"><span class="lang" data-en="my-codex and my-claude share healthy codeburn and Headroom processes through <code>${XDG_STATE_HOME:-$HOME/.local/state}/agent-harness-services</code>. Reinstalling reuses them instead of opening duplicate ports." data-ko="my-codex와 my-claude는 <code>${XDG_STATE_HOME:-$HOME/.local/state}/agent-harness-services</code>를 통해 정상 codeburn·Headroom 프로세스를 공유합니다. 다시 설치해도 중복 포트를 열지 않고 기존 프로세스를 재사용합니다."></span></p>
   <p class="ss"><span class="lang" data-en="Interactive installs show a numbered selector for Serena, Headroom, and codeburn. Enter, <code>all</code>, <code>a</code>, <code>y</code>, or <code>yes</code> selects all; <code>none</code>, <code>n</code>, <code>no</code>, or <code>0</code> selects none; mix numbers or names such as <code>1,3</code> or <code>serena codeburn</code>. Automation selects all by default; use <code>--tools=headroom</code> for a subset, <code>--yes</code> for all, or <code>--skip-tools</code> for none." data-ko="대화형 설치는 Serena, Headroom, codeburn의 번호 선택지를 표시합니다. Enter, <code>all</code>, <code>a</code>, <code>y</code>, <code>yes</code>는 모두 선택하고 <code>none</code>, <code>n</code>, <code>no</code>, <code>0</code>은 모두 제외하며, <code>1,3</code> 또는 <code>serena codeburn</code>처럼 번호와 이름을 섞을 수 있습니다. 자동 실행은 기본적으로 모두 선택하며, <code>--tools=headroom</code>은 일부, <code>--yes</code>는 전부, <code>--skip-tools</code>는 없음을 명시합니다."></span></p>
+  <p class="ss"><span class="lang" data-en="New installs use the <code>core</code> skill profile. Choose <code>--skill-profile=core|legacy|full</code> or add lanes with <code>--skills=web</code> / <code>MY_CODEX_SKILLS=web</code>; existing noninteractive installs without profile state retain their current exposure." data-ko="신규 설치는 <code>core</code> 스킬 프로필을 사용합니다. <code>--skill-profile=core|legacy|full</code>을 선택하거나 <code>--skills=web</code> / <code>MY_CODEX_SKILLS=web</code>으로 레인을 추가할 수 있으며, 프로필 상태가 없는 기존 비대화형 설치는 현재 노출 상태를 유지합니다."></span></p>
   <div class="inst-row fade-in">
     <div class="inst">
       <h4><span class="lang" data-en="For Humans" data-ko="사람용"></span></h4>

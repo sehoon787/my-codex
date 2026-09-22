@@ -71,6 +71,8 @@ Windows では、`install.sh` が npm 管理の `codex`、`codex.cmd`、`codex.p
 Read https://raw.githubusercontent.com/sehoon787/my-codex/main/AI-INSTALL.md and follow every step.
 ```
 
+チェックボックス選択はインタラクティブなターミナルでしか表示されないため、エージェントはインストーラーを実行する前にどのコンパニオンツール（Serena、Headroom、codeburn）をインストールするか尋ねます。
+
 ---
 
 ## 使用しているオープンソースツール

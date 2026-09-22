@@ -71,6 +71,8 @@ Unter Windows patcht `install.sh` die npm-verwalteten Shims `codex`, `codex.cmd`
 Read https://raw.githubusercontent.com/sehoon787/my-codex/main/AI-INSTALL.md and follow every step.
 ```
 
+Der Agent fragt vor dem Ausführen des Installers, welche Begleit-Tools (Serena, Headroom, codeburn) installiert werden sollen, da der Checkbox-Selektor nur in einem interaktiven Terminal erscheint.
+
 ---
 
 ## Verwendete Open-Source-Tools

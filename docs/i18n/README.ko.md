@@ -70,6 +70,8 @@ Windows에서는 `install.sh`가 npm이 관리하는 `codex`, `codex.cmd`, `code
 Read https://raw.githubusercontent.com/sehoon787/my-codex/main/AI-INSTALL.md and follow every step.
 ```
 
+체크박스 선택기는 대화형 터미널에서만 나타나므로, 에이전트는 설치 프로그램을 실행하기 전에 어떤 동반 도구(Serena, Headroom, codeburn)를 설치할지 먼저 물어봅니다.
+
 ---
 
 ## 사용한 오픈소스 도구

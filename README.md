@@ -70,6 +70,8 @@ On Windows, `install.sh` patches the npm-managed `codex`, `codex.cmd`, and `code
 Read https://raw.githubusercontent.com/sehoon787/my-codex/main/AI-INSTALL.md and follow every step.
 ```
 
+The agent will ask which companion tools (Serena, Headroom, codeburn) to install before running the installer, because the checkbox selector only appears in an interactive terminal.
+
 ---
 
 ## Open-Source Tools Used

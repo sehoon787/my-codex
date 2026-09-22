@@ -71,6 +71,8 @@ Sous Windows, `install.sh` corrige les shims `codex`, `codex.cmd` et `codex.ps1`
 Read https://raw.githubusercontent.com/sehoon787/my-codex/main/AI-INSTALL.md and follow every step.
 ```
 
+L'agent demandera quels outils compagnons (Serena, Headroom, codeburn) installer avant d'exécuter l'installateur, car le sélecteur à cases à cocher n'apparaît que dans un terminal interactif.
+
 ---
 
 ## Outils open source utilisés

@@ -70,6 +70,8 @@ bash install.sh --skip-tools       # 都不装
 Read https://raw.githubusercontent.com/sehoon787/my-codex/main/AI-INSTALL.md and follow every step.
 ```
 
+由于复选框选择器只会在交互式终端中出现，代理会在运行安装程序之前询问要安装哪些配套工具（Serena、Headroom、codeburn）。
+
 ---
 
 ## 使用的开源工具

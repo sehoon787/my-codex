@@ -14,8 +14,10 @@ Read the FULL output, then execute each step in order.
 If you want to install immediately instead of reading the manual steps first:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/sehoon787/my-codex/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/sehoon787/my-codex/main/install.sh | bash -s -- --tools=all
 ```
+
+This installs all three companion tools (Serena, Headroom, codeburn) without asking, because the fast path skips the companion-tool choice covered in Step 1. Use Step 1 instead if the user should be asked first.
 
 This document is the guide an AI agent should read before running commands. Fetching `AI-INSTALL.md` only prints instructions, it does not perform the install.
 
@@ -23,9 +25,21 @@ This document is the guide an AI agent should read before running commands. Fetc
 
 ## Step 1: Install agents and assets
 
+### Before running install.sh: ask which companion tools to install
+
+When an AI agent runs `install.sh`, stdin is not a TTY, so the interactive checkbox selector for companion tools never appears and the default is to install all three — ask the user which ones they want first.
+
+| Tool | What it does | Default |
+|------|---------------|---------|
+| Serena | A language server's symbol graph over MCP — `get_symbols_overview`, `find_symbol`, `find_referencing_symbols`, `replace_symbol_body`, `insert_after_symbol` — so tokens scale with the symbol rather than the whole file. | Install |
+| Headroom | Apache-2.0 context compression over MCP: `headroom_compress`, `headroom_retrieve`, and `headroom_stats`. | Install |
+| codeburn | Local-first token and cost accounting over the session files Codex already writes under `~/.codex/sessions` — no proxy, no API key, no Codex hooks. | Install |
+
+Present the three as a multi-select choice — Codex agents: ask in chat and wait for the answer; Claude Code agents: use `AskUserQuestion` with `multiSelect` — then map the answer to a flag: all selected → `--tools=all`, none selected → `--tools=none`, a subset → `--tools=serena,codeburn` (comma-separated names). Never run `install.sh` on this path without one of `--tools=…`, `--yes`, or `--skip-tools`. If the user cannot be asked (an unattended run), use `--yes` and say so in the output.
+
 ```bash
 git clone --depth 1 https://github.com/sehoon787/my-codex.git /tmp/my-codex
-bash /tmp/my-codex/install.sh
+bash /tmp/my-codex/install.sh --tools=<all|none|names>   # e.g. --tools=all / --tools=none / --tools=serena,codeburn
 rm -rf /tmp/my-codex
 ```
 

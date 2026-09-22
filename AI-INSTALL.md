@@ -64,10 +64,10 @@ and `install.sh` registers my-codex into it — but as a **local** marketplace:
 
 ```bash
 # Either the one-liner…
-curl -fsSL https://raw.githubusercontent.com/sehoon787/my-codex/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/sehoon787/my-codex/main/install.sh | bash -s -- --tools=<all|none|names>
 # …or the explicit clone form:
 git clone --depth 1 https://github.com/sehoon787/my-codex.git /tmp/my-codex
-bash /tmp/my-codex/install.sh
+bash /tmp/my-codex/install.sh --tools=<all|none|names>   # same choice step as Step 1
 rm -rf /tmp/my-codex
 ```
 

@@ -40,7 +40,7 @@ map_model() {
     # Top tier: Fable/Opus class and the bare `opus` alias.
     # Superseded IDs stay listed — an agent still pinning claude-fable-5 should
     # land on the top tier, not fall through to the MEDIUM default.
-    claude-fable-5-1|claude-fable-5|claude-mythos-5|claude-opus-5|claude-opus-4-8|claude-opus-4-7|claude-opus-4-6|claude-opus-4-5|opus|"$MODEL_TIER_HIGH")
+    claude-fable-5-1|claude-fable-5|claude-mythos-5|claude-opus-5-5|claude-opus-5|claude-opus-4-8|claude-opus-4-7|claude-opus-4-6|claude-opus-4-5|opus|"$MODEL_TIER_HIGH")
       echo "model = \"$MODEL_TIER_HIGH\""
       echo "model_reasoning_effort = \"$MODEL_TIER_HIGH_EFFORT\""
       ;;

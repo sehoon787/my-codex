@@ -115,3 +115,4 @@ jobs:
           node tests/skill-catalog-budget.test.js
           node tests/stop-final-report.test.js
           node tests/normalize-skill-english.test.js
+          node tests/refresh-pin-table.test.js

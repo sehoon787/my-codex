@@ -63,6 +63,16 @@ jobs:
             || echo "::warning::SOURCES.json pin refresh skipped; pins may lag the submodule pointers"
           git add upstream/SOURCES.json
 
+      # The README pin table documents the same pins, so refresh it in the same
+      # breath as the manifest — otherwise it goes stale on every sync.
+      - name: Refresh README pin table
+        run: |
+          # Documentation only, and node-only like the step above, so it degrades
+          # to a warning rather than blocking the submodule update's PR.
+          node scripts/refresh-pin-table.js \
+            || echo "::warning::README pin table refresh skipped; the table may lag upstream/SOURCES.json"
+          git add README.md docs/i18n/README.*.md
+
       - name: Check for changes
         id: check
         run: |

@@ -9,8 +9,8 @@
     "path": "upstream/ecc",
     "method": "submodule",
     "note": "ECC skills + rules",
-    "pinned_sha": "bf70150eb2df8070024e5bdf08e4aa08959e2735",
-    "pinned_date": "2026-09-22",
+    "pinned_sha": "d3b8a3e908904e242ed2dbe66af62cca71131419",
+    "pinned_date": "2026-09-28",
     "license": "MIT"
   },
   "awesome-codex-subagents": {
@@ -41,16 +41,16 @@
       "security-review",
       "design-system"
     ],
-    "pinned_sha": "35dd014c580037d1c009776d8b0584587c1bd42c",
-    "pinned_date": "2026-09-22",
+    "pinned_sha": "01593aa67c94780528e8f5121e47362502410ced",
+    "pinned_date": "2026-09-28",
     "license": "MIT"
   },
   "superpowers": {
     "repo": "https://github.com/obra/superpowers",
     "path": "upstream/superpowers",
     "method": "submodule",
-    "pinned_sha": "5bf4e78011075bcfc0dc295f0724994cd123ee71",
-    "pinned_date": "2026-09-19",
+    "pinned_sha": "8ca22dba9a94f28898bbce59f2537ff4d87c747d",
+    "pinned_date": "2026-09-28",
     "license": "MIT"
   },
   "my-claude": {

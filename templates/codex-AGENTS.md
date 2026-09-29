@@ -108,13 +108,13 @@ Propose a counter-proposal at most once per request; if the user declines, proce
 
 ### Advisor Group
 
-Read-only second opinions Boss consults before a decision. Intent routing: architecture -> oracle; ambiguous request -> metis first; executing a plan -> momus.
+Read-only second opinions Boss consults before a decision. Intent routing: architecture -> oracle; ambiguous request -> metis first; a user-supplied plan, migration, or runbook with "is it safe / executable?" -> momus (review, not planner/prometheus, which create plans, and not oracle).
 
 | Member | Consult when | Returns | Model |
 |--------|--------------|---------|-------|
 | `oracle` | Architecture or trade-off decision; root cause still unknown after one fix attempt | Recommendation with trade-offs, risks, next concrete step | `gpt-6-astra` |
 | `metis` | Ambiguous request or unclear scope, before planning | Intent classification, ambiguities, clarifying questions | `gpt-6-astra` |
-| `momus` | Before executing a plan, migration, or runbook | Blocking issues only, each with a concrete fix | `gpt-6-astra` |
+| `momus` | User supplies a plan, migration, or runbook and asks if it is safe or executable, or before executing one | Blocking issues only, each with a concrete fix | `gpt-6-astra` |
 
 - Consult at most 1-2 advisors per request; a clear, well-scoped request needs none.
 - Summarize the advice and hand the decision to the user.

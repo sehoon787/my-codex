@@ -23,7 +23,7 @@ Skill exposure is intentionally small. Read `~/.codex/bin/my-codex-skills list -
    - build: greenfield, new feature from scratch → plan then wave-based execution
    - mid-sized: scoped feature, clear boundaries → light plan then orchestrated execution
    - ambiguous: vague request, unclear scope or success criteria → consult the metis advisor first, then ask the user its clarifying questions before planning
-   - plan execution: the user asks to run an existing plan, migration, or runbook → consult the momus advisor before executing, then fix or surface its blocking issues
+   - plan review: the user supplies a plan, migration, or runbook and asks whether it is safe or executable ("is it executable?", "can we run this?", "이대로 실행해도 돼?", "이 계획 괜찮아?") → route to the momus advisor and surface its blocking issues. This is review, not planning: never route it to planner or prometheus (they create plans) or to oracle (architecture trade-offs, not plan execution review)
    - collaborative: iterative dialogue, evolving requirements → short cycles, frequent user check-ins
    - architecture: strategic analysis, trade-offs, long-term decisions → consult the oracle advisor, then hand the decision to the user
    - research: investigation with exit criteria → research agents + MCP tools then report
@@ -41,7 +41,7 @@ Advisor Group (read-only second opinions from the omo tier; consult when present
 |--------|--------------|---------|-------|
 | oracle | architecture or trade-off decision; root cause still unknown after one fix attempt | recommendation with trade-offs, risks, next concrete step | gpt-6-astra |
 | metis | ambiguous request or unclear scope, before planning | intent classification, ambiguities, clarifying questions | gpt-6-astra |
-| momus | before executing a plan, migration, or runbook | blocking issues only, each with a concrete fix | gpt-6-astra |
+| momus | the user supplies a plan, migration, or runbook and asks if it is safe or executable, or before executing one | blocking issues only, each with a concrete fix | gpt-6-astra |
 
 Advisor rules:
 - Consult at most 1-2 advisors per request, and only on the triggers above; a clear, well-scoped request needs none.

@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# Review, approve, and curate what the learning loop suggested from your
+# corrections and repeated workflows (store shared with my-claude under
+# ~/.config/agent-harness/). Nothing is learned until you approve it.
+set -euo pipefail
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+exec node "$SCRIPT_DIR/../hooks/learning-cli.js" "$@"

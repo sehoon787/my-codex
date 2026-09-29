@@ -317,7 +317,9 @@ function discoverSkills(home, cwd, manager, configText) {
     const folder = path.basename(path.dirname(f));
     const skill = readSkill(f, 'global', true);
     if (!skill) continue;
-    if (manager.activeNames) skill.active = manager.activeNames.has(folder) || manager.activeNames.has(skill.name);
+    // learned-* skills are the user's own (learning loop): the manager never
+    // lists them, and Codex loads them like any unmanaged skill.
+    if (manager.activeNames && !folder.startsWith('learned-')) skill.active = manager.activeNames.has(folder) || manager.activeNames.has(skill.name);
     seen.add(folder);
     seen.add(skill.name);
     add(skill);

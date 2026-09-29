@@ -921,6 +921,9 @@ remove_manifest_paths() {
   while IFS= read -r rel_path; do
     [ -n "$rel_path" ] || continue
     case "$rel_path" in
+      # User-owned: what the user approved through the learning loop. Never
+      # removed, even if a manifest lists it.
+      skills/learned-*|learned-rules|learned-rules/*) continue ;;
       skills/*)
         skill_name="${rel_path#skills/}"
         if [ "$skill_name" != "gstack" ] && [ "$skill_name" = "${skill_name%%/*}" ]; then
@@ -2036,12 +2039,16 @@ if [ -f "$REPO_ROOT/hooks/routing-map.json" ]; then
   cp "$REPO_ROOT/hooks/routing-map.json" "$CODEX_ROOT/hooks/routing-map.json"
   add_manifest_entry "hooks/routing-map.json"
 fi
-for _adoption_hook in adoption-tracker.js adoption-cli.js; do
-  if [ -f "$REPO_ROOT/hooks/$_adoption_hook" ]; then
-    cp "$REPO_ROOT/hooks/$_adoption_hook" "$CODEX_ROOT/hooks/$_adoption_hook"
-    add_manifest_entry "hooks/$_adoption_hook"
+for _loop_hook in adoption-tracker.js adoption-cli.js learning-store.js learning-review.js learning-cli.js; do
+  if [ -f "$REPO_ROOT/hooks/$_loop_hook" ]; then
+    cp "$REPO_ROOT/hooks/$_loop_hook" "$CODEX_ROOT/hooks/$_loop_hook"
+    add_manifest_entry "hooks/$_loop_hook"
   fi
 done
+# Approved learned rules live in ~/.codex/learned-rules and are rendered into
+# the learned section of AGENTS.md; re-render it in case step 3 created
+# AGENTS.md from the template.
+node "$CODEX_ROOT/hooks/learning-cli.js" sync-agents >/dev/null 2>&1 || true
 echo "  Hooks installed (vault enforcement + persona)"
 
 echo "[3.6/7] Registering Codex plugin..."
@@ -2196,9 +2203,11 @@ cp "$REPO_ROOT/scripts/skill-catalog.json" "$CODEX_ROOT/lib/my-codex/skill-catal
 cp "$REPO_ROOT/scripts/skill-catalog-toml.py" "$CODEX_ROOT/lib/my-codex/skill-catalog-toml.py"
 cp "$REPO_ROOT/bin/my-codex-skills" "$CODEX_ROOT/bin/my-codex-skills"
 cp "$REPO_ROOT/bin/my-codex-adoption" "$CODEX_ROOT/bin/my-codex-adoption"
+cp "$REPO_ROOT/bin/my-codex-learn" "$CODEX_ROOT/bin/my-codex-learn"
 add_manifest_entry "lib/my-codex"
 add_manifest_entry "bin/my-codex-skills"
 add_manifest_entry "bin/my-codex-adoption"
+add_manifest_entry "bin/my-codex-learn"
 cp "$REPO_ROOT/templates/git-hooks/prepare-commit-msg" "$CODEX_ROOT/git-hooks/prepare-commit-msg"
 cp "$REPO_ROOT/templates/git-hooks/commit-msg" "$CODEX_ROOT/git-hooks/commit-msg"
 cp "$REPO_ROOT/templates/git-hooks/post-commit" "$CODEX_ROOT/git-hooks/post-commit"
@@ -2208,6 +2217,7 @@ chmod +x "$CODEX_ROOT/lib/codex-attribution.sh" \
   "$CODEX_ROOT/bin/my-codex-packs" \
   "$CODEX_ROOT/bin/my-codex-skills" \
   "$CODEX_ROOT/bin/my-codex-adoption" \
+  "$CODEX_ROOT/bin/my-codex-learn" \
   "$CODEX_ROOT/git-hooks/prepare-commit-msg" \
   "$CODEX_ROOT/git-hooks/commit-msg" \
   "$CODEX_ROOT/git-hooks/post-commit"

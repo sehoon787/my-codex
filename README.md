@@ -128,6 +128,7 @@ Each entry keeps its name, description (capped at 200 characters), model (agents
 
 - **SessionStart** injects a compact top-3-per-intent summary (at most 6,000 characters) plus the registry path.
 - **UserPromptSubmit** runs `hooks/route-hint.js`, which classifies the prompt and adds one line such as `[RouteHint] intent=Architecture → oracle[advisor], architect, $architecture-decision-records. Consult the Advisor Group when the intent calls for it.` Skills appear as `$name` (their Codex invocation), and the Advisor Group sentence is added only when an advisor is among the picks. Unmatched prompts, `/` commands, `$skill` mentions and subagent prompts get no hint.
+- **Stop** runs `hooks/advisor-gate.js`, the backstop for the Advisor Gate. When the turn's intent names an advisor (Architecture → oracle, Ambiguity → metis, PlanReview → momus), the rollout shows no `spawn_agent` of oracle, metis, or momus in that turn, and the final answer has no `Advisor skipped: <reason>` line, it blocks the turn once and asks for the advisor. It never blocks twice per turn, never on `stop_hook_active`, never for a subagent, and fails open on an unreadable rollout. route-hint.js records the turn's intent for it under `~/.codex/my-codex/route-intent/`.
 
 `~/.omc/state/capability-registry.json` belongs to my-claude; Codex never writes it.
 

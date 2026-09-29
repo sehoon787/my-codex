@@ -276,6 +276,8 @@ test -f "$TEST_HOME/.codex/hooks/build-registry.js"
 test -f "$TEST_HOME/.codex/hooks/route-hint.js"
 test -f "$TEST_HOME/.codex/hooks/routing-map.json"
 grep -q 'hooks/route-hint.js' "$TEST_HOME/.codex/hooks.json"
+test -f "$TEST_HOME/.codex/hooks/advisor-gate.js"
+grep -q 'hooks/advisor-gate.js' "$TEST_HOME/.codex/hooks.json"
 
 if [ "$VAULT_ONLY" = "1" ]; then
   GIT_BASH=""

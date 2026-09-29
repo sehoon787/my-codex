@@ -2022,6 +2022,10 @@ if [ -f "$REPO_ROOT/hooks/route-hint.js" ]; then
   cp "$REPO_ROOT/hooks/route-hint.js" "$CODEX_ROOT/hooks/route-hint.js"
   add_manifest_entry "hooks/route-hint.js"
 fi
+if [ -f "$REPO_ROOT/hooks/advisor-gate.js" ]; then
+  cp "$REPO_ROOT/hooks/advisor-gate.js" "$CODEX_ROOT/hooks/advisor-gate.js"
+  add_manifest_entry "hooks/advisor-gate.js"
+fi
 if [ -f "$REPO_ROOT/hooks/routing-map.json" ]; then
   cp "$REPO_ROOT/hooks/routing-map.json" "$CODEX_ROOT/hooks/routing-map.json"
   add_manifest_entry "hooks/routing-map.json"

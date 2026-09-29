@@ -75,12 +75,26 @@ function hintFor(input, { map, registry } = {}) {
   return `[RouteHint] intent=${intent} → ${picks.map(formatPick).join(', ')}.${advice}`;
 }
 
-module.exports = { classify, hintFor };
+// Advisor Group members the intent names in routing-map.json; the Stop-hook
+// Advisor Gate (advisor-gate.js) enforces a spawn of one of them.
+function turnIntent(input, map) {
+  const prompt = String((input && input.prompt) || '').trim();
+  if (!map || !prompt || prompt.startsWith('/') || prompt.startsWith('$')) return { intent: null, advisors: [] };
+  const intent = classify(prompt, map);
+  const members = (intent && (map.intents[intent] || {}).members) || [];
+  return { intent, advisors: members.filter((m) => m.advisor).map((m) => m.name) };
+}
+
+module.exports = { classify, hintFor, turnIntent };
 
 if (require.main === module) {
+  let input = {};
+  let map = null;
   try {
     const raw = fs.readFileSync(0, 'utf8');
-    const hint = hintFor(raw.trim() ? JSON.parse(raw) : {});
+    input = raw.trim() ? JSON.parse(raw) : {};
+    map = readJson(ROUTING_MAP_FILE);
+    const hint = hintFor(input, { map });
     if (hint) {
       process.stdout.write(JSON.stringify({
         hookSpecificOutput: { hookEventName: 'UserPromptSubmit', additionalContext: hint }
@@ -88,5 +102,11 @@ if (require.main === module) {
     }
   } catch {
     // A routing hint is advisory; never fail the user's prompt over it.
+  }
+  try {
+    const { intent, advisors } = turnIntent(input, map);
+    require('./advisor-gate').recordTurnIntent(input, intent, advisors);
+  } catch {
+    // The gate record is a backstop; a write failure only disables it.
   }
 }

@@ -93,6 +93,12 @@
             "command": "node \"$HOME/.codex/hooks/stop-final-report.js\"",
             "timeout": 30000,
             "description": "Final report gate: blocks once if work happened but no final-report table was emitted"
+          },
+          {
+            "type": "command",
+            "command": "node \"$HOME/.codex/hooks/advisor-gate.js\"",
+            "timeout": 10000,
+            "description": "Advisor gate: blocks once if an advisor-intent turn (architecture, ambiguity, plan review) ended without spawning oracle/metis/momus or an 'Advisor skipped:' line"
           }
         ]
       }

@@ -303,6 +303,45 @@ check('fixture registry builds', reg0.status === 'regenerated', reg0.status);
   check('8 MB rollout judged in under 500 ms', ms < 500, `${ms.toFixed(1)} ms`);
 }
 
+// ---------------------------------------------------------------- adoption_ignore (process skills)
+
+{
+  const map = JSON.parse(fs.readFileSync(path.join(HOOKS, 'routing-map.json'), 'utf8'));
+  check('routing map lists the process skills to ignore', ['$using-superpowers', '$boss-briefing', '$briefing-vault'].every((id) => map.adoption_ignore.includes(id)));
+  const built = JSON.parse(fs.readFileSync(REGISTRY, 'utf8'));
+  check('registry carries adoption_ignore from the map', JSON.stringify(built.adoption_ignore) === JSON.stringify(map.adoption_ignore));
+  check('tracker reads adoption_ignore from the registry', tracker.adoptionIgnore(HOME).has('$using-superpowers'));
+  const saved = fs.readFileSync(REGISTRY, 'utf8');
+  fs.writeFileSync(REGISTRY, JSON.stringify(Object.assign(JSON.parse(saved), { adoption_ignore: undefined })));
+  check('tracker falls back to the routing map when the registry predates the field', tracker.adoptionIgnore(HOME).has('$boss-briefing'));
+  fs.writeFileSync(REGISTRY, saved);
+
+  const ignore = tracker.adoptionIgnore(HOME);
+  const sp = path.join(CODEX, 'skills', 'using-superpowers', 'SKILL.md');
+  write(sp, skillMd('using-superpowers', 'Meta skill.'));
+  const ids = (records) => tracker.judgedOffers(tracker.extractTurns(records, ignore)).map((o) => o.id).join(',');
+  check('ignored skills are not offers (SKILL.md read and $mention injection)',
+    ids([userMsg('design the cache'), skillRead(sp), skillInjection('boss-briefing'), skillInjection('briefing-vault')]) === '');
+  check('a non-ignored skill in the same turn still is', ids([userMsg('design the cache'), skillRead(sp), skillInjection('cso')]) === '$cso');
+  check('an ignored-only turn does not hide the earlier turn offers',
+    ids([userMsg('design the cache'), spawnV1('oracle', 'i1'), userMsg('$boss-briefing'), skillInjection('boss-briefing')]) === 'oracle');
+  const sys = rec({ type: 'message', role: 'user', content: [{ type: 'input_text', text: '<skill>\n<name>imagegen</name>\n<path>/h/.codex/skills/.system/imagegen/SKILL.md</path>\nbody\n</skill>' }] });
+  check('.system skills are not offers (injection or read)',
+    ids([userMsg('draw it'), sys, skillRead('/h/.codex/skills/.system/imagegen/SKILL.md')]) === '');
+
+  // Through the hook as Codex runs it.
+  const S2 = 'sess-ignore';
+  run(ROUTE_HINT, [], { session_id: S2, prompt: 'REST에서 gRPC로 옮길까?', cwd: PROJECT });
+  const before = store.readLedger(HOME).length;
+  const roll = writeRollout(path.join(ROOT, 'rollout-ignore.jsonl'), [userMsg('REST에서 gRPC로 옮길까?'), skillRead(sp), skillInjection('boss-briefing')]);
+  run(TRACKER, ['verdict'], { session_id: S2, transcript_path: roll, prompt: '좋아 진행해', cwd: PROJECT });
+  check('ignored ids never produce ledger events', store.readLedger(HOME).length === before);
+  writeRollout(roll, [userMsg('REST에서 gRPC로 옮길까?'), skillRead(sp), skillInjection('boss-briefing'), skillInjection('cso')]);
+  run(TRACKER, ['verdict'], { session_id: S2, transcript_path: roll, prompt: '좋아 진행해', cwd: PROJECT });
+  const added = store.readLedger(HOME).slice(before);
+  check('a non-ignored skill in that turn still produces its event', added.length === 1 && added[0].id === '$cso', added.map((e) => e.id).join(','));
+}
+
 // ---------------------------------------------------------------- ledger compatibility with my-claude
 
 {

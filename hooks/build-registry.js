@@ -531,6 +531,7 @@ function buildRegistry({ home = os.homedir(), cwd = process.cwd(), manager } = {
   const configText = safeRead(effectiveConfigPath(home));
   const agents = discoverAgents(home, cwd);
   const skills = discoverSkills(home, cwd, mgr, configText);
+  const map = loadRoutingMap();
   return {
     version: REGISTRY_VERSION,
     generated_at: new Date().toISOString(),
@@ -541,7 +542,10 @@ function buildRegistry({ home = os.homedir(), cwd = process.cwd(), manager } = {
     skill_lanes: mgr.lanes || {},
     mcp_servers: projectMcpServers(cwd),
     recommended_packs: recommendedPacks(cwd),
-    intents: rankIntents(loadRoutingMap(), agents, skills, adoptionStore.loadAdoption(home))
+    // Process skills whose use says nothing about advice quality; the
+    // adoption tracker never records them as offers.
+    adoption_ignore: Array.isArray(map.adoption_ignore) ? map.adoption_ignore : [],
+    intents: rankIntents(map, agents, skills, adoptionStore.loadAdoption(home))
   };
 }
 

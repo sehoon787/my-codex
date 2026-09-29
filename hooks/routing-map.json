@@ -1,5 +1,6 @@
 {
   "version": 1,
+  "adoption_ignore": ["$using-superpowers", "$boss-briefing", "$briefing-vault"],
   "intents": {
     "Security": {
       "priority": 100,

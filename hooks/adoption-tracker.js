@@ -20,6 +20,9 @@
 //     an installed skill's SKILL.md (.codex/skills, .agents/skills, plugin
 //     cache), recorded as "$X" with X its frontmatter name, as the registry
 //     names it.
+// Ids in the registry's adoption_ignore (from routing-map.json: process
+// skills such as using-superpowers that run regardless of advice quality)
+// and skills under a .system/ folder are never offers.
 // The rollout is split into turns at each UserMessage. Judged: the latest
 // turn with offers since the last routable user prompt, one per item, 5 max.
 // Slash commands and $skill prompts are not replies (nothing is judged), so
@@ -30,9 +33,11 @@
 //   node adoption-tracker.js verdict
 'use strict';
 const fs = require('fs');
+const os = require('os');
+const path = require('path');
 const store = require('./adoption-store.js');
 const { isRoutable } = require('./route-hint.js');
-const { parseSkillFrontmatter } = require('./build-registry.js');
+const { defaultRegistryPath, parseSkillFrontmatter } = require('./build-registry.js');
 
 const MAX_OFFERS = 5;
 const EVIDENCE_MAX = 120;
@@ -59,7 +64,8 @@ const REJECT = [
 ];
 // "진행해도 될까?", "yes or no?": a question is not an accept.
 const QUESTION = /\?\s*$/;
-const SKILL_INJECTION = /^<skill>\s*<name>([^<]+)<\/name>/;
+const SKILL_INJECTION = /^<skill>\s*<name>([^<]+)<\/name>\s*(?:<path>([^<]*)<\/path>)?/;
+const SYSTEM_SKILL = /[\\/]\.system[\\/]/;
 // Where Codex loads skills from; a SKILL.md elsewhere (a repo being edited)
 // is not a skill in use.
 const SKILL_FILE = /\/\.(?:codex|agents)\/skills\/([^/.][^/]*)\/SKILL\.md$/;
@@ -101,9 +107,11 @@ function skillFromPath(file) {
 
 // Rollout records -> [{text, offers: [{kind, id, ts}]}]. turns[0] holds what
 // ran before the first user message.
-function extractTurns(records) {
+function extractTurns(records, ignore = new Set()) {
   const turns = [{ text: null, offers: [] }];
-  const offer = (kind, id, ts) => turns[turns.length - 1].offers.push({ kind, id, ts });
+  const offer = (kind, id, ts) => {
+    if (!ignore.has(id)) turns[turns.length - 1].offers.push({ kind, id, ts });
+  };
   const skillNames = new Map(); // SKILL.md path -> skill name (a skill is often re-read)
   const spawns = new Map(); // call_id -> v2 agent offer not placed yet
   const running = new Map(); // agent path -> v2 agent offer awaiting its result
@@ -136,7 +144,7 @@ function extractTurns(records) {
       land(p.author);
     } else if (p.type === 'message' && p.role === 'user') {
       const m = firstText(p.content).match(SKILL_INJECTION);
-      if (m) offer('skill', `$${m[1].trim()}`, r.timestamp);
+      if (m && !SYSTEM_SKILL.test(m[2] || '')) offer('skill', `$${m[1].trim()}`, r.timestamp);
     } else if (p.type === 'item_completed' && item.type === 'CommandExecution') {
       for (const c of Array.isArray(item.parsed_cmd) ? item.parsed_cmd : []) {
         if (!c || c.type !== 'read' || !c.path) continue;
@@ -184,11 +192,23 @@ function judgedOffers(turns) {
   return [...byItem.values()].slice(-MAX_OFFERS);
 }
 
+// adoption_ignore as copied into the registry at build time; the routing
+// map itself until the registry has been rebuilt with it.
+function adoptionIgnore(home) {
+  const fromFile = (file) => {
+    try {
+      const list = JSON.parse(fs.readFileSync(file, 'utf8')).adoption_ignore;
+      return Array.isArray(list) ? list : null;
+    } catch { return null; }
+  };
+  return new Set(fromFile(defaultRegistryPath(home || os.homedir())) || fromFile(path.join(__dirname, 'routing-map.json')) || []);
+}
+
 function recordVerdict(input, home, now) {
   if (!isRoutable(input) || !input.transcript_path) return;
   const verdict = classifyVerdict(input.prompt);
   if (!verdict) return;
-  const judged = judgedOffers(extractTurns(readRollout(input.transcript_path)));
+  const judged = judgedOffers(extractTurns(readRollout(input.transcript_path), adoptionIgnore(home)));
   if (!judged.length) return;
   const session = String(input.session_id || 'unknown');
   const ts = new Date(now).toISOString();
@@ -212,7 +232,7 @@ function main(mode) {
   if (mode === 'verdict') recordVerdict(input, null, Date.now());
 }
 
-module.exports = { classifyVerdict, extractTurns, judgedOffers, readRollout, recordVerdict, skillFromPath };
+module.exports = { adoptionIgnore, classifyVerdict, extractTurns, judgedOffers, readRollout, recordVerdict, skillFromPath };
 
 if (require.main === module) {
   try { main(process.argv[2]); } catch { /* fail open: never block a prompt */ }

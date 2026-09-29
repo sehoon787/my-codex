@@ -61,13 +61,17 @@ write(path.join(CODEX, 'skills', 'cso', 'SKILL.md'), skillMd('cso', 'Security au
 write(path.join(CODEX, 'skills', 'grpc-designer', 'SKILL.md'),
   '---\nname: grpc-designer\ndescription: >\n  System design helper for gRPC service architecture\n  and API tradeoff analysis.\n---\n');
 write(path.join(CODEX, 'skills', '.system', 'imagegen', 'SKILL.md'), skillMd('imagegen', 'System skill.'));
+// PlanReview: an inactive map member vs. an active skill found by description.
+write(path.join(CODEX, 'skills', 'plan-eng-review', 'SKILL.md'), skillMd('plan-eng-review', 'Eng plan review (lane not enabled).'));
+write(path.join(CODEX, 'skills', 'rollout-checker', 'SKILL.md'),
+  skillMd('rollout-checker', 'Checks a rollout work plan for blocking issues.'));
 // Folder name differs from the frontmatter name.
 write(path.join(CODEX, 'skills', 'vendor-pubmed-database', 'SKILL.md'), skillMd('pubmed-database', 'PubMed lookups.'));
 write(path.join(CODEX, 'agents', 'long-desc.toml'),
   'name = "long-desc"\ndescription = """\nMulti-line agent\ndescription."""\nmodel = "gpt-5.6-sol"\n');
 // A skill manager that reports skills by folder name.
 write(path.join(CODEX, 'bin', 'my-codex-skills'),
-  "#!/bin/sh\nprintf '%s\\n' '{\"activeSkillNames\":[\"brainstorming\",\"cso\",\"grpc-designer\",\"vendor-pubmed-database\",\"outside-skill\"],\"laneIndex\":{}}'\n");
+  "#!/bin/sh\nprintf '%s\\n' '{\"activeSkillNames\":[\"brainstorming\",\"cso\",\"grpc-designer\",\"vendor-pubmed-database\",\"outside-skill\",\"rollout-checker\"],\"laneIndex\":{}}'\n");
 fs.chmodSync(path.join(CODEX, 'bin', 'my-codex-skills'), 0o755);
 
 write(path.join(CODEX, 'plugins', 'cache', 'mk', 'plug', '1.0.0', 'skills', 'do-thing', 'SKILL.md'),
@@ -118,8 +122,16 @@ check('ranking -> missing map members are skipped', !arch.some((p) => p.name ===
 check('ranking -> unmanaged skill discovered by description', arch.some((p) => p.name === 'grpc-designer'));
 const pg = arch.find((p) => p.name === 'postgres-pro');
 const grpc = arch.find((p) => p.name === 'grpc-designer');
-check('ranking -> inactive pack agent ranks below comparable active skill', pg && grpc && pg.score < grpc.score,
-  `postgres-pro=${pg && pg.score} grpc-designer=${grpc && grpc.score}`);
+check('ranking -> inactive pack agent ranks below active candidates', pg && grpc && arch.indexOf(pg) > arch.indexOf(grpc),
+  arch.map((p) => p.name).join(','));
+check('ranking -> every active candidate precedes every inactive one',
+  Object.values(reg.intents).every((list) => list.findIndex((p) => !p.active) === -1 ||
+    list.slice(list.findIndex((p) => !p.active)).every((p) => !p.active)));
+const planReview = reg.intents.PlanReview.map((p) => `${p.name}:${p.active}`);
+check('ranking -> active discovered skill outranks inactive map member',
+  JSON.stringify(planReview.slice(0, 3)) === JSON.stringify(['momus:true', 'rollout-checker:true', 'plan-eng-review:false']),
+  JSON.stringify(planReview));
+check('ranking -> inactive candidates stay in the registry', reg.intents.PlanReview.some((p) => p.name === 'plan-eng-review' && !p.active));
 check('ranking -> Ambiguity led by metis [advisor]', reg.intents.Ambiguity[0].name === 'metis' && reg.intents.Ambiguity[0].advisor);
 check('ranking -> PlanReview led by momus [advisor]', reg.intents.PlanReview[0].name === 'momus' && reg.intents.PlanReview[0].advisor);
 check('adoptionWeight -> stub returns 0', registryLib.adoptionWeight({ name: 'x' }) === 0);
@@ -175,8 +187,21 @@ for (const [prompt, intent, lead] of cases) {
     JSON.stringify(out));
 }
 const typo = hint('Fix the typo in the README');
-check('route-hint typo -> no advisor and no Advisor Group sentence',
-  typo === null || (!typo.includes('[advisor]') && !typo.includes('Advisor Group')), JSON.stringify(typo));
+check('route-hint typo in README -> Trivial / executor, no advisor sentence',
+  typo === '[RouteHint] intent=Trivial → executor.', JSON.stringify(typo));
+for (const prompt of ['README 오타 수정해줘', '이 함수 이름 변경해줘', 'one-line change: bump the version']) {
+  check(`route-hint "${prompt}" -> Trivial`, routeHint.classify(prompt, routingMap) === 'Trivial');
+}
+check('route-hint real documentation work still -> Document',
+  routeHint.classify('Update the README and the changelog for the release', routingMap) === 'Document');
+check('route-hint -> inactive pick shown only when fewer than 3 active exist',
+  hint('Please review this migration plan') === '[RouteHint] intent=PlanReview → momus[advisor], $rollout-checker, ' +
+    '$plan-eng-review (inactive global). Consult the Advisor Group when the intent calls for it.',
+  JSON.stringify(hint('Please review this migration plan')));
+{
+  const archHint = hint('Should we move from REST to gRPC?');
+  check('route-hint -> no inactive pick while 3 active candidates exist', archHint && !archHint.includes('inactive'), JSON.stringify(archHint));
+}
 check('route-hint -> skills shown by their $ invocation, agents bare',
   (hint('Run a security audit on the auth flow') || '').startsWith('[RouteHint] intent=Security → $cso'),
   JSON.stringify(hint('Run a security audit on the auth flow')));

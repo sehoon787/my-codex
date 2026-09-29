@@ -26,15 +26,17 @@ function readJson(file) {
 }
 
 // Longer matched phrases are more specific, so the score is the total length
-// of matched keywords; map priority breaks ties.
+// of matched keywords plus the intent's score_bonus (Trivial uses it to beat
+// Document on "fix the typo in the README"); map priority breaks ties.
 function classify(prompt, map) {
   const text = String(prompt || '').toLowerCase();
   let best = null;
   for (const [intent, def] of Object.entries((map && map.intents) || {})) {
-    const score = (def.prompt_keywords || [])
+    let score = (def.prompt_keywords || [])
       .filter((k) => keywordRegex(k).test(text))
       .reduce((sum, k) => sum + k.length, 0);
     if (!score) continue;
+    score += def.score_bonus || 0;
     const priority = def.priority || 0;
     if (!best || score > best.score || (score === best.score && priority > best.priority)) {
       best = { intent, score, priority };

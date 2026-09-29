@@ -36,6 +36,9 @@ const cp = require('child_process');
 const REGISTRY_VERSION = 2;
 const DESCRIPTION_CAP = 200;
 const RANKED_PER_INTENT = 8;
+// Inactive candidates rank after every active one; a few are kept so Boss
+// can still suggest enabling them.
+const RANKED_INACTIVE_PER_INTENT = 4;
 const SUMMARY_TOP = 3;
 const SUMMARY_CHAR_LIMIT = 6000;
 const MANAGER_TIMEOUT_MS = 10000;
@@ -48,7 +51,6 @@ const MEMBER_STEP = 10;
 const DISCOVERED_PER_MATCH = 15;
 const DISCOVERED_MAX = 45;
 const SCOPE_WEIGHT = { project: 3, global: 2, plugin: 1, pack: 0 };
-const INACTIVE_PENALTY = 15;
 
 function codexHome(home) {
   return path.join(home, '.codex');
@@ -382,17 +384,20 @@ function rankIntents(map, agents, skills) {
       const hits = countMatches(`${item.name} ${item.description}`, def.description_keywords);
       if (hits) scored.set(key, { item, base: Math.min(hits * DISCOVERED_PER_MATCH, DISCOVERED_MAX), advisor: false });
     }
-    intents[intent] = [...scored.values()]
+    const ranked = [...scored.values()]
       .map(({ item, base, advisor }) => ({
         name: item.name,
         kind: item.kind,
         advisor,
-        score: base + scopeWeight(item.scope) + adoptionWeight(item) - (item.active ? 0 : INACTIVE_PENALTY),
+        score: base + scopeWeight(item.scope) + adoptionWeight(item),
         scope: item.scope,
         active: item.active
       }))
-      .sort((a, b) => b.score - a.score || a.name.localeCompare(b.name))
-      .slice(0, RANKED_PER_INTENT);
+      .sort((a, b) => b.score - a.score || a.name.localeCompare(b.name));
+    intents[intent] = [
+      ...ranked.filter((p) => p.active).slice(0, RANKED_PER_INTENT),
+      ...ranked.filter((p) => !p.active).slice(0, RANKED_INACTIVE_PER_INTENT)
+    ];
   }
   return intents;
 }

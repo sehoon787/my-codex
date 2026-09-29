@@ -127,8 +127,21 @@
       "description_keywords": ["documentation", "readme", "changelog", "release notes", "onboarding"],
       "prompt_keywords": [
         "readme", "document this", "write docs", "update the docs", "changelog", "release notes", "docstring",
-        "api docs", "onboarding guide", "code tour", "typo", "typos",
-        "문서화", "문서 작성", "리드미", "변경 로그", "릴리스 노트", "주석", "오타"
+        "api docs", "onboarding guide", "code tour",
+        "문서화", "문서 작성", "리드미", "변경 로그", "릴리스 노트", "주석"
+      ]
+    },
+    "Trivial": {
+      "priority": 35,
+      "score_bonus": 10,
+      "members": [
+        { "name": "executor", "kind": "agent" }
+      ],
+      "description_keywords": ["quick fix", "small change", "one-line change"],
+      "prompt_keywords": [
+        "typo", "typos", "rename", "one-line", "one line", "small fix", "quick fix", "minor fix", "tiny fix",
+        "bump the version",
+        "오타", "한 줄", "한줄", "이름 변경", "이름 바꿔", "간단한 수정", "작은 수정"
       ]
     },
     "Build": {

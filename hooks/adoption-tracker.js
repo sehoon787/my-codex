@@ -60,8 +60,12 @@ const REJECT = [
   /(^|[^a-z0-9])(?<!don't |non-)stop($|[^a-z0-9])/,
   /(^|[^a-z0-9])no,/,
   /^\s*no[.!]?\s*$/,
-  /아니(?!면)|틀렸|틀려|다시 해|다시해|그만(?!큼)|하지 마|하지마/,
+  /아니(?!면)|틀렸|틀려|다시 해|다시해|그만(?!큼)|그렇게 하지 ?마/,
 ];
+// Bare "하지 마"/"하지마" is a scope instruction as often as a rejection
+// ("파일은 수정하지 마" while accepting the plan), so it only counts as a
+// reject when no ACCEPT pattern also matches.
+const WEAK_REJECT = [/하지 마|하지마/];
 // "진행해도 될까?", "yes or no?": a question is not an accept.
 const QUESTION = /\?\s*$/;
 const SKILL_INJECTION = /^<skill>\s*<name>([^<]+)<\/name>\s*(?:<path>([^<]*)<\/path>)?/;
@@ -81,6 +85,7 @@ function classifyVerdict(prompt) {
   const text = String(prompt || '').toLowerCase().trim();
   if (matchesAny(text, REJECT)) return { verdict: 'reject', signal: matchesAny(text, REVERT) ? 'revert' : 'reply' };
   if (!QUESTION.test(text) && matchesAny(text, ACCEPT)) return { verdict: 'accept', signal: 'reply' };
+  if (matchesAny(text, WEAK_REJECT)) return { verdict: 'reject', signal: 'reply' };
   return null;
 }
 

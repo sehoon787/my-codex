@@ -166,6 +166,16 @@ if [ "$_vc_today" != "$_vc_last" ]; then
   fi
 fi
 
+# 11. Learning loop: review the sessions that ended since the last start
+# (Codex has no SessionEnd; Stop marks them), then surface at most two pending
+# suggestions as [Learn] lines. The CLI also re-renders the learned section of
+# ~/.codex/AGENTS.md and runs the weekly curate.
+_learn_msg=""
+if command -v node >/dev/null 2>&1 && [ -f "$_hook_dir/learning-cli.js" ]; then
+  node "$_hook_dir/learning-review.js" pending >/dev/null 2>&1 || true
+  _learn_msg=$(node "$_hook_dir/learning-cli.js" session-start 2>/dev/null || true)
+fi
+
 # Return results as additionalContext
 MSG=""
 if [ ${#INSTALLED[@]} -gt 0 ]; then
@@ -178,7 +188,7 @@ fi
 MSG="${MSG}${_registry_msg}"
 [ -n "$_kv_msg" ] && MSG="${MSG} ${_kv_msg}"
 [ -n "$_update_msg" ] && MSG="${MSG} ${_update_msg}"
-if [ -n "$MSG" ]; then
+if [ -n "$MSG" ] || [ -n "$_learn_msg" ]; then
   # Codex deserializes SessionStart stdout with deny_unknown_fields into
   # SessionStartHookSpecificOutputWire, where hookEventName is REQUIRED --
   # omitting it makes every `codex exec` print "hook: SessionStart Failed"
@@ -187,5 +197,10 @@ if [ -n "$MSG" ]; then
   # backslashes, or newlines; raw, any of those break the single JSON
   # document Codex expects, so escape them before interpolating.
   _json_msg=$(printf '%s' "$MSG" | sed -e 's/\\/\\\\/g' -e 's/"/\\"/g' | tr '\n\r\t' '   ')
+  # [Learn] lines stay separate lines (JSON "\n"), one per suggestion.
+  if [ -n "$_learn_msg" ]; then
+    _learn_json=$(printf '%s' "$_learn_msg" | sed -e 's/\\/\\\\/g' -e 's/"/\\"/g' | tr '\r\t' '  ' | awk '{ printf "%s%s", (NR > 1 ? "\\n" : ""), $0 }')
+    _json_msg="${_json_msg:+${_json_msg}\\n}${_learn_json}"
+  fi
   printf '{"hookSpecificOutput":{"hookEventName":"SessionStart","additionalContext":"%s"}}\n' "$_json_msg"
 fi

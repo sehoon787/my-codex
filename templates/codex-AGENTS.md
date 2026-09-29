@@ -126,6 +126,10 @@ Read-only second opinions Boss consults before a decision. Intent routing: archi
 - If an advisor spawn fails with a usage-limit error, retry once with model `gpt-5.6-sol` and say so.
 - `architect` and `code-reviewer` stay outside the group; they verify code after it is written.
 
+### Learning Suggestions
+
+The SessionStart context may carry up to two `[Learn] <id>: <kind> — <text>` lines: a rule drawn from a correction the user made, or a skill drawn from a workflow they adopted in 3+ sessions. Ask about each once per session, in one sentence: approve / dismiss / later. On approve run `~/.codex/bin/my-codex-learn approve <id>` (for a rule, add `--as "<the rule as one imperative English sentence>"` when the user's wording is not English); on dismiss run `~/.codex/bin/my-codex-learn dismiss <id>`; on later do nothing. Never write learned rules or skills yourself — only `approve` writes them, into `~/.codex/learned-rules/` (rendered into the learned section at the end of this file) and `~/.codex/skills/learned-*/`.
+
 ## Available Agents
 
 Use `spawn_agent` with `agent_type` to delegate work. Tier priority when several match: core > omo > omx > opt-in packs.

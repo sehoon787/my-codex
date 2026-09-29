@@ -278,6 +278,13 @@ test -f "$TEST_HOME/.codex/hooks/routing-map.json"
 grep -q 'hooks/route-hint.js' "$TEST_HOME/.codex/hooks.json"
 test -f "$TEST_HOME/.codex/hooks/advisor-gate.js"
 grep -q 'hooks/advisor-gate.js' "$TEST_HOME/.codex/hooks.json"
+for _learning_file in learning-store.js learning-review.js learning-cli.js; do
+  test -f "$TEST_HOME/.codex/hooks/$_learning_file"
+done
+test -x "$TEST_HOME/.codex/bin/my-codex-learn"
+grep -q 'hooks/learning-review.js\\" mark' "$TEST_HOME/.codex/hooks.json"
+learn_list="$(HOME="$TEST_HOME" "$TEST_HOME/.codex/bin/my-codex-learn" list)"
+grep -q 'No pending suggestions.' <<<"$learn_list"
 test -f "$TEST_HOME/.codex/hooks/adoption-store.js"
 test -f "$TEST_HOME/.codex/hooks/adoption-tracker.js"
 test -f "$TEST_HOME/.codex/hooks/adoption-cli.js"

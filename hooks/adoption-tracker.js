@@ -237,7 +237,7 @@ function main(mode) {
   if (mode === 'verdict') recordVerdict(input, null, Date.now());
 }
 
-module.exports = { adoptionIgnore, classifyVerdict, extractTurns, judgedOffers, readRollout, recordVerdict, skillFromPath };
+module.exports = { RELEVANT, adoptionIgnore, classifyVerdict, extractTurns, judgedOffers, readRollout, recordVerdict, skillFromPath };
 
 if (require.main === module) {
   try { main(process.argv[2]); } catch { /* fail open: never block a prompt */ }

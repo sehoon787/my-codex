@@ -106,6 +106,7 @@ jobs:
           bash tests/uv-guard.test.sh
           bash tests/mcp-table-upsert.test.sh
           bash tests/main-model-default.test.sh
+          bash tests/learned-survives-install.test.sh
           bash tests/tool-verification.test.sh
           bash tests/optional-tools-install.test.sh
           bash tests/shared-local-services.test.sh
@@ -113,6 +114,7 @@ jobs:
           node tests/capability-registry.test.js
           node tests/advisor-gate.test.js
           node tests/adoption-ledger.test.js
+          node tests/learning-loop.test.js
           node tests/stop-session-enforcement.test.js
           node tests/context-budget.test.js
           node tests/skill-catalog.test.js

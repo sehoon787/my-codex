@@ -129,6 +129,12 @@
             "command": "node \"$HOME/.codex/hooks/route-hint.js\"",
             "timeout": 5000,
             "description": "RouteHint: classify the prompt by intent and name the top-ranked specialists from the capability registry"
+          },
+          {
+            "type": "command",
+            "command": "node \"$HOME/.codex/hooks/adoption-tracker.js\" verdict",
+            "timeout": 5000,
+            "description": "Adoption: classify the reply to the last turn as accept/reject/neutral and append ledger events for the agents/skills that turn ran (silent, no context)"
           }
         ]
       }

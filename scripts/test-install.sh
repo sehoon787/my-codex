@@ -278,6 +278,13 @@ test -f "$TEST_HOME/.codex/hooks/routing-map.json"
 grep -q 'hooks/route-hint.js' "$TEST_HOME/.codex/hooks.json"
 test -f "$TEST_HOME/.codex/hooks/advisor-gate.js"
 grep -q 'hooks/advisor-gate.js' "$TEST_HOME/.codex/hooks.json"
+test -f "$TEST_HOME/.codex/hooks/adoption-store.js"
+test -f "$TEST_HOME/.codex/hooks/adoption-tracker.js"
+test -f "$TEST_HOME/.codex/hooks/adoption-cli.js"
+test -x "$TEST_HOME/.codex/bin/my-codex-adoption"
+grep -q 'hooks/adoption-tracker.js\\" verdict' "$TEST_HOME/.codex/hooks.json"
+HOME="$TEST_HOME" "$TEST_HOME/.codex/bin/my-codex-adoption" list | grep -q 'No adoption events yet.'
+test ! -e "$TEST_HOME/.config/agent-harness/adoption-ledger.jsonl"
 
 if [ "$VAULT_ONLY" = "1" ]; then
   GIT_BASH=""

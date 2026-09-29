@@ -124,13 +124,33 @@ Boss does not have to remember to scan. At every session start, `hooks/build-reg
 | `.codex/skills/*/SKILL.md` in the project | `project` | always |
 | `~/.codex/plugins/cache/<marketplace>/<plugin>/<version>/skills/*/SKILL.md` | `plugin:<plugin>` | `config.toml` enables `<plugin>@<marketplace>` |
 
-Each entry keeps its name, description (capped at 200 characters), model (agents), scope and active flag. `hooks/routing-map.json` defines the routing intents (Architecture, Ambiguity, PlanReview, Security, Review, Debug, Testing, Research, Document, Trivial, Build) with ordered members, Advisor Group flags (oracle, metis, momus), and English + Korean keywords. The registry ranks candidates per intent by map order, scope, and description match, so an unmanaged skill whose description fits an intent is ranked too; inactive packs, lanes, and plugins rank after every active candidate and are labeled, so they reach the top 3 only when fewer than three active candidates exist. The file is rebuilt only when an input changes or the project changes.
+Each entry keeps its name, description (capped at 200 characters), model (agents), scope and active flag. `hooks/routing-map.json` defines the routing intents (Architecture, Ambiguity, PlanReview, Security, Review, Debug, Testing, Research, Document, Trivial, Build) with ordered members, Advisor Group flags (oracle, metis, momus), and English + Korean keywords. The registry ranks candidates per intent by map order, scope, and description match (map members always rank ahead of description matches), so an unmanaged skill whose description fits an intent is ranked too; inactive packs, lanes, and plugins rank after every active candidate and are labeled, so they reach the top 3 only when fewer than three active candidates exist. The file is rebuilt only when an input changes or the project changes.
 
 - **SessionStart** injects a compact top-3-per-intent summary (at most 6,000 characters) plus the registry path.
 - **UserPromptSubmit** runs `hooks/route-hint.js`, which classifies the prompt and adds one line such as `[RouteHint] intent=Architecture → oracle[advisor], architect, $architecture-decision-records. Consult the Advisor Group when the intent calls for it.` Skills appear as `$name` (their Codex invocation), and the Advisor Group sentence is added only when an advisor is among the picks. Unmatched prompts, `/` commands, `$skill` mentions and subagent prompts get no hint.
 - **Stop** runs `hooks/advisor-gate.js`, the backstop for the Advisor Gate. When the turn's intent names an advisor (Architecture → oracle, Ambiguity → metis, PlanReview → momus), the rollout shows no `spawn_agent` of oracle, metis, or momus in that turn, and the final answer has no `Advisor skipped: <reason>` line, it blocks the turn once and asks for the advisor. It never blocks twice per turn, never on `stop_hook_active`, never for a subagent, and fails open on an unreadable rollout. route-hint.js records the turn's intent for it under `~/.codex/my-codex/route-intent/`.
 
 `~/.omc/state/capability-registry.json` belongs to my-claude; Codex never writes it.
+
+### Adoption: routing learns which results you keep
+
+Boss records whether you **adopt** what an agent or skill produced, per intent, and uses it — gated — to reorder routing candidates. Call counts are never used. This is the Codex side of my-claude's adoption ledger; both write the same files.
+
+| Piece | What it does |
+|-------|--------------|
+| **Offer** (read from the session rollout) | On each prompt, `hooks/adoption-tracker.js` reads the rollout at `transcript_path` and collects what the previous turn ran: `spawn_agent` calls (by `agent_type`; a multi-agent v2 agent counts once its result has reached the main thread) and skills (a `$skill` mention's injected instructions, or a read of a `SKILL.md`). One per item, 5 max. Each is filed under the intent `route-hint.js` classified for the prompt that ran it. Process skills listed in `adoption_ignore` in `hooks/routing-map.json` (default `$using-superpowers`, `$boss-briefing`, `$briefing-vault`) and skills under `~/.codex/skills/.system` are never offers: they run regardless of whether the advice was good |
+| **Verdict** (`hooks/adoption-tracker.js verdict`, UserPromptSubmit) | Classifies your reply with the same English/Korean lists as my-claude: accept (`진행해`, `반영해`, `좋아`, `그렇게 해`, `승인`, `머지해`, `go ahead`, `yes`, `lgtm`, `apply it`, `ship it`, …) or reject (`아니`, `틀렸`, `다시 해`, `그만`, `하지 마`, `되돌려`, `no,`, `wrong`, `redo`, `revert`, `stop`, …); reject wins when both match, a question (`…?`) is never an accept, and anything else is neutral (no event). `/` commands, `$skill` prompts and subagent prompts are not replies. Prints nothing |
+| **Ranking** (`adoptionWeight` in `hooks/build-registry.js`) | Events from the last 180 days, each weighted `0.5^(age_days/90)`. An (id, intent) pair counts only once its weighted sample reaches 5; its accept rate then moves it up or down by at most two slots **within its band** (pinned > map member > description match); active candidates still come before inactive ones. `Security` and `Ship` keep the map order and ignore adoption and pins. The SessionStart summary shows `(adopted 7/9)` once a pair is counted, and `[pinned]` for pins |
+
+The store lives under `~/.config/agent-harness/` and is shared with my-claude:
+
+- `adoption-ledger.jsonl` — append-only, one event per line:
+  `{"ts": ISO-8601, "harness": "codex", "session": id, "kind": "agent"|"skill", "id": agent name or "$skill", "intent": route-hint intent or "unknown", "verdict": "accept"|"reject", "signal": "reply"|"choice"|"revert", "evidence": first 120 chars of your reply}`.
+  Codex skills are recorded as `$name` and my-claude's without the `$`, so the two harnesses' skill rows never mix; agent rows with the same name count for both.
+- `adoption-pins.json` — `[{"id", "intent", "ts"}]`; a pin forces that item to the top of that intent.
+- `adoption-archive.jsonl` / `adoption-audit.jsonl` — where `reset`/`undo` move events (nothing is hard-deleted), and a log of every CLI mutation.
+
+Inspect or correct it with `~/.codex/bin/my-codex-adoption <cmd>`: `list [--intent X]` (id × intent table of weighted accept/reject/n), `list --events` (raw events with their `ts`), `pin <id> <intent>`, `unpin <id> <intent>`, `reset [<id>]`, `undo <ts> [<id>]`. Quote skill ids (`pin '$review' Review`). The ledger and pins are registry inputs, so the next session's routing summary reflects any change; while the ledger has events the registry is also rebuilt once a day so decay applies.
 
 ### Priority Routing
 

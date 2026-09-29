@@ -112,6 +112,7 @@ jobs:
           node tests/hook-output-shape.test.js
           node tests/capability-registry.test.js
           node tests/advisor-gate.test.js
+          node tests/adoption-ledger.test.js
           node tests/stop-session-enforcement.test.js
           node tests/context-budget.test.js
           node tests/skill-catalog.test.js

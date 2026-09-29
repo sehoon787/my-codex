@@ -18,6 +18,11 @@
 //   When the my-codex skill manager is installed, its activeSkillNames decide
 //   which global skills are active.
 //
+// Adoption (adoption-store.js, shared with my-claude under
+// ~/.config/agent-harness/) reorders candidates within their band: see
+// rankIntents. The ledger and pins are fingerprint inputs, and a registry
+// built while the ledger has events is rebuilt after a day so decay applies.
+//
 // The registry is written to ~/.codex/capability-registry.json (REGISTRY_OUT
 // overrides). ~/.omc/state/capability-registry.json belongs to my-claude and
 // is never touched here.
@@ -32,6 +37,7 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const cp = require('child_process');
+const adoptionStore = require('./adoption-store');
 
 const REGISTRY_VERSION = 2;
 const DESCRIPTION_CAP = 200;
@@ -51,6 +57,14 @@ const MEMBER_STEP = 10;
 const DISCOVERED_PER_MATCH = 15;
 const DISCOVERED_MAX = 45;
 const SCOPE_WEIGHT = { project: 3, global: 2, plugin: 1, pack: 0 };
+// Full adoption (every result accepted) is worth two member slots, full
+// rejection minus two. Bands keep it from ever crossing member/discovered lines.
+const ADOPTION_SCALE = 4 * MEMBER_STEP;
+const BAND = { pinned: 3, member: 2, discovered: 1 };
+// Adoption decays with age, so a registry built from a non-empty ledger goes
+// stale after a day even when no input file changed.
+const ADOPTION_MAX_AGE_MS = 24 * 60 * 60 * 1000;
+const NO_ADOPTION = { stats: new Map(), pins: [] };
 
 function codexHome(home) {
   return path.join(home, '.codex');
@@ -338,9 +352,22 @@ function recommendedPacks(cwd) {
 
 // ---------------------------------------------------------------- ranking
 
-// Placeholder for S4 usage-based adoption signals.
-function adoptionWeight(_item) {
-  return 0;
+// Ledger id of a registry item: Codex skills are invoked (and recorded) as $name.
+function adoptionId(item) {
+  return item.kind === 'skill' ? `$${item.name}` : item.name;
+}
+
+// Adoption signal per (item, intent): whether the user adopted this item's
+// results for this intent (90-day half-life). 0 until the effective sample
+// reaches 5, and always 0 for the safety intents.
+function adoptionWeight(item, intent, adoption) {
+  const a = adoption || NO_ADOPTION;
+  return adoptionStore.adoptionScore(a.stats.get(adoptionStore.statKey(adoptionId(item), intent))) * ADOPTION_SCALE;
+}
+
+function adoptionLabel(item, intent, adoption) {
+  const s = adoption.stats.get(adoptionStore.statKey(adoptionId(item), intent));
+  return adoptionStore.isActive(s) ? { accepted: s.accepted, total: s.total } : null;
 }
 
 function scopeWeight(scope) {
@@ -363,37 +390,59 @@ function countMatches(text, keywords) {
   return (keywords || []).filter((k) => keywordRegex(k).test(hay)).length;
 }
 
-function rankIntents(map, agents, skills) {
+// Candidates sort by band first (pinned > map member > discovered), then
+// score, so adoption only reorders within a band: a map member is never
+// pushed below a discovered item. Pins force an item to the top of its
+// intent in the order they were made. Security/Ship ignore adoption and pins.
+function rankIntents(map, agents, skills, adoption = NO_ADOPTION) {
   const items = [
     ...agents.map((a) => ({ ...a, kind: 'agent' })),
     ...skills.map((s) => ({ ...s, kind: 'skill' }))
   ];
   const lookup = new Map(items.map((i) => [`${i.kind}:${i.name}`, i]));
+  const byAdoptionId = new Map(items.map((i) => [adoptionId(i), i]));
   const intents = {};
   for (const [intent, def] of Object.entries(map.intents || {})) {
+    const safety = adoptionStore.SAFETY_INTENTS.has(intent);
     const scored = new Map();
     (def.members || []).forEach((member, idx) => {
       const item = lookup.get(`${member.kind}:${member.name}`);
       if (!item) return;
       const base = MEMBER_BASE_SCORE - idx * MEMBER_STEP;
-      scored.set(`${item.kind}:${item.name}`, { item, base, advisor: Boolean(member.advisor) });
+      scored.set(`${item.kind}:${item.name}`, { item, band: BAND.member, base, advisor: Boolean(member.advisor) });
     });
     for (const item of items) {
       const key = `${item.kind}:${item.name}`;
       if (scored.has(key)) continue;
       const hits = countMatches(`${item.name} ${item.description}`, def.description_keywords);
-      if (hits) scored.set(key, { item, base: Math.min(hits * DISCOVERED_PER_MATCH, DISCOVERED_MAX), advisor: false });
+      if (hits) scored.set(key, { item, band: BAND.discovered, base: Math.min(hits * DISCOVERED_PER_MATCH, DISCOVERED_MAX), advisor: false });
     }
+    const pins = safety ? [] : adoption.pins.filter((p) => p.intent === intent);
+    pins.forEach((p, i) => {
+      const item = byAdoptionId.get(p.id);
+      if (!item) return;
+      const prev = scored.get(`${item.kind}:${item.name}`);
+      scored.set(`${item.kind}:${item.name}`, { item, band: BAND.pinned, base: pins.length - i, advisor: prev ? prev.advisor : false });
+    });
     const ranked = [...scored.values()]
-      .map(({ item, base, advisor }) => ({
-        name: item.name,
-        kind: item.kind,
-        advisor,
-        score: base + scopeWeight(item.scope) + adoptionWeight(item),
-        scope: item.scope,
-        active: item.active
-      }))
-      .sort((a, b) => b.score - a.score || a.name.localeCompare(b.name));
+      .map(({ item, band, base, advisor }) => {
+        const label = safety ? null : adoptionLabel(item, intent, adoption);
+        return {
+          name: item.name,
+          kind: item.kind,
+          advisor,
+          // Pins keep the order they were made in: no scope or adoption weight.
+          score: band === BAND.pinned ? base
+            : base + scopeWeight(item.scope) + (safety ? 0 : adoptionWeight(item, intent, adoption)),
+          scope: item.scope,
+          active: item.active,
+          band,
+          ...(band === BAND.pinned ? { pinned: true } : {}),
+          ...(label ? { adoption: label } : {})
+        };
+      })
+      .sort((a, b) => b.band - a.band || b.score - a.score || a.name.localeCompare(b.name))
+      .map(({ band, ...pick }) => pick);
     intents[intent] = [
       ...ranked.filter((p) => p.active).slice(0, RANKED_PER_INTENT),
       ...ranked.filter((p) => !p.active).slice(0, RANKED_INACTIVE_PER_INTENT)
@@ -439,6 +488,8 @@ function fingerprint(home, cwd) {
     path.join(codex, 'my-codex', 'skill-catalog-state.json'),
     effectiveConfigPath(home),
     ROUTING_MAP_FILE,
+    adoptionStore.storePaths(home).ledger,
+    adoptionStore.storePaths(home).pins,
     path.join(cwd, '.codex', 'agents'),
     path.join(cwd, '.codex', 'skills'),
     path.join(cwd, '.mcp.json')
@@ -480,6 +531,7 @@ function buildRegistry({ home = os.homedir(), cwd = process.cwd(), manager } = {
   const configText = safeRead(effectiveConfigPath(home));
   const agents = discoverAgents(home, cwd);
   const skills = discoverSkills(home, cwd, mgr, configText);
+  const map = loadRoutingMap();
   return {
     version: REGISTRY_VERSION,
     generated_at: new Date().toISOString(),
@@ -490,7 +542,10 @@ function buildRegistry({ home = os.homedir(), cwd = process.cwd(), manager } = {
     skill_lanes: mgr.lanes || {},
     mcp_servers: projectMcpServers(cwd),
     recommended_packs: recommendedPacks(cwd),
-    intents: rankIntents(loadRoutingMap(), agents, skills)
+    // Process skills whose use says nothing about advice quality; the
+    // adoption tracker never records them as offers.
+    adoption_ignore: Array.isArray(map.adoption_ignore) ? map.adoption_ignore : [],
+    intents: rankIntents(map, agents, skills, adoptionStore.loadAdoption(home))
   };
 }
 
@@ -506,11 +561,16 @@ function writeAtomic(file, text) {
   }
 }
 
+function adoptionExpired(registry, home) {
+  if (!statMtime(adoptionStore.storePaths(home).ledger)) return false;
+  return !(Date.now() - Date.parse(registry.generated_at) < ADOPTION_MAX_AGE_MS);
+}
+
 // Returns { status, registry, diagnostic, file }. A skill-manager failure
 // leaves any existing cache untouched so the next session retries.
 function ensureRegistry({ home = os.homedir(), cwd = process.cwd(), file = defaultRegistryPath(home) } = {}) {
   const existing = readRegistry(file);
-  if (existing && existing.fingerprint === fingerprint(home, cwd)) {
+  if (existing && existing.fingerprint === fingerprint(home, cwd) && !adoptionExpired(existing, home)) {
     return { status: 'up-to-date', registry: existing, file };
   }
   const manager = readSkillManager(home);
@@ -537,17 +597,27 @@ function formatPick(pick) {
   return label;
 }
 
+// Summary-only annotations: [pinned] = user pin, (adopted x/y) = the user
+// adopted x of the last y results for this intent (shown once y >= 5).
+function formatSummaryPick(pick) {
+  let label = formatPick(pick);
+  if (pick.pinned) label += '[pinned]';
+  if (pick.adoption) label += ` (adopted ${pick.adoption.accepted}/${pick.adoption.total})`;
+  return label;
+}
+
 function renderSummary(registry, file) {
   if (!registry) return '';
   const count = (list) => `${list.length} (${list.filter((x) => x.active).length} active)`;
   const head = `[CapabilityRegistry v2] ${file} -- agents ${count(registry.agents || [])}, ` +
     `skills ${count(registry.skills || [])}. Per-intent top ${SUMMARY_TOP} ([advisor] = Advisor Group; ` +
+    '[pinned] / (adopted x/y) = user pin / adoption record; ' +
     'inactive picks need their skill lane, agent pack or plugin enabled first). Read the registry for the full ranked lists.';
   const parts = [head];
   let length = head.length;
   for (const [intent, picks] of Object.entries(registry.intents || {})) {
     if (!picks.length) continue;
-    const line = ` ${intent}: ${picks.slice(0, SUMMARY_TOP).map(formatPick).join(', ')}.`;
+    const line = ` ${intent}: ${picks.slice(0, SUMMARY_TOP).map(formatSummaryPick).join(', ')}.`;
     if (length + line.length > SUMMARY_CHAR_LIMIT) break;
     parts.push(line);
     length += line.length;

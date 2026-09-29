@@ -134,7 +134,7 @@ check('ranking -> active discovered skill outranks inactive map member',
 check('ranking -> inactive candidates stay in the registry', reg.intents.PlanReview.some((p) => p.name === 'plan-eng-review' && !p.active));
 check('ranking -> Ambiguity led by metis [advisor]', reg.intents.Ambiguity[0].name === 'metis' && reg.intents.Ambiguity[0].advisor);
 check('ranking -> PlanReview led by momus [advisor]', reg.intents.PlanReview[0].name === 'momus' && reg.intents.PlanReview[0].advisor);
-check('adoptionWeight -> stub returns 0', registryLib.adoptionWeight({ name: 'x' }) === 0);
+check('adoptionWeight -> 0 without adoption data', registryLib.adoptionWeight({ name: 'x' }) === 0);
 
 const second = registryLib.ensureRegistry({ home: FAKE_HOME, cwd: PROJECT, file: REGISTRY });
 check('staleness -> unchanged inputs stay up-to-date', second.status === 'up-to-date', second.status);

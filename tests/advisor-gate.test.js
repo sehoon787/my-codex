@@ -19,6 +19,56 @@ const started = (turnId) => ({ type: 'event_msg', payload: { type: 'task_started
 const spawn = (agentType) => ({ type: 'response_item', payload: { type: 'function_call', name: 'spawn_agent', namespace: 'collaboration', arguments: JSON.stringify({ task_name: 'x', agent_type: agentType, message: 'm' }) } });
 const shell = () => ({ type: 'response_item', payload: { type: 'function_call', name: 'exec_command', arguments: '{"cmd":"ls"}' } });
 
+// exec tool call + its paired output, as seen in real rollouts
+// (~/.codex/sessions/.../*.jsonl): custom_tool_call carries JS glue code with
+// a `cmd:"..."` literal, and custom_tool_call_output carries the exit code
+// embedded as JSON text inside `output[].text`, matched by call_id.
+const execCall = (callId, cmd) => ({ type: 'response_item', payload: { type: 'custom_tool_call', call_id: callId, name: 'exec', input: `text((await tools.exec_command({cmd:"${cmd}",max_output_tokens:1000})).output);` } });
+const execOutput = (callId, exitCode) => ({ type: 'response_item', payload: { type: 'custom_tool_call_output', call_id: callId, output: [{ type: 'input_text', text: 'Script completed\nWall time 0.1 seconds\nOutput:\n' }, { type: 'input_text', text: JSON.stringify({ chunk_id: 'x', wall_time_seconds: 0.01, exit_code: exitCode, original_token_count: 1, output: '' }) }] } });
+// n failing calls sharing `prefix`, each with a distinct call_id.
+const failingRun = (prefix, n) => {
+  const entries = [];
+  for (let i = 0; i < n; i++) {
+    const id = `call_${prefix.replace(/\s+/g, '_')}_${i}`;
+    entries.push(execCall(id, `${prefix} arg${i}`));
+    entries.push(execOutput(id, 1));
+  }
+  return entries;
+};
+
+// thread_goal_updated, as seen in the one real rollout that carries it
+// (~/.codex/sessions/2026/09/29/...): status is the lowercase string
+// "active", and the field is goal.objective/goal.status, not top-level.
+const goalUpdated = (objective, status = 'active') => ({
+  type: 'event_msg',
+  payload: { type: 'thread_goal_updated', threadId: 'th1', goal: { threadId: 'th1', objective, status, tokensUsed: 1, timeUsedSeconds: 1, createdAt: 1, updatedAt: 2 } }
+});
+
+// A real git repo so computeDiffSig sees actual working-tree changes: tests
+// for the no-progress signal use this to tell "a patch landed" (diffSig
+// changes) from "nothing changed" (diffSig repeats).
+function gitHome() {
+  const home = freshHome();
+  cp.execSync('git init -q', { cwd: home });
+  cp.execSync('git config user.email test@example.com', { cwd: home });
+  cp.execSync('git config user.name test', { cwd: home });
+  fs.writeFileSync(path.join(home, 'file.txt'), 'v0\n');
+  cp.execSync('git add -A && git commit -q -m init', { cwd: home });
+  return home;
+}
+
+// Stuck scenario: no advisor intent recorded (decide() stays out of the way),
+// so only decideStuck() can block.
+function stuckStop({ turnId = 't1', entries = [started('t1')], lam = 'Still investigating.', extra = {}, home = freshHome() } = {}) {
+  const transcript = entries === null ? path.join(home, 'missing.jsonl') : writeRollout(home, entries);
+  const payload = Object.assign({
+    session_id: 's-stuck', turn_id: turnId, transcript_path: transcript, cwd: home,
+    hook_event_name: 'Stop', model: 'm', permission_mode: 'auto', stop_hook_active: false,
+    last_assistant_message: lam
+  }, extra);
+  return Object.assign(runHook(GATE, home, payload), { home, payload });
+}
+
 let failures = 0;
 function check(name, ok, detail) {
   console.log(`${ok ? 'PASS' : 'FAIL'}  ${name}${ok || detail === undefined ? '' : `  (${detail})`}`);
@@ -150,6 +200,121 @@ for (const bad of ['', 'not json', '42']) {
   gate.recordTurnIntent({ session_id: 'new', turn_id: 't' }, null, [], home);
   check('22. records older than 7 days are pruned on write', !fs.existsSync(stale) && fs.existsSync(gate.intentFile('new', home)));
 }
+
+// ------------------------------------------------------------- Stuck trigger
+
+check('23. 3 same-prefix failures -> block',
+  stuckStop({ entries: [started('t1'), ...failingRun('npm test', 3)] }).blocked);
+check('24. 5 mixed-prefix failures (1 each) -> block', stuckStop({
+  entries: [started('t1'),
+    ...failingRun('git status', 1), ...failingRun('npm test', 1), ...failingRun('ls -la', 1),
+    ...failingRun('cat file', 1), ...failingRun('grep x', 1)]
+}).blocked);
+check('25. 2 failures -> none',
+  !stuckStop({ entries: [started('t1'), ...failingRun('npm test', 2)] }).blocked);
+check('26. impossibility claim (EN) -> block',
+  stuckStop({ lam: 'Given the current constraints, this is impossible to fix.' }).blocked);
+check('27. impossibility claim (KO) -> block',
+  stuckStop({ lam: '현재 제약 조건에서는 이 작업이 불가능합니다.' }).blocked);
+check('28. claim inside a code fence -> none', !stuckStop({
+  lam: 'Here is the log:\n```\nthis is impossible in bash\n```\nLet me look further.'
+}).blocked);
+check('29. "Blocked on user: <action>" escape line -> none',
+  !stuckStop({ lam: 'Blocked on user: approve hook trust before I can continue.' }).blocked);
+check('30. "Advisor skipped: <reason>" escape line -> none',
+  !stuckStop({ lam: 'Advisor skipped: not needed. This is impossible anyway.' }).blocked);
+check('31. oracle spawned this turn -> none', !stuckStop({
+  entries: [started('t1'), spawn('oracle')],
+  lam: 'This is impossible without additional access.'
+}).blocked);
+{
+  const first = stuckStop({ entries: [started('t1'), ...failingRun('npm test', 3)] });
+  check('32. Stuck blocks once', first.blocked);
+  const second = runHook(GATE, first.home, first.payload);
+  check('33. same episode on a second Stop -> none', !second.blocked);
+}
+{
+  const home = freshHome();
+  const ep1 = stuckStop({ home, entries: [started('t1'), ...failingRun('npm test', 3)] });
+  check('34. episode 1 -> block', ep1.blocked);
+  const ep2 = stuckStop({ home, turnId: 't2', entries: [started('t2'), ...failingRun('go build', 3)] });
+  check('35. episode 2 -> block', ep2.blocked);
+  const ep3 = stuckStop({ home, turnId: 't3', entries: [started('t3'), ...failingRun('cargo test', 3)] });
+  check('36. episode 3 -> none (session cap)', !ep3.blocked);
+}
+check('37. routing-map Stuck entry is read', gate.stuckAdvisorNames().join() === 'tracer,oracle,architect,metis,debugger');
+check('38. spawning architect (not oracle) satisfies the gate', !stuckStop({
+  entries: [started('t1'), spawn('architect'), ...failingRun('npm test', 3)]
+}).blocked);
+check('38b. spawning tracer satisfies the gate', !stuckStop({
+  entries: [started('t1'), spawn('tracer'), ...failingRun('npm test', 3)]
+}).blocked);
+{
+  const tomlPath = path.join(HOOKS, '..', 'codex-agents', 'omo', 'tracer.toml');
+  const toml = fs.readFileSync(tomlPath, 'utf8');
+  check('38c. tracer.toml exists with model gpt-6-astra', /^model = "gpt-6-astra"$/m.test(toml));
+}
+
+// -------------------------------------------------- Stuck: no-progress loop
+
+{
+  const home = freshHome();
+  const loopTurn = (turnId) => stuckStop({
+    home, turnId, entries: [started(turnId), ...failingRun('npm test', 1)],
+    lam: 'Still investigating the npm test failure.'
+  });
+  check('39a. loop turn 1 -> none (history too short)', !loopTurn('t1').blocked);
+  check('39b. loop turn 2 -> none (history too short)', !loopTurn('t2').blocked);
+  const t3 = loopTurn('t3');
+  check('39. 3-turn loop without goal mode -> block (no progress)',
+    t3.blocked && /no progress/.test(t3.doc.reason), t3.doc && t3.doc.reason);
+}
+{
+  const home = freshHome();
+  const objective = 'Ship the refactor end to end';
+  const goalTurn = (turnId) => stuckStop({
+    home, turnId, entries: [started(turnId), goalUpdated(objective), ...failingRun('go build', 1)],
+    lam: 'Still working on the build error.'
+  });
+  goalTurn('t1');
+  goalTurn('t2');
+  const t3 = goalTurn('t3');
+  check('40. goal-mode loop (3 continuation turns, same failing command) -> block, mentions the /goal objective',
+    t3.blocked && t3.doc.reason.includes(objective), t3.doc && t3.doc.reason);
+}
+{
+  const home = gitHome();
+  const patchTurn = (turnId, touchFile) => {
+    if (touchFile) fs.writeFileSync(path.join(home, 'file.txt'), `v-${turnId}\n`);
+    return stuckStop({
+      home, turnId, entries: [started(turnId), ...failingRun('npm test', 1)],
+      lam: 'Still investigating the npm test failure.'
+    });
+  };
+  check('41a. turn 1 -> none', !patchTurn('t1', false).blocked);
+  check('41b. turn 2, a successful patch lands -> none', !patchTurn('t2', true).blocked);
+  check('41. successful patch in between -> none (diffSig changed mid-loop)', !patchTurn('t3', false).blocked);
+}
+
+// -------------------------------------------------- Escape-line validation
+
+check('42. routed-intent gate: empty "Advisor skipped:" reason -> block',
+  stop({ lam: 'Advisor skipped:' }).blocked);
+check('43. routed-intent gate: placeholder "Advisor skipped: n/a" -> block',
+  stop({ lam: 'Advisor skipped: n/a' }).blocked);
+check('44. routed-intent gate: real reason -> none',
+  !stop({ lam: 'Advisor skipped: the user already chose REST over gRPC here.' }).blocked);
+{
+  const r = stuckStop({ entries: [started('t1'), ...failingRun('npm test', 3)], lam: 'Advisor skipped:' });
+  check('45. Stuck: empty "Advisor skipped:" reason -> block, asks for a concrete reason',
+    r.blocked && /concrete reason/.test(r.doc.reason), r.doc && r.doc.reason);
+}
+check('46. Stuck: placeholder "Blocked on user: n/a" -> block',
+  stuckStop({ entries: [started('t1'), ...failingRun('npm test', 3)], lam: 'Blocked on user: n/a' }).blocked);
+check('47. Stuck: real reason -> none', !stuckStop({
+  entries: [started('t1'), ...failingRun('npm test', 3)],
+  lam: 'Blocked on user: needs the user to approve the GitHub App installation manually.'
+}).blocked);
 
 if (failures) {
   console.log(`${failures} FAILED`);

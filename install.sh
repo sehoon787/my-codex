@@ -2014,6 +2014,12 @@ if [ -f "$REPO_ROOT/hooks/persona-rule.js" ]; then
   cp "$REPO_ROOT/hooks/persona-rule.js" "$CODEX_ROOT/hooks/persona-rule.js"
   add_manifest_entry "hooks/persona-rule.js"
 fi
+# build-registry.js and route-hint.js require adoption-store.js: copy it first
+# so a session that starts mid-install never loads a missing module.
+if [ -f "$REPO_ROOT/hooks/adoption-store.js" ]; then
+  cp "$REPO_ROOT/hooks/adoption-store.js" "$CODEX_ROOT/hooks/adoption-store.js"
+  add_manifest_entry "hooks/adoption-store.js"
+fi
 if [ -f "$REPO_ROOT/hooks/build-registry.js" ]; then
   cp "$REPO_ROOT/hooks/build-registry.js" "$CODEX_ROOT/hooks/build-registry.js"
   add_manifest_entry "hooks/build-registry.js"
@@ -2030,6 +2036,12 @@ if [ -f "$REPO_ROOT/hooks/routing-map.json" ]; then
   cp "$REPO_ROOT/hooks/routing-map.json" "$CODEX_ROOT/hooks/routing-map.json"
   add_manifest_entry "hooks/routing-map.json"
 fi
+for _adoption_hook in adoption-tracker.js adoption-cli.js; do
+  if [ -f "$REPO_ROOT/hooks/$_adoption_hook" ]; then
+    cp "$REPO_ROOT/hooks/$_adoption_hook" "$CODEX_ROOT/hooks/$_adoption_hook"
+    add_manifest_entry "hooks/$_adoption_hook"
+  fi
+done
 echo "  Hooks installed (vault enforcement + persona)"
 
 echo "[3.6/7] Registering Codex plugin..."
@@ -2183,8 +2195,10 @@ cp "$REPO_ROOT/scripts/skill-catalog.js" "$CODEX_ROOT/lib/my-codex/skill-catalog
 cp "$REPO_ROOT/scripts/skill-catalog.json" "$CODEX_ROOT/lib/my-codex/skill-catalog.json"
 cp "$REPO_ROOT/scripts/skill-catalog-toml.py" "$CODEX_ROOT/lib/my-codex/skill-catalog-toml.py"
 cp "$REPO_ROOT/bin/my-codex-skills" "$CODEX_ROOT/bin/my-codex-skills"
+cp "$REPO_ROOT/bin/my-codex-adoption" "$CODEX_ROOT/bin/my-codex-adoption"
 add_manifest_entry "lib/my-codex"
 add_manifest_entry "bin/my-codex-skills"
+add_manifest_entry "bin/my-codex-adoption"
 cp "$REPO_ROOT/templates/git-hooks/prepare-commit-msg" "$CODEX_ROOT/git-hooks/prepare-commit-msg"
 cp "$REPO_ROOT/templates/git-hooks/commit-msg" "$CODEX_ROOT/git-hooks/commit-msg"
 cp "$REPO_ROOT/templates/git-hooks/post-commit" "$CODEX_ROOT/git-hooks/post-commit"
@@ -2193,6 +2207,7 @@ chmod +x "$CODEX_ROOT/lib/codex-attribution.sh" \
   "$CODEX_ROOT/bin/codex-mark-used" \
   "$CODEX_ROOT/bin/my-codex-packs" \
   "$CODEX_ROOT/bin/my-codex-skills" \
+  "$CODEX_ROOT/bin/my-codex-adoption" \
   "$CODEX_ROOT/git-hooks/prepare-commit-msg" \
   "$CODEX_ROOT/git-hooks/commit-msg" \
   "$CODEX_ROOT/git-hooks/post-commit"

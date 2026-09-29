@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# Inspect or correct the adoption ledger shared with my-claude
+# (~/.config/agent-harness/). Quote skill ids: my-codex-adoption pin '$review' Review
+set -euo pipefail
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+exec node "$SCRIPT_DIR/../hooks/adoption-cli.js" "$@"

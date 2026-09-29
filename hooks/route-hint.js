@@ -7,6 +7,11 @@
 // or nothing (no match, slash/skill command, subagent prompt, any error).
 // Codex parses it as UserPromptSubmitCommandOutputWire (deny_unknown_fields),
 // see codex-rs/hooks/src/schema.rs.
+//
+// Also records the turn's intent in ~/.codex/my-codex/route-intent/<session>.json
+// (advisor-gate.js recordTurnIntent): the current turn for the Advisor Gate,
+// plus a timestamped history that adoption-tracker.js uses to file the
+// agents/skills a prompt ran under that prompt's intent.
 'use strict';
 
 const fs = require('fs');
@@ -59,10 +64,16 @@ function picksFor(intent, map, registry, cwd) {
     .map((m) => ({ name: m.name, kind: m.kind, advisor: Boolean(m.advisor), active: true }));
 }
 
-function hintFor(input, { map, registry } = {}) {
+// A user's own prompt, as opposed to a slash command, a $skill mention or a
+// subagent's prompt.
+function isRoutable(input) {
   const prompt = String((input && input.prompt) || '').trim();
-  if (!prompt || prompt.startsWith('/') || prompt.startsWith('$')) return null;
-  if (input.agent_id) return null;
+  return Boolean(prompt) && !prompt.startsWith('/') && !prompt.startsWith('$') && !input.agent_id;
+}
+
+function hintFor(input, { map, registry } = {}) {
+  if (!isRoutable(input)) return null;
+  const prompt = String(input.prompt).trim();
   const routing = map || readJson(ROUTING_MAP_FILE);
   if (!routing) return null;
   const intent = classify(prompt, routing);
@@ -85,7 +96,7 @@ function turnIntent(input, map) {
   return { intent, advisors: members.filter((m) => m.advisor).map((m) => m.name) };
 }
 
-module.exports = { classify, hintFor, turnIntent };
+module.exports = { classify, hintFor, isRoutable, turnIntent };
 
 if (require.main === module) {
   let input = {};

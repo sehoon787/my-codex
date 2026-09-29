@@ -22,6 +22,8 @@ const path = require('path');
 const ADVISORS = ['oracle', 'metis', 'momus'];
 const SKIP_MARKER = /Advisor skipped:/i;
 const INTENT_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
+// Enough to cover the prompts between an adoption offer and the reply that judges it.
+const INTENT_HISTORY_MAX = 20;
 
 function intentDir(home = os.homedir()) {
   return path.join(home, '.codex', 'my-codex', 'route-intent');
@@ -52,19 +54,34 @@ function pruneOld(dir) {
   }
 }
 
-// Every root-thread prompt overwrites the record, so an earlier turn's
-// advisor intent never gates a later, unrelated turn.
+// Every root-thread prompt overwrites the current-turn fields, so an earlier
+// turn's advisor intent never gates a later, unrelated turn. Routable prompts
+// (not a /command or $skill mention; route-hint.js isRoutable) also append
+// {intent, ts} to `history`, which adoption-store.js intentAt() reads to file
+// each agent/skill offer under the intent of the prompt that ran it. The
+// verdict hook reads this file concurrently, so it is replaced atomically.
 function recordTurnIntent(input, intent, advisors, home) {
   if (!input || !input.session_id || input.agent_id) return;
   const dir = intentDir(home);
   fs.mkdirSync(dir, { recursive: true });
   pruneOld(dir);
-  fs.writeFileSync(intentFile(input.session_id, home), JSON.stringify({
+  const file = intentFile(input.session_id, home);
+  const prev = readJson(file);
+  const history = prev && Array.isArray(prev.history) ? prev.history : [];
+  const prompt = String(input.prompt || '').trim();
+  const routable = Boolean(prompt) && !prompt.startsWith('/') && !prompt.startsWith('$');
+  const now = Date.now();
+  const tmp = `${file}.${process.pid}.tmp`;
+  fs.writeFileSync(tmp, JSON.stringify({
     turn_id: input.turn_id || null,
     intent: intent || null,
     advisors: advisors || [],
-    ts: Date.now()
+    ts: now,
+    history: routable
+      ? [...history, { intent: intent || 'unknown', ts: new Date(now).toISOString() }].slice(-INTENT_HISTORY_MAX)
+      : history
   }) + '\n');
+  fs.renameSync(tmp, file);
 }
 
 // Walk the rollout back to this turn's task_started and collect the

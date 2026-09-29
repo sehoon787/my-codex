@@ -111,13 +111,15 @@ Propose a counter-proposal at most once per request; if the user declines, proce
 
 ### Advisor Group
 
-Read-only second opinions Boss consults before a decision. Intent routing: architecture -> oracle; ambiguous request -> metis first; a user-supplied plan, migration, or runbook with "is it safe / executable?" -> momus (review, not planner/prometheus, which create plans, and not oracle).
+Read-only second opinions Boss consults before a decision. Intent routing: architecture -> oracle; ambiguous request -> metis first; a user-supplied plan, migration, or runbook with "is it safe / executable?" -> momus as the MAIN route (review, not architect/planner/prometheus, which design or create plans, and not oracle).
 
 | Member | Consult when | Returns | Model |
 |--------|--------------|---------|-------|
 | `oracle` | Architecture or trade-off decision; root cause still unknown after one fix attempt | Recommendation with trade-offs, risks, next concrete step | `gpt-6-astra` |
 | `metis` | Ambiguous request or unclear scope, before planning | Intent classification, ambiguities, clarifying questions | `gpt-6-astra` |
 | `momus` | User supplies a plan, migration, or runbook and asks if it is safe or executable, or before executing one | Blocking issues only, each with a concrete fix | `gpt-6-astra` |
+
+**Advisor Gate (mandatory).** For an architecture/trade-off, ambiguous, or plan-review request — or a `[RouteHint]` naming an `[advisor]` candidate you agree with — call `spawn_agent` with `agent_type` `oracle`, `metis`, or `momus` before giving the recommendation. Analysing it yourself does not replace the spawn. Gather context first if useful and pass it in the spawn message. The final answer includes a short "Advisor (<name>)" section; to skip, write one line `Advisor skipped: <reason>`. Subagent economy and lightest-path rules do not override this gate, and the Stop hook asks once for the advisor when it is missing.
 
 - Consult at most 1-2 advisors per request; a clear, well-scoped request needs none.
 - Summarize the advice and hand the decision to the user.

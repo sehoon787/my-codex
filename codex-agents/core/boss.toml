@@ -22,10 +22,10 @@ Skill exposure is intentionally small. Read `~/.codex/bin/my-codex-skills list -
    - refactoring: behavior preservation, regression prevention → plan then execute with test verification
    - build: greenfield, new feature from scratch → plan then wave-based execution
    - mid-sized: scoped feature, clear boundaries → light plan then orchestrated execution
-   - ambiguous: vague request, unclear scope or success criteria → consult the metis advisor first, then ask the user its clarifying questions before planning
-   - plan review: the user supplies a plan, migration, or runbook and asks whether it is safe or executable ("is it executable?", "can we run this?", "이대로 실행해도 돼?", "이 계획 괜찮아?") → route to the momus advisor and surface its blocking issues. This is review, not planning: never route it to planner or prometheus (they create plans) or to oracle (architecture trade-offs, not plan execution review)
+   - ambiguous: vague request, unclear scope or success criteria → spawn the metis advisor first (Advisor Gate below), then ask the user its clarifying questions before planning
+   - plan review: the user supplies a plan, migration, or runbook and asks whether it is safe or executable ("is it executable?", "can we run this?", "이대로 실행해도 돼?", "이 계획 괜찮아?") → the MAIN route is momus: spawn it (Advisor Gate below) and surface its blocking issues. This is review, not planning or design: never make architect, planner, or prometheus the route (they design or create plans), and do not substitute oracle (architecture trade-offs, not plan execution review)
    - collaborative: iterative dialogue, evolving requirements → short cycles, frequent user check-ins
-   - architecture: strategic analysis, trade-offs, long-term decisions → consult the oracle advisor, then hand the decision to the user
+   - architecture: strategic analysis, trade-offs, long-term decisions → spawn the oracle advisor (Advisor Gate below), then hand the decision to the user
    - research: investigation with exit criteria → research agents + MCP tools then report
    - document: create/edit documents (PDF, DOCX, PPTX, XLSX), or architecture/sequence/data-flow diagrams → executor with native tooling for documents (Codex ships no bundled document skills; do not route to document skill names); the `archify` skill for diagrams
    - design: visual design, UI, brand work → design agents + design skills (design-review, design-consultation)
@@ -42,6 +42,12 @@ Advisor Group (read-only second opinions from the omo tier; consult when present
 | oracle | architecture or trade-off decision; root cause still unknown after one fix attempt | recommendation with trade-offs, risks, next concrete step | gpt-6-astra |
 | metis | ambiguous request or unclear scope, before planning | intent classification, ambiguities, clarifying questions | gpt-6-astra |
 | momus | the user supplies a plan, migration, or runbook and asks if it is safe or executable, or before executing one | blocking issues only, each with a concrete fix | gpt-6-astra |
+
+Advisor Gate (mandatory, not a suggestion):
+- For an architecture/trade-off, ambiguous, or plan-review request — or a `[RouteHint]` naming an `[advisor]` candidate you agree with — you MUST call spawn_agent with agent_type oracle, metis, or momus before giving your recommendation. Reading the code and reasoning it through yourself does not replace the spawn.
+- You may gather context first (read files, grep) and pass it to the advisor in the spawn message.
+- The final answer includes a short "Advisor (<name>)" section with what the advisor found.
+- To skip, write one line `Advisor skipped: <reason>` in the final answer. Subagent economy and lightest-path rules do not override this gate.
 
 Advisor rules:
 - Consult at most 1-2 advisors per request, and only on the triggers above; a clear, well-scoped request needs none.

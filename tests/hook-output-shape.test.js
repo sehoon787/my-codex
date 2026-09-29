@@ -434,6 +434,27 @@ for (const [mode, input] of [['edit', '{}'], ['search', JSON.stringify({ tool_in
   fs.rmSync(dir, { recursive: true, force: true });
 }
 
+{
+  // advisor-gate.js reads the intent route-hint.js recorded for the turn.
+  const dir = tmpProject();
+  runResolvedFile(findCommand('UserPromptSubmit', 'route-hint.js'), {
+    cwd: dir,
+    input: JSON.stringify({ hook_event_name: 'UserPromptSubmit', session_id: 'shape-s', turn_id: 'shape-t', prompt: 'Should we move from REST to gRPC?' })
+  });
+  fs.writeFileSync(path.join(dir, 't.jsonl'), JSON.stringify({ type: 'event_msg', payload: { type: 'task_started', turn_id: 'shape-t' } }) + '\n');
+  const r = runResolvedFile(findCommand('Stop', 'advisor-gate.js'), {
+    cwd: dir,
+    input: JSON.stringify({
+      hook_event_name: 'Stop', session_id: 'shape-s', turn_id: 'shape-t', stop_hook_active: false,
+      transcript_path: path.join(dir, 't.jsonl'), last_assistant_message: 'Stay on REST.'
+    })
+  });
+  assertShape('Stop advisor-gate.js (blocks)', 'Stop', r);
+  check('Stop advisor-gate.js -> blocks an Architecture turn with no advisor spawn',
+    /"decision":"block"/.test(r.stdout || ''), `stdout=${JSON.stringify(r.stdout)}`);
+  fs.rmSync(dir, { recursive: true, force: true });
+}
+
 // ------- static sweep: no shipped hook may emit hookSpecificOutput without
 // ------- naming its event, wherever that JSON is assembled.
 

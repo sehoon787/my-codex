@@ -28,9 +28,9 @@
         "architecture", "system design", "grpc", "rest api", "rest to", "from rest", "graphql", "microservice",
         "microservices", "monolith", "event-driven", "message queue", "kafka", "scalability", "trade-off",
         "tradeoff", "should we move", "should we switch", "should we migrate", "which database", "schema design",
-        "service boundaries",
+        "service boundaries", "or keep them", "or keep it", "which approach", "which is better", "pros and cons",
         "아키텍처", "설계", "구조 변경", "마이크로서비스", "모놀리스", "확장성", "트레이드오프", "전환할까", "도입할까",
-        "어떤 데이터베이스"
+        "어떤 데이터베이스", "장단점", "어느 쪽", "어느 게 나을까", "뭐가 나을까", "둬야 할까"
       ]
     },
     "PlanReview": {
@@ -44,7 +44,8 @@
       "prompt_keywords": [
         "migration plan", "review the plan", "review this plan", "review my plan", "plan review", "rollout plan",
         "implementation plan", "execution plan", "work plan", "is this plan", "check the plan", "roadmap", "cutover",
-        "계획 검토", "플랜 검토", "계획 리뷰", "마이그레이션 계획", "실행 계획", "이 계획", "작업 계획", "로드맵"
+        "plan:", "safe to execute", "safe to run", "is it executable", "can we run this",
+        "계획 검토", "플랜 검토", "계획 리뷰", "마이그레이션 계획", "실행 계획", "이 계획", "작업 계획", "로드맵", "이대로 실행", "실행해도 돼", "실행해도 될까"
       ]
     },
     "Ambiguity": {

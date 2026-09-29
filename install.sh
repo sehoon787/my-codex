@@ -2014,6 +2014,18 @@ if [ -f "$REPO_ROOT/hooks/persona-rule.js" ]; then
   cp "$REPO_ROOT/hooks/persona-rule.js" "$CODEX_ROOT/hooks/persona-rule.js"
   add_manifest_entry "hooks/persona-rule.js"
 fi
+if [ -f "$REPO_ROOT/hooks/build-registry.js" ]; then
+  cp "$REPO_ROOT/hooks/build-registry.js" "$CODEX_ROOT/hooks/build-registry.js"
+  add_manifest_entry "hooks/build-registry.js"
+fi
+if [ -f "$REPO_ROOT/hooks/route-hint.js" ]; then
+  cp "$REPO_ROOT/hooks/route-hint.js" "$CODEX_ROOT/hooks/route-hint.js"
+  add_manifest_entry "hooks/route-hint.js"
+fi
+if [ -f "$REPO_ROOT/hooks/routing-map.json" ]; then
+  cp "$REPO_ROOT/hooks/routing-map.json" "$CODEX_ROOT/hooks/routing-map.json"
+  add_manifest_entry "hooks/routing-map.json"
+fi
 echo "  Hooks installed (vault enforcement + persona)"
 
 echo "[3.6/7] Registering Codex plugin..."

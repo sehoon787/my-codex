@@ -1,0 +1,162 @@
+{
+  "version": 1,
+  "intents": {
+    "Security": {
+      "priority": 100,
+      "members": [
+        { "name": "security-reviewer", "kind": "agent" },
+        { "name": "cso", "kind": "skill" },
+        { "name": "security-scan", "kind": "skill" }
+      ],
+      "description_keywords": ["security", "vulnerab", "owasp", "threat model", "secret scanning"],
+      "prompt_keywords": [
+        "security", "vulnerability", "vulnerabilities", "exploit", "xss", "csrf", "sql injection", "injection",
+        "auth bypass", "leaked secret", "credential leak", "owasp", "cve", "pentest", "threat model",
+        "보안", "취약점", "인젝션", "권한 우회", "인증 우회", "시크릿 노출", "해킹"
+      ]
+    },
+    "Architecture": {
+      "priority": 90,
+      "members": [
+        { "name": "oracle", "kind": "agent", "advisor": true },
+        { "name": "architect", "kind": "agent" },
+        { "name": "hexagonal-architecture", "kind": "skill" },
+        { "name": "architecture-decision-records", "kind": "skill" }
+      ],
+      "description_keywords": ["architecture", "system design", "design decision", "trade-off", "tradeoff", "scalab", "distributed", "microservice", "hexagonal"],
+      "prompt_keywords": [
+        "architecture", "system design", "grpc", "rest api", "rest to", "from rest", "graphql", "microservice",
+        "microservices", "monolith", "event-driven", "message queue", "kafka", "scalability", "trade-off",
+        "tradeoff", "should we move", "should we switch", "should we migrate", "which database", "schema design",
+        "service boundaries",
+        "아키텍처", "설계", "구조 변경", "마이크로서비스", "모놀리스", "확장성", "트레이드오프", "전환할까", "도입할까",
+        "어떤 데이터베이스"
+      ]
+    },
+    "PlanReview": {
+      "priority": 85,
+      "members": [
+        { "name": "momus", "kind": "agent", "advisor": true },
+        { "name": "plan-eng-review", "kind": "skill" },
+        { "name": "autoplan", "kind": "skill" }
+      ],
+      "description_keywords": ["plan review", "work plan", "executab", "blocking issue", "rollout"],
+      "prompt_keywords": [
+        "migration plan", "review the plan", "review this plan", "review my plan", "plan review", "rollout plan",
+        "implementation plan", "execution plan", "work plan", "is this plan", "check the plan", "roadmap", "cutover",
+        "계획 검토", "플랜 검토", "계획 리뷰", "마이그레이션 계획", "실행 계획", "이 계획", "작업 계획", "로드맵"
+      ]
+    },
+    "Ambiguity": {
+      "priority": 80,
+      "members": [
+        { "name": "metis", "kind": "agent", "advisor": true },
+        { "name": "brainstorming", "kind": "skill" },
+        { "name": "office-hours", "kind": "skill" },
+        { "name": "prometheus", "kind": "agent" }
+      ],
+      "description_keywords": ["ambigu", "clarif", "requirement", "intent classification", "brainstorm"],
+      "prompt_keywords": [
+        "make it better", "make the app better", "improve it", "somehow", "not sure what", "not sure how",
+        "something like", "any ideas", "what should i", "better somehow", "clean it up", "polish it",
+        "좀 더 좋게", "더 좋게", "좋게 만들", "알아서", "뭔가", "적당히", "대충", "어떻게 하면", "잘 되게", "괜찮게"
+      ]
+    },
+    "Debug": {
+      "priority": 70,
+      "members": [
+        { "name": "debugger", "kind": "agent" },
+        { "name": "investigate", "kind": "skill" },
+        { "name": "systematic-debugging", "kind": "skill" }
+      ],
+      "description_keywords": ["debug", "root cause", "stack trace", "investigat", "regression isolation"],
+      "prompt_keywords": [
+        "bug", "bugs", "debug", "error", "exception", "stack trace", "crash", "crashes", "failing", "broken", "not working",
+        "doesn't work", "regression", "flaky", "root cause", "segfault",
+        "버그", "디버그", "디버깅", "에러", "오류", "예외", "크래시", "안 돼", "안돼", "작동하지", "동작하지", "실패", "원인"
+      ]
+    },
+    "Review": {
+      "priority": 60,
+      "members": [
+        { "name": "code-reviewer", "kind": "agent" },
+        { "name": "review", "kind": "skill" },
+        { "name": "requesting-code-review", "kind": "skill" }
+      ],
+      "description_keywords": ["code review", "pull request", "review the diff", "pre-landing"],
+      "prompt_keywords": [
+        "code review", "review my", "review this pr", "review the pr", "review the diff", "pull request", "pr review",
+        "look over", "sanity check", "review this code", "review changes",
+        "코드 리뷰", "리뷰해", "검토해", "pr 리뷰", "변경사항 검토"
+      ]
+    },
+    "Testing": {
+      "priority": 50,
+      "members": [
+        { "name": "test-engineer", "kind": "agent" },
+        { "name": "test-driven-development", "kind": "skill" },
+        { "name": "qa", "kind": "skill" }
+      ],
+      "description_keywords": ["test", "tdd", "coverage", "e2e"],
+      "prompt_keywords": [
+        "test", "tests", "unit test", "integration test", "e2e", "coverage", "tdd", "test plan", "write tests", "qa",
+        "테스트", "단위 테스트", "통합 테스트", "커버리지"
+      ]
+    },
+    "Research": {
+      "priority": 40,
+      "members": [
+        { "name": "librarian", "kind": "agent" },
+        { "name": "deep-research", "kind": "skill" },
+        { "name": "documentation-lookup", "kind": "skill" }
+      ],
+      "description_keywords": ["research", "documentation lookup", "open-source library", "web search", "citations"],
+      "prompt_keywords": [
+        "research", "look up", "documentation for", "docs for", "how does", "compare libraries", "which library",
+        "best practice", "latest version", "find out", "official docs",
+        "조사", "리서치", "찾아봐", "찾아줘", "레퍼런스", "최신 버전", "비교해"
+      ]
+    },
+    "Document": {
+      "priority": 30,
+      "members": [
+        { "name": "document-release", "kind": "skill" },
+        { "name": "code-tour", "kind": "skill" },
+        { "name": "codebase-onboarding", "kind": "skill" }
+      ],
+      "description_keywords": ["documentation", "readme", "changelog", "release notes", "onboarding"],
+      "prompt_keywords": [
+        "readme", "document this", "write docs", "update the docs", "changelog", "release notes", "docstring",
+        "api docs", "onboarding guide", "code tour",
+        "문서화", "문서 작성", "리드미", "변경 로그", "릴리스 노트", "주석"
+      ]
+    },
+    "Trivial": {
+      "priority": 35,
+      "score_bonus": 10,
+      "members": [
+        { "name": "executor", "kind": "agent" }
+      ],
+      "description_keywords": ["quick fix", "small change", "one-line change"],
+      "prompt_keywords": [
+        "typo", "typos", "rename", "one-line", "one line", "small fix", "quick fix", "minor fix", "tiny fix",
+        "bump the version",
+        "오타", "한 줄", "한줄", "이름 변경", "이름 바꿔", "간단한 수정", "작은 수정"
+      ]
+    },
+    "Build": {
+      "priority": 20,
+      "members": [
+        { "name": "hephaestus", "kind": "agent" },
+        { "name": "executor", "kind": "agent" },
+        { "name": "executing-plans", "kind": "skill" }
+      ],
+      "description_keywords": ["implement", "implementation", "executor", "refactor"],
+      "prompt_keywords": [
+        "implement", "build a", "build the", "add a feature", "add feature", "create a", "scaffold", "refactor",
+        "write a function", "new endpoint",
+        "구현", "만들어", "기능 추가", "추가해", "개발해", "리팩터", "리팩토링"
+      ]
+    }
+  }
+}

@@ -31,145 +31,14 @@ if ! command -v ast-grep >/dev/null 2>&1; then
   npm i -g @ast-grep/cli 2>/dev/null && INSTALLED+=("ast-grep") || MISSING+=("ast-grep")
 fi
 
-# 5. Capability Registry Cache
-REGISTRY_DIR="$HOME/.omc/state"
-REGISTRY_FILE="$REGISTRY_DIR/capability-registry.json"
-REGISTRY_STATUS="up-to-date"
-_registry_diagnostic=""
-mkdir -p "$REGISTRY_DIR"
-_effective_codex_config="$HOME/.codex/config.toml"
-if [ -n "${CODEX_HOME:-}" ] && [ -d "$HOME/.codex/skills" ] && [ -d "$CODEX_HOME/skills" ]; then
-  _base_skills=$(cd "$HOME/.codex/skills" 2>/dev/null && pwd -P || true)
-  _active_skills=$(cd "$CODEX_HOME/skills" 2>/dev/null && pwd -P || true)
-  if [ -n "$_base_skills" ] && [ "$_active_skills" = "$_base_skills" ]; then
-    _effective_codex_config="$CODEX_HOME/config.toml"
-  fi
-fi
-_needs_regen=0
-if [ ! -f "$REGISTRY_FILE" ]; then
-  _needs_regen=1
+# 5. Capability Registry Cache (v2, Codex-owned; ~/.omc/state belongs to my-claude)
+# build-registry.js sits next to this script both in the repo and in ~/.codex/hooks.
+_hook_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" 2>/dev/null && pwd)
+if command -v node >/dev/null 2>&1 && [ -f "$_hook_dir/build-registry.js" ]; then
+  _registry_msg=$(node "$_hook_dir/build-registry.js" --session-start 2>/dev/null)
+  [ -n "$_registry_msg" ] || _registry_msg="[SessionStart] Registry cache: failed."
 else
-  if find "$HOME/.codex/agents" "$HOME/.codex/skills" -name "*.md" -newer "$REGISTRY_FILE" 2>/dev/null | grep -q .; then
-    _needs_regen=1
-  elif [ -d ".codex/agents" ] && find ".codex/agents" ".codex/skills" -name "*.md" -newer "$REGISTRY_FILE" 2>/dev/null | grep -q .; then
-    _needs_regen=1
-  elif [ -f "$HOME/.codex/my-codex/skill-catalog-state.json" ] && [ "$HOME/.codex/my-codex/skill-catalog-state.json" -nt "$REGISTRY_FILE" ]; then
-    _needs_regen=1
-  elif [ -f "$_effective_codex_config" ] && [ "$_effective_codex_config" -nt "$REGISTRY_FILE" ]; then
-    _needs_regen=1
-  fi
-fi
-if [ "$_needs_regen" -eq 1 ]; then
-  _registry_write_allowed=1
-  _ts=$(date -u +"%Y-%m-%dT%H:%M:%SZ" 2>/dev/null || date -u +"%Y-%m-%dT%H:%M:%SZ")
-
-  # Detect project type from current directory
-  _recommended_packs="[]"
-  if [ -f "package.json" ] || [ -f "tsconfig.json" ] || [ -f "Cargo.toml" ] || \
-     [ -f "requirements.txt" ] || [ -f "pyproject.toml" ] || [ -f "go.mod" ] || [ -f "Gemfile" ]; then
-    _recommended_packs='["engineering"]'
-  elif ls *.unity 2>/dev/null | grep -q . || [ -d "Assets" ]; then
-    _recommended_packs='["game-development"]'
-  fi
-
-  _agents_json="["
-  _first_agent=1
-  for _f in "$HOME/.codex/agents/"*.md .codex/agents/*.md; do
-    [ -f "$_f" ] || continue
-    case "$_f" in "$HOME/.codex/agents/"*) _scope="global" ;; *) _scope="project" ;; esac
-    _name=$(sed -n '/^---/,/^---/p' "$_f" 2>/dev/null | grep '^name:' | head -1 | sed 's/^name:[[:space:]]*//' | tr -d '"')
-    _desc=$(sed -n '/^---/,/^---/p' "$_f" 2>/dev/null | grep '^description:' | head -1 | sed 's/^description:[[:space:]]*//' | tr -d '"')
-    _model=$(sed -n '/^---/,/^---/p' "$_f" 2>/dev/null | grep '^model:' | head -1 | sed 's/^model:[[:space:]]*//' | tr -d '"')
-    [ -z "$_name" ] && _name=$(basename "$_f" .md)
-    [ -z "$_model" ] && _model=""
-    if [ "$_first_agent" -eq 1 ]; then _first_agent=0; else _agents_json="${_agents_json},"; fi
-    _agents_json="${_agents_json}{\"name\":\"${_name}\",\"description\":\"${_desc}\",\"model\":\"${_model}\",\"scope\":\"${_scope}\"}"
-  done
-  _agents_json="${_agents_json}]"
-  _skills_json=""
-  _skill_lanes_json="{}"
-  _skill_manager_present=0
-  if [ -x "$HOME/.codex/bin/my-codex-skills" ] && command -v node >/dev/null 2>&1; then
-    _skill_manager_present=1
-    _skill_status_err_file=$(mktemp "${TMPDIR:-/tmp}/my-codex-skill-status.XXXXXX" 2>/dev/null)
-    if [ -n "$_skill_status_err_file" ]; then
-      _skill_status=$("$HOME/.codex/bin/my-codex-skills" status --json 2>"$_skill_status_err_file")
-      _skill_status_exit=$?
-      _skill_status_err=$(cat "$_skill_status_err_file" 2>/dev/null)
-      rm -f "$_skill_status_err_file"
-    else
-      _skill_status=$("$HOME/.codex/bin/my-codex-skills" status --json 2>&1)
-      _skill_status_exit=$?
-      _skill_status_err=""
-    fi
-    if [ "$_skill_status_exit" -eq 0 ]; then
-      _skill_status_parsed=$(printf '%s' "$_skill_status" | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{try{const j=JSON.parse(s);if(!Array.isArray(j.activeSkillNames)||!j.laneIndex||typeof j.laneIndex!=="object"||Array.isArray(j.laneIndex))process.exit(2);process.stdout.write(JSON.stringify({skills:j.activeSkillNames,lanes:j.laneIndex}))}catch(e){process.exit(2)}})')
-      _skill_status_parse_exit=$?
-    else
-      _skill_status_parsed=""
-      _skill_status_parse_exit=1
-    fi
-    if [ "$_skill_status_exit" -eq 0 ] && [ "$_skill_status_parse_exit" -eq 0 ]; then
-      _skills_json=$(printf '%s' "$_skill_status_parsed" | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>process.stdout.write(JSON.stringify(JSON.parse(s).skills)))')
-      _skill_lanes_json=$(printf '%s' "$_skill_status_parsed" | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>process.stdout.write(JSON.stringify(JSON.parse(s).lanes)))')
-    else
-      _registry_write_allowed=0
-      REGISTRY_STATUS="skill-catalog-error"
-      if [ "$_skill_status_exit" -ne 0 ]; then
-        _skill_status_detail=${_skill_status_err:-$_skill_status}
-        _registry_diagnostic="[SessionStart] Skill manager status failed (exit ${_skill_status_exit}): ${_skill_status_detail}"
-      else
-        _registry_diagnostic="[SessionStart] Skill manager returned invalid JSON: ${_skill_status}"
-      fi
-    fi
-  fi
-  if [ -z "$_skills_json" ]; then
-    if [ "$_skill_manager_present" -eq 1 ]; then
-      _skills_json=$(node -e 'const fs=require("fs");try{const j=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));process.stdout.write(JSON.stringify(j.skills||[]))}catch(e){process.stdout.write("[]")}' "$REGISTRY_FILE" 2>/dev/null || printf '[]')
-      REGISTRY_STATUS="skill-catalog-error"
-    else
-      _skills_json="["
-      _first_skill=1
-      for _f in "$HOME/.codex/skills/"*/SKILL.md .codex/skills/*/SKILL.md; do
-        [ -f "$_f" ] || continue
-        _sname=$(basename "$(dirname "$_f")")
-        if [ "$_first_skill" -eq 1 ]; then _first_skill=0; else _skills_json="${_skills_json},"; fi
-        _skills_json="${_skills_json}\"${_sname}\""
-      done
-      _skills_json="${_skills_json}]"
-    fi
-  fi
-  _project_skills_json="["
-  _first_project_skill=1
-  for _f in .codex/skills/*/SKILL.md; do
-    [ -f "$_f" ] || continue
-    _sname=$(basename "$(dirname "$_f")")
-    if [ "$_first_project_skill" -eq 1 ]; then _first_project_skill=0; else _project_skills_json="${_project_skills_json},"; fi
-    _project_skills_json="${_project_skills_json}\"${_sname}\""
-  done
-  _project_skills_json="${_project_skills_json}]"
-  _skills_json=$(node -e 'const a=JSON.parse(process.argv[1]),b=JSON.parse(process.argv[2]);process.stdout.write(JSON.stringify([...new Set([...a,...b])]))' "$_skills_json" "$_project_skills_json" 2>/dev/null || printf '%s' "$_skills_json")
-  _mcp_json="["
-  _first_mcp=1
-  for _sf in ".mcp.json"; do
-    [ -f "$_sf" ] || continue
-    while IFS= read -r _key; do
-      [ -z "$_key" ] && continue
-      if [ "$_first_mcp" -eq 1 ]; then _first_mcp=0; else _mcp_json="${_mcp_json},"; fi
-      _mcp_json="${_mcp_json}\"${_key}\""
-    done <<EOF
-$(grep -o '"[^"]*"[[:space:]]*:' "$_sf" 2>/dev/null | sed -n '/mcpServers/,/}/p' | grep -v 'mcpServers' | sed 's/[[:space:]]*"//;s/"[[:space:]]*://' | grep -v '^$' | grep -v '^{' | grep -v '^}' | head -50)
-EOF
-  done
-  _mcp_json="${_mcp_json}]"
-  if [ "$_registry_write_allowed" -eq 1 ]; then
-    if printf '{"generated_at":"%s","agents":%s,"skills":%s,"skill_lanes":%s,"mcp_servers":%s,"recommended_packs":%s}\n' \
-        "$_ts" "$_agents_json" "$_skills_json" "$_skill_lanes_json" "$_mcp_json" "$_recommended_packs" > "$REGISTRY_FILE" 2>/dev/null; then
-      [ "$REGISTRY_STATUS" = "skill-catalog-error" ] || REGISTRY_STATUS="regenerated"
-    else
-      REGISTRY_STATUS="failed"
-    fi
-  fi
+  _registry_msg="[SessionStart] Registry cache: unavailable (node or build-registry.js missing)."
 fi
 
 # 5b. .knowledge -> .briefing migration (one-time, backward compat)
@@ -306,8 +175,7 @@ if [ ${#MISSING[@]} -gt 0 ]; then
   MSG="${MSG}[SessionStart] Missing (run install.sh): ${MISSING[*]}."
 fi
 
-MSG="${MSG}[SessionStart] Registry cache: ${REGISTRY_STATUS}."
-[ -n "$_registry_diagnostic" ] && MSG="${MSG} ${_registry_diagnostic}"
+MSG="${MSG}${_registry_msg}"
 [ -n "$_kv_msg" ] && MSG="${MSG} ${_kv_msg}"
 [ -n "$_update_msg" ] && MSG="${MSG} ${_update_msg}"
 if [ -n "$MSG" ]; then

@@ -117,7 +117,24 @@ if [ -n "$off_tier" ]; then
   status=1
 fi
 
+# ── Check 3: main-session default (MODEL_MAIN) ──────────────────────────
+#
+# install.sh writes MODEL_MAIN as config.toml's top-level `model`. It must be
+# one of the tiers, and install.sh must write the variable rather than a
+# literal slug, or the main session silently misses the next tier roll-forward.
+case "${MODEL_MAIN:-}" in
+  "$MODEL_TIER_HIGH"|"$MODEL_TIER_MEDIUM"|"$MODEL_TIER_LOW") ;;
+  *)
+    echo "FAIL: MODEL_MAIN in scripts/model-tiers.sh is off-tier: '${MODEL_MAIN:-}'"
+    status=1
+    ;;
+esac
+if ! grep -qF "printf 'model = \"%s\"\\n' \"\$MODEL_MAIN\"" install.sh; then
+  echo "FAIL: install.sh no longer writes the top-level model from \$MODEL_MAIN"
+  status=1
+fi
+
 [ "$status" -eq 0 ] || exit 1
 
 agent_models=$(grep -rc '^model[[:space:]]*=' codex-agents/ 2>/dev/null | awk -F: '{s+=$2} END {print s+0}')
-echo "OK: no stale model IDs in $candidate_count scanned files; $agent_models agent model values all on-tier."
+echo "OK: no stale model IDs in $candidate_count scanned files; $agent_models agent model values all on-tier; main-session default $MODEL_MAIN on-tier."

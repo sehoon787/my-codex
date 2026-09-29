@@ -106,6 +106,21 @@ The default `core` profile keeps the active skill catalog within its context bud
 
 Propose a counter-proposal at most once per request; if the user declines, proceed with direct execution.
 
+### Advisor Group
+
+Read-only second opinions Boss consults before a decision. Intent routing: architecture -> oracle; ambiguous request -> metis first; executing a plan -> momus.
+
+| Member | Consult when | Returns | Model |
+|--------|--------------|---------|-------|
+| `oracle` | Architecture or trade-off decision; root cause still unknown after one fix attempt | Recommendation with trade-offs, risks, next concrete step | `gpt-6-astra` |
+| `metis` | Ambiguous request or unclear scope, before planning | Intent classification, ambiguities, clarifying questions | `gpt-6-astra` |
+| `momus` | Before executing a plan, migration, or runbook | Blocking issues only, each with a concrete fix | `gpt-6-astra` |
+
+- Consult at most 1-2 advisors per request; a clear, well-scoped request needs none.
+- Summarize the advice and hand the decision to the user.
+- If an advisor spawn fails with a usage-limit error, retry once with model `gpt-5.6-sol` and say so.
+- `architect` and `code-reviewer` stay outside the group; they verify code after it is written.
+
 ## Available Agents
 
 Use `spawn_agent` with `agent_type` to delegate work. Tier priority when several match: core > omo > omx > opt-in packs.

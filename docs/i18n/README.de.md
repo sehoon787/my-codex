@@ -128,10 +128,12 @@ Boss führt jede Anfrage durch eine Prioritätskette, bis der beste Treffer gefu
 
 | Komplexität | Modell | Eingesetzt für |
 |-----------|-------|----------|
-| Orchestrierung auf oberster Ebene | `gpt-6-astra` | Boss |
+| Orchestrierung auf oberster Ebene | `gpt-5.6-sol` (xhigh) | Boss und standardmäßig die Hauptsitzung |
 | Tiefe Analyse, Architektur, Review | `gpt-6-astra` | Oracle, Prometheus, Sisyphus, Hephaestus, Atlas, Metis, Momus, architect, planner, code-reviewer, security-reviewer |
 | Standardimplementierung | `gpt-5.6-sol` | Librarian, Multimodal-Looker, executor, test-engineer, debugger sowie 15 der 17 Pack-Agenten |
 | Schnelles Nachschlagen, leichte Analyse | `gpt-5.6-terra` | data-analyst, prompt-regression-tester |
+
+Der Standard für die Hauptsitzung wird nur dann als Top-Level-`model` in `~/.codex/config.toml` geschrieben, wenn noch keiner gesetzt ist; ein vorhandener Wert bleibt erhalten. Oracle, Metis und Momus bilden Boss' schreibgeschützte **Advisor Group** auf `gpt-6-astra`: Oracle für Architektur-Abwägungen und ungeklärte Ursachen, Metis für mehrdeutige Anfragen, Momus vor der Ausführung eines Plans. Trifft ein Advisor auf ein Nutzungslimit, versucht Boss es einmal mit `gpt-5.6-sol` erneut und weist darauf hin.
 
 Die drei Tier-IDs stehen in einer einzigen Datei, `scripts/model-tiers.sh`; sowohl `scripts/md-to-toml.sh` als auch `install.sh` beziehen sie von dort, und `scripts/check-model-drift.sh` lässt den Build scheitern, wenn eine Modell-ID an anderer Stelle in den Skripten fest verdrahtet wird.
 
@@ -190,7 +192,7 @@ Jeder Agent und jeder Skill oben steht auf der Freigabeliste in [`scripts/skill-
 
 | Agent | Modell | Rolle | Quelle |
 |-------|-------|------|--------|
-| Boss | gpt-6-astra xhigh | Dynamische Laufzeiterkennung → Fähigkeitsabgleich → optimales Routing. Schreibt nie Code. | my-codex |
+| Boss | gpt-5.6-sol xhigh | Dynamische Laufzeiterkennung → Fähigkeitsabgleich → optimales Routing. Schreibt nie Code. | my-codex |
 
 </details>
 

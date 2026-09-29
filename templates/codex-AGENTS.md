@@ -18,9 +18,12 @@ remains Codex/root.
 <!-- my-codex:boss-first -->
 
 Before executing a non-trivial task (multi-file changes, architecture decisions,
-debugging, refactoring, code review, or an unfamiliar domain), scan
-`~/.codex/agents/*.toml` for active specialists and
-`~/.codex/agent-packs/*/*.toml` for installed-but-inactive specialists. Match
+debugging, refactoring, code review, or an unfamiliar domain), use the injected
+`[Routing]` (session start) and `[RouteHint]` (per prompt) candidates first and
+pass their ids verbatim (agents by name, skills as `$skill`). Read
+`~/.codex/capability-registry.json` (version 2: descriptions, active flags) only
+for details or when no hint is present; scan `~/.codex/agents/*.toml` and
+`~/.codex/agent-packs/*/*.toml` only if the registry is missing. Match
 the task to the optimal specialist, delegate with a structured prompt, and
 verify the result independently. If the best specialist is installed only in
 an inactive pack, activate the smallest matching pack with

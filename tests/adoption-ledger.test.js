@@ -126,6 +126,12 @@ const verdictCases = [
   ['stop', 'reject'],
   ['좋아 근데 아니 다시 해', 'reject'],
   ['yes, but revert the config change', 'reject'],
+  ['좋아 그렇게 진행해. 파일은 수정하지 마.', 'accept'],
+  ['진행해, 다른 건 건드리지 마', 'accept'],
+  ['하지 마', 'reject'],
+  ['그렇게 하지 마', 'reject'],
+  ['좋아 근데 그렇게 하지 마', 'reject'],
+  ['되돌려', 'reject'],
   ['아니면 다른 방법은?', null],
   ['그만큼 중요한 거야', null],
   ['no problem, what about the tests?', null],
@@ -140,7 +146,7 @@ for (const [text, want] of verdictCases) {
   const got = classifyVerdict(text);
   check(`verdict ${JSON.stringify(text)} -> ${want || 'neutral'}`, (got ? got.verdict : null) === want, JSON.stringify(got));
 }
-check('revert keyword -> signal revert', classifyVerdict('되돌려줘').signal === 'revert' && classifyVerdict('please revert it').signal === 'revert');
+check('revert keyword -> signal revert', classifyVerdict('되돌려줘').signal === 'revert' && classifyVerdict('please revert it').signal === 'revert' && classifyVerdict('되돌려').signal === 'revert');
 check('plain reject -> signal reply', classifyVerdict('틀렸어').signal === 'reply');
 {
   // The keyword lists must stay identical to my-claude's (shared ledger semantics).

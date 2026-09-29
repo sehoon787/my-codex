@@ -147,10 +147,12 @@ Boss cascades every request through a priority chain until the best match is fou
 
 | Complexity | Model | Used For |
 |-----------|-------|----------|
-| Top-level orchestration | `gpt-6-astra` | Boss |
+| Top-level orchestration | `gpt-5.6-sol` (xhigh) | Boss, and the main session by default |
 | Deep analysis, architecture, review | `gpt-6-astra` | Oracle, Prometheus, Sisyphus, Hephaestus, Atlas, Metis, Momus, architect, planner, code-reviewer, security-reviewer |
 | Standard implementation | `gpt-5.6-sol` | Librarian, Multimodal-Looker, executor, test-engineer, debugger, and 15 of the 17 pack agents |
 | Quick lookup, light analysis | `gpt-5.6-terra` | data-analyst, prompt-regression-tester |
+
+The main session default is written as the top-level `model` in `~/.codex/config.toml` only when none is set; an existing value is kept. Oracle, Metis, and Momus form Boss's read-only **Advisor Group** on `gpt-6-astra`: Oracle for architecture trade-offs and unresolved root causes, Metis for ambiguous requests, Momus before a plan is executed. If an advisor hits a usage limit, Boss retries it once on `gpt-5.6-sol` and says so.
 
 The three tier IDs live in a single file, `scripts/model-tiers.sh`; `scripts/md-to-toml.sh` and `install.sh` both source it, and `scripts/check-model-drift.sh` fails the build if a model ID is hardcoded anywhere else in the scripts.
 
@@ -209,7 +211,7 @@ Every agent and skill above is allowlisted in [`scripts/skill-allowlists.sh`](./
 
 | Agent | Model | Role | Source |
 |-------|-------|------|--------|
-| Boss | gpt-6-astra xhigh | Dynamic runtime discovery → capability matching → optimal routing. Never writes code. | my-codex |
+| Boss | gpt-5.6-sol xhigh | Dynamic runtime discovery → capability matching → optimal routing. Never writes code. | my-codex |
 
 </details>
 

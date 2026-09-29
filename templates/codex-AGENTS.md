@@ -18,9 +18,12 @@ remains Codex/root.
 <!-- my-codex:boss-first -->
 
 Before executing a non-trivial task (multi-file changes, architecture decisions,
-debugging, refactoring, code review, or an unfamiliar domain), scan
-`~/.codex/agents/*.toml` for active specialists and
-`~/.codex/agent-packs/*/*.toml` for installed-but-inactive specialists. Match
+debugging, refactoring, code review, or an unfamiliar domain), use the injected
+`[Routing]` (session start) and `[RouteHint]` (per prompt) candidates first and
+pass their ids verbatim (agents by name, skills as `$skill`). Read
+`~/.codex/capability-registry.json` (version 2: descriptions, active flags) only
+for details or when no hint is present; scan `~/.codex/agents/*.toml` and
+`~/.codex/agent-packs/*/*.toml` only if the registry is missing. Match
 the task to the optimal specialist, delegate with a structured prompt, and
 verify the result independently. If the best specialist is installed only in
 an inactive pack, activate the smallest matching pack with
@@ -105,6 +108,21 @@ The default `core` profile keeps the active skill catalog within its context bud
 | Project kickoff/initial planning | gstack `/office-hours`, `prometheus` agent |
 
 Propose a counter-proposal at most once per request; if the user declines, proceed with direct execution.
+
+### Advisor Group
+
+Read-only second opinions Boss consults before a decision. Intent routing: architecture -> oracle; ambiguous request -> metis first; a user-supplied plan, migration, or runbook with "is it safe / executable?" -> momus (review, not planner/prometheus, which create plans, and not oracle).
+
+| Member | Consult when | Returns | Model |
+|--------|--------------|---------|-------|
+| `oracle` | Architecture or trade-off decision; root cause still unknown after one fix attempt | Recommendation with trade-offs, risks, next concrete step | `gpt-6-astra` |
+| `metis` | Ambiguous request or unclear scope, before planning | Intent classification, ambiguities, clarifying questions | `gpt-6-astra` |
+| `momus` | User supplies a plan, migration, or runbook and asks if it is safe or executable, or before executing one | Blocking issues only, each with a concrete fix | `gpt-6-astra` |
+
+- Consult at most 1-2 advisors per request; a clear, well-scoped request needs none.
+- Summarize the advice and hand the decision to the user.
+- If an advisor spawn fails with a usage-limit error, retry once with model `gpt-5.6-sol` and say so.
+- `architect` and `code-reviewer` stay outside the group; they verify code after it is written.
 
 ## Available Agents
 

@@ -128,10 +128,12 @@ Boss は最適なマッチが見つかるまで、すべてのリクエストを
 
 | 複雑度 | モデル | 対象 |
 |-----------|-------|----------|
-| 最上位のオーケストレーション | `gpt-6-astra` | Boss |
+| 最上位のオーケストレーション | `gpt-5.6-sol` (xhigh) | Boss、およびデフォルトのメインセッション |
 | 深い分析、アーキテクチャ、レビュー | `gpt-6-astra` | Oracle、Prometheus、Sisyphus、Hephaestus、Atlas、Metis、Momus、architect、planner、code-reviewer、security-reviewer |
 | 標準的な実装 | `gpt-5.6-sol` | Librarian、Multimodal-Looker、executor、test-engineer、debugger、およびパックエージェント 17 体のうち 15 体 |
 | 簡単な検索、軽い分析 | `gpt-5.6-terra` | data-analyst、prompt-regression-tester |
+
+メインセッションのデフォルトは、`~/.codex/config.toml` にトップレベルの `model` が未設定の場合にのみ書き込まれ、既存の値は保持されます。Oracle、Metis、Momus は `gpt-6-astra` で動作する Boss の読み取り専用 **Advisor Group** です。Oracle はアーキテクチャのトレードオフと未解決の根本原因、Metis は曖昧な依頼、Momus は計画の実行前レビューを担当します。アドバイザーが使用量上限に達した場合、Boss は `gpt-5.6-sol` で一度だけ再試行し、その旨を伝えます。
 
 3 つのティア ID は単一ファイル `scripts/model-tiers.sh` にあります。`scripts/md-to-toml.sh` と `install.sh` の両方がこれを読み込み、スクリプトの他の場所にモデル ID がハードコードされると `scripts/check-model-drift.sh` がビルドを失敗させます。
 
@@ -190,7 +192,7 @@ Boss は作業のあったすべてのターン — ファイル編集、コミ�
 
 | エージェント | モデル | 役割 | 出典 |
 |-------|-------|------|--------|
-| Boss | gpt-6-astra xhigh | 動的なランタイム検出 → 能力マッチング → 最適ルーティング。コードは書きません。 | my-codex |
+| Boss | gpt-5.6-sol xhigh | 動的なランタイム検出 → 能力マッチング → 最適ルーティング。コードは書きません。 | my-codex |
 
 </details>
 

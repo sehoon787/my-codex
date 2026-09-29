@@ -68,8 +68,8 @@ developer_instructions = """
 
 | Model | Use For |
 |-------|---------|
-| `gpt-6-astra` | Architecture, deep analysis, orchestration (Boss, oracle, planner, reviewers) |
-| `gpt-5.6-sol` | Standard implementation, debugging, code review — the default worker tier |
+| `gpt-6-astra` | Architecture, deep analysis (oracle, metis, momus, planner, reviewers) |
+| `gpt-5.6-sol` | Boss orchestration (xhigh), standard implementation, debugging, code review — the default worker tier and the main-session default (`MODEL_MAIN`) |
 | `gpt-5.6-terra` | Fast lookups, lightweight agents, frequent invocation |
 
 **Sandbox mode guidance:**

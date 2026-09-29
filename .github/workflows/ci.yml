@@ -105,6 +105,7 @@ jobs:
           bash tests/agents-section-upsert.test.sh
           bash tests/uv-guard.test.sh
           bash tests/mcp-table-upsert.test.sh
+          bash tests/main-model-default.test.sh
           bash tests/tool-verification.test.sh
           bash tests/optional-tools-install.test.sh
           bash tests/shared-local-services.test.sh

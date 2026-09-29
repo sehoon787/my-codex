@@ -2143,6 +2143,28 @@ else
   echo "  config.toml: compact_prompt already set"
 fi
 
+# The main session's model is config.toml's top-level `model` key. Set it only
+# when absent -- any existing value is a user choice and is kept as is -- and
+# prepend it, since a `model =` after the first [table] header belongs to that
+# table and does not count as top-level.
+ensure_main_model() {
+  local current tmp
+  if current=$(awk '
+      /^[[:space:]]*\[/ { exit }
+      /^[[:space:]]*model[[:space:]]*=/ { sub(/^[[:space:]]*model[[:space:]]*=[[:space:]]*/, ""); print; found = 1; exit }
+      END { exit(found ? 0 : 1) }
+    ' "$CONFIG_FILE"); then
+    echo "  config.toml: model already set ($current), kept"
+    return 0
+  fi
+  tmp="$(mktemp)"
+  # Write back through the original file so its mode and inode survive.
+  { printf 'model = "%s"\n' "$MODEL_MAIN"; cat "$CONFIG_FILE"; } > "$tmp" && cat "$tmp" > "$CONFIG_FILE"
+  rm -f "$tmp"
+  echo "  config.toml: set model = \"$MODEL_MAIN\" (main session default)"
+}
+ensure_main_model
+
 echo "[4.5/7] Installing Codex attribution defaults..."
 mkdir -p "$CODEX_ROOT/bin" "$CODEX_ROOT/lib" "$CODEX_ROOT/git-hooks"
 cp "$REPO_ROOT/scripts/codex-attribution-lib.sh" "$CODEX_ROOT/lib/codex-attribution.sh"

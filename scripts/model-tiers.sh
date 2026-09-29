@@ -28,6 +28,9 @@ MODEL_TIER_HIGH="gpt-6-astra"
 MODEL_TIER_MEDIUM="gpt-5.6-sol"
 MODEL_TIER_LOW="gpt-5.6-terra"
 
+# Main-session default written to config.toml's top-level `model` when unset.
+MODEL_MAIN="$MODEL_TIER_MEDIUM"
+
 # model_reasoning_effort per tier.
 MODEL_TIER_HIGH_EFFORT="high"
 MODEL_TIER_MEDIUM_EFFORT="medium"

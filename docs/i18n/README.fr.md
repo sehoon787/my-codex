@@ -128,10 +128,12 @@ Boss fait passer chaque demande dans une chaîne de priorités jusqu'à trouver 
 
 | Complexité | Modèle | Utilisé pour |
 |-----------|-------|----------|
-| Orchestration de premier niveau | `gpt-6-astra` | Boss |
+| Orchestration de premier niveau | `gpt-5.6-sol` (xhigh) | Boss, et la session principale par défaut |
 | Analyse approfondie, architecture, revue | `gpt-6-astra` | Oracle, Prometheus, Sisyphus, Hephaestus, Atlas, Metis, Momus, architect, planner, code-reviewer, security-reviewer |
 | Implémentation standard | `gpt-5.6-sol` | Librarian, Multimodal-Looker, executor, test-engineer, debugger, ainsi que 15 des 17 agents de packs |
 | Recherche rapide, analyse légère | `gpt-5.6-terra` | data-analyst, prompt-regression-tester |
+
+La valeur par défaut de la session principale n'est écrite comme `model` de premier niveau dans `~/.codex/config.toml` que si aucune n'est définie ; une valeur existante est conservée. Oracle, Metis et Momus forment l'**Advisor Group** de Boss, en lecture seule, sur `gpt-6-astra` : Oracle pour les compromis d'architecture et les causes racines non résolues, Metis pour les demandes ambiguës, Momus avant l'exécution d'un plan. Si un conseiller atteint une limite d'utilisation, Boss réessaie une fois avec `gpt-5.6-sol` et le signale.
 
 Les trois identifiants de palier vivent dans un seul fichier, `scripts/model-tiers.sh` ; `scripts/md-to-toml.sh` et `install.sh` le chargent tous deux, et `scripts/check-model-drift.sh` fait échouer la build si un identifiant de modèle est codé en dur ailleurs dans les scripts.
 
@@ -190,7 +192,7 @@ Tous les agents et skills ci-dessus figurent sur la liste d'autorisation de [`sc
 
 | Agent | Modèle | Rôle | Source |
 |-------|-------|------|--------|
-| Boss | gpt-6-astra xhigh | Découverte dynamique à l'exécution → appariement de capacités → routage optimal. N'écrit jamais de code. | my-codex |
+| Boss | gpt-5.6-sol xhigh | Découverte dynamique à l'exécution → appariement de capacités → routage optimal. N'écrit jamais de code. | my-codex |
 
 </details>
 

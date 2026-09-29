@@ -12,7 +12,7 @@
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
-const { defaultRegistryPath, keywordRegex } = require('./build-registry');
+const { defaultRegistryPath, formatPick, keywordRegex } = require('./build-registry');
 
 const ROUTING_MAP_FILE = path.join(__dirname, 'routing-map.json');
 const HINT_TOP = 3;
@@ -54,14 +54,7 @@ function picksFor(intent, map, registry, cwd) {
   if (usable.length) return usable.slice(0, HINT_TOP);
   return ((map.intents[intent] || {}).members || [])
     .slice(0, HINT_TOP)
-    .map((m) => ({ name: m.name, advisor: Boolean(m.advisor), active: true }));
-}
-
-function formatPick(pick) {
-  let label = pick.name;
-  if (pick.advisor) label += ' [advisor]';
-  if (pick.active === false) label += ` (inactive ${pick.scope})`;
-  return label;
+    .map((m) => ({ name: m.name, kind: m.kind, advisor: Boolean(m.advisor), active: true }));
 }
 
 function hintFor(input, { map, registry } = {}) {
@@ -75,8 +68,9 @@ function hintFor(input, { map, registry } = {}) {
   const picks = picksFor(intent, routing, registry === undefined ? readJson(defaultRegistryPath(os.homedir())) : registry,
     input.cwd || process.cwd());
   if (!picks.length) return null;
-  return `[RouteHint] intent=${intent} → ${picks.map(formatPick).join(', ')}. ` +
-    'Consult the Advisor Group when the intent calls for it.';
+  // Only name the Advisor Group when one of its members is actually suggested.
+  const advice = picks.some((p) => p.advisor) ? ' Consult the Advisor Group when the intent calls for it.' : '';
+  return `[RouteHint] intent=${intent} → ${picks.map(formatPick).join(', ')}.${advice}`;
 }
 
 module.exports = { classify, hintFor };

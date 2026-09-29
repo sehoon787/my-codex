@@ -127,7 +127,7 @@ Boss does not have to remember to scan. At every session start, `hooks/build-reg
 Each entry keeps its name, description (capped at 200 characters), model (agents), scope and active flag. `hooks/routing-map.json` defines the routing intents (Architecture, Ambiguity, PlanReview, Security, Review, Debug, Testing, Research, Document, Build) with ordered members, Advisor Group flags (oracle, metis, momus), and English + Korean keywords. The registry ranks candidates per intent by map order, scope, and description match, so an unmanaged skill whose description fits an intent is ranked too; inactive packs, lanes, and plugins rank lower and are labeled. The file is rebuilt only when an input changes or the project changes.
 
 - **SessionStart** injects a compact top-3-per-intent summary (at most 6,000 characters) plus the registry path.
-- **UserPromptSubmit** runs `hooks/route-hint.js`, which classifies the prompt and adds one line such as `[RouteHint] intent=Architecture → oracle [advisor], architect, architecture-decision-records. Consult the Advisor Group when the intent calls for it.` Unmatched prompts, `/` commands, `$skill` mentions and subagent prompts get no hint.
+- **UserPromptSubmit** runs `hooks/route-hint.js`, which classifies the prompt and adds one line such as `[RouteHint] intent=Architecture → oracle[advisor], architect, $architecture-decision-records. Consult the Advisor Group when the intent calls for it.` Skills appear as `$name` (their Codex invocation), and the Advisor Group sentence is added only when an advisor is among the picks. Unmatched prompts, `/` commands, `$skill` mentions and subagent prompts get no hint.
 
 `~/.omc/state/capability-registry.json` belongs to my-claude; Codex never writes it.
 

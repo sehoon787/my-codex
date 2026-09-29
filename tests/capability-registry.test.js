@@ -153,19 +153,19 @@ registryLib.ensureRegistry({ home: FAKE_HOME, cwd: PROJECT, file: REGISTRY });
 const summary = registryLib.renderSummary(JSON.parse(fs.readFileSync(REGISTRY, 'utf8')), REGISTRY);
 check(`summary -> within ${registryLib.SUMMARY_CHAR_LIMIT} chars (${summary.length})`, summary.length <= registryLib.SUMMARY_CHAR_LIMIT);
 check('summary -> names the registry path', summary.includes(REGISTRY));
-check('summary -> marks advisors', summary.includes('Architecture: oracle [advisor]'));
+check('summary -> marks advisors', summary.includes('Architecture: oracle[advisor]'));
 
 // ---------------------------------------------------------------- route hints
 
 const cachedRegistry = JSON.parse(fs.readFileSync(REGISTRY, 'utf8'));
 const hint = (prompt, extra) => routeHint.hintFor(Object.assign({ prompt }, extra || {}), { map: routingMap, registry: cachedRegistry });
 const cases = [
-  ['Should we move from REST to gRPC for 12 internal services?', 'Architecture', 'oracle [advisor]'],
-  ['gRPC로 전환할까? 아키텍처 관점에서 봐줘', 'Architecture', 'oracle [advisor]'],
-  ['앱 좀 더 좋게', 'Ambiguity', 'metis [advisor]'],
-  ['Make the app better somehow', 'Ambiguity', 'metis [advisor]'],
-  ['Review this migration plan before we cut over', 'PlanReview', 'momus [advisor]'],
-  ['마이그레이션 계획 검토해줘', 'PlanReview', 'momus [advisor]']
+  ['Should we move from REST to gRPC for 12 internal services?', 'Architecture', 'oracle[advisor]'],
+  ['gRPC로 전환할까? 아키텍처 관점에서 봐줘', 'Architecture', 'oracle[advisor]'],
+  ['앱 좀 더 좋게', 'Ambiguity', 'metis[advisor]'],
+  ['Make the app better somehow', 'Ambiguity', 'metis[advisor]'],
+  ['Review this migration plan before we cut over', 'PlanReview', 'momus[advisor]'],
+  ['마이그레이션 계획 검토해줘', 'PlanReview', 'momus[advisor]']
 ];
 for (const [prompt, intent, lead] of cases) {
   const out = hint(prompt);
@@ -175,7 +175,11 @@ for (const [prompt, intent, lead] of cases) {
     JSON.stringify(out));
 }
 const typo = hint('Fix the typo in the README');
-check('route-hint typo -> no advisor', typo === null || !typo.includes('[advisor]'), JSON.stringify(typo));
+check('route-hint typo -> no advisor and no Advisor Group sentence',
+  typo === null || (!typo.includes('[advisor]') && !typo.includes('Advisor Group')), JSON.stringify(typo));
+check('route-hint -> skills shown by their $ invocation, agents bare',
+  (hint('Run a security audit on the auth flow') || '').startsWith('[RouteHint] intent=Security → $cso'),
+  JSON.stringify(hint('Run a security audit on the auth flow')));
 check('route-hint slash command -> nothing', hint('/review the plan') === null);
 check('route-hint $skill mention -> nothing', hint('$review this pr') === null);
 check('route-hint subagent prompt -> nothing', hint('Should we move to gRPC?', { agent_id: 'a1' }) === null);
@@ -188,12 +192,12 @@ check('route-hint short keyword needs a whole word', routeHint.classify('trip to
       { name: 'oracle', kind: 'agent', advisor: true, scope: 'global', active: true }] }
   });
   const out = routeHint.hintFor({ prompt: 'Should we move to gRPC?', cwd: PROJECT }, { map: routingMap, registry: foreign });
-  check('route-hint -> drops another project\'s project-scoped picks', out.includes('oracle [advisor]') && !out.includes('local-arch'), out);
+  check('route-hint -> drops another project\'s project-scoped picks', out.includes('oracle[advisor]') && !out.includes('local-arch'), out);
 }
 check('route-hint "rest" needs a word start', routeHint.classify('what is the interest rate', routingMap) === null);
 check('route-hint without registry -> falls back to map members',
   routeHint.hintFor({ prompt: 'Should we move to gRPC?' }, { map: routingMap, registry: null })
-    .includes('oracle [advisor], architect'));
+    .includes('oracle[advisor], architect, $hexagonal-architecture'));
 
 function runHook(input) {
   const t = Date.now();
@@ -213,7 +217,7 @@ function runHook(input) {
       Object.keys(doc.hookSpecificOutput).sort().join() === 'additionalContext,hookEventName',
     JSON.stringify(r.stdout));
   check('route-hint.js process -> reads the ranked registry',
-    doc && doc.hookSpecificOutput.additionalContext.includes('oracle [advisor]'));
+    doc && doc.hookSpecificOutput.additionalContext.includes('oracle[advisor]'));
 }
 for (const bad of ['', 'not json', '{"prompt": 42}']) {
   const { r } = runHook(bad);

@@ -523,9 +523,11 @@ function ensureRegistry({ home = os.homedir(), cwd = process.cwd(), file = defau
 
 // ---------------------------------------------------------------- summary
 
+// Same shape as my-claude's hints: invocable ids ("$" invokes a Codex skill,
+// where Claude uses "/"), advisors tagged "[advisor]" with no space.
 function formatPick(pick) {
-  let label = pick.name;
-  if (pick.advisor) label += ' [advisor]';
+  let label = pick.kind === 'skill' ? `$${pick.name}` : pick.name;
+  if (pick.advisor) label += '[advisor]';
   if (!pick.active) label += ` (inactive ${pick.scope})`;
   return label;
 }
@@ -567,6 +569,7 @@ module.exports = {
   countMatches,
   keywordRegex,
   defaultRegistryPath,
+  formatPick,
   ensureRegistry,
   parseAgentToml,
   parseSkillFrontmatter,

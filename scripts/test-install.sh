@@ -272,6 +272,10 @@ test -f "$TEST_HOME/.codex/vendor/my-codex/.codex-plugin/plugin.json"
 test -f "$TEST_HOME/.codex/hooks/session-sync.js"
 test -f "$TEST_HOME/.codex/hooks/briefing-runtime.js"
 test -f "$TEST_HOME/.codex/hooks/session-start-state.js"
+test -f "$TEST_HOME/.codex/hooks/build-registry.js"
+test -f "$TEST_HOME/.codex/hooks/route-hint.js"
+test -f "$TEST_HOME/.codex/hooks/routing-map.json"
+grep -q 'hooks/route-hint.js' "$TEST_HOME/.codex/hooks.json"
 
 if [ "$VAULT_ONLY" = "1" ]; then
   GIT_BASH=""

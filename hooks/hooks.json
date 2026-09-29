@@ -117,6 +117,12 @@
             "command": "node \"$HOME/.codex/hooks/session-sync.js\" prompt",
             "timeout": 10000,
             "description": "BriefingVault: refresh profile/scaffolds during the conversation and emit follow-up reminders when needed"
+          },
+          {
+            "type": "command",
+            "command": "node \"$HOME/.codex/hooks/route-hint.js\"",
+            "timeout": 5000,
+            "description": "RouteHint: classify the prompt by intent and name the top-ranked specialists from the capability registry"
           }
         ]
       }

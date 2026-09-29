@@ -105,11 +105,31 @@ Boss is the meta-orchestrator at the core of my-codex. It never writes code — 
 
 | Phase | What Happens |
 |-------|--------------|
-| **0 · Discovery** | Scans `~/.codex/agents/*.toml` at runtime into a live capability registry |
+| **0 · Discovery** | Reads the capability registry built at session start (`~/.codex/capability-registry.json`) — see [How Boss discovers agents and skills](#how-boss-discovers-agents-and-skills) |
 | **1 · Intent gate** | Classifies the request (trivial, build, refactor, mid-sized, architecture, research, …) and counter-proposes a skill when one fits better |
 | **2 · Capability matching** | Cascades the priority chain below (P1 exact skill → P2 specialist agent → P3 multi-agent orchestration → P4 general-purpose fallback) |
 | **3 · Delegation** | Calls `spawn_agent` with a 6-section structured prompt: TASK / OUTCOME / TOOLS / DO / DON'T / CTX |
 | **4 · Verification** | Reads the changed files independently, runs tests, lint, and build, cross-references the original intent, retries up to 3× on failure |
+
+### How Boss discovers agents and skills
+
+Boss does not have to remember to scan. At every session start, `hooks/build-registry.js` builds a **capability registry (v2)** at `~/.codex/capability-registry.json` from everything installed on the machine — including agents and skills my-codex did not install:
+
+| Source | Scope | Active when |
+|--------|-------|-------------|
+| `~/.codex/agents/*.toml` | `global` | always |
+| `~/.codex/agent-packs/<pack>/*.toml` | `pack:<pack>` | the pack is enabled (its agent is also in `~/.codex/agents`) |
+| `.codex/agents/*.toml` in the project | `project` | always |
+| `~/.codex/skills/*/SKILL.md` (`.system` excluded) | `global` | the skill manager reports it active (all, if the manager is absent) |
+| `.codex/skills/*/SKILL.md` in the project | `project` | always |
+| `~/.codex/plugins/cache/<marketplace>/<plugin>/<version>/skills/*/SKILL.md` | `plugin:<plugin>` | `config.toml` enables `<plugin>@<marketplace>` |
+
+Each entry keeps its name, description (capped at 200 characters), model (agents), scope and active flag. `hooks/routing-map.json` defines the routing intents (Architecture, Ambiguity, PlanReview, Security, Review, Debug, Testing, Research, Document, Build) with ordered members, Advisor Group flags (oracle, metis, momus), and English + Korean keywords. The registry ranks candidates per intent by map order, scope, and description match, so an unmanaged skill whose description fits an intent is ranked too; inactive packs, lanes, and plugins rank lower and are labeled. The file is rebuilt only when an input changes or the project changes.
+
+- **SessionStart** injects a compact top-3-per-intent summary (at most 6,000 characters) plus the registry path.
+- **UserPromptSubmit** runs `hooks/route-hint.js`, which classifies the prompt and adds one line such as `[RouteHint] intent=Architecture → oracle [advisor], architect, architecture-decision-records. Consult the Advisor Group when the intent calls for it.` Unmatched prompts, `/` commands, `$skill` mentions and subagent prompts get no hint.
+
+`~/.omc/state/capability-registry.json` belongs to my-claude; Codex never writes it.
 
 ### Priority Routing
 
@@ -358,13 +378,14 @@ The Stop hook checks whether `/boss-briefing` has run today. If not, it blocks s
 
 | Hook | Event | Behavior |
 |------|-------|----------|
-| Session Setup | SessionStart | Auto-detects tools + injects Briefing Vault context |
+| Session Setup | SessionStart | Auto-detects tools, refreshes the capability registry, injects its per-intent routing summary + Briefing Vault context |
 | Delegation Guard | PreToolUse | Reminds the session, while it is in Boss mode, to delegate file edits instead of making them directly |
 | Agent Telemetry | PostToolUse | Logs agent usage to `~/.gstack/analytics/agent-usage.jsonl` |
 | Vault Enforcer | PostToolUse | Counts edits and refreshes the auto scaffolds mid-session |
 | Link Collector | PostToolUse | Appends `WebSearch`/`WebFetch` results to `references/auto-links.md` |
 | Subagent Logger | SubagentStop | Logs agent execution to Briefing Vault |
 | Vault Reminder | UserPromptSubmit | Suggests /boss-briefing after 5+ messages, and a real session note once the turn has recorded work |
+| Route Hint | UserPromptSubmit | Classifies the prompt by intent and names the top-ranked specialists, marking Advisor Group members |
 | Context Budget | UserPromptSubmit | Every 40 prompts since the last compaction (`MY_CODEX_COMPACT_EVERY`), suggests `/compact` at the next task boundary |
 | Context Budget reset | PostCompact | Zeroes that counter after a compaction |
 | Completion Check | Stop | Runs profile fallback + guards /boss-briefing |

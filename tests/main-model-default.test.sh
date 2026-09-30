@@ -85,13 +85,84 @@ for value in '"gpt-6-astra"' '"my-custom-model"   # pinned' ; do
   esac
 done
 
+# 3.5. Present with a previous MODEL_MAIN default (an installer-written value,
+#      not a user choice) -> rewritten to the current MODEL_MAIN.
+CONFIG_FILE="$TMP_ROOT/previous.toml"
+for legacy in "${PREVIOUS_MAIN_MODELS[@]}"; do
+  printf '# user config\nmodel = "%s"\nmodel_reasoning_effort = "high"\n\n[features]\nhooks = true\n' "$legacy" > "$CONFIG_FILE"
+  OUT=$(ensure_main_model)
+  check "3.5. previous default ($legacy) is rewritten" "$(cat "$CONFIG_FILE")" "$(cat <<TOML
+# user config
+model = "$MODEL_MAIN"
+model_reasoning_effort = "high"
+
+[features]
+hooks = true
+TOML
+)"
+  case "$OUT" in
+    *"model $legacy -> $MODEL_MAIN (previous my-codex default)"*) echo "PASS  3.5b. rewrite is reported" ;;
+    *) echo "FAIL  3.5b. rewrite reported: $OUT"; ERRORS=$((ERRORS + 1)) ;;
+  esac
+  # Re-run is a no-op: the value is now MODEL_MAIN, not a previous default.
+  BEFORE="$(od -c "$CONFIG_FILE")"
+  ensure_main_model >/dev/null
+  check "3.5c. re-run after rewrite is a no-op" "$(od -c "$CONFIG_FILE")" "$BEFORE"
+done
+
+# 3.55. Explicit migrations to gpt-6.1-sol, and gpt-6-astra (HIGH) is kept.
+check "3.55a. MODEL_MAIN is gpt-6.1-sol" "$MODEL_MAIN" "gpt-6.1-sol"
+check "3.55a2. gpt-6 and gpt-5.6 sol are both previous defaults" "${#PREVIOUS_MAIN_MODELS[@]}" "2"
+for from in "${PREVIOUS_MAIN_MODELS[@]}"; do
+  CONFIG_FILE="$TMP_ROOT/migrate.toml"
+  printf 'model = "%s"\n[features]\nhooks = true\n' "$from" > "$CONFIG_FILE"
+  ensure_main_model >/dev/null
+  check "3.55b. $from migrates to gpt-6.1-sol" "$(head -1 "$CONFIG_FILE")" 'model = "gpt-6.1-sol"'
+done
+CONFIG_FILE="$TMP_ROOT/astra.toml"
+printf 'model = "gpt-6-astra"\n[features]\nhooks = true\n' > "$CONFIG_FILE"
+BEFORE="$(od -c "$CONFIG_FILE")"
+ensure_main_model >/dev/null
+check "3.55c. gpt-6-astra is kept" "$(od -c "$CONFIG_FILE")" "$BEFORE"
+CONFIG_FILE="$TMP_ROOT/absent2.toml"
+printf '[features]\nhooks = true\n' > "$CONFIG_FILE"
+ensure_main_model >/dev/null
+check "3.55d. absent model gets gpt-6.1-sol inserted" "$(head -1 "$CONFIG_FILE")" 'model = "gpt-6.1-sol"'
+
+# 3.7. version_ge() gates the codex CLI warning against MIN_CODEX_CLI_VERSION.
+eval "$(sed -n '/^version_ge() {/,/^}/p' "$INSTALL_SH")"
+check "3.7a. MIN_CODEX_CLI_VERSION is 0.159.1" "${MIN_CODEX_CLI_VERSION:-}" "0.159.1"
+for case_ in "0.158.0:warn" "0.159.1:ok" "0.160.0:ok" "1.0.0:ok" "0.159.0:warn" "0.9.9:warn"; do
+  ver="${case_%%:*}"; want="${case_##*:}"
+  if version_ge "$ver" "$MIN_CODEX_CLI_VERSION"; then got=ok; else got=warn; fi
+  check "3.7b. codex $ver -> $want" "$got" "$want"
+done
+
+# 3.6. A previous default inside a table is not top-level -> left alone.
+CONFIG_FILE="$TMP_ROOT/previous-in-table.toml"
+cat > "$CONFIG_FILE" <<TOML
+model_reasoning_effort = "high"
+
+[profiles.fast]
+model = "${PREVIOUS_MAIN_MODELS[0]}"
+TOML
+ensure_main_model >/dev/null
+check "3.6. previous default inside a table does not count as top-level" "$(cat "$CONFIG_FILE")" "$(cat <<TOML
+model = "$MODEL_MAIN"
+model_reasoning_effort = "high"
+
+[profiles.fast]
+model = "${PREVIOUS_MAIN_MODELS[0]}"
+TOML
+)"
+
 # 4. A `model =` inside a table is not top-level -> the default is still added.
 CONFIG_FILE="$TMP_ROOT/in-table.toml"
 cat > "$CONFIG_FILE" <<'TOML'
 model_reasoning_effort = "high"
 
 [profiles.fast]
-model = "gpt-5.6-terra"
+model = "gpt-6-luna"
 TOML
 ensure_main_model >/dev/null
 check "4. key inside a table does not count as top-level" "$(cat "$CONFIG_FILE")" "$(cat <<TOML
@@ -99,7 +170,7 @@ model = "$MODEL_MAIN"
 model_reasoning_effort = "high"
 
 [profiles.fast]
-model = "gpt-5.6-terra"
+model = "gpt-6-luna"
 TOML
 )"
 

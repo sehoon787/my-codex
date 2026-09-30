@@ -32,7 +32,7 @@ function write(file, text) {
 }
 
 function agentToml(name, description) {
-  return `name = "${name}"\ndescription = "${description}"\nmodel = "gpt-5.6-sol"\ndeveloper_instructions = "x"\n`;
+  return `name = "${name}"\ndescription = "${description}"\nmodel = "gpt-6.1-sol"\ndeveloper_instructions = "x"\n`;
 }
 
 function skillMd(name, description) {

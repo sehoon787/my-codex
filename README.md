@@ -184,12 +184,12 @@ Boss cascades every request through a priority chain until the best match is fou
 
 | Complexity | Model | Used For |
 |-----------|-------|----------|
-| Top-level orchestration | `gpt-5.6-sol` (xhigh) | Boss, and the main session by default |
+| Top-level orchestration | `gpt-6.1-sol` (xhigh) | Boss, and the main session by default |
 | Deep analysis, architecture, review | `gpt-6-astra` | Oracle, Prometheus, Sisyphus, Hephaestus, Atlas, Metis, Momus, architect, planner, code-reviewer, security-reviewer |
-| Standard implementation | `gpt-5.6-sol` | Librarian, Multimodal-Looker, executor, test-engineer, debugger, and 15 of the 17 pack agents |
-| Quick lookup, light analysis | `gpt-5.6-terra` | data-analyst, prompt-regression-tester |
+| Standard implementation | `gpt-6.1-sol` | Librarian, Multimodal-Looker, executor, test-engineer, debugger, and 15 of the 17 pack agents |
+| Quick lookup, light analysis | `gpt-6-luna` | data-analyst, prompt-regression-tester |
 
-The main session default is written as the top-level `model` in `~/.codex/config.toml` only when none is set; an existing value is kept. Oracle, Metis, and Momus form Boss's read-only **Advisor Group** on `gpt-6-astra`: Oracle for architecture trade-offs and unresolved root causes, Metis for ambiguous requests, Momus before a plan is executed. If an advisor hits a usage limit, Boss retries it once on `gpt-5.6-sol` and says so.
+The main session default is written as the top-level `model` in `~/.codex/config.toml` only when none is set; an existing value is kept. Oracle, Metis, and Momus form Boss's read-only **Advisor Group** on `gpt-6-astra`: Oracle for architecture trade-offs and unresolved root causes, Metis for ambiguous requests, Momus before a plan is executed. If an advisor hits a usage limit, Boss retries it once on `gpt-6.1-sol` and says so.
 
 The three tier IDs live in a single file, `scripts/model-tiers.sh`; `scripts/md-to-toml.sh` and `install.sh` both source it, and `scripts/check-model-drift.sh` fails the build if a model ID is hardcoded anywhere else in the scripts.
 
@@ -248,7 +248,7 @@ Every agent and skill above is allowlisted in [`scripts/skill-allowlists.sh`](./
 
 | Agent | Model | Role | Source |
 |-------|-------|------|--------|
-| Boss | gpt-5.6-sol xhigh | Dynamic runtime discovery → capability matching → optimal routing. Never writes code. | my-codex |
+| Boss | gpt-6.1-sol xhigh | Dynamic runtime discovery → capability matching → optimal routing. Never writes code. | my-codex |
 
 </details>
 
@@ -264,8 +264,8 @@ Every agent and skill above is allowlisted in [`scripts/skill-allowlists.sh`](./
 | Metis | gpt-6-astra high | Intent analysis, ambiguity detection | oh-my-openagent |
 | Momus | gpt-6-astra high | Plan feasibility review | oh-my-openagent |
 | Prometheus | gpt-6-astra xhigh | Interview-based detailed planning | oh-my-openagent |
-| Librarian | gpt-5.6-sol medium | Open-source documentation search via MCP | oh-my-openagent |
-| Multimodal-Looker | gpt-5.6-sol medium | Image/screenshot/diagram analysis | oh-my-openagent |
+| Librarian | gpt-6.1-sol medium | Open-source documentation search via MCP | oh-my-openagent |
+| Multimodal-Looker | gpt-6.1-sol medium | Image/screenshot/diagram analysis | oh-my-openagent |
 
 </details>
 
@@ -580,7 +580,7 @@ Every agent is a native TOML file in `~/.codex/agents/`:
 ```toml
 name = "debugger"
 description = "Focused debugging specialist — traces failures to root cause"
-model = "gpt-5.6-sol"
+model = "gpt-6.1-sol"
 model_reasoning_effort = "medium"
 
 [developer_instructions]

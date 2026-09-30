@@ -146,6 +146,18 @@
         "오타", "한 줄", "한줄", "이름 변경", "이름 바꿔", "간단한 수정", "작은 수정"
       ]
     },
+    "Stuck": {
+      "priority": 65,
+      "members": [
+        { "name": "tracer", "kind": "agent", "advisor": true },
+        { "name": "oracle", "kind": "agent", "advisor": true },
+        { "name": "architect", "kind": "agent", "advisor": true },
+        { "name": "metis", "kind": "agent", "advisor": true },
+        { "name": "debugger", "kind": "agent", "advisor": true }
+      ],
+      "description_keywords": [],
+      "prompt_keywords": []
+    },
     "Build": {
       "priority": 20,
       "members": [

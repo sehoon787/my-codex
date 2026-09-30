@@ -279,8 +279,11 @@ for (const [intent, def] of Object.entries(routingMap.intents)) {
 }
 const advisors = Object.entries(routingMap.intents)
   .flatMap(([intent, def]) => def.members.filter((m) => m.advisor).map((m) => `${intent}:${m.name}`)).sort();
-check('routing-map -> advisors are oracle/metis/momus on their intents',
-  JSON.stringify(advisors) === JSON.stringify(['Ambiguity:metis', 'Architecture:oracle', 'PlanReview:momus']),
+check('routing-map -> advisors are oracle/metis/momus on their intents, plus the Stuck group',
+  JSON.stringify(advisors) === JSON.stringify([
+    'Ambiguity:metis', 'Architecture:oracle', 'PlanReview:momus',
+    'Stuck:architect', 'Stuck:debugger', 'Stuck:metis', 'Stuck:oracle', 'Stuck:tracer'
+  ]),
   JSON.stringify(advisors));
 
 fs.rmSync(FAKE_HOME, { recursive: true, force: true });

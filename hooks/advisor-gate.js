@@ -87,8 +87,7 @@ const REPEAT_FAILURE_PREFIX_THRESHOLD = 3;
 const REPEAT_FAILURE_TOTAL_THRESHOLD = 5;
 
 // Stuck trigger (b): an impossibility claim in the final answer.
-const IMPOSSIBLE_EN = /\b(impossible|not possible|cannot be done|can't be done|blocked by|no way to)\b/i;
-const IMPOSSIBLE_KO = /(불가능|할\s*수\s*없|막혔|방법이\s*없)/;
+const IMPOSSIBLE_CLAIM_RE = /(\b(is|it's|it is|this is|that's) (impossible|not possible)\b|cannot be done|can't be done|there is no way to|불가능(합니다|해요|해|하다|하네요|함)|할 수 없(습니다|어요|어|다|음)|막혔(습니다|어요|어|다)|방법이 없(습니다|어요|어|다|음))/i;
 const ADDRESSES_USER = /\byou\b|사용자|직접/i;
 const USER_ONLY_ACTION = /\b(login|trust|approve|permission|credential|2FA)\b|권한|승인|로그인|신뢰/i;
 
@@ -314,17 +313,21 @@ function analyzeTurnExecs(transcriptPath, turnId) {
 }
 
 function stripCodeFences(text) {
-  return text.replace(/```[\s\S]*?```/g, '');
+  return text
+    .replace(/```[\s\S]*?```/g, '')
+    .replace(/`[^`\n]*`/g, '')
+    .replace(/"[^"\n]*"/g, '')
+    .replace(/\u201c[^\u201d\n]*\u201d/g, '');
 }
 
 // Returns a short excerpt around the matched claim, or null. Guards: ignore
-// matches inside code fences, and skip a message that ends with '?' and
+// matches inside code fences, inline code and quotes, and skip a message that ends with '?' and
 // addresses the user directly (that's a question, not a claim).
 function detectImpossibilityClaim(message) {
   const trimmed = stripCodeFences(String(message || '')).trim();
   if (!trimmed) return null;
   if (trimmed.endsWith('?') && ADDRESSES_USER.test(trimmed)) return null;
-  const m = trimmed.match(IMPOSSIBLE_EN) || trimmed.match(IMPOSSIBLE_KO);
+  const m = trimmed.match(IMPOSSIBLE_CLAIM_RE);
   if (!m) return null;
   const idx = m.index || 0;
   return trimmed.slice(Math.max(0, idx - 40), idx + 80).trim();

@@ -327,6 +327,15 @@ check('47. Stuck: real reason -> none', !stuckStop({
     results.every((r) => !r.blocked));
 }
 
+{
+  const claim = (lam) => stuckStop({ entries: [started('t1')], lam });
+  check('49. impossibility: bullet that only names the scenario -> none', !claim('- 불가능 주장 → oracle').blocked);
+  check('50. impossibility: "이 작업은 불가능합니다." -> block', claim('이 작업은 불가능합니다.').blocked);
+  check('51. impossibility: "This is impossible without admin rights." -> block', claim('This is impossible without admin rights.').blocked);
+  check('52. impossibility: inline-coded `불가능합니다` -> none', !claim('The gate matches `불가능합니다` in text.').blocked);
+  check('53. impossibility: quoted "This is impossible" -> none', !claim('The phrase "this is impossible" is a trigger.').blocked);
+}
+
 if (failures) {
   console.log(`${failures} FAILED`);
   process.exit(1);

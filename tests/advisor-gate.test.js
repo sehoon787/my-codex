@@ -316,6 +316,17 @@ check('47. Stuck: real reason -> none', !stuckStop({
   lam: 'Blocked on user: needs the user to approve the GitHub App installation manually.'
 }).blocked);
 
+{
+  // Not a git repo: computeDiffSig fails open ('nogit'), so repeated text
+  // alone is never a no-progress block and the hook must not throw.
+  const home = freshHome();
+  const results = ['t1', 't2', 't3', 't4'].map((turnId) => stuckStop({
+    home, turnId, entries: [started(turnId)], lam: 'Still investigating the same thing.'
+  }));
+  check('48. non-git cwd: repeated turns -> no no-progress block, no throw',
+    results.every((r) => !r.blocked));
+}
+
 if (failures) {
   console.log(`${failures} FAILED`);
   process.exit(1);

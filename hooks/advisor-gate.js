@@ -97,6 +97,7 @@ const NO_PROGRESS_WINDOW = 3;
 const NO_PROGRESS_HISTORY_MAX = 5;
 const NO_PROGRESS_ERROR_REPEATS = 2;
 const GIT_TIMEOUT_MS = 3000;
+const GIT_MAX_BUFFER = 64 * 1024 * 1024;
 
 // At most 1 block per episode (same failure signature or claim), at most 2
 // Stuck blocks per session — this is a nudge, not a lock.
@@ -340,8 +341,8 @@ function sha1(text) {
 function computeDiffSig(cwd) {
   if (!cwd) return 'nogit';
   try {
-    const diff = execFileSync('git', ['-C', cwd, 'diff', 'HEAD'], { encoding: 'utf8', timeout: GIT_TIMEOUT_MS, stdio: ['ignore', 'pipe', 'ignore'] });
-    const status = execFileSync('git', ['-C', cwd, 'status', '--porcelain', '--untracked-files=all'], { encoding: 'utf8', timeout: GIT_TIMEOUT_MS, stdio: ['ignore', 'pipe', 'ignore'] });
+    const diff = execFileSync('git', ['-C', cwd, 'diff', '--no-ext-diff', 'HEAD'], { encoding: 'utf8', timeout: GIT_TIMEOUT_MS, maxBuffer: GIT_MAX_BUFFER, stdio: ['ignore', 'pipe', 'ignore'] });
+    const status = execFileSync('git', ['-C', cwd, 'status', '--porcelain', '--untracked-files=all'], { encoding: 'utf8', timeout: GIT_TIMEOUT_MS, maxBuffer: GIT_MAX_BUFFER, stdio: ['ignore', 'pipe', 'ignore'] });
     return sha1(diff + status);
   } catch {
     return 'nogit';

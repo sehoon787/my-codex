@@ -70,6 +70,15 @@ function hasValidEscape(message) {
   return false;
 }
 
+// True when the message has a valid `Advisor skipped:` line but no valid
+// `Blocked on user:` line. An impossibility claim is not escaped by this.
+function hasOnlyValidSkip(message) {
+  const text = String(message || '');
+  const skip = text.match(SKIP_LINE);
+  const blocked = text.match(BLOCKED_ON_USER_LINE);
+  return !!(skip && isConcreteReason(skip[1])) && !(blocked && isConcreteReason(blocked[1]));
+}
+
 // True when a marker is present but its reason is empty or a placeholder —
 // distinguishes "no escape line at all" from "escape line, but not a real
 // reason" so the block message can ask for a concrete one.
@@ -431,7 +440,10 @@ const STUCK_MODE_CONTRACT = 'state the claim or failure in one line; list at mos
 // Stuck member (stuckAdvisorNames) this turn, not only the one recommended
 // here.
 function buildStuckReason(kind, reasonLine, userOnly, goal, emptyEscape) {
-  const escapeHint = (userOnly
+  const escapeHint = (kind === 'claim'
+    ? 'An impossibility claim must be audited by an advisor. If it truly needs a user-only action (login, approval, trust, credentials, permission), '
+      + 'add one line "Blocked on user: <action>" instead, then repeat the final answer. "Advisor skipped" is not accepted for impossibility claims.'
+    : userOnly
     ? 'If this truly needs the user (login, approval, trust, credentials, permission), '
       + 'skip the advisor and add one line "Blocked on user: <action>" instead, then repeat the final answer.'
     : 'If an advisor is genuinely unnecessary here, add one line "Advisor skipped: <reason>" and repeat the final answer.')
@@ -482,7 +494,8 @@ function checkNoProgress(history) {
 function decideStuck(input, home) {
   if (!input || input.agent_id || input.stop_hook_active === true || !input.session_id) return null;
   const lastMsg = String(input.last_assistant_message || '');
-  if (hasValidEscape(lastMsg)) return null;
+  const skipOnly = hasOnlyValidSkip(lastMsg);
+  if (hasValidEscape(lastMsg) && !skipOnly) return null;
 
   const turn = spawnedInTurn(input.transcript_path, input.turn_id);
   const stuckAdvisors = stuckAdvisorNames();
@@ -529,6 +542,9 @@ function decideStuck(input, home) {
         : `no progress across the last ${NO_PROGRESS_WINDOW} Stops (unchanged working tree, near-identical answers)`;
     }
   }
+
+  // `Advisor skipped:` escapes every Stuck signal except an impossibility claim.
+  if (skipOnly && kind !== 'claim') return null;
 
   if (!signature) {
     writeStuckState(file, { blocked: state.blocked, count: state.count, history });

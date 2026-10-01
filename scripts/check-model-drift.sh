@@ -24,8 +24,10 @@
 #   - .git/                        : object store.
 #   - scripts/model-tiers.sh       : single source of truth for model tiers; holds
 #                                    the legacy-model normalization mapping (old IDs
-#                                    gpt-5.4, gpt-5.3-codex-spark, gpt-5.6-luna -> current tier)
-#                                    that install.sh and md-to-toml.sh source.
+#                                    gpt-5.4, gpt-5.3-codex-spark, gpt-5.6-luna,
+#                                    gpt-5.6-sol, gpt-5.6-terra, gpt-6-sol ->
+#                                    current tier) that install.sh and
+#                                    md-to-toml.sh source.
 #   - scripts/check-model-drift.sh : this file. Its own OLD_MODEL_PATTERN default
 #                                    literally contains the old IDs it hunts for
 #                                    (e.g. "codex-spark"), so it always self-matches
@@ -36,7 +38,7 @@ set -uo pipefail
 # Previous-generation model IDs. Overridable via env for local testing; CI
 # (smoke.yml) calls this script with no override, so this default is the
 # single source of truth — do not duplicate it elsewhere.
-OLD_MODEL_PATTERN="${OLD_MODEL_PATTERN:-gpt-5\.[0-5]([.-]|$| )|gpt-5\.6-luna|gpt-4|gpt-3|\bo1\b|\bo3\b|\bo4-mini\b|codex-spark}"
+OLD_MODEL_PATTERN="${OLD_MODEL_PATTERN:-gpt-5\.[0-5]([.-]|$| )|gpt-5\.6-luna|gpt-5\.6-sol|gpt-5\.6-terra|gpt-6-sol|gpt-4|gpt-3|\bo1\b|\bo3\b|\bo4-mini\b|codex-spark}"
 
 # Path fragments to exclude from the scan (grep -E, matched against file path).
 EXCLUDE_PATHS="${EXCLUDE_PATHS:-(^|/)upstream/|(^|/)\.git/|(^|/)scripts/model-tiers\.sh$|(^|/)scripts/check-model-drift\.sh$}"
@@ -117,7 +119,45 @@ if [ -n "$off_tier" ]; then
   status=1
 fi
 
+# ── Check 3: main-session default (MODEL_MAIN) ──────────────────────────
+#
+# install.sh writes MODEL_MAIN as config.toml's top-level `model`. It must be
+# one of the tiers, and install.sh must write the variable rather than a
+# literal slug, or the main session silently misses the next tier roll-forward.
+case "${MODEL_MAIN:-}" in
+  "$MODEL_TIER_HIGH"|"$MODEL_TIER_MEDIUM"|"$MODEL_TIER_LOW") ;;
+  *)
+    echo "FAIL: MODEL_MAIN in scripts/model-tiers.sh is off-tier: '${MODEL_MAIN:-}'"
+    status=1
+    ;;
+esac
+if ! grep -qF "printf 'model = \"%s\"\\n' \"\$MODEL_MAIN\"" install.sh; then
+  echo "FAIL: install.sh no longer writes the top-level model from \$MODEL_MAIN"
+  status=1
+fi
+
+# ── Check 4: main-model migration set ───────────────────────────────────
+#
+# ensure_main_model() rewrites a top-level `model` found in
+# PREVIOUS_MAIN_MODELS to MODEL_MAIN. Each entry must be a superseded slug
+# (never MODEL_MAIN itself, or the rewrite is a no-op loop) that also maps to
+# the MEDIUM tier in LEGACY_MODEL_MAP, so agents and config migrate together.
+for prev in "${PREVIOUS_MAIN_MODELS[@]}"; do
+  if [ "$prev" = "$MODEL_MAIN" ]; then
+    echo "FAIL: PREVIOUS_MAIN_MODELS contains the current MODEL_MAIN ($prev)"
+    status=1
+  fi
+  case " ${LEGACY_MODEL_MAP[*]} " in
+    *" $prev:MEDIUM "*) ;;
+    *) echo "FAIL: PREVIOUS_MAIN_MODELS entry '$prev' has no '$prev:MEDIUM' in LEGACY_MODEL_MAP"; status=1 ;;
+  esac
+done
+if [ -z "${MIN_CODEX_CLI_VERSION:-}" ]; then
+  echo "FAIL: MIN_CODEX_CLI_VERSION is not defined in scripts/model-tiers.sh"
+  status=1
+fi
+
 [ "$status" -eq 0 ] || exit 1
 
 agent_models=$(grep -rc '^model[[:space:]]*=' codex-agents/ 2>/dev/null | awk -F: '{s+=$2} END {print s+0}')
-echo "OK: no stale model IDs in $candidate_count scanned files; $agent_models agent model values all on-tier."
+echo "OK: no stale model IDs in $candidate_count scanned files; $agent_models agent model values all on-tier; main-session default $MODEL_MAIN on-tier."

@@ -127,10 +127,12 @@ Boss 会把每个请求沿优先级链依次处理，直到找到最合适的匹
 
 | 复杂度 | 模型 | 适用对象 |
 |-----------|-------|----------|
-| 顶层编排 | `gpt-6-astra` | Boss |
+| 顶层编排 | `gpt-6.1-sol` (xhigh) | Boss，以及默认的主会话 |
 | 深度分析、架构、评审 | `gpt-6-astra` | Oracle、Prometheus、Sisyphus、Hephaestus、Atlas、Metis、Momus、architect、planner、code-reviewer、security-reviewer |
-| 标准实现 | `gpt-5.6-sol` | Librarian、Multimodal-Looker、executor、test-engineer、debugger，以及 17 个包 Agent 中的 15 个 |
-| 快速查询、轻量分析 | `gpt-5.6-terra` | data-analyst、prompt-regression-tester |
+| 标准实现 | `gpt-6.1-sol` | Librarian、Multimodal-Looker、executor、test-engineer、debugger，以及 17 个包 Agent 中的 15 个 |
+| 快速查询、轻量分析 | `gpt-6-luna` | data-analyst、prompt-regression-tester |
+
+仅当 `~/.codex/config.toml` 未设置顶层 `model` 时，才会写入主会话默认值；已有的值保持不变。Oracle、Metis 和 Momus 组成 Boss 的只读 **Advisor Group**，运行在 `gpt-6-astra` 上：Oracle 负责架构权衡和未查明的根因，Metis 负责含糊的请求，Momus 负责计划执行前的审查。若顾问遇到用量上限，Boss 会用 `gpt-6.1-sol` 重试一次并告知用户。
 
 三个层级的模型 ID 只存在于单一文件 `scripts/model-tiers.sh`；`scripts/md-to-toml.sh` 和 `install.sh` 都会引用它，若脚本中其他地方硬编码了模型 ID，`scripts/check-model-drift.sh` 会让构建失败。
 
@@ -189,7 +191,7 @@ Boss 会为每个有实际工作的回合 —— 编辑了文件、产生提交/
 
 | Agent | 模型 | 职责 | 来源 |
 |-------|-------|------|--------|
-| Boss | gpt-6-astra xhigh | 动态运行时发现 → 能力匹配 → 最优路由。从不写代码。 | my-codex |
+| Boss | gpt-6.1-sol xhigh | 动态运行时发现 → 能力匹配 → 最优路由。从不写代码。 | my-codex |
 
 </details>
 
@@ -205,8 +207,8 @@ Boss 会为每个有实际工作的回合 —— 编辑了文件、产生提交/
 | Metis | gpt-6-astra high | 意图分析、歧义检测 | oh-my-openagent |
 | Momus | gpt-6-astra high | 计划可行性评审 | oh-my-openagent |
 | Prometheus | gpt-6-astra xhigh | 基于访谈的详细规划 | oh-my-openagent |
-| Librarian | gpt-5.6-sol medium | 通过 MCP 检索开源文档 | oh-my-openagent |
-| Multimodal-Looker | gpt-5.6-sol medium | 图片/截图/图表分析 | oh-my-openagent |
+| Librarian | gpt-6.1-sol medium | 通过 MCP 检索开源文档 | oh-my-openagent |
+| Multimodal-Looker | gpt-6.1-sol medium | 图片/截图/图表分析 | oh-my-openagent |
 
 </details>
 
@@ -520,7 +522,7 @@ bash /tmp/my-codex/install.sh --profile full
 ```toml
 name = "debugger"
 description = "Focused debugging specialist — traces failures to root cause"
-model = "gpt-5.6-sol"
+model = "gpt-6.1-sol"
 model_reasoning_effort = "medium"
 
 [developer_instructions]

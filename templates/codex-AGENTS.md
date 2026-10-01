@@ -18,9 +18,12 @@ remains Codex/root.
 <!-- my-codex:boss-first -->
 
 Before executing a non-trivial task (multi-file changes, architecture decisions,
-debugging, refactoring, code review, or an unfamiliar domain), scan
-`~/.codex/agents/*.toml` for active specialists and
-`~/.codex/agent-packs/*/*.toml` for installed-but-inactive specialists. Match
+debugging, refactoring, code review, or an unfamiliar domain), use the injected
+`[Routing]` (session start) and `[RouteHint]` (per prompt) candidates first and
+pass their ids verbatim (agents by name, skills as `$skill`). Read
+`~/.codex/capability-registry.json` (version 2: descriptions, active flags) only
+for details or when no hint is present; scan `~/.codex/agents/*.toml` and
+`~/.codex/agent-packs/*/*.toml` only if the registry is missing. Match
 the task to the optimal specialist, delegate with a structured prompt, and
 verify the result independently. If the best specialist is installed only in
 an inactive pack, activate the smallest matching pack with
@@ -105,6 +108,28 @@ The default `core` profile keeps the active skill catalog within its context bud
 | Project kickoff/initial planning | gstack `/office-hours`, `prometheus` agent |
 
 Propose a counter-proposal at most once per request; if the user declines, proceed with direct execution.
+
+### Advisor Group
+
+Read-only second opinions Boss consults before a decision. Intent routing: architecture -> oracle; ambiguous request -> metis first; a user-supplied plan, migration, or runbook with "is it safe / executable?" -> momus as the MAIN route (review, not architect/planner/prometheus, which design or create plans, and not oracle).
+
+| Member | Consult when | Returns | Model |
+|--------|--------------|---------|-------|
+| `oracle` | Architecture or trade-off decision; root cause still unknown after one fix attempt | Recommendation with trade-offs, risks, next concrete step | `gpt-6-astra` |
+| `metis` | Ambiguous request or unclear scope, before planning | Intent classification, ambiguities, clarifying questions | `gpt-6-astra` |
+| `momus` | User supplies a plan, migration, or runbook and asks if it is safe or executable, or before executing one | Blocking issues only, each with a concrete fix | `gpt-6-astra` |
+
+**Advisor Gate (mandatory).** For an architecture/trade-off, ambiguous, or plan-review request — or a `[RouteHint]` naming an `[advisor]` candidate you agree with — call `spawn_agent` with `agent_type` `oracle`, `metis`, or `momus` before giving the recommendation. Analysing it yourself does not replace the spawn. Gather context first if useful and pass it in the spawn message. The final answer includes a short "Advisor (<name>)" section; to skip, write one line `Advisor skipped: <reason>`. Subagent economy and lightest-path rules do not override this gate, and the Stop hook asks once for the advisor when it is missing.
+
+- Consult at most 1-2 advisors per request; a clear, well-scoped request needs none.
+- Summarize the advice and hand the decision to the user.
+- If an advisor spawn fails with a usage-limit error, retry once with model `gpt-6.1-sol` and say so.
+- `architect` and `code-reviewer` stay outside the group; they verify code after it is written.
+- Stuck (repeated command failures, or the final answer claims something is impossible): the Stop hook blocks once and asks you to spawn `oracle` in Stuck mode; for an impossibility claim, if it is truly blocked on a user-only action, write one line `Blocked on user: <action>` instead. Repeated failures accept only a Stuck advisor spawn (after which `Blocked on user: <action>` may state its truly-blocked verdict); `Advisor skipped` is not accepted for repeated failures or an impossibility claim (it is only for no-progress loops).
+
+### Learning Suggestions
+
+The SessionStart context may carry up to two `[Learn] <id>: <kind> — <text>` lines: a rule drawn from a correction the user made, or a skill drawn from a workflow they adopted in 3+ sessions. Ask about each once per session, in one sentence: approve / dismiss / later. On approve run `~/.codex/bin/my-codex-learn approve <id>` (for a rule, add `--as "<the rule as one imperative English sentence>"` when the user's wording is not English); on dismiss run `~/.codex/bin/my-codex-learn dismiss <id>`; on later do nothing. Never write learned rules or skills yourself — only `approve` writes them, into `~/.codex/learned-rules/` (rendered into the learned section at the end of this file) and `~/.codex/skills/learned-*/`.
 
 ## Available Agents
 

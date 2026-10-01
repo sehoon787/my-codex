@@ -131,6 +131,11 @@ function assertShape(label, event, result) {
 
 // ---------------------------------------------------------------- SessionStart
 
+// Registry v2 stores skill objects; the manager decides which are active.
+function activeSkillNames(registry) {
+  return registry.skills.filter((s) => s.active).map((s) => s.name);
+}
+
 const SESSION_START_CMD = findCommand('SessionStart', 'session-start.sh');
 
 {
@@ -147,6 +152,12 @@ const SESSION_START_CMD = findCommand('SessionStart', 'session-start.sh');
     /"additionalContext"/.test(r.stdout || ''),
     `stdout=${JSON.stringify((r.stdout || '').slice(0, 120))}`
   );
+  const context = JSON.parse(r.stdout).hookSpecificOutput.additionalContext;
+  check('SessionStart session-start.sh -> injects the routing summary',
+    context.includes('[CapabilityRegistry v2]') && context.includes(path.join(FAKE_HOME, '.codex', 'capability-registry.json')),
+    `context=${JSON.stringify(context.slice(0, 200))}`);
+  check('SessionStart session-start.sh -> leaves my-claude registry alone',
+    !fs.existsSync(path.join(FAKE_HOME, '.omc', 'state', 'capability-registry.json')));
   fs.rmSync(dir, { recursive: true, force: true });
 }
 
@@ -155,7 +166,7 @@ const SESSION_START_CMD = findCommand('SessionStart', 'session-start.sh');
   // the effective config.toml. A newer active config must invalidate the cache.
   const dir = tmpProject();
   const manager = path.join(FAKE_HOME, '.codex', 'bin', 'my-codex-skills');
-  const registry = path.join(FAKE_HOME, '.omc', 'state', 'capability-registry.json');
+  const registry = path.join(FAKE_HOME, '.codex', 'capability-registry.json');
   const activeHome = path.join(FAKE_HOME, 'active-codex-home');
   fs.mkdirSync(path.dirname(manager), { recursive: true });
   fs.mkdirSync(path.dirname(registry), { recursive: true });
@@ -177,7 +188,7 @@ const SESSION_START_CMD = findCommand('SessionStart', 'session-start.sh');
   assertShape('SessionStart with newer active CODEX_HOME config', 'SessionStart', r);
   const updated = JSON.parse(fs.readFileSync(registry, 'utf8'));
   check('SessionStart active config change -> regenerates active skill registry',
-    JSON.stringify(updated.skills) === JSON.stringify(['active-overlay-skill']));
+    JSON.stringify(activeSkillNames(updated)) === JSON.stringify(['active-overlay-skill']));
   fs.rmSync(activeHome, { recursive: true, force: true });
   fs.rmSync(path.join(FAKE_HOME, '.codex', 'bin'), { recursive: true, force: true });
   fs.rmSync(path.join(FAKE_HOME, '.codex', 'skills'), { recursive: true, force: true });
@@ -191,11 +202,13 @@ const SESSION_START_CMD = findCommand('SessionStart', 'session-start.sh');
   // invocation then succeeds and replaces the catalog with the manager result.
   const dir = tmpProject();
   const manager = path.join(FAKE_HOME, '.codex', 'bin', 'my-codex-skills');
-  const registry = path.join(FAKE_HOME, '.omc', 'state', 'capability-registry.json');
+  const registry = path.join(FAKE_HOME, '.codex', 'capability-registry.json');
   const callCount = path.join(FAKE_HOME, '.codex', 'skill-manager-calls');
   fs.mkdirSync(path.dirname(manager), { recursive: true });
   fs.mkdirSync(path.dirname(registry), { recursive: true });
   fs.mkdirSync(path.join(FAKE_HOME, '.codex', 'skills', 'inactive-physical-skill'), { recursive: true });
+  fs.writeFileSync(path.join(FAKE_HOME, '.codex', 'skills', 'inactive-physical-skill', 'SKILL.md'),
+    '---\nname: inactive-physical-skill\ndescription: present on disk, not enabled\n---\n');
   fs.writeFileSync(manager, `#!/bin/sh
 count=0
 [ -f "${callCount}" ] && count=$(cat "${callCount}")
@@ -238,9 +251,9 @@ printf '%s\\n' '{"activeSkillNames":["recovered-active"],"laneIndex":{"core":["r
   check('SessionStart manager retry -> invokes manager twice',
     fs.readFileSync(callCount, 'utf8') === '2');
   check('SessionStart manager retry -> installs corrected active catalog',
-    JSON.stringify(recovered.skills) === JSON.stringify(['recovered-active']));
-  check('SessionStart manager retry -> does not expose physical inactive skill',
-    !recovered.skills.includes('inactive-physical-skill'));
+    JSON.stringify(activeSkillNames(recovered)) === JSON.stringify(['recovered-active']));
+  check('SessionStart manager retry -> keeps physical skill the manager did not activate inactive',
+    recovered.skills.some((s) => s.name === 'inactive-physical-skill' && s.active === false));
   fs.rmSync(path.join(FAKE_HOME, '.codex', 'bin'), { recursive: true, force: true });
   fs.rmSync(path.join(FAKE_HOME, '.codex', 'skills'), { recursive: true, force: true });
   fs.rmSync(callCount, { force: true });
@@ -254,7 +267,7 @@ printf '%s\\n' '{"activeSkillNames":["recovered-active"],"laneIndex":{"core":["r
   // With no previous cache, the hook must not create a fake valid registry.
   const dir = tmpProject();
   const manager = path.join(FAKE_HOME, '.codex', 'bin', 'my-codex-skills');
-  const registry = path.join(FAKE_HOME, '.omc', 'state', 'capability-registry.json');
+  const registry = path.join(FAKE_HOME, '.codex', 'capability-registry.json');
   fs.mkdirSync(path.dirname(manager), { recursive: true });
   fs.rmSync(registry, { force: true });
   fs.writeFileSync(manager, '#!/bin/sh\nprintf \'invalid { json "quoted"\\nsecond line\\n\'\n', { mode: 0o755 });
@@ -367,6 +380,26 @@ for (const [mode, input] of [['edit', '{}'], ['search', JSON.stringify({ tool_in
   fs.rmSync(dir, { recursive: true, force: true });
 }
 
+{
+  // route-hint.js must speak for a routable prompt and stay silent otherwise.
+  const dir = tmpProject();
+  const cmd = findCommand('UserPromptSubmit', 'route-hint.js');
+  const hit = runResolvedFile(cmd, {
+    cwd: dir,
+    input: JSON.stringify({ hook_event_name: 'UserPromptSubmit', prompt: 'Should we move from REST to gRPC?' })
+  });
+  assertShape('UserPromptSubmit route-hint.js (match)', 'UserPromptSubmit', hit);
+  check('UserPromptSubmit route-hint.js -> emits a RouteHint',
+    /\[RouteHint\] intent=Architecture/.test(hit.stdout || ''), `stdout=${JSON.stringify(hit.stdout)}`);
+  const miss = runResolvedFile(cmd, {
+    cwd: dir,
+    input: JSON.stringify({ hook_event_name: 'UserPromptSubmit', prompt: '/status' })
+  });
+  assertShape('UserPromptSubmit route-hint.js (slash command)', 'UserPromptSubmit', miss);
+  check('UserPromptSubmit route-hint.js -> silent on slash command', (miss.stdout || '') === '');
+  fs.rmSync(dir, { recursive: true, force: true });
+}
+
 // ---------------------------------------------------------------- Stop
 
 {
@@ -398,6 +431,27 @@ for (const [mode, input] of [['edit', '{}'], ['search', JSON.stringify({ tool_in
     })
   });
   assertShape('Stop stop-final-report.js (blocks)', 'Stop', r);
+  fs.rmSync(dir, { recursive: true, force: true });
+}
+
+{
+  // advisor-gate.js reads the intent route-hint.js recorded for the turn.
+  const dir = tmpProject();
+  runResolvedFile(findCommand('UserPromptSubmit', 'route-hint.js'), {
+    cwd: dir,
+    input: JSON.stringify({ hook_event_name: 'UserPromptSubmit', session_id: 'shape-s', turn_id: 'shape-t', prompt: 'Should we move from REST to gRPC?' })
+  });
+  fs.writeFileSync(path.join(dir, 't.jsonl'), JSON.stringify({ type: 'event_msg', payload: { type: 'task_started', turn_id: 'shape-t' } }) + '\n');
+  const r = runResolvedFile(findCommand('Stop', 'advisor-gate.js'), {
+    cwd: dir,
+    input: JSON.stringify({
+      hook_event_name: 'Stop', session_id: 'shape-s', turn_id: 'shape-t', stop_hook_active: false,
+      transcript_path: path.join(dir, 't.jsonl'), last_assistant_message: 'Stay on REST.'
+    })
+  });
+  assertShape('Stop advisor-gate.js (blocks)', 'Stop', r);
+  check('Stop advisor-gate.js -> blocks an Architecture turn with no advisor spawn',
+    /"decision":"block"/.test(r.stdout || ''), `stdout=${JSON.stringify(r.stdout)}`);
   fs.rmSync(dir, { recursive: true, force: true });
 }
 

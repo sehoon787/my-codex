@@ -105,11 +105,68 @@ Boss is the meta-orchestrator at the core of my-codex. It never writes code — 
 
 | Phase | What Happens |
 |-------|--------------|
-| **0 · Discovery** | Scans `~/.codex/agents/*.toml` at runtime into a live capability registry |
+| **0 · Discovery** | Reads the capability registry built at session start (`~/.codex/capability-registry.json`) — see [How Boss discovers agents and skills](#how-boss-discovers-agents-and-skills) |
 | **1 · Intent gate** | Classifies the request (trivial, build, refactor, mid-sized, architecture, research, …) and counter-proposes a skill when one fits better |
 | **2 · Capability matching** | Cascades the priority chain below (P1 exact skill → P2 specialist agent → P3 multi-agent orchestration → P4 general-purpose fallback) |
 | **3 · Delegation** | Calls `spawn_agent` with a 6-section structured prompt: TASK / OUTCOME / TOOLS / DO / DON'T / CTX |
 | **4 · Verification** | Reads the changed files independently, runs tests, lint, and build, cross-references the original intent, retries up to 3× on failure |
+
+### How Boss discovers agents and skills
+
+Boss does not have to remember to scan. At every session start, `hooks/build-registry.js` builds a **capability registry (v2)** at `~/.codex/capability-registry.json` from everything installed on the machine — including agents and skills my-codex did not install:
+
+| Source | Scope | Active when |
+|--------|-------|-------------|
+| `~/.codex/agents/*.toml` | `global` | always |
+| `~/.codex/agent-packs/<pack>/*.toml` | `pack:<pack>` | the pack is enabled (its agent is also in `~/.codex/agents`) |
+| `.codex/agents/*.toml` in the project | `project` | always |
+| `~/.codex/skills/*/SKILL.md` (`.system` excluded) | `global` | the skill manager reports it active (all, if the manager is absent) |
+| `.codex/skills/*/SKILL.md` in the project | `project` | always |
+| `~/.codex/plugins/cache/<marketplace>/<plugin>/<version>/skills/*/SKILL.md` | `plugin:<plugin>` | `config.toml` enables `<plugin>@<marketplace>` |
+
+Each entry keeps its name, description (capped at 200 characters), model (agents), scope and active flag. `hooks/routing-map.json` defines the routing intents (Architecture, Ambiguity, PlanReview, Security, Review, Debug, Testing, Research, Document, Trivial, Build) with ordered members, Advisor Group flags (oracle, metis, momus), and English + Korean keywords. The registry ranks candidates per intent by map order, scope, and description match (map members always rank ahead of description matches), so an unmanaged skill whose description fits an intent is ranked too; inactive packs, lanes, and plugins rank after every active candidate and are labeled, so they reach the top 3 only when fewer than three active candidates exist. The file is rebuilt only when an input changes or the project changes.
+
+- **SessionStart** injects a compact top-3-per-intent summary (at most 6,000 characters) plus the registry path.
+- **UserPromptSubmit** runs `hooks/route-hint.js`, which classifies the prompt and adds one line such as `[RouteHint] intent=Architecture → oracle[advisor], architect, $architecture-decision-records. Consult the Advisor Group when the intent calls for it.` Skills appear as `$name` (their Codex invocation), and the Advisor Group sentence is added only when an advisor is among the picks. Unmatched prompts, `/` commands, `$skill` mentions and subagent prompts get no hint.
+- **Stop** runs `hooks/advisor-gate.js`, the backstop for the Advisor Gate. When the turn's intent names an advisor (Architecture → oracle, Ambiguity → metis, PlanReview → momus), the rollout shows no `spawn_agent` of oracle, metis, or momus in that turn, and the final answer has no `Advisor skipped: <reason>` line, it blocks the turn once and asks for the advisor. It never blocks twice per turn, never on `stop_hook_active`, never for a subagent, and fails open on an unreadable rollout. route-hint.js records the turn's intent for it under `~/.codex/my-codex/route-intent/`.
+
+`~/.omc/state/capability-registry.json` belongs to my-claude; Codex never writes it.
+
+### Adoption: routing learns which results you keep
+
+Boss records whether you **adopt** what an agent or skill produced, per intent, and uses it — gated — to reorder routing candidates. Call counts are never used. This is the Codex side of my-claude's adoption ledger; both write the same files.
+
+| Piece | What it does |
+|-------|--------------|
+| **Offer** (read from the session rollout) | On each prompt, `hooks/adoption-tracker.js` reads the rollout at `transcript_path` and collects what the previous turn ran: `spawn_agent` calls (by `agent_type`; a multi-agent v2 agent counts once its result has reached the main thread) and skills (a `$skill` mention's injected instructions, or a read of a `SKILL.md`). One per item, 5 max. Each is filed under the intent `route-hint.js` classified for the prompt that ran it. Process skills listed in `adoption_ignore` in `hooks/routing-map.json` (default `$using-superpowers`, `$boss-briefing`, `$briefing-vault`) and skills under `~/.codex/skills/.system` are never offers: they run regardless of whether the advice was good |
+| **Verdict** (`hooks/adoption-tracker.js verdict`, UserPromptSubmit) | Classifies your reply with the same English/Korean lists as my-claude: accept (`진행해`, `반영해`, `좋아`, `그렇게 해`, `승인`, `머지해`, `go ahead`, `yes`, `lgtm`, `apply it`, `ship it`, …) or reject (`아니`, `틀렸`, `다시 해`, `그만`, `하지 마`, `되돌려`, `no,`, `wrong`, `redo`, `revert`, `stop`, …); reject wins when both match, a question (`…?`) is never an accept, and anything else is neutral (no event). `/` commands, `$skill` prompts and subagent prompts are not replies. Prints nothing |
+| **Ranking** (`adoptionWeight` in `hooks/build-registry.js`) | Events from the last 180 days, each weighted `0.5^(age_days/90)`. An (id, intent) pair counts only once its weighted sample reaches 5; its accept rate then moves it up or down by at most two slots **within its band** (pinned > map member > description match); active candidates still come before inactive ones. `Security` and `Ship` keep the map order and ignore adoption and pins. The SessionStart summary shows `(adopted 7/9)` once a pair is counted, and `[pinned]` for pins |
+
+The store lives under `~/.config/agent-harness/` and is shared with my-claude:
+
+- `adoption-ledger.jsonl` — append-only, one event per line:
+  `{"ts": ISO-8601, "harness": "codex", "session": id, "kind": "agent"|"skill", "id": agent name or "$skill", "intent": route-hint intent or "unknown", "verdict": "accept"|"reject", "signal": "reply"|"choice"|"revert", "evidence": first 120 chars of your reply}`.
+  Codex skills are recorded as `$name` and my-claude's without the `$`, so the two harnesses' skill rows never mix; agent rows with the same name count for both.
+- `adoption-pins.json` — `[{"id", "intent", "ts"}]`; a pin forces that item to the top of that intent.
+- `adoption-archive.jsonl` / `adoption-audit.jsonl` — where `reset`/`undo` move events (nothing is hard-deleted), and a log of every CLI mutation.
+
+Inspect or correct it with `~/.codex/bin/my-codex-adoption <cmd>`: `list [--intent X]` (id × intent table of weighted accept/reject/n), `list --events` (raw events with their `ts`), `pin <id> <intent>`, `unpin <id> <intent>`, `reset [<id>]`, `undo <ts> [<id>]`. Quote skill ids (`pin '$review' Review`). The ledger and pins are registry inputs, so the next session's routing summary reflects any change; while the ledger has events the registry is also rebuilt once a day so decay applies.
+
+### Learning loop (approved by you)
+
+Over time, Boss turns what you correct and what you keep adopting into rules and skills, but only the ones you approve. This is the Codex side of my-claude's learning loop; both write the same store. Detection runs without an LLM call, and nothing is written to your rules or skills until you run `my-codex-learn approve`.
+
+| Piece | What it does |
+|-------|--------------|
+| **Review** (`hooks/learning-review.js`) | Codex has no SessionEnd, and Stop fires after every turn, so review runs once per finished session: the Stop hook (`learning-review.js mark`) only records the session's rollout path in `~/.codex/.learning/`, and the next SessionStart (`learning-review.js pending`) reviews each marked session from its complete rollout (last 32 MB), then drops the marker. A resumed session is marked again; dedupe and the per-session cap keep a second review from adding anything twice. **Rule:** a message of yours, after the first turn, that states a preference or correction: English `don't …`, `never …`, `always …` at the start of a sentence, or `stop doing`, `from now on`, `instead of` anywhere; Korean `~지 마`, `~지 말고`, `다음부터` anywhere, or `항상` / `앞으로` / `대신` / `말고` with an imperative ending (`…해줘`, `…써`). It skips questions, code blocks, inline code, quoted lines, tagged blocks, `/` commands, `$skill` prompts, hook prompts, and messages over 1,500 characters. At most 2 per session, `always`/`앞으로`-style phrasing first, with the agent or skill that ran just before. **Skill:** an ordered chain of 2–4 agents/skills you accepted back to back (adoption ledger, `codex` rows) in 3 or more sessions within 30 days; a reject in between breaks the chain |
+| **Queue** | Deduped by kind plus normalized text or steps. A key you approved or dismissed is never suggested again. At most 5 are pending; new ones beyond that are refused and audited as `cap_refused` |
+| **Surfacing** (`hooks/session-start.sh`) | At most two `[Learn] <id>: <kind> — <text>. Approve: ~/.codex/bin/my-codex-learn approve <id> / dismiss: … dismiss <id>` lines, each on its own line in the single SessionStart JSON document. Boss asks you about them once per session |
+| **Approval** | Codex has no instruction-rules directory (`~/.codex/rules/` holds execpolicy `.rules` files), so a rule is written to `~/.codex/learned-rules/learned-<slug>.md` (your original sentence quoted; `--as "<English rule>"` adds an imperative line) and rendered into a `## Learned Rules (approved by you)` section marked `<!-- my-codex:learned -->` at the end of `~/.codex/AGENTS.md`, which Codex reads every session. The section is re-rendered from the live rule files after every approve/curate/rollback and at each SessionStart; everything else in AGENTS.md is kept. A skill goes to `~/.codex/skills/learned-<slug>/SKILL.md`: an ordered procedure (`spawn_agent` agent types, `$skill` mentions) whose description names its intent, so the registry routes it. Both are user-owned: `install.sh` never deletes `learned-rules/` or `skills/learned-*`, even when a manifest lists them. At most 20 learned items can be live |
+| **Curator** (`my-codex-learn curate`, also silently once every 7 days at SessionStart) | Ages items by **last use** only (a `$learned-*` skill use, the same correction repeated, a ledger event, or an edit to the file), never by how often: 30 days unused → `stale`, 90 days → `archived` (moved to `~/.config/agent-harness/learned-archive/` and dropped from AGENTS.md, never deleted). Pinned items are exempt |
+
+State lives next to the adoption store in `~/.config/agent-harness/`, in the same format my-claude writes (every row carries `"harness": "codex"`; rows of the other harness are kept and ignored): `learning-suggestions.jsonl`, `learning-items.json`, `learning-audit.jsonl` (ids `A1`, `A2`, … with before/after state and paths), and `learned-archive/`.
+
+Commands: `~/.codex/bin/my-codex-learn <cmd>`: `list`, `show <id|slug>`, `approve <id> [--as "<rule>"]`, `dismiss <id>`, `pin <slug>`, `unpin <slug>`, `curate [--dry-run]`, `rollback <audit-id>`, `sync-agents`. Rollback undoes one mutation, last in first out per item: an approval moves the file to the archive and puts the suggestion back to pending; an archive moves the file back; a dismiss, pin, or status change is reversed.
 
 ### Priority Routing
 
@@ -127,10 +184,12 @@ Boss cascades every request through a priority chain until the best match is fou
 
 | Complexity | Model | Used For |
 |-----------|-------|----------|
-| Top-level orchestration | `gpt-6-astra` | Boss |
+| Top-level orchestration | `gpt-6.1-sol` (xhigh) | Boss, and the main session by default |
 | Deep analysis, architecture, review | `gpt-6-astra` | Oracle, Prometheus, Sisyphus, Hephaestus, Atlas, Metis, Momus, architect, planner, code-reviewer, security-reviewer |
-| Standard implementation | `gpt-5.6-sol` | Librarian, Multimodal-Looker, executor, test-engineer, debugger, and 15 of the 17 pack agents |
-| Quick lookup, light analysis | `gpt-5.6-terra` | data-analyst, prompt-regression-tester |
+| Standard implementation | `gpt-6.1-sol` | Librarian, Multimodal-Looker, executor, test-engineer, debugger, and 15 of the 17 pack agents |
+| Quick lookup, light analysis | `gpt-6-luna` | data-analyst, prompt-regression-tester |
+
+The main session default is written as the top-level `model` in `~/.codex/config.toml` only when none is set; an existing value is kept. Oracle, Metis, and Momus form Boss's read-only **Advisor Group** on `gpt-6-astra`: Oracle for architecture trade-offs and unresolved root causes, Metis for ambiguous requests, Momus before a plan is executed. If an advisor hits a usage limit, Boss retries it once on `gpt-6.1-sol` and says so.
 
 The three tier IDs live in a single file, `scripts/model-tiers.sh`; `scripts/md-to-toml.sh` and `install.sh` both source it, and `scripts/check-model-drift.sh` fails the build if a model ID is hardcoded anywhere else in the scripts.
 
@@ -189,7 +248,7 @@ Every agent and skill above is allowlisted in [`scripts/skill-allowlists.sh`](./
 
 | Agent | Model | Role | Source |
 |-------|-------|------|--------|
-| Boss | gpt-6-astra xhigh | Dynamic runtime discovery → capability matching → optimal routing. Never writes code. | my-codex |
+| Boss | gpt-6.1-sol xhigh | Dynamic runtime discovery → capability matching → optimal routing. Never writes code. | my-codex |
 
 </details>
 
@@ -205,8 +264,8 @@ Every agent and skill above is allowlisted in [`scripts/skill-allowlists.sh`](./
 | Metis | gpt-6-astra high | Intent analysis, ambiguity detection | oh-my-openagent |
 | Momus | gpt-6-astra high | Plan feasibility review | oh-my-openagent |
 | Prometheus | gpt-6-astra xhigh | Interview-based detailed planning | oh-my-openagent |
-| Librarian | gpt-5.6-sol medium | Open-source documentation search via MCP | oh-my-openagent |
-| Multimodal-Looker | gpt-5.6-sol medium | Image/screenshot/diagram analysis | oh-my-openagent |
+| Librarian | gpt-6.1-sol medium | Open-source documentation search via MCP | oh-my-openagent |
+| Multimodal-Looker | gpt-6.1-sol medium | Image/screenshot/diagram analysis | oh-my-openagent |
 
 </details>
 
@@ -358,13 +417,14 @@ The Stop hook checks whether `/boss-briefing` has run today. If not, it blocks s
 
 | Hook | Event | Behavior |
 |------|-------|----------|
-| Session Setup | SessionStart | Auto-detects tools + injects Briefing Vault context |
+| Session Setup | SessionStart | Auto-detects tools, refreshes the capability registry, injects its per-intent routing summary + Briefing Vault context |
 | Delegation Guard | PreToolUse | Reminds the session, while it is in Boss mode, to delegate file edits instead of making them directly |
 | Agent Telemetry | PostToolUse | Logs agent usage to `~/.gstack/analytics/agent-usage.jsonl` |
 | Vault Enforcer | PostToolUse | Counts edits and refreshes the auto scaffolds mid-session |
 | Link Collector | PostToolUse | Appends `WebSearch`/`WebFetch` results to `references/auto-links.md` |
 | Subagent Logger | SubagentStop | Logs agent execution to Briefing Vault |
 | Vault Reminder | UserPromptSubmit | Suggests /boss-briefing after 5+ messages, and a real session note once the turn has recorded work |
+| Route Hint | UserPromptSubmit | Classifies the prompt by intent and names the top-ranked specialists, marking Advisor Group members |
 | Context Budget | UserPromptSubmit | Every 40 prompts since the last compaction (`MY_CODEX_COMPACT_EVERY`), suggests `/compact` at the next task boundary |
 | Context Budget reset | PostCompact | Zeroes that counter after a compaction |
 | Completion Check | Stop | Runs profile fallback + guards /boss-briefing |
@@ -520,7 +580,7 @@ Every agent is a native TOML file in `~/.codex/agents/`:
 ```toml
 name = "debugger"
 description = "Focused debugging specialist — traces failures to root cause"
-model = "gpt-5.6-sol"
+model = "gpt-6.1-sol"
 model_reasoning_effort = "medium"
 
 [developer_instructions]

@@ -127,10 +127,12 @@ Boss는 가장 적합한 매칭을 찾을 때까지 모든 요청을 우선순�
 
 | 복잡도 | 모델 | 사용 대상 |
 |-----------|-------|----------|
-| 최상위 오케스트레이션 | `gpt-6-astra` | Boss |
+| 최상위 오케스트레이션 | `gpt-6.1-sol` (xhigh) | Boss, 기본 메인 세션 |
 | 심층 분석, 아키텍처, 리뷰 | `gpt-6-astra` | Oracle, Prometheus, Sisyphus, Hephaestus, Atlas, Metis, Momus, architect, planner, code-reviewer, security-reviewer |
-| 표준 구현 | `gpt-5.6-sol` | Librarian, Multimodal-Looker, executor, test-engineer, debugger 및 팩 에이전트 17개 중 15개 |
-| 빠른 조회, 가벼운 분석 | `gpt-5.6-terra` | data-analyst, prompt-regression-tester |
+| 표준 구현 | `gpt-6.1-sol` | Librarian, Multimodal-Looker, executor, test-engineer, debugger 및 팩 에이전트 17개 중 15개 |
+| 빠른 조회, 가벼운 분석 | `gpt-6-luna` | data-analyst, prompt-regression-tester |
+
+메인 세션 기본값은 `~/.codex/config.toml`에 최상위 `model`이 없을 때만 기록되며, 기존 값은 유지됩니다. Oracle, Metis, Momus는 `gpt-6-astra`에서 동작하는 Boss의 읽기 전용 **Advisor Group**입니다. Oracle은 아키텍처 트레이드오프와 원인 불명 문제, Metis는 모호한 요청, Momus는 계획 실행 전 검토를 맡습니다. 어드바이저가 사용량 한도에 걸리면 Boss는 `gpt-6.1-sol`로 한 번 재시도하고 이를 알립니다.
 
 세 가지 티어 ID는 단일 파일 `scripts/model-tiers.sh`에 있습니다. `scripts/md-to-toml.sh`와 `install.sh`가 이 파일을 함께 참조하며, 스크립트 다른 곳에 모델 ID가 하드코딩되면 `scripts/check-model-drift.sh`가 빌드를 실패시킵니다.
 
@@ -189,7 +191,7 @@ Boss는 작업이 있던 모든 턴 — 파일 편집, 커밋/PR, 설정 변경,
 
 | 에이전트 | 모델 | 역할 | 출처 |
 |-------|-------|------|--------|
-| Boss | gpt-6-astra xhigh | 동적 런타임 탐색 → 역량 매칭 → 최적 라우팅. 코드를 직접 작성하지 않습니다. | my-codex |
+| Boss | gpt-6.1-sol xhigh | 동적 런타임 탐색 → 역량 매칭 → 최적 라우팅. 코드를 직접 작성하지 않습니다. | my-codex |
 
 </details>
 
@@ -205,8 +207,8 @@ Boss는 작업이 있던 모든 턴 — 파일 편집, 커밋/PR, 설정 변경,
 | Metis | gpt-6-astra high | 의도 분석, 모호성 탐지 | oh-my-openagent |
 | Momus | gpt-6-astra high | 계획 실현 가능성 검토 | oh-my-openagent |
 | Prometheus | gpt-6-astra xhigh | 인터뷰 기반 세부 계획 수립 | oh-my-openagent |
-| Librarian | gpt-5.6-sol medium | MCP를 통한 오픈소스 문서 검색 | oh-my-openagent |
-| Multimodal-Looker | gpt-5.6-sol medium | 이미지/스크린샷/다이어그램 분석 | oh-my-openagent |
+| Librarian | gpt-6.1-sol medium | MCP를 통한 오픈소스 문서 검색 | oh-my-openagent |
+| Multimodal-Looker | gpt-6.1-sol medium | 이미지/스크린샷/다이어그램 분석 | oh-my-openagent |
 
 </details>
 
@@ -520,7 +522,7 @@ bash /tmp/my-codex/install.sh --profile full
 ```toml
 name = "debugger"
 description = "Focused debugging specialist — traces failures to root cause"
-model = "gpt-5.6-sol"
+model = "gpt-6.1-sol"
 model_reasoning_effort = "medium"
 
 [developer_instructions]

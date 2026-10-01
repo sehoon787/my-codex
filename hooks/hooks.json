@@ -93,6 +93,18 @@
             "command": "node \"$HOME/.codex/hooks/stop-final-report.js\"",
             "timeout": 30000,
             "description": "Final report gate: blocks once if work happened but no final-report table was emitted"
+          },
+          {
+            "type": "command",
+            "command": "node \"$HOME/.codex/hooks/advisor-gate.js\"",
+            "timeout": 10000,
+            "description": "Advisor gate: blocks once if an advisor-intent turn (architecture, ambiguity, plan review) ended without spawning oracle/metis/momus or an 'Advisor skipped:' line"
+          },
+          {
+            "type": "command",
+            "command": "node \"$HOME/.codex/hooks/learning-review.js\" mark",
+            "timeout": 5000,
+            "description": "Learning loop: mark this session's rollout for review at the next SessionStart (Codex has no SessionEnd)"
           }
         ]
       }
@@ -117,6 +129,18 @@
             "command": "node \"$HOME/.codex/hooks/session-sync.js\" prompt",
             "timeout": 10000,
             "description": "BriefingVault: refresh profile/scaffolds during the conversation and emit follow-up reminders when needed"
+          },
+          {
+            "type": "command",
+            "command": "node \"$HOME/.codex/hooks/route-hint.js\"",
+            "timeout": 5000,
+            "description": "RouteHint: classify the prompt by intent and name the top-ranked specialists from the capability registry"
+          },
+          {
+            "type": "command",
+            "command": "node \"$HOME/.codex/hooks/adoption-tracker.js\" verdict",
+            "timeout": 5000,
+            "description": "Adoption: classify the reply to the last turn as accept/reject/neutral and append ledger events for the agents/skills that turn ran (silent, no context)"
           }
         ]
       }

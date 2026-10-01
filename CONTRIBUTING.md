@@ -59,7 +59,7 @@ developer_instructions = """
 
 | Field | Values | Notes |
 |-------|--------|-------|
-| `model` | `"gpt-6-astra"`, `"gpt-5.6-sol"`, `"gpt-5.6-terra"` | HIGH / MEDIUM / LOW tier (see `scripts/model-tiers.sh`); omit to inherit the `~/.codex/config.toml` default |
+| `model` | `"gpt-6-astra"`, `"gpt-6.1-sol"`, `"gpt-6-luna"` | HIGH / MEDIUM / LOW tier (see `scripts/model-tiers.sh`); omit to inherit the `~/.codex/config.toml` default |
 | `model_reasoning_effort` | `"xhigh"`, `"high"`, `"medium"`, `"low"` | Applies when model supports reasoning |
 | `sandbox_mode` | `"read-only"`, `"workspace-write"` | Use `read-only` for reviewers; `workspace-write` for implementers |
 | `nickname_candidates` | array of strings | Short invocation aliases |
@@ -68,9 +68,9 @@ developer_instructions = """
 
 | Model | Use For |
 |-------|---------|
-| `gpt-6-astra` | Architecture, deep analysis, orchestration (Boss, oracle, planner, reviewers) |
-| `gpt-5.6-sol` | Standard implementation, debugging, code review — the default worker tier |
-| `gpt-5.6-terra` | Fast lookups, lightweight agents, frequent invocation |
+| `gpt-6-astra` | Architecture, deep analysis (oracle, metis, momus, planner, reviewers) |
+| `gpt-6.1-sol` | Boss orchestration (xhigh), standard implementation, debugging, code review — the default worker tier and the main-session default (`MODEL_MAIN`) |
+| `gpt-6-luna` | Fast lookups, lightweight agents, frequent invocation |
 
 **Sandbox mode guidance:**
 

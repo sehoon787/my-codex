@@ -921,6 +921,9 @@ remove_manifest_paths() {
   while IFS= read -r rel_path; do
     [ -n "$rel_path" ] || continue
     case "$rel_path" in
+      # User-owned: what the user approved through the learning loop. Never
+      # removed, even if a manifest lists it.
+      skills/learned-*|learned-rules|learned-rules/*) continue ;;
       skills/*)
         skill_name="${rel_path#skills/}"
         if [ "$skill_name" != "gstack" ] && [ "$skill_name" = "${skill_name%%/*}" ]; then
@@ -1031,6 +1034,27 @@ normalize_agent_models() {
   done
 
   echo "  Normalized $dir:$summary"
+}
+
+# Compare two dotted-numeric versions (e.g. codex --version output against
+# MIN_CODEX_CLI_VERSION in scripts/model-tiers.sh). Returns 0 (true) if
+# $1 >= $2, 1 otherwise. Missing trailing components compare as 0, so
+# "0.159" >= "0.159.0" is true. No pre-release/build suffixes are handled --
+# both inputs must already be plain N.N.N.
+version_ge() {
+  local v1="$1" v2="$2"
+  local IFS=.
+  local -a a=($v1) b=($v2)
+  local i=0 n="${#a[@]}" max="${#b[@]}" x y
+  [ "$max" -gt "$n" ] && n="$max"
+  while [ "$i" -lt "$n" ]; do
+    x="${a[$i]:-0}"
+    y="${b[$i]:-0}"
+    [ "$((10#$x))" -gt "$((10#$y))" ] && return 0
+    [ "$((10#$x))" -lt "$((10#$y))" ] && return 1
+    i=$((i + 1))
+  done
+  return 0
 }
 
 # Records one directory entry ("skills/<name>") per copied tree, not one line
@@ -1362,6 +1386,15 @@ command -v git  >/dev/null 2>&1 || { echo "ERROR: git not found"; exit 1; }
 if ! command -v codex >/dev/null 2>&1; then
   echo "WARNING: codex CLI not found. Install from https://github.com/openai/codex"
   echo "  Continuing anyway -- agents will be ready when codex is installed."
+else
+  # my-codex does not install or upgrade the codex CLI itself -- only warn
+  # when it is older than what the MEDIUM tier model requires. Never fail
+  # the install on this.
+  CODEX_CLI_VERSION="$(codex --version 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1 || true)"
+  if [ -n "$CODEX_CLI_VERSION" ] && ! version_ge "$CODEX_CLI_VERSION" "$MIN_CODEX_CLI_VERSION"; then
+    echo "WARNING: codex CLI $CODEX_CLI_VERSION is older than $MIN_CODEX_CLI_VERSION, the minimum required for the MEDIUM tier model ($MODEL_TIER_MEDIUM)."
+    echo "  Run: npm i -g @openai/codex@latest"
+  fi
 fi
 echo "  Prerequisites OK"
 
@@ -2014,6 +2047,38 @@ if [ -f "$REPO_ROOT/hooks/persona-rule.js" ]; then
   cp "$REPO_ROOT/hooks/persona-rule.js" "$CODEX_ROOT/hooks/persona-rule.js"
   add_manifest_entry "hooks/persona-rule.js"
 fi
+# build-registry.js and route-hint.js require adoption-store.js: copy it first
+# so a session that starts mid-install never loads a missing module.
+if [ -f "$REPO_ROOT/hooks/adoption-store.js" ]; then
+  cp "$REPO_ROOT/hooks/adoption-store.js" "$CODEX_ROOT/hooks/adoption-store.js"
+  add_manifest_entry "hooks/adoption-store.js"
+fi
+if [ -f "$REPO_ROOT/hooks/build-registry.js" ]; then
+  cp "$REPO_ROOT/hooks/build-registry.js" "$CODEX_ROOT/hooks/build-registry.js"
+  add_manifest_entry "hooks/build-registry.js"
+fi
+if [ -f "$REPO_ROOT/hooks/route-hint.js" ]; then
+  cp "$REPO_ROOT/hooks/route-hint.js" "$CODEX_ROOT/hooks/route-hint.js"
+  add_manifest_entry "hooks/route-hint.js"
+fi
+if [ -f "$REPO_ROOT/hooks/advisor-gate.js" ]; then
+  cp "$REPO_ROOT/hooks/advisor-gate.js" "$CODEX_ROOT/hooks/advisor-gate.js"
+  add_manifest_entry "hooks/advisor-gate.js"
+fi
+if [ -f "$REPO_ROOT/hooks/routing-map.json" ]; then
+  cp "$REPO_ROOT/hooks/routing-map.json" "$CODEX_ROOT/hooks/routing-map.json"
+  add_manifest_entry "hooks/routing-map.json"
+fi
+for _loop_hook in adoption-tracker.js adoption-cli.js learning-store.js learning-review.js learning-cli.js; do
+  if [ -f "$REPO_ROOT/hooks/$_loop_hook" ]; then
+    cp "$REPO_ROOT/hooks/$_loop_hook" "$CODEX_ROOT/hooks/$_loop_hook"
+    add_manifest_entry "hooks/$_loop_hook"
+  fi
+done
+# Approved learned rules live in ~/.codex/learned-rules and are rendered into
+# the learned section of AGENTS.md; re-render it in case step 3 created
+# AGENTS.md from the template.
+node "$CODEX_ROOT/hooks/learning-cli.js" sync-agents >/dev/null 2>&1 || true
 echo "  Hooks installed (vault enforcement + persona)"
 
 echo "[3.6/7] Registering Codex plugin..."
@@ -2131,6 +2196,61 @@ else
   echo "  config.toml: compact_prompt already set"
 fi
 
+# The main session's model is config.toml's top-level `model` key. Set it
+# when absent, and prepend it since a `model =` after the first [table]
+# header belongs to that table and does not count as top-level. When present,
+# it is kept as is -- it is a user choice -- with one exception: a value that
+# exactly matches a PREVIOUS_MAIN_MODELS entry (a past MODEL_MAIN this
+# installer itself wrote as the default) is rewritten to the current
+# MODEL_MAIN, since that is a stale installer default, not a user choice.
+ensure_main_model() {
+  local current stripped tmp legacy is_previous=0
+  if current=$(awk '
+      /^[[:space:]]*\[/ { exit }
+      /^[[:space:]]*model[[:space:]]*=/ { sub(/^[[:space:]]*model[[:space:]]*=[[:space:]]*/, ""); print; found = 1; exit }
+      END { exit(found ? 0 : 1) }
+    ' "$CONFIG_FILE"); then
+    if [[ "$current" =~ ^\"([^\"]*)\" ]]; then
+      stripped="${BASH_REMATCH[1]}"
+    else
+      stripped="$current"
+    fi
+    for legacy in "${PREVIOUS_MAIN_MODELS[@]}"; do
+      [ "$stripped" = "$legacy" ] && { is_previous=1; break; }
+    done
+    if [ "$is_previous" -eq 1 ]; then
+      tmp="$(mktemp)"
+      # Rewrite only the top-level model line (before the first [table]);
+      # write back through the original file so its mode and inode survive.
+      awk -v from="$stripped" -v to="$MODEL_MAIN" '
+          !done && /^[[:space:]]*\[/ { done = 1 }
+          !done && $0 ~ /^[[:space:]]*model[[:space:]]*=/ {
+            val = $0
+            sub(/^[[:space:]]*model[[:space:]]*=[[:space:]]*"/, "", val)
+            sub(/".*$/, "", val)
+            if (val == from) {
+              print "model = \"" to "\""
+              done = 1
+              next
+            }
+          }
+          { print }
+        ' "$CONFIG_FILE" > "$tmp" && cat "$tmp" > "$CONFIG_FILE"
+      rm -f "$tmp"
+      echo "  config.toml: model $stripped -> $MODEL_MAIN (previous my-codex default)"
+      return 0
+    fi
+    echo "  config.toml: model already set ($current), kept"
+    return 0
+  fi
+  tmp="$(mktemp)"
+  # Write back through the original file so its mode and inode survive.
+  { printf 'model = "%s"\n' "$MODEL_MAIN"; cat "$CONFIG_FILE"; } > "$tmp" && cat "$tmp" > "$CONFIG_FILE"
+  rm -f "$tmp"
+  echo "  config.toml: set model = \"$MODEL_MAIN\" (main session default)"
+}
+ensure_main_model
+
 echo "[4.5/7] Installing Codex attribution defaults..."
 mkdir -p "$CODEX_ROOT/bin" "$CODEX_ROOT/lib" "$CODEX_ROOT/git-hooks"
 cp "$REPO_ROOT/scripts/codex-attribution-lib.sh" "$CODEX_ROOT/lib/codex-attribution.sh"
@@ -2145,8 +2265,12 @@ cp "$REPO_ROOT/scripts/skill-catalog.js" "$CODEX_ROOT/lib/my-codex/skill-catalog
 cp "$REPO_ROOT/scripts/skill-catalog.json" "$CODEX_ROOT/lib/my-codex/skill-catalog.json"
 cp "$REPO_ROOT/scripts/skill-catalog-toml.py" "$CODEX_ROOT/lib/my-codex/skill-catalog-toml.py"
 cp "$REPO_ROOT/bin/my-codex-skills" "$CODEX_ROOT/bin/my-codex-skills"
+cp "$REPO_ROOT/bin/my-codex-adoption" "$CODEX_ROOT/bin/my-codex-adoption"
+cp "$REPO_ROOT/bin/my-codex-learn" "$CODEX_ROOT/bin/my-codex-learn"
 add_manifest_entry "lib/my-codex"
 add_manifest_entry "bin/my-codex-skills"
+add_manifest_entry "bin/my-codex-adoption"
+add_manifest_entry "bin/my-codex-learn"
 cp "$REPO_ROOT/templates/git-hooks/prepare-commit-msg" "$CODEX_ROOT/git-hooks/prepare-commit-msg"
 cp "$REPO_ROOT/templates/git-hooks/commit-msg" "$CODEX_ROOT/git-hooks/commit-msg"
 cp "$REPO_ROOT/templates/git-hooks/post-commit" "$CODEX_ROOT/git-hooks/post-commit"
@@ -2155,6 +2279,8 @@ chmod +x "$CODEX_ROOT/lib/codex-attribution.sh" \
   "$CODEX_ROOT/bin/codex-mark-used" \
   "$CODEX_ROOT/bin/my-codex-packs" \
   "$CODEX_ROOT/bin/my-codex-skills" \
+  "$CODEX_ROOT/bin/my-codex-adoption" \
+  "$CODEX_ROOT/bin/my-codex-learn" \
   "$CODEX_ROOT/git-hooks/prepare-commit-msg" \
   "$CODEX_ROOT/git-hooks/commit-msg" \
   "$CODEX_ROOT/git-hooks/post-commit"

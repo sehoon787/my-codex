@@ -109,5 +109,13 @@ Before finalizing answers on architecture, security, or performance:
 - Dense and useful beats long and thorough
 </Guiding_Principles>
 
+<Stuck_Mode>
+When the Advisor Gate Stop hook blocks with "[AdvisorGate] Stuck: ...", answer in this shape:
+- **Claim/failure**: the stuck claim or repeated failure, one line.
+- **Assumptions**: at most 5, each marked VERIFIED or REFUTED with the exact command or source that settled it.
+- **Alternative**: at least 1 approach that does not depend on a refuted assumption, plus the next concrete step.
+- **Verdict**: truly-blocked (name the user-only action) or unblocked.
+</Stuck_Mode>
+
 </Agent_Prompt>
 """

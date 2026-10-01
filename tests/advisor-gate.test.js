@@ -221,8 +221,8 @@ check('28. claim inside a code fence -> none', !stuckStop({
 }).blocked);
 check('29. "Blocked on user: <action>" escape line -> none',
   !stuckStop({ lam: 'Blocked on user: approve hook trust before I can continue.' }).blocked);
-check('30. "Advisor skipped: <reason>" escape line -> none',
-  !stuckStop({ lam: 'Advisor skipped: not needed. This is impossible anyway.' }).blocked);
+check('30. "Advisor skipped: <reason>" on an impossibility claim -> still block',
+  stuckStop({ lam: 'Advisor skipped: not needed. This is impossible anyway.' }).blocked);
 check('31. oracle spawned this turn -> none', !stuckStop({
   entries: [started('t1'), spawn('oracle')],
   lam: 'This is impossible without additional access.'
@@ -334,6 +334,31 @@ check('47. Stuck: real reason -> none', !stuckStop({
   check('51. impossibility: "This is impossible without admin rights." -> block', claim('This is impossible without admin rights.').blocked);
   check('52. impossibility: inline-coded `불가능합니다` -> none', !claim('The gate matches `불가능합니다` in text.').blocked);
   check('53. impossibility: quoted "This is impossible" -> none', !claim('The phrase "this is impossible" is a trigger.').blocked);
+}
+
+// ------------------------------ Stuck: impossibility claim is not skippable
+{
+  const CLAIM = 'It is impossible to find the port; config/app.settings.json, which I did not open.';
+  const SKIP = 'Advisor skipped: "impossible" here is the answer you asked for.';
+  const a = stuckStop({ lam: `${CLAIM}\n${SKIP}` });
+  check('49. claim + valid "Advisor skipped:" -> block, says skip not accepted',
+    a.blocked && /not accepted for impossibility claims/.test(a.doc.reason), a.doc && a.doc.reason);
+  check('50. claim + oracle spawn -> none',
+    !stuckStop({ entries: [started('t1'), spawn('oracle')], lam: CLAIM }).blocked);
+  check('51. claim + "Blocked on user: complete the acme login" -> none',
+    !stuckStop({ lam: `${CLAIM}\nBlocked on user: complete the acme login` }).blocked);
+  check('52. repeated failure + valid "Advisor skipped:" -> none', !stuckStop({
+    entries: [started('t1'), ...failingRun('npm test', 3)],
+    lam: 'Advisor skipped: the user asked me not to consult anyone.'
+  }).blocked);
+  const home = freshHome();
+  const claims = ['This is impossible with the current API.', 'There is no way to fix this without X.', 'This cannot be done without Y.'];
+  const outcomes = claims.map((c, i) => stuckStop({
+    home, turnId: `t${i + 1}`, entries: [started(`t${i + 1}`)],
+    lam: `${c}\nAdvisor skipped: the user asked me not to consult anyone.`
+  }).blocked);
+  check('53. cap holds for skipped claims: blocked, blocked, NOT blocked',
+    outcomes[0] === true && outcomes[1] === true && outcomes[2] === false, outcomes.join());
 }
 
 if (failures) {

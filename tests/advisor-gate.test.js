@@ -347,10 +347,33 @@ check('47. Stuck: real reason -> none', !stuckStop({
     !stuckStop({ entries: [started('t1'), spawn('oracle')], lam: CLAIM }).blocked);
   check('51. claim + "Blocked on user: complete the acme login" -> none',
     !stuckStop({ lam: `${CLAIM}\nBlocked on user: complete the acme login` }).blocked);
-  check('52. repeated failure + valid "Advisor skipped:" -> none', !stuckStop({
+  const rf = stuckStop({
     entries: [started('t1'), ...failingRun('npm test', 3)],
     lam: 'Advisor skipped: the user asked me not to consult anyone.'
+  });
+  check('52. repeated failure + valid "Advisor skipped:" -> block, says skip not accepted',
+    rf.blocked && /not accepted for repeated failure/.test(rf.doc.reason), rf.doc && rf.doc.reason);
+  check('52b. repeated failure + tracer spawn -> none', !stuckStop({
+    entries: [started('t1'), ...failingRun('npm test', 3), spawn('tracer')]
   }).blocked);
+  check('52c. repeated failure + valid "Blocked on user:" -> none', !stuckStop({
+    entries: [started('t1'), ...failingRun('npm test', 3)],
+    lam: 'Blocked on user: complete the acme login'
+  }).blocked);
+  const npHome = freshHome();
+  const npTurn = (turnId) => stuckStop({
+    home: npHome, turnId, entries: [started(turnId), ...failingRun('npm test', 1)],
+    lam: 'Still investigating.\nAdvisor skipped: the user asked me not to consult anyone.'
+  });
+  check('52d. no-progress + valid "Advisor skipped:" -> none (unchanged)',
+    !npTurn('t1').blocked && !npTurn('t2').blocked && !npTurn('t3').blocked);
+  const capHome = freshHome();
+  const capOut = [1, 2, 3].map((i) => stuckStop({
+    home: capHome, turnId: `t${i}`, entries: [started(`t${i}`), ...failingRun(`cmd${i} x`, 3)],
+    lam: 'Advisor skipped: the user asked me not to consult anyone.'
+  }).blocked);
+  check('52e. cap holds for skipped repeated failures: blocked, blocked, NOT blocked',
+    capOut[0] === true && capOut[1] === true && capOut[2] === false, capOut.join());
   const home = freshHome();
   const claims = ['This is impossible with the current API.', 'There is no way to fix this without X.', 'This cannot be done without Y.'];
   const outcomes = claims.map((c, i) => stuckStop({

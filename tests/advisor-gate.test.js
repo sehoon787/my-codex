@@ -330,7 +330,7 @@ check('44. routed-intent gate: real reason -> none',
 }
 check('46. Stuck: placeholder "Blocked on user: n/a" -> block',
   stuckStop({ entries: [started('t1'), ...failingRun('npm test', 3)], lam: 'Blocked on user: n/a' }).blocked);
-check('47. Stuck: real reason -> none', !stuckStop({
+check('47. Stuck: repeated failure + real "Blocked on user" reason, no advisor -> block', stuckStop({
   entries: [started('t1'), ...failingRun('npm test', 3)],
   lam: 'Blocked on user: needs the user to approve the GitHub App installation manually.'
 }).blocked);
@@ -375,8 +375,12 @@ check('47. Stuck: real reason -> none', !stuckStop({
   check('52b. repeated failure + tracer spawn -> none', !stuckStop({
     entries: [started('t1'), ...failingRun('npm test', 3), spawn('tracer')]
   }).blocked);
-  check('52c. repeated failure + valid "Blocked on user:" -> none', !stuckStop({
+  check('52c. repeated failure + valid "Blocked on user:", no advisor -> block', stuckStop({
     entries: [started('t1'), ...failingRun('npm test', 3)],
+    lam: 'Blocked on user: complete the acme login'
+  }).blocked);
+  check('52c2. repeated failure + tracer spawn + "Blocked on user:" -> none', !stuckStop({
+    entries: [started('t1'), ...failingRun('npm test', 3), spawn('tracer')],
     lam: 'Blocked on user: complete the acme login'
   }).blocked);
   const npHome = freshHome();

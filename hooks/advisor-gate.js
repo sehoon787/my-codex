@@ -448,8 +448,9 @@ const STUCK_MODE_CONTRACT = 'state the claim or failure in one line; list at mos
 function buildStuckReason(kind, reasonLine, userOnly, goal, emptyEscape) {
   const escapeHint = (kind === 'failure'
     ? 'Retrying the same command is not progress. Spawn the recommended advisor to get competing hypotheses, a reframe and at least one different approach, then try that approach. '
-      + 'If this truly needs a user-only action (login, approval, trust, credentials, permission), add one line "Blocked on user: <action>" instead, then repeat the final answer. '
-      + '"Advisor skipped" is not accepted for repeated failure.'
+      + 'The advisor call must come first: "Advisor skipped" and "Blocked on user" are not accepted for repeated failure without it. '
+      + 'After the advisor returns, if its verdict is truly-blocked on a user-only action (login, approval, trust, credentials, permission), '
+      + 'your final answer may then add one line "Blocked on user: <action>".'
     : kind === 'claim'
     ? 'An impossibility claim must be audited by an advisor. If it truly needs a user-only action (login, approval, trust, credentials, permission), '
       + 'add one line "Blocked on user: <action>" instead, then repeat the final answer. "Advisor skipped" is not accepted for impossibility claims.'
@@ -505,13 +506,16 @@ function decideStuck(input, home) {
   if (!input || input.agent_id || input.stop_hook_active === true || !input.session_id) return null;
   const lastMsg = String(input.last_assistant_message || '');
   const skipOnly = hasOnlyValidSkip(lastMsg);
-  if (hasValidEscape(lastMsg) && !skipOnly) return null;
+  const escaped = hasValidEscape(lastMsg) && !skipOnly;
 
   const turn = spawnedInTurn(input.transcript_path, input.turn_id);
   const stuckAdvisors = stuckAdvisorNames();
   if (!turn.found || turn.agentTypes.some((t) => stuckAdvisors.includes(t))) return null;
 
   const execs = analyzeTurnExecs(input.transcript_path, input.turn_id);
+  // Repeated failure is escaped only by a Stuck advisor spawn, never by a line.
+  const failing = Boolean(execs.blockingPrefix || execs.totalNonzero >= REPEAT_FAILURE_TOTAL_THRESHOLD);
+  if (escaped && !failing) return null;
   const claim = detectImpossibilityClaim(lastMsg);
   const goal = latestGoal(input.transcript_path);
 
@@ -532,7 +536,7 @@ function decideStuck(input, home) {
   let kind = null;
   let signature = null;
   let reasonLine = null;
-  if (execs.blockingPrefix || execs.totalNonzero >= REPEAT_FAILURE_TOTAL_THRESHOLD) {
+  if (failing) {
     kind = 'failure';
     signature = execs.blockingPrefix ? `fail:${execs.blockingPrefix}` : `fail:multi:${execs.totalNonzero}`;
     reasonLine = execs.blockingPrefix

@@ -36,6 +36,17 @@ const failingRun = (prefix, n) => {
   return entries;
 };
 
+// Masked failure: exit_code 0 but the output text reports a nonzero exit.
+const maskedRun = (text, n) => {
+  const entries = [];
+  for (let i = 0; i < n; i++) {
+    const id = `call_masked_${i}`;
+    entries.push(execCall(id, `./build.sh; echo \\"EXIT=$?\\"`));
+    entries.push({ type: 'response_item', payload: { type: 'custom_tool_call_output', call_id: id, output: [{ type: 'input_text', text }, { type: 'input_text', text: JSON.stringify({ exit_code: 0, output: '' }) }] } });
+  }
+  return entries;
+};
+
 // thread_goal_updated, as seen in the one real rollout that carries it
 // (~/.codex/sessions/2026/09/29/...): status is the lowercase string
 // "active", and the field is goal.objective/goal.status, not top-level.
@@ -212,6 +223,14 @@ check('24. 5 mixed-prefix failures (1 each) -> block', stuckStop({
 }).blocked);
 check('25. 2 failures -> none',
   !stuckStop({ entries: [started('t1'), ...failingRun('npm test', 2)] }).blocked);
+check('25b. 3 masked failures "EXIT=1" (exit_code 0) -> block',
+  stuckStop({ entries: [started('t1'), ...maskedRun('error: x EXIT=1', 3)] }).blocked);
+check('25c. 3 results "EXIT=0" -> none',
+  !stuckStop({ entries: [started('t1'), ...maskedRun('ok EXIT=0', 3)] }).blocked);
+check('25d. 3 masked failures "exit code: 2" -> block',
+  stuckStop({ entries: [started('t1'), ...maskedRun('failed\nexit code: 2', 3)] }).blocked);
+check('25e. 2 masked failures -> none',
+  !stuckStop({ entries: [started('t1'), ...maskedRun('error: x EXIT=1', 2)] }).blocked);
 check('26. impossibility claim (EN) -> block',
   stuckStop({ lam: 'Given the current constraints, this is impossible to fix.' }).blocked);
 check('27. impossibility claim (KO) -> block',
@@ -311,7 +330,7 @@ check('44. routed-intent gate: real reason -> none',
 }
 check('46. Stuck: placeholder "Blocked on user: n/a" -> block',
   stuckStop({ entries: [started('t1'), ...failingRun('npm test', 3)], lam: 'Blocked on user: n/a' }).blocked);
-check('47. Stuck: real reason -> none', !stuckStop({
+check('47. Stuck: repeated failure + real "Blocked on user" reason, no advisor -> block', stuckStop({
   entries: [started('t1'), ...failingRun('npm test', 3)],
   lam: 'Blocked on user: needs the user to approve the GitHub App installation manually.'
 }).blocked);
@@ -356,8 +375,12 @@ check('47. Stuck: real reason -> none', !stuckStop({
   check('52b. repeated failure + tracer spawn -> none', !stuckStop({
     entries: [started('t1'), ...failingRun('npm test', 3), spawn('tracer')]
   }).blocked);
-  check('52c. repeated failure + valid "Blocked on user:" -> none', !stuckStop({
+  check('52c. repeated failure + valid "Blocked on user:", no advisor -> block', stuckStop({
     entries: [started('t1'), ...failingRun('npm test', 3)],
+    lam: 'Blocked on user: complete the acme login'
+  }).blocked);
+  check('52c2. repeated failure + tracer spawn + "Blocked on user:" -> none', !stuckStop({
+    entries: [started('t1'), ...failingRun('npm test', 3), spawn('tracer')],
     lam: 'Blocked on user: complete the acme login'
   }).blocked);
   const npHome = freshHome();

@@ -262,8 +262,14 @@ function collectOutputText(p) {
 // fields (sometimes wrapped in a Promise.allSettled-style
 // {status,value:{...}} or {file,result:{...}} envelope) — never as a
 // top-level field on function_call_output/custom_tool_call_output itself.
+//
+// A result also counts when its text reports a nonzero exit status in prose
+// (MASKED_EXIT_RE), e.g. `cmd; echo "EXIT=$?"` exits 0 but prints EXIT=1.
+const MASKED_EXIT_RE = /\bexit(?:[ _-]?(?:code|status))?\s*[=:]?\s*([1-9]\d{0,2})\b/i;
+
 function outputHasNonzeroExit(p) {
   const text = collectOutputText(p);
+  if (MASKED_EXIT_RE.test(text)) return true;
   for (const m of text.matchAll(/"exit_code"\s*:\s*(-?\d+)/g)) {
     if (Number(m[1]) !== 0) return true;
   }

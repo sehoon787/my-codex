@@ -1036,6 +1036,27 @@ normalize_agent_models() {
   echo "  Normalized $dir:$summary"
 }
 
+# Compare two dotted-numeric versions (e.g. codex --version output against
+# MIN_CODEX_CLI_VERSION in scripts/model-tiers.sh). Returns 0 (true) if
+# $1 >= $2, 1 otherwise. Missing trailing components compare as 0, so
+# "0.159" >= "0.159.0" is true. No pre-release/build suffixes are handled --
+# both inputs must already be plain N.N.N.
+version_ge() {
+  local v1="$1" v2="$2"
+  local IFS=.
+  local -a a=($v1) b=($v2)
+  local i=0 n="${#a[@]}" max="${#b[@]}" x y
+  [ "$max" -gt "$n" ] && n="$max"
+  while [ "$i" -lt "$n" ]; do
+    x="${a[$i]:-0}"
+    y="${b[$i]:-0}"
+    [ "$((10#$x))" -gt "$((10#$y))" ] && return 0
+    [ "$((10#$x))" -lt "$((10#$y))" ] && return 1
+    i=$((i + 1))
+  done
+  return 0
+}
+
 # Records one directory entry ("skills/<name>") per copied tree, not one line
 # per file. remove_manifest_paths() deletes entries with `rm -rf`, so the whole
 # subtree — nested references/, scripts/, everything cp -R placed — is removed
@@ -1365,6 +1386,15 @@ command -v git  >/dev/null 2>&1 || { echo "ERROR: git not found"; exit 1; }
 if ! command -v codex >/dev/null 2>&1; then
   echo "WARNING: codex CLI not found. Install from https://github.com/openai/codex"
   echo "  Continuing anyway -- agents will be ready when codex is installed."
+else
+  # my-codex does not install or upgrade the codex CLI itself -- only warn
+  # when it is older than what the MEDIUM tier model requires. Never fail
+  # the install on this.
+  CODEX_CLI_VERSION="$(codex --version 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1 || true)"
+  if [ -n "$CODEX_CLI_VERSION" ] && ! version_ge "$CODEX_CLI_VERSION" "$MIN_CODEX_CLI_VERSION"; then
+    echo "WARNING: codex CLI $CODEX_CLI_VERSION is older than $MIN_CODEX_CLI_VERSION, the minimum required for the MEDIUM tier model ($MODEL_TIER_MEDIUM)."
+    echo "  Run: npm i -g @openai/codex@latest"
+  fi
 fi
 echo "  Prerequisites OK"
 
@@ -2166,17 +2196,50 @@ else
   echo "  config.toml: compact_prompt already set"
 fi
 
-# The main session's model is config.toml's top-level `model` key. Set it only
-# when absent -- any existing value is a user choice and is kept as is -- and
-# prepend it, since a `model =` after the first [table] header belongs to that
-# table and does not count as top-level.
+# The main session's model is config.toml's top-level `model` key. Set it
+# when absent, and prepend it since a `model =` after the first [table]
+# header belongs to that table and does not count as top-level. When present,
+# it is kept as is -- it is a user choice -- with one exception: a value that
+# exactly matches a PREVIOUS_MAIN_MODELS entry (a past MODEL_MAIN this
+# installer itself wrote as the default) is rewritten to the current
+# MODEL_MAIN, since that is a stale installer default, not a user choice.
 ensure_main_model() {
-  local current tmp
+  local current stripped tmp legacy is_previous=0
   if current=$(awk '
       /^[[:space:]]*\[/ { exit }
       /^[[:space:]]*model[[:space:]]*=/ { sub(/^[[:space:]]*model[[:space:]]*=[[:space:]]*/, ""); print; found = 1; exit }
       END { exit(found ? 0 : 1) }
     ' "$CONFIG_FILE"); then
+    if [[ "$current" =~ ^\"([^\"]*)\" ]]; then
+      stripped="${BASH_REMATCH[1]}"
+    else
+      stripped="$current"
+    fi
+    for legacy in "${PREVIOUS_MAIN_MODELS[@]}"; do
+      [ "$stripped" = "$legacy" ] && { is_previous=1; break; }
+    done
+    if [ "$is_previous" -eq 1 ]; then
+      tmp="$(mktemp)"
+      # Rewrite only the top-level model line (before the first [table]);
+      # write back through the original file so its mode and inode survive.
+      awk -v from="$stripped" -v to="$MODEL_MAIN" '
+          !done && /^[[:space:]]*\[/ { done = 1 }
+          !done && $0 ~ /^[[:space:]]*model[[:space:]]*=/ {
+            val = $0
+            sub(/^[[:space:]]*model[[:space:]]*=[[:space:]]*"/, "", val)
+            sub(/".*$/, "", val)
+            if (val == from) {
+              print "model = \"" to "\""
+              done = 1
+              next
+            }
+          }
+          { print }
+        ' "$CONFIG_FILE" > "$tmp" && cat "$tmp" > "$CONFIG_FILE"
+      rm -f "$tmp"
+      echo "  config.toml: model $stripped -> $MODEL_MAIN (previous my-codex default)"
+      return 0
+    fi
     echo "  config.toml: model already set ($current), kept"
     return 0
   fi

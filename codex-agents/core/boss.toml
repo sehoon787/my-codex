@@ -1,6 +1,6 @@
 name = "boss"
 description = "Use when the user's request needs dynamic agent discovery, intent classification, and delegation to the optimal specialist."
-model = "gpt-5.6-sol"
+model = "gpt-6.1-sol"
 model_reasoning_effort = "xhigh"
 sandbox_mode = "read-only"
 developer_instructions = """
@@ -54,7 +54,7 @@ Advisor Gate (mandatory, not a suggestion):
 Advisor rules:
 - Consult at most 1-2 advisors per request, and only on the triggers above; a clear, well-scoped request needs none.
 - Advisors never edit files. Summarize their findings in a few lines and hand the decision to the user; do not act on a trade-off the user has not chosen.
-- If an advisor spawn fails with a usage-limit error, retry it once with model gpt-5.6-sol and tell the user the advice came from the fallback model.
+- If an advisor spawn fails with a usage-limit error, retry it once with model gpt-6.1-sol and tell the user the advice came from the fallback model.
 - architect and code-reviewer stay outside the group: they verify code after it is written, advisors shape the decision before it.
 
 Focus on:

@@ -28,7 +28,7 @@ function write(file, text) {
 }
 
 function agentToml(name, description, model) {
-  return `name = "${name}"\ndescription = "${description}"\nmodel = "${model || 'gpt-5.6-sol'}"\n` +
+  return `name = "${name}"\ndescription = "${description}"\nmodel = "${model || 'gpt-6.1-sol'}"\n` +
     'developer_instructions = """\nname = "not-top-level"\n"""\n\n[mcp_servers.x]\nname = "nested"\n';
 }
 
@@ -68,7 +68,7 @@ write(path.join(CODEX, 'skills', 'rollout-checker', 'SKILL.md'),
 // Folder name differs from the frontmatter name.
 write(path.join(CODEX, 'skills', 'vendor-pubmed-database', 'SKILL.md'), skillMd('pubmed-database', 'PubMed lookups.'));
 write(path.join(CODEX, 'agents', 'long-desc.toml'),
-  'name = "long-desc"\ndescription = """\nMulti-line agent\ndescription."""\nmodel = "gpt-5.6-sol"\n');
+  'name = "long-desc"\ndescription = """\nMulti-line agent\ndescription."""\nmodel = "gpt-6.1-sol"\n');
 // A skill manager that reports skills by folder name.
 write(path.join(CODEX, 'bin', 'my-codex-skills'),
   "#!/bin/sh\nprintf '%s\\n' '{\"activeSkillNames\":[\"brainstorming\",\"cso\",\"grpc-designer\",\"vendor-pubmed-database\",\"outside-skill\",\"rollout-checker\"],\"laneIndex\":{}}'\n");
@@ -97,7 +97,7 @@ const agent = (n) => reg.agents.find((a) => a.name === n);
 const skill = (n) => reg.skills.find((s) => s.name === n);
 check('agents -> global scope active', agent('oracle') && agent('oracle').scope === 'global' && agent('oracle').active);
 check('agents -> TOML fields parsed from top level only',
-  agent('oracle').description.startsWith('Architecture decisions') && agent('oracle').model === 'gpt-5.6-sol');
+  agent('oracle').description.startsWith('Architecture decisions') && agent('oracle').model === 'gpt-6.1-sol');
 check('agents -> project scope', agent('local-arch') && agent('local-arch').scope === 'project');
 check('agents -> pack-only agent marked inactive',
   agent('postgres-pro') && agent('postgres-pro').scope === 'pack:data-ai' && agent('postgres-pro').active === false);

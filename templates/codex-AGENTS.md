@@ -123,7 +123,7 @@ Read-only second opinions Boss consults before a decision. Intent routing: archi
 
 - Consult at most 1-2 advisors per request; a clear, well-scoped request needs none.
 - Summarize the advice and hand the decision to the user.
-- If an advisor spawn fails with a usage-limit error, retry once with model `gpt-5.6-sol` and say so.
+- If an advisor spawn fails with a usage-limit error, retry once with model `gpt-6.1-sol` and say so.
 - `architect` and `code-reviewer` stay outside the group; they verify code after it is written.
 - Stuck (repeated command failures, or the final answer claims something is impossible): the Stop hook blocks once and asks you to spawn `oracle` in Stuck mode; if it is truly blocked on a user-only action, write one line `Blocked on user: <action>` instead. `Advisor skipped` is not accepted for an impossibility claim (it is for repeated failures and no-progress loops).
 

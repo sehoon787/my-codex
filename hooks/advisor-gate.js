@@ -440,7 +440,11 @@ const STUCK_MODE_CONTRACT = 'state the claim or failure in one line; list at mos
 // Stuck member (stuckAdvisorNames) this turn, not only the one recommended
 // here.
 function buildStuckReason(kind, reasonLine, userOnly, goal, emptyEscape) {
-  const escapeHint = (kind === 'claim'
+  const escapeHint = (kind === 'failure'
+    ? 'Retrying the same command is not progress. Spawn the recommended advisor to get competing hypotheses, a reframe and at least one different approach, then try that approach. '
+      + 'If this truly needs a user-only action (login, approval, trust, credentials, permission), add one line "Blocked on user: <action>" instead, then repeat the final answer. '
+      + '"Advisor skipped" is not accepted for repeated failure.'
+    : kind === 'claim'
     ? 'An impossibility claim must be audited by an advisor. If it truly needs a user-only action (login, approval, trust, credentials, permission), '
       + 'add one line "Blocked on user: <action>" instead, then repeat the final answer. "Advisor skipped" is not accepted for impossibility claims.'
     : userOnly
@@ -543,8 +547,9 @@ function decideStuck(input, home) {
     }
   }
 
-  // `Advisor skipped:` escapes every Stuck signal except an impossibility claim.
-  if (skipOnly && kind !== 'claim') return null;
+  // `Advisor skipped:` escapes only the no-progress signal; repeated failure and
+  // impossibility claims must be audited by an advisor.
+  if (skipOnly && kind !== 'claim' && kind !== 'failure') return null;
 
   if (!signature) {
     writeStuckState(file, { blocked: state.blocked, count: state.count, history });

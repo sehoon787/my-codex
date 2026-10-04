@@ -436,9 +436,9 @@ git 서브모듈로 연결합니다. 고정 커밋은 `.gitmodules`가 기본으
 
 | 출처 | SHA | 날짜 | 비교 |
 |--------|-----|------|------|
-| [everything-claude-code](https://github.com/affaan-m/everything-claude-code) | `d3b8a3e` | 2026-09-28 | [compare](https://github.com/affaan-m/everything-claude-code/compare/d3b8a3e...HEAD) |
-| [gstack](https://github.com/garrytan/gstack) | `01593aa` | 2026-09-28 | [compare](https://github.com/garrytan/gstack/compare/01593aa...HEAD) |
-| [oh-my-codex](https://github.com/Yeachan-Heo/oh-my-codex) | `cdc24a7` | 2026-09-22 | [compare](https://github.com/Yeachan-Heo/oh-my-codex/compare/cdc24a7...HEAD) |
+| [everything-claude-code](https://github.com/affaan-m/everything-claude-code) | `ef648e0` | 2026-10-04 | [compare](https://github.com/affaan-m/everything-claude-code/compare/ef648e0...HEAD) |
+| [gstack](https://github.com/garrytan/gstack) | `4015c28` | 2026-10-04 | [compare](https://github.com/garrytan/gstack/compare/4015c28...HEAD) |
+| [oh-my-codex](https://github.com/Yeachan-Heo/oh-my-codex) | `1dcf513` | 2026-10-04 | [compare](https://github.com/Yeachan-Heo/oh-my-codex/compare/1dcf513...HEAD) |
 | [superpowers](https://github.com/obra/superpowers) | `8ca22db` | 2026-09-28 | [compare](https://github.com/obra/superpowers/compare/8ca22db...HEAD) |
 | [archify](https://github.com/tt-a1i/archify) | `62904f3` (`v2.9.0`) | 2026-09-19 | [compare](https://github.com/tt-a1i/archify/compare/62904f3...HEAD) |
 

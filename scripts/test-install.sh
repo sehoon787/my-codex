@@ -129,7 +129,7 @@ cat > "$BIN_DIR/codeburn" <<'EOF'
 set -euo pipefail
 echo "codeburn $*" >> "${MY_CODEX_TEST_LOG:?}"
 if [ "${1:-}" = "--version" ]; then
-  echo "0.9.23"
+  echo "0.9.25"
   exit 0
 fi
 [ "${1:-}" = "web" ] || exit 2
@@ -153,7 +153,7 @@ cat > "$BIN_DIR/headroom" <<'EOF'
 set -euo pipefail
 echo "headroom $*" >> "${MY_CODEX_TEST_LOG:?}"
 if [ "${1:-}" = "--version" ]; then
-  echo "headroom, version 0.37.0"
+  echo "headroom, version 0.40.0"
   exit 0
 fi
 [ "${1:-}" = "install" ] && [ "${2:-}" = "apply" ] || exit 2
@@ -242,9 +242,9 @@ HOME="$TEST_HOME" CODEX_HOME="$HOSTILE_CODEX_HOME" PATH="$BIN_DIR:$PATH" MY_CODE
 test "$(node -p "JSON.parse(require('fs').readFileSync(process.argv[1],'utf8')).profile" "$TEST_HOME/.codex/my-codex/skill-catalog-state.json")" = "core"
 test "$(cat "$HOSTILE_CODEX_HOME/sentinel")" = "untouched"
 test ! -e "$HOSTILE_CODEX_HOME/skills"
-grep -q '^  codeburn:      OK (0.9.23)$' "$TMP_ROOT/install.out"
+grep -q '^  codeburn:      OK (0.9.25)$' "$TMP_ROOT/install.out"
 grep -q '^  serena:        OK (Serena 1.7.0)$' "$TMP_ROOT/install.out"
-grep -q '^  headroom:      OK (headroom, version 0.37.0)$' "$TMP_ROOT/install.out"
+grep -q '^  headroom:      OK (headroom, version 0.40.0)$' "$TMP_ROOT/install.out"
 grep -q '^  archify:       OK (rendered and checked bundled workflow example)$' "$TMP_ROOT/install.out"
 grep -q '^  Tool probes:   4 OK, 0 FAIL$' "$TMP_ROOT/install.out"
 grep -q '^  Serena dashboard: http://localhost:24282/dashboard/index.html$' "$TMP_ROOT/install.out"
@@ -603,9 +603,9 @@ assert_toml_parses "$TEST_HOME/.codex/config.toml"
 
 # Pinned Python tools: asked for once, by exact spec, through uv.
 grep -q 'uv tool install --python 3.13 serena-agent==1.7.0' "$LOG_FILE"
-grep -q 'uv tool install --python 3.13 headroom-ai\[all\]==0.37.0' "$LOG_FILE"
+grep -q 'uv tool install --python 3.13 headroom-ai\[all\]==0.40.0' "$LOG_FILE"
 grep -q '^serena-agent v1.7.0$' "$UV_STATE"
-grep -q '^headroom-ai v0.37.0$' "$UV_STATE"
+grep -q '^headroom-ai v0.40.0$' "$UV_STATE"
 
 # Archify ships as one skill directory copied out of the tag-pinned submodule.
 test -f "$TEST_HOME/.codex/skills/archify/SKILL.md"
@@ -669,7 +669,7 @@ test "$(grep -c '^\[mcp_servers\.serena\]' "$TEST_HOME/.codex/config.toml")" = "
 test "$(grep -c '^\[mcp_servers\.headroom\]' "$TEST_HOME/.codex/config.toml")" = "1"
 assert_toml_parses "$TEST_HOME/.codex/config.toml"
 test "$(grep -c '^serena-agent v1.7.0$' "$UV_STATE")" = "1"
-test "$(grep -c '^headroom-ai v0.37.0$' "$UV_STATE")" = "1"
+test "$(grep -c '^headroom-ai v0.40.0$' "$UV_STATE")" = "1"
 test -f "$TEST_HOME/.codex/skills/archify/SKILL.md"
 
 test -f "$TEST_HOME/.codex/agents/custom-user-agent.toml"

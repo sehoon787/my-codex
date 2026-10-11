@@ -365,12 +365,12 @@ assert_tools_selection() {
           grep -q 'localhost:24282/dashboard/index.html' "$root/output"
           ;;
         headroom)
-          grep -q 'uv tool install --python 3.13 headroom-ai\[all\]==0.37.0' "$root/calls.log"
+          grep -q 'uv tool install --python 3.13 headroom-ai\[all\]==0.40.0' "$root/calls.log"
           grep -q '^\[mcp_servers\.headroom\]' "$root/home/.codex/config.toml"
           grep -q '127.0.0.1:8787/stats' "$root/output"
           ;;
         codeburn)
-          grep -q 'npm i -g codeburn@0.9.23' "$root/calls.log"
+          grep -q 'npm i -g codeburn@0.9.25' "$root/calls.log"
           grep -q '127.0.0.1:4747/' "$root/output"
           ;;
       esac
@@ -389,7 +389,7 @@ assert_tools_selection() {
           ! grep -q '127.0.0.1:8787/stats' "$root/output"
           ;;
         codeburn)
-          ! grep -q 'codeburn@0.9.23' "$root/calls.log"
+          ! grep -q 'codeburn@0.9.25' "$root/calls.log"
           ! grep -q '127.0.0.1:4747/' "$root/output"
           ;;
       esac

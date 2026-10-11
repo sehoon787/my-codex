@@ -86,12 +86,12 @@ else
   echo "OK: an already-matching version is skipped"
 fi
 
-# 4. Same check for a spec with extras (headroom-ai[all]==0.37.0), matching
-# the exact case reported: an old v0.30.0 install must not block the 0.37.0 pin.
+# 4. Same check for a spec with extras (headroom-ai[all]==0.40.0), matching
+# the exact case reported: an old v0.30.0 install must not block the 0.40.0 pin.
 : > "$LOG_FILE"
 printf 'headroom-ai v0.30.0\n- headroom\n' > "$STATE_FILE"
-ensure_uv_tool "headroom" headroom-ai "headroom-ai[all]==0.37.0"
-if grep -q 'uv tool install --python 3.13 headroom-ai\[all\]==0.37.0' "$LOG_FILE"; then
+ensure_uv_tool "headroom" headroom-ai "headroom-ai[all]==0.40.0"
+if grep -q 'uv tool install --python 3.13 headroom-ai\[all\]==0.40.0' "$LOG_FILE"; then
   echo "OK: headroom-ai[all] version bump triggers an upgrade"
 else
   echo "FAIL: headroom-ai[all] version bump did not trigger an upgrade" >&2

@@ -494,10 +494,10 @@ Linked via git submodules. Pinned commits are tracked natively by `.gitmodules` 
 
 | Source | SHA | Date | Diff |
 |--------|-----|------|------|
-| [everything-claude-code](https://github.com/affaan-m/everything-claude-code) | `d3b8a3e` | 2026-09-28 | [compare](https://github.com/affaan-m/everything-claude-code/compare/d3b8a3e...HEAD) |
-| [gstack](https://github.com/garrytan/gstack) | `01593aa` | 2026-09-28 | [compare](https://github.com/garrytan/gstack/compare/01593aa...HEAD) |
-| [oh-my-codex](https://github.com/Yeachan-Heo/oh-my-codex) | `cdc24a7` | 2026-09-22 | [compare](https://github.com/Yeachan-Heo/oh-my-codex/compare/cdc24a7...HEAD) |
-| [superpowers](https://github.com/obra/superpowers) | `8ca22db` | 2026-09-28 | [compare](https://github.com/obra/superpowers/compare/8ca22db...HEAD) |
+| [everything-claude-code](https://github.com/affaan-m/everything-claude-code) | `4eb71d9` | 2026-10-10 | [compare](https://github.com/affaan-m/everything-claude-code/compare/4eb71d9...HEAD) |
+| [gstack](https://github.com/garrytan/gstack) | `20eb620` | 2026-10-10 | [compare](https://github.com/garrytan/gstack/compare/20eb620...HEAD) |
+| [oh-my-codex](https://github.com/Yeachan-Heo/oh-my-codex) | `2db7d51` | 2026-10-10 | [compare](https://github.com/Yeachan-Heo/oh-my-codex/compare/2db7d51...HEAD) |
+| [superpowers](https://github.com/obra/superpowers) | `bb92a77` | 2026-10-10 | [compare](https://github.com/obra/superpowers/compare/bb92a77...HEAD) |
 | [archify](https://github.com/tt-a1i/archify) | `62904f3` (`v2.9.0`) | 2026-09-19 | [compare](https://github.com/tt-a1i/archify/compare/62904f3...HEAD) |
 
 ---

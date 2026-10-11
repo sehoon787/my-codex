@@ -32,7 +32,7 @@ const SOURCES = {
     pinned_date: "2026-09-19",
   },
   // No sha to pin — a CLI version entry must never match a row.
-  codeburn: { repo: "https://github.com/getagentseal/codeburn", pinned_version: "0.9.23" },
+  codeburn: { repo: "https://github.com/getagentseal/codeburn", pinned_version: "0.9.25" },
 };
 
 const STALE_ECC =

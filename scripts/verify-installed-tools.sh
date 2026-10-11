@@ -214,7 +214,7 @@ verify_installed_tools() (
     fi
   else
     if [ "$install_codeburn" = "1" ]; then
-      if verify_version_probe codeburn codeburn 0.9.23 "$work_dir/codeburn.out" "$timeout_seconds"; then
+      if verify_version_probe codeburn codeburn 0.9.25 "$work_dir/codeburn.out" "$timeout_seconds"; then
         ok_count=$((ok_count + 1))
       else
         fail_count=$((fail_count + 1))
@@ -232,7 +232,7 @@ verify_installed_tools() (
       echo "  serena:        SKIPPED (not selected)"
     fi
     if [ "$install_headroom" = "1" ]; then
-      if verify_version_probe headroom headroom 'headroom, version 0.37.0' "$work_dir/headroom.out" "$timeout_seconds"; then
+      if verify_version_probe headroom headroom 'headroom, version 0.40.0' "$work_dir/headroom.out" "$timeout_seconds"; then
         ok_count=$((ok_count + 1))
       else
         fail_count=$((fail_count + 1))

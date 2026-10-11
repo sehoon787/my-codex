@@ -238,13 +238,13 @@ rm -rf /tmp/my-codex
 
 ```bash
 # AST tools for code intelligence
-npm i -g @ast-grep/cli@0.42.0
-npm i -g codeburn@0.9.23
+npm i -g @ast-grep/cli@0.45.3
+npm i -g codeburn@0.9.25
 
 # MCP servers behind [mcp_servers.serena] and [mcp_servers.headroom]
 command -v uv >/dev/null 2>&1 || curl -LsSf https://astral.sh/uv/install.sh | sh
 uv tool install --python 3.13 serena-agent==1.7.0
-uv tool install --python 3.13 "headroom-ai[all]==0.37.0"
+uv tool install --python 3.13 "headroom-ai[all]==0.40.0"
 ```
 
 ## Step 3: Customize active agent packs (optional)

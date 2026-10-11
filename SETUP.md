@@ -191,7 +191,7 @@ Five MCP servers are registered. The three hosted ones go through `codex mcp add
 | **serena** | Symbol-level code navigation and editing | `[mcp_servers.serena]` (stdio, `serena start-mcp-server`) |
 | **headroom** | Context compression (`headroom_compress` / `headroom_retrieve` / `headroom_stats`) | `[mcp_servers.headroom]` (stdio, `headroom mcp serve`) |
 
-Serena and Headroom are Python tools installed with `uv tool install --python 3.13` (`serena-agent==1.7.0`, `headroom-ai[all]==0.37.0`). `install.sh` installs `uv` first if it is missing; if that fails, the install still completes and the two servers start working once `uv` is available.
+Serena and Headroom are Python tools installed with `uv tool install --python 3.13` (`serena-agent==1.7.0`, `headroom-ai[all]==0.40.0`). `install.sh` installs `uv` first if it is missing; if that fails, the install still completes and the two servers start working once `uv` is available.
 
 Verify MCP servers are registered:
 ```bash

@@ -1777,7 +1777,7 @@ if [ "$SKIP_GSTACK" = "0" ]; then
 fi
 
 # ── 2e. Upstream: archify (diagram skill) ──
-# Tag-pinned (v2.9.0), not branch-tracked: the skill's renderer CLI and schema
+# Tag-pinned (v3.0.1), not branch-tracked: the skill's renderer CLI and schema
 # shapes are what boss.toml routes to, so it moves on a deliberate bump only.
 # The installable unit is the repo's top-level archify/ directory (the same one
 # `npx skills add tt-a1i/archify -g` installs); the rest of the repo is docs,
@@ -2445,7 +2445,7 @@ echo "  [6a] ast-grep..."
 if command -v ast-grep >/dev/null 2>&1; then
   echo "    ast-grep already installed"
 else
-  npm i -g @ast-grep/cli@0.42.0 2>/dev/null || echo "    WARNING: ast-grep install failed"
+  npm i -g @ast-grep/cli@0.45.3 2>/dev/null || echo "    WARNING: ast-grep install failed"
 fi
 echo "  [6b] codeburn (AI token/cost tracker; reads ~/.codex/sessions read-only)..."
 if [ "$INSTALL_CODEBURN" = "0" ]; then
@@ -2453,7 +2453,7 @@ if [ "$INSTALL_CODEBURN" = "0" ]; then
 elif command -v codeburn >/dev/null 2>&1; then
   echo "    codeburn already installed"
 else
-  npm i -g codeburn@0.9.23 2>/dev/null || echo "    WARNING: codeburn install failed"
+  npm i -g codeburn@0.9.25 2>/dev/null || echo "    WARNING: codeburn install failed"
 fi
 
 echo "  [6c] uv (Python tool runner for the Serena/Headroom MCP servers)..."
@@ -2507,7 +2507,7 @@ else
 fi
 echo "  [6e] headroom (context compression MCP server)..."
 if [ "$INSTALL_HEADROOM" = "1" ]; then
-  ensure_uv_tool "headroom" headroom-ai "headroom-ai[all]==0.37.0"
+  ensure_uv_tool "headroom" headroom-ai "headroom-ai[all]==0.40.0"
 else
   echo "    SKIPPED"
 fi

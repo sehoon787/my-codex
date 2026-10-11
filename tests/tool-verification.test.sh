@@ -33,7 +33,7 @@ case "${TEST_CODEBURN_MODE:-ok}" in
   fail) echo 'codeburn failed' >&2; exit 9 ;;
   timeout) sleep 5; exit 0 ;;
 esac
-printf '0.9.23\n'
+printf '0.9.25\n'
 EOF
 
 cat > "$BIN_DIR/serena" <<'EOF'
@@ -61,7 +61,7 @@ case "${TEST_HEADROOM_MODE:-ok}" in
   fail) echo 'headroom failed' >&2; exit 7 ;;
   timeout) sleep 5; exit 0 ;;
 esac
-printf 'headroom, version 0.37.0\n'
+printf 'headroom, version 0.40.0\n'
 EOF
 
 cat > "$BIN_DIR/node" <<'EOF'
@@ -97,9 +97,9 @@ run_verification() {
 }
 
 success_output="$(run_verification)"
-grep -q '^  codeburn:      OK (0.9.23)$' <<<"$success_output"
+grep -q '^  codeburn:      OK (0.9.25)$' <<<"$success_output"
 grep -q '^  serena:        OK (Serena 1.7.0)$' <<<"$success_output"
-grep -q '^  headroom:      OK (headroom, version 0.37.0)$' <<<"$success_output"
+grep -q '^  headroom:      OK (headroom, version 0.40.0)$' <<<"$success_output"
 grep -q '^  archify:       OK (rendered and checked bundled workflow example)$' <<<"$success_output"
 grep -q '^  Tool probes:   4 OK, 0 FAIL$' <<<"$success_output"
 grep -q '^  Serena dashboard: http://localhost:24282/dashboard/index.html$' <<<"$success_output"

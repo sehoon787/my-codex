@@ -198,4 +198,4 @@ dispatching-parallel-agents
 # check-dangling-refs.sh counts `archify` as installable when boss.toml routes to it.
 ARCHIFY_SKILL_NAME="archify"
 ARCHIFY_SKILL_SUBDIR="archify"
-ARCHIFY_PINNED_TAG="v2.9.0"
+ARCHIFY_PINNED_TAG="v3.0.1"

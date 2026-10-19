@@ -9,8 +9,8 @@
     "path": "upstream/ecc",
     "method": "submodule",
     "note": "ECC skills + rules",
-    "pinned_sha": "4eb71d92a39cab44ad40ac9d8a6a5ccb4029d6c2",
-    "pinned_date": "2026-10-10",
+    "pinned_sha": "76aaa77df6adc5b889e689007bf99b9a4f74af34",
+    "pinned_date": "2026-10-19",
     "license": "MIT"
   },
   "awesome-codex-subagents": {
@@ -23,8 +23,8 @@
     "path": "upstream/omx",
     "method": "submodule + npm-cli",
     "package": "oh-my-codex-sisyphus",
-    "pinned_sha": "2db7d5136b22252e83091a12ea27567b2fdd5971",
-    "pinned_date": "2026-10-10",
+    "pinned_sha": "577ef6b0685675b4f0750041c41e08be847334a5",
+    "pinned_date": "2026-10-19",
     "license": "MIT",
     "license_source": "package.json (no LICENSE file at repo root)"
   },
@@ -41,8 +41,8 @@
       "security-review",
       "design-system"
     ],
-    "pinned_sha": "20eb6202fa8ea83a882e7c0463b722cd8a31af1e",
-    "pinned_date": "2026-10-10",
+    "pinned_sha": "c205e226a1139f98add5dc3a67804c780e926aaf",
+    "pinned_date": "2026-10-19",
     "license": "MIT"
   },
   "superpowers": {

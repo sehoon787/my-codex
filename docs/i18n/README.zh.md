@@ -436,10 +436,10 @@ headroom install apply --profile agent-harness-shared --preset persistent-servic
 
 | 来源 | SHA | 日期 | 差异 |
 |--------|-----|------|------|
-| [everything-claude-code](https://github.com/affaan-m/everything-claude-code) | `4eb71d9` | 2026-10-10 | [compare](https://github.com/affaan-m/everything-claude-code/compare/4eb71d9...HEAD) |
-| [gstack](https://github.com/garrytan/gstack) | `20eb620` | 2026-10-10 | [compare](https://github.com/garrytan/gstack/compare/20eb620...HEAD) |
-| [oh-my-codex](https://github.com/Yeachan-Heo/oh-my-codex) | `2db7d51` | 2026-10-10 | [compare](https://github.com/Yeachan-Heo/oh-my-codex/compare/2db7d51...HEAD) |
-| [superpowers](https://github.com/obra/superpowers) | `bb92a77` | 2026-10-10 | [compare](https://github.com/obra/superpowers/compare/bb92a77...HEAD) |
+| [everything-claude-code](https://github.com/affaan-m/everything-claude-code) | `b38be6a` | 2026-10-31 | [compare](https://github.com/affaan-m/everything-claude-code/compare/b38be6a...HEAD) |
+| [gstack](https://github.com/garrytan/gstack) | `cae783e` | 2026-10-31 | [compare](https://github.com/garrytan/gstack/compare/cae783e...HEAD) |
+| [oh-my-codex](https://github.com/Yeachan-Heo/oh-my-codex) | `15b44e8` | 2026-10-31 | [compare](https://github.com/Yeachan-Heo/oh-my-codex/compare/15b44e8...HEAD) |
+| [superpowers](https://github.com/obra/superpowers) | `2ce8aa1` | 2026-10-31 | [compare](https://github.com/obra/superpowers/compare/2ce8aa1...HEAD) |
 | [archify](https://github.com/tt-a1i/archify) | `2ab3cae` (`v3.0.1`) | 2026-09-28 | [compare](https://github.com/tt-a1i/archify/compare/2ab3cae...HEAD) |
 
 ---

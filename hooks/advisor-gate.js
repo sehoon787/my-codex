@@ -96,7 +96,7 @@ const REPEAT_FAILURE_PREFIX_THRESHOLD = 3;
 const REPEAT_FAILURE_TOTAL_THRESHOLD = 5;
 
 // Stuck trigger (b): an impossibility claim in the final answer.
-const IMPOSSIBLE_CLAIM_RE = /(\b(is|it's|it is|this is|that's) (impossible|not possible)\b|cannot be done|can't be done|there is no way to|불가능(합니다|해요|해|하다|하네요|함)|할 수 없(습니다|어요|어|다|음)|막혔(습니다|어요|어|다)|방법이 없(습니다|어요|어|다|음))/i;
+const IMPOSSIBLE_CLAIM_RE = /(\b(is|it's|it is|this is|that's) (impossible|not possible)\b|cannot be done|can't be done|there is no way to|불가능(합니다|해요|해|하다|하네요|함)(?![고는면])|할 수 없(습니다|어요|어|다|음)(?![고는면])|막혔(습니다|어요|어|다)(?![고는면])|방법이 없(습니다|어요|어|다|음)(?![고는면]))/i;
 const ADDRESSES_USER = /\byou\b|사용자|직접/i;
 const USER_ONLY_ACTION = /\b(login|trust|approve|permission|credential|2FA)\b|권한|승인|로그인|신뢰/i;
 

@@ -353,6 +353,12 @@ check('47. Stuck: repeated failure + real "Blocked on user" reason, no advisor -
   check('51. impossibility: "This is impossible without admin rights." -> block', claim('This is impossible without admin rights.').blocked);
   check('52. impossibility: inline-coded `불가능합니다` -> none', !claim('The gate matches `불가능합니다` in text.').blocked);
   check('53. impossibility: quoted "This is impossible" -> none', !claim('The phrase "this is impossible" is a trigger.').blocked);
+  check('53a. impossibility: connective "불가능하다고" -> none', !claim('이 hook은 불가능하다고 단정한 경우에만 막습니다.').blocked);
+  check('53b. impossibility: connective "불가능하다는" -> none', !claim('불가능하다는 주장이 없습니다.').blocked);
+  check('53c. impossibility: connective "할 수 없다고" -> none', !claim('할 수 없다고 판단되면 oracle을 부릅니다.').blocked);
+  check('53d. impossibility: "이 작업은 불가능하다." -> block', claim('이 작업은 불가능하다.').blocked);
+  check('53e. impossibility: "지금은 할 수 없다." -> block', claim('지금은 할 수 없다.').blocked);
+  check('53f. impossibility: "이 작업은 불가능해요." -> block', claim('이 작업은 불가능해요.').blocked);
 }
 
 // ------------------------------ Stuck: impossibility claim is not skippable

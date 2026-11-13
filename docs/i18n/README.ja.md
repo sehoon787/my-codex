@@ -437,10 +437,10 @@ git サブモジュールでリンクしています。固定コミットは `.g
 
 | 出典 | SHA | 日付 | 差分 |
 |--------|-----|------|------|
-| [everything-claude-code](https://github.com/affaan-m/everything-claude-code) | `4eb71d9` | 2026-10-10 | [compare](https://github.com/affaan-m/everything-claude-code/compare/4eb71d9...HEAD) |
-| [gstack](https://github.com/garrytan/gstack) | `20eb620` | 2026-10-10 | [compare](https://github.com/garrytan/gstack/compare/20eb620...HEAD) |
-| [oh-my-codex](https://github.com/Yeachan-Heo/oh-my-codex) | `2db7d51` | 2026-10-10 | [compare](https://github.com/Yeachan-Heo/oh-my-codex/compare/2db7d51...HEAD) |
-| [superpowers](https://github.com/obra/superpowers) | `bb92a77` | 2026-10-10 | [compare](https://github.com/obra/superpowers/compare/bb92a77...HEAD) |
+| [everything-claude-code](https://github.com/affaan-m/everything-claude-code) | `d2ef268` | 2026-11-13 | [compare](https://github.com/affaan-m/everything-claude-code/compare/d2ef268...HEAD) |
+| [gstack](https://github.com/garrytan/gstack) | `1d3c63c` | 2026-11-13 | [compare](https://github.com/garrytan/gstack/compare/1d3c63c...HEAD) |
+| [oh-my-codex](https://github.com/Yeachan-Heo/oh-my-codex) | `610be90` | 2026-11-13 | [compare](https://github.com/Yeachan-Heo/oh-my-codex/compare/610be90...HEAD) |
+| [superpowers](https://github.com/obra/superpowers) | `22f0b46` | 2026-11-13 | [compare](https://github.com/obra/superpowers/compare/22f0b46...HEAD) |
 | [archify](https://github.com/tt-a1i/archify) | `2ab3cae` (`v3.0.1`) | 2026-09-28 | [compare](https://github.com/tt-a1i/archify/compare/2ab3cae...HEAD) |
 
 ---

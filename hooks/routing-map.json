@@ -68,7 +68,6 @@
       "priority": 70,
       "members": [
         { "name": "debugger", "kind": "agent" },
-        { "name": "investigate", "kind": "skill" },
         { "name": "systematic-debugging", "kind": "skill" }
       ],
       "description_keywords": ["debug", "root cause", "stack trace", "investigat", "regression isolation"],

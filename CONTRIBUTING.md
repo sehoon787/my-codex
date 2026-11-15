@@ -28,7 +28,7 @@ This repository aggregates agents and skills from four upstream submodules, plus
 | Source | Origin | Method | Format |
 |--------|--------|--------|--------|
 | `ecc` | [everything-claude-code](https://github.com/affaan-m/everything-claude-code) — 61 skills | submodule | MD |
-| `gstack` | [gstack](https://github.com/garrytan/gstack) — 27 sprint-process skills | submodule | MD |
+| `gstack` | [gstack](https://github.com/garrytan/gstack) — 26 sprint-process skills | submodule | MD |
 | `omx` | [oh-my-codex](https://github.com/Yeachan-Heo/oh-my-codex) — 7 worker agents, CLI runtime | submodule | MD → TOML |
 | `superpowers` | [superpowers](https://github.com/obra/superpowers) — 13 skills | submodule | MD |
 | `codex-agents/packs` | [awesome-codex-subagents](https://github.com/VoltAgent/awesome-codex-subagents) — 17 opt-in agents | vendored (MIT) | TOML |

@@ -56,7 +56,7 @@ What gets installed:
 |---|---|
 | `~/.codex/agents/` | 17 core agents (Boss 1 + OMO 9 + OMX 7), deduplicated by tier |
 | `~/.codex/agent-packs/` | 17 opt-in pack agents across 2 packs (data-ai 13, llmops 4) |
-| `~/.codex/skills/` | 110 skill entries (ECC 61 + gstack 30 + superpowers 14 + core 4 + archify 1) — 81 directories plus 29 symlinks into the vendored gstack tree; the default `core` profile exposes 30 of them |
+| `~/.codex/skills/` | 109 skill entries (ECC 61 + gstack 29 + superpowers 14 + core 4 + archify 1) — 82 directories plus 27 symlinks into the vendored gstack tree; the default `core` profile exposes 29 of them |
 | `~/.codex/AGENTS.md` | Agent catalog and routing instructions |
 | `~/.codex/enabled-agent-packs.txt` | Persisted active pack set; first install writes an empty set (packs are opt-in) |
 | `~/.codex/enabled-skill-lanes.txt` | Persisted optional skill lanes; first install writes an empty set (default lane only) |
@@ -87,13 +87,13 @@ Expected output:
 Core agents:  17
 Active packs: 0
 Agent packs:  17
-Skills:       83
+Skills:       85
 AGENTS.md:    OK
 config.toml:  OK
 hooks.json:   OK
 ```
 
-Skills note: `find` without `-L` does not descend into the 29 gstack symlinks, so it reports 83 `SKILL.md` files while `~/.codex/skills/` actually holds 110 entries (81 directories + 29 symlinks). `my-codex-skills status` reports the exposed set instead. The count is higher than 83 on a machine that already had personal skills under `~/.codex/skills` before install — my-codex preserves them (see the `preserve` list in `scripts/skill-catalog.json`); `~/.codex/bin/my-codex-skills status` reports them as `physicalPreservedSkillFiles`, and only `drift: true` in that output indicates an actual problem.
+Skills note: `find` without `-L` does not descend into the 27 gstack symlinks, so it reports 85 `SKILL.md` files while `~/.codex/skills/` actually holds 109 entries (82 directories + 27 symlinks). `my-codex-skills status` reports the exposed set instead. The count is higher than 85 on a machine that already had personal skills under `~/.codex/skills` before install — my-codex preserves them (see the `preserve` list in `scripts/skill-catalog.json`); `~/.codex/bin/my-codex-skills status` reports them as `physicalPreservedSkillFiles`, and only `drift: true` in that output indicates an actual problem.
 
 Hooks note: `install.sh` sets `hooks = true` under `[features]` in `config.toml` and writes the registry to `~/.codex/hooks.json`. Codex asks once, on your next interactive start, to review and trust these hooks — choose "Trust all and continue". Until you do, no my-codex hook runs.
 

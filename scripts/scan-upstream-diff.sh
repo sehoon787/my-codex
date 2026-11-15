@@ -5,8 +5,12 @@
 # Given the currently-staged submodule pointer changes under upstream/, this
 # script diffs each bumped submodule (old-sha..new-sha), inspects the ADDED
 # lines introduced by the sync, and flags suspicious patterns. It is a
-# soft gate: it never blocks. On any hit it writes a markdown report and
-# signals "flagged" so the caller can skip auto-merge and request human review.
+# soft gate: it never blocks. On any hit in a file install.sh actually installs
+# or runs it writes a markdown report and signals "flagged" so the caller can
+# skip auto-merge and request human review. Hits in files that are never
+# installed (upstream tests, CI config, docker/, ...) are listed under
+# "Informational (not installed)" and never set the flag. The one exception is
+# a new or changed symlink, which gates wherever it sits.
 #
 # Outputs:
 #   - Markdown report to $SCAN_REPORT (default: scan-report.md)
@@ -21,12 +25,16 @@ set -uo pipefail
 REPORT="${SCAN_REPORT:-scan-report.md}"
 : > "$REPORT"
 flagged=0
+info_hits=()
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 emit() { printf '%s\n' "$1" >> "$REPORT"; }
 
-# True for files that are documentation — never executed, so a suspicious
-# string in one is prose, not behaviour. Used to scope the PATTERN scan only;
-# see the call site for why the executable/binary checks stay unfiltered.
+# True for files that are documentation. Only consulted for files install.sh
+# never installs, where a suspicious string is prose and nothing reads it. An
+# installed doc is not prose to the agent: a SKILL.md, agent or prompt file is
+# its instructions, and a .txt template can be copied somewhere it is executed.
+# Those get the same scan as any other file.
 is_doc_path() {
   case "$1" in
     *.md|*.md.tmpl|*.markdown|*.mdx|*.txt|*.rst|*.adoc) return 0 ;;
@@ -36,8 +44,97 @@ is_doc_path() {
   return 1
 }
 
+# words <list...>: a newline- or space-separated list as " a b c ", so
+# in_list is a plain `case` match, the same way install.sh tests membership.
+words() { tr -s '[:space:]' ' ' <<< " $* "; }
+# in_list <name> <words output>
+in_list() { case "$2" in *" $1 "*) return 0 ;; esac; return 1; }
+
+# ── Per-repo: what install.sh copies or runs from each upstream ─────────────
+# The only part of this script that differs between my-claude and my-codex.
+# Every name comes from scripts/skill-allowlists.sh and scripts/skill-catalog.json,
+# the files install.sh itself reads, so editing either moves this gate with it.
+# If a list does not load, is_installed_path answers "installed" for everything,
+# as it does for any upstream not named below: the gate may over-flag, never
+# go quiet.
+# shellcheck source=skill-allowlists.sh
+. "$SCRIPT_DIR/skill-allowlists.sh" 2>/dev/null || true
+# install.sh copies a skill named in ANY catalog lane once that lane is enabled
+# (--skills=<lane>, --full-skills), so every lane counts as installed.
+LANE_SKILLS=$(node -e '
+  const catalog = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"));
+  process.stdout.write(Object.values(catalog.lanes).flat().join(" "));
+' "$SCRIPT_DIR/skill-catalog.json" 2>/dev/null || true)
+
+ALLOWLISTS_OK=1
+for v in ECC_SKILL_ALLOWLIST LANE_SKILLS OMX_AGENT_ALLOWLIST ARCHIFY_SKILL_SUBDIR; do
+  [ -n "$(tr -d '[:space:]' <<< "${!v:-}")" ] || ALLOWLISTS_OK=0
+done
+ECC_SKILLS=$(words "${ECC_SKILL_ALLOWLIST:-} $LANE_SKILLS")
+OMX_AGENTS=$(words "${OMX_AGENT_ALLOWLIST:-}")
+SP_EXCLUDED=$(words "${SUPERPOWERS_SKILL_EXCLUDE:-}")
+
+# is_installed_path <upstream dir> <path inside it>: 0 if install.sh copies the
+# path to the machine or runs it, 1 if it never touches it.
+is_installed_path() {
+  local up="${1##*/}" path="$2" name
+  [ "$ALLOWLISTS_OK" -eq 1 ] || return 0
+  case "$up" in
+    ecc)
+      # skills/<name>/ is copied whole. ECC rules are not installed at all.
+      case "$path" in
+        skills/*/*) name="${path#skills/}"; in_list "${name%%/*}" "$ECC_SKILLS"; return ;;
+        *) return 1 ;;
+      esac ;;
+    omx)
+      # prompts/<name>.md for the allowlisted agents, converted to TOML agents.
+      case "$path" in
+        prompts/*/*) return 1 ;;
+        prompts/*.md) name="${path#prompts/}"; in_list "${name%.md}" "$OMX_AGENTS"; return ;;
+        *) return 1 ;;
+      esac ;;
+    gstack)
+      # The whole checkout is rsynced to ~/.codex/vendor/gstack and its ./setup
+      # runs there. Test trees, fixtures, CI config and the top-level docs/ are
+      # copied along but not run at install time, so they are informational
+      # only. Known gap: ./setup links three docs/*.md into the runtime root for
+      # skills to read, and installed bin/ code imports test/helpers/* when run.
+      # Exception: install.sh links these two directories whole into
+      # ~/.codex/skills, where Codex loads every SKILL.md beneath them, fixtures
+      # and tests included.
+      case "$path" in
+        browser-skills/hackernews-frontpage/*|codex/*) return 0 ;;
+      esac
+      case "/$path" in
+        */test/*|*/tests/*|*/__tests__/*|*/fixtures/*|*.test.*|/.github/*|/docs/*) return 1 ;;
+        *) return 0 ;;
+      esac ;;
+    superpowers)
+      # Every skill directory except the excluded ones; no agents.
+      case "$path" in
+        skills/*/*)
+          name="${path#skills/}"
+          in_list "${name%%/*}" "$SP_EXCLUDED" && return 1
+          return 0 ;;
+        *) return 1 ;;
+      esac ;;
+    archify)
+      # The skill directory is copied whole; the rest of the repo is not.
+      case "$path" in
+        "$ARCHIFY_SKILL_SUBDIR"/*) return 0 ;;
+        *) return 1 ;;
+      esac ;;
+    *) return 0 ;;
+  esac
+}
+# ── end per-repo ────────────────────────────────────────────────────────────
+
 emit "## Upstream sync security scan"
 emit ""
+if [ "$ALLOWLISTS_OK" -ne 1 ]; then
+  emit ":warning: _The installed-path lists could not be read, so every path was treated as installed._"
+  emit ""
+fi
 
 # Collect staged submodule paths under upstream/.
 mapfile -t subs < <(git diff --cached --name-only -- upstream/ 2>/dev/null || true)
@@ -50,17 +147,26 @@ fi
 
 # Suspicious pattern groups. Each entry: "Label|extended-regex".
 # Kept deliberately broad — this is a flag, not a block.
+# Entries run case-insensitively, except those whose label starts with "="
+# (stripped before printing), which run case-sensitively: eval and Function are
+# JavaScript/shell names whose lowercase and capitalised forms mean different
+# things, and the insensitive match turned `function(` into a hit.
 PATTERNS=(
   "Network exfil (curl/wget to URL)|(curl|wget)([[:space:]]|.)*https?://"
   "Network exfil (fetch to URL)|fetch\\(['\"\`]?https?://"
   "base64 decode piped to shell|base64[[:space:]]+(-d|--decode|-D)([[:space:]]|.)*(bash|sh|zsh|node|python|eval)"
-  # Matches both nestings. The original only caught decode-then-eval
-  # (`atob(s); eval(x)`) and missed the far more common obfuscation form
-  # where the decode is the argument: `eval(atob(p))`, `new Function(atob(p))`.
-  "base64 decode + eval (JS)|((atob|Buffer\\.from)\\(([[:space:]]|.)*(eval|Function)|(eval|Function)\\(([[:space:]]|.)*(atob|Buffer\\.from)\\()"
-  "Dynamic shell eval|(^|[[:space:];&|])eval[[:space:]]"
+  # Matches both nestings: decode-then-eval (`atob(s); eval(x)`) and the far
+  # more common obfuscation where the decode is the argument, `eval(atob(p))`,
+  # `new Function(atob(p))`. eval/Function must stand alone as a call, so
+  # `function(` and words like "evals" next to a Buffer.from( do not match.
+  "=base64 decode + eval (JS)|((atob|Buffer\\.from)\\(.*(^|[^A-Za-z0-9_\$])(eval|Function)\\)?[[:space:]]*\\(|(^|[^A-Za-z0-9_\$])(eval|Function)\\)?[[:space:]]*\\(.*(atob|Buffer\\.from)\\()"
+  # eval applied to something expanded or quoted. A bare `eval word` is mostly
+  # prose ("eval of the model"), and `evaluate` is not eval.
+  "=Dynamic shell eval|(^|[[:space:];&|])eval[[:space:]]+[\"'\$\`]"
   "bash -c with variable expansion|bash[[:space:]]+-c([[:space:]]|.)*\\\$"
-  "Destructive rm of HOME/root|rm[[:space:]]+-[a-zA-Z]*[rf][a-zA-Z]*[[:space:]]+(\\\$HOME|~|/([[:space:]]|\$|\\*))"
+  # A recursive rm (any flag spelling and order) aimed at $HOME, ~ or /.
+  # A bare `rm -f ~/x.pid` has no recursive flag and is a normal cleanup.
+  "Destructive rm of HOME/root|rm[[:space:]]+(-[-a-zA-Z]+[[:space:]]+)*(-[a-zA-Z]*[rR][a-zA-Z]*|--recursive)([[:space:]]+-[-a-zA-Z]+)*[[:space:]]+[\"']?(\\\$HOME|\\\$\\{HOME\\}|~|/([[:space:]]|[\"']|\$|\\*))"
   # Anchored to real credential paths. A bare "credentials" matched prose
   # ("needs real credentials") and, worse, `persist-credentials: false` — a
   # hardening flag. A bare "\.env\b" matched every `process.env` in the diff.
@@ -98,33 +204,52 @@ for sub in "${subs[@]}"; do
   fi
 
   sub_flag=0
+  installed_count=0
 
-  # Newly added executable or binary files.
+  # Newly added executable or binary files. Docs are not exempt here: a
+  # payload cannot hide behind a .md extension. --no-renames makes a moved file
+  # a delete plus an add, so moving a binary into an installed path is seen.
   while IFS=$'\t' read -r status path; do
     [ "$status" = "A" ] || continue
     mode=$(git -C "$sub" ls-tree "$new" -- "$path" 2>/dev/null | awk '{print $1}')
     is_bin=$(git -C "$sub" diff --numstat "$old" "$new" -- "$path" 2>/dev/null | awk '{print $1}')
     if [ "$mode" = "100755" ]; then
-      emit "- FLAG **new executable file**: \`$path\` (mode $mode)"
-      sub_flag=1
+      what="new executable file"; detail=" (mode $mode)"
     elif [ "$is_bin" = "-" ]; then
-      emit "- FLAG **new binary file**: \`$path\`"
-      sub_flag=1
+      what="new binary file"; detail=""
+    else
+      continue
     fi
-  done < <(git -C "$sub" diff --name-status --diff-filter=A "$old" "$new" 2>/dev/null || true)
+    if is_installed_path "$sub" "$path"; then
+      emit "- FLAG **$what**: \`$path\`$detail"
+      sub_flag=1
+    else
+      info_hits+=("- INFO **$what**: \`$sub/$path\`$detail")
+    fi
+  done < <(git -C "$sub" diff --name-status --diff-filter=A --no-renames "$old" "$new" 2>/dev/null || true)
+
+  # New or changed symlinks gate wherever they sit. A link's own diff is just
+  # its target string, and install.sh copies through links, so a link at a path
+  # that looks uninstalled (`review -> test/fixtures/review`) can put content
+  # the scan only lists as informational onto the machine.
+  while IFS= read -r path; do
+    target=$(git -C "$sub" cat-file -p "$new:$path" 2>/dev/null | cut -c1-120)
+    emit "- FLAG **new or changed symlink**: \`$path\` (to \`$target\`)"
+    sub_flag=1
+  done < <(git -C "$sub" diff --raw --no-renames "$old" "$new" 2>/dev/null \
+             | awk -F'\t' '{ split($1, mode, " "); if (mode[2] == "120000") print $2 }' || true)
 
   # Pattern scan over ADDED lines only.
   for f in "${files[@]}"; do
-    # Prose is not a payload. A `curl … | sh` in a README is an example or a
-    # warning about that exact attack; "eval" in a doc is usually the word
-    # "evaluation". These files are never executed, and their hits dominated
-    # every report to the point where the gate flagged 100% of syncs and no
-    # one could see the real signal.
-    #
-    # Scoped deliberately: this skips only the PATTERN scan. The new-executable
-    # and new-binary checks above still run over EVERY path, docs included, so
-    # a payload cannot hide behind a .md extension.
-    if is_doc_path "$f"; then
+    installed=0
+    if is_installed_path "$sub" "$f"; then
+      installed=1
+      installed_count=$((installed_count + 1))
+    elif is_doc_path "$f"; then
+      # Prose nobody installs. A `curl … | sh` in an upstream README is an
+      # example or a warning about that exact attack, and "eval" in a doc is
+      # usually the word "evaluation"; these hits once made the gate flag
+      # every sync. The new-executable/binary checks above still cover them.
       continue
     fi
     # Extract added lines (strip leading +), skip file headers.
@@ -134,25 +259,39 @@ for sub in "${subs[@]}"; do
     for entry in "${PATTERNS[@]}"; do
       label="${entry%%|*}"
       regex="${entry#*|}"
-      hits=$(printf '%s\n' "$added" | grep -inE "$regex" 2>/dev/null | head -3 || true)
-      if [ -n "$hits" ]; then
-        emit "- FLAG **${label}** in \`$f\`:"
-        while IFS= read -r line; do
-          # Trim overly long lines for readability.
-          emit "    - \`$(printf '%s' "$line" | cut -c1-160)\`"
-        done <<< "$hits"
-        sub_flag=1
+      grep_flags=(-inE)
+      case "$label" in =*) label="${label#=}"; grep_flags=(-nE) ;; esac
+      hits=$(printf '%s\n' "$added" | grep "${grep_flags[@]}" "$regex" 2>/dev/null | head -3 || true)
+      [ -n "$hits" ] || continue
+      if [ "$installed" -eq 0 ]; then
+        info_hits+=("- INFO **${label}** in \`$sub/$f\`")
+        continue
       fi
+      emit "- FLAG **${label}** in \`$f\`:"
+      while IFS= read -r line; do
+        # Trim overly long lines for readability.
+        emit "    - \`$(printf '%s' "$line" | cut -c1-160)\`"
+      done <<< "$hits"
+      sub_flag=1
     done
   done
 
   if [ "$sub_flag" -eq 0 ]; then
-    emit "_No suspicious patterns in added lines (${#files[@]} file(s) changed)._"
+    emit "_No suspicious patterns in installed files (${#files[@]} file(s) changed, $installed_count installed)._"
   else
     flagged=1
   fi
   emit ""
 done
+
+if [ "${#info_hits[@]}" -gt 0 ]; then
+  emit "### Informational (not installed)"
+  emit ""
+  emit "_${#info_hits[@]} hit(s) in files install.sh never copies or runs. Listed for visibility; they do not gate auto-merge._"
+  emit ""
+  for line in "${info_hits[@]}"; do emit "$line"; done
+  emit ""
+fi
 
 if [ "$flagged" -eq 1 ]; then
   emit "---"
@@ -160,7 +299,7 @@ if [ "$flagged" -eq 1 ]; then
   emit "A maintainer should inspect the changes above and merge manually if safe."
 else
   emit "---"
-  emit ":white_check_mark: No suspicious patterns detected. Safe for auto-merge."
+  emit ":white_check_mark: No suspicious patterns detected in installed files. Safe for auto-merge."
 fi
 
 if [ -n "${GITHUB_OUTPUT:-}" ]; then

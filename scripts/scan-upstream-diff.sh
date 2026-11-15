@@ -23,6 +23,8 @@
 # sync pipeline alive while surfacing risky changes for a human to eyeball.
 
 set -uo pipefail
+# Names from an upstream are file names, never pathspecs ([x], *, :(exclude)...).
+export GIT_LITERAL_PATHSPECS=1
 
 REPORT="${SCAN_REPORT:-scan-report.md}"
 : > "$REPORT"
@@ -191,7 +193,8 @@ if [ "$ALLOWLISTS_OK" -ne 1 ]; then
 fi
 
 # Collect staged submodule paths under upstream/.
-mapfile -t subs < <(git diff --cached --name-only -- upstream/ 2>/dev/null || true)
+subs=()
+while IFS= read -r -d '' s; do subs+=("$s"); done < <(git diff --cached --name-only -z -- upstream/ 2>/dev/null || true)
 
 if [ "${#subs[@]}" -eq 0 ]; then
   emit "_No staged submodule changes under upstream/. Nothing to scan._"
@@ -249,10 +252,21 @@ for sub in "${subs[@]}"; do
   # Ensure both endpoints are present locally; ignore fetch failures.
   git -C "$sub" cat-file -e "$old^{commit}" 2>/dev/null || git -C "$sub" fetch --quiet --depth=200 origin "$old" 2>/dev/null || true
 
-  # Changed / new files in this bump.
-  mapfile -t files < <(git -C "$sub" diff --name-only "$old" "$new" 2>/dev/null || true)
+  # A diff that cannot run (a commit is missing, or the history is shallow) must
+  # not read as "nothing changed": the bump would go unscanned. Fail closed.
+  if ! git -C "$sub" diff --name-only "$old" "$new" > /dev/null 2>&1; then
+    emit "- FLAG **diff failed**: \`git diff ${old:0:12} ${new:0:12}\` does not run in \`$sub\` (a commit is missing, or the history is shallow); this bump was not scanned and needs review"
+    emit ""
+    flagged=1
+    continue
+  fi
+
+  # Changed / new files in this bump. NUL-separated: git prints a name holding a
+  # non-ASCII byte, a double quote or a tab C-quoted, which is no real path.
+  files=()
+  while IFS= read -r -d '' f; do files+=("$f"); done < <(git -C "$sub" diff --name-only -z "$old" "$new" 2>/dev/null || true)
   if [ "${#files[@]}" -eq 0 ]; then
-    emit "_No file-level changes resolved (shallow history?). Pointer moved but diff unavailable._"
+    emit "_No file-level changes between the two commits._"
     emit ""
     continue
   fi
@@ -272,7 +286,7 @@ for sub in "${subs[@]}"; do
   # Newly added executable or binary files. Docs are not exempt here: a
   # payload cannot hide behind a .md extension. --no-renames makes a moved file
   # a delete plus an add, so moving a binary into an installed path is seen.
-  while IFS=$'\t' read -r status path; do
+  while IFS= read -r -d '' status && IFS= read -r -d '' path; do
     [ "$status" = "A" ] || continue
     mode=$(git -C "$sub" ls-tree "$new" -- "$path" 2>/dev/null | awk '{print $1}')
     is_bin=$(git -C "$sub" diff --numstat "$old" "$new" -- "$path" 2>/dev/null | awk '{print $1}')
@@ -289,7 +303,22 @@ for sub in "${subs[@]}"; do
     else
       info_hits+=("- INFO **$what**: \`$sub/$path\`$detail")
     fi
-  done < <(git -C "$sub" diff --name-status --diff-filter=A --no-renames "$old" "$new" 2>/dev/null || true)
+  done < <(git -C "$sub" diff --name-status -z --diff-filter=A --no-renames "$old" "$new" 2>/dev/null || true)
+
+  # A modified file git reports as binary has no added lines to scan, whatever it
+  # holds: a real binary, or text hidden by a -diff attribute in the upstream. In
+  # an installed path that needs a human; elsewhere it is only listed. (A new
+  # file is covered above, and a deleted one adds nothing.)
+  while IFS= read -r -d '' rec; do
+    [ "${rec%%$'\t'*}" = "-" ] || continue
+    path="${rec#*$'\t'}"; path="${path#*$'\t'}"
+    if is_installed "$sub" "$path"; then
+      emit "- FLAG **binary file changed**: \`$path\` (git treats it as binary, so its content was not scanned; needs review)"
+      sub_flag=1
+    else
+      info_hits+=("- INFO **binary file changed**: \`$sub/$path\`")
+    fi
+  done < <(git -C "$sub" diff --numstat -z --diff-filter=MT --no-renames "$old" "$new" 2>/dev/null || true)
 
   # New or changed symlinks gate wherever they sit. A link's own diff is just
   # its target string, and install.sh copies through links, so a link at a path
@@ -297,12 +326,13 @@ for sub in "${subs[@]}"; do
   # the scan only lists as informational onto the machine. The target is shown
   # as one line without backticks: a link target may hold newlines, and an
   # unfiltered one could write extra lines into this report.
-  while IFS= read -r path; do
+  while IFS= read -r -d '' meta && IFS= read -r -d '' path; do
+    dst="${meta#* }"
+    [ "${dst%% *}" = 120000 ] || continue
     target=$(git -C "$sub" cat-file -p "$new:$path" 2>/dev/null | head -n 1 | cut -c1-120 | tr -d '\r\140')
     emit "- FLAG **new or changed symlink**: \`$path\` (to \`$target\`)"
     sub_flag=1
-  done < <(git -C "$sub" diff --raw --no-renames "$old" "$new" 2>/dev/null \
-             | awk -F'\t' '{ split($1, mode, " "); if (mode[2] == "120000") print $2 }' || true)
+  done < <(git -C "$sub" diff --raw -z --no-renames "$old" "$new" 2>/dev/null || true)
 
   # Pattern scan over ADDED lines only.
   for f in "${files[@]}"; do

@@ -10,14 +10,14 @@
 #
 # Builds throwaway superprojects with local fake upstream repos (no network),
 # stages the bumped gitlink the way the sync workflow does, and runs the real
-# scanner against each. Needs bash >= 4 (the scanner uses mapfile).
+# scanner against each. Needs bash >= 4.
 #
 # Sections marked "per-repo" are the only ones that differ between my-claude
 # and my-codex.
 set -euo pipefail
 
 [ "${BASH_VERSINFO[0]}" -ge 4 ] \
-  || { echo "FAIL: needs bash >= 4 (the scanner uses mapfile); on macOS use Homebrew bash, not /bin/bash" >&2; exit 1; }
+  || { echo "FAIL: needs bash >= 4; on macOS use Homebrew bash, not /bin/bash" >&2; exit 1; }
 
 REPO="$(cd "$(dirname "$0")/.." && pwd)"
 SCANNER="$REPO/scripts/scan-upstream-diff.sh"
@@ -107,6 +107,12 @@ case_add_bin() {
   printf '\000\001\002\003\000' > "$f"
   git -C "$up" add -- "$1"
 }
+# case_mod_bin <path>: change the binary file already at <path>.
+case_mod_bin() {
+  local up="$CASE_DIR/upstream/$CASE_UP"
+  printf '\004' >> "$up/$1"
+  git -C "$up" add -- "$1"
+}
 # case_link <path> <target>: a symlink, replacing whatever is at <path> (a file,
 # another link, or a whole directory).
 case_link() {
@@ -136,7 +142,7 @@ case_move() {
 # case_scan [scanner]: sets REPORT and FLAGGED.
 case_scan() {
   local up="$CASE_DIR/upstream/$CASE_UP" new scanner="${1:-$SCANNER}"
-  git -C "$up" "${GIT_ID[@]}" commit -q -m new
+  git -C "$up" "${GIT_ID[@]}" commit -q --allow-empty -m new
   new="$(git -C "$up" rev-parse HEAD)"
   git -C "$CASE_DIR" update-index --cacheinfo "160000,$new,upstream/$CASE_UP"
   REPORT="$CASE_DIR/report.md"
@@ -350,6 +356,64 @@ expect "symlinks pointing at each other: the scan finishes with flagged=true" fl
 expect "symlinks pointing at each other: both links flagged" \
   gating_has "- FLAG **new or changed symlink**: \`docker/a\` (to \`./b\`)"
 
+# ── 2c. Names git quotes, changes git calls binary, a diff that cannot run ──
+# `git diff --name-only` prints a name holding a non-ASCII byte, a double quote
+# or a tab in C-quoted form, which is no real path, so the scanner skipped the
+# file. It reads the NUL-separated listings instead.
+NON_ASCII_NAME="na"$'\303\257'"ve.sh"
+should_flag "non-ASCII name" ecc "skills/$ECC_SKILL/$NON_ASCII_NAME"
+should_flag "double quote in the name" ecc "skills/$ECC_SKILL/a\"b.sh"
+should_flag "tab in the name" ecc "skills/$ECC_SKILL/a"$'\t'"b.sh"
+case_new ecc; case_add "skills/$ECC_SKILL/t"$'\303\266\303\266'"l" 'echo hi' x; case_scan
+expect "new executable, non-ASCII name: flagged=true" flagged_is true
+expect "new executable, non-ASCII name: FLAG line" \
+  gating_has "- FLAG **new executable file**: \`skills/$ECC_SKILL/t"$'\303\266\303\266'"l\` (mode 100755)"
+case_new ecc; case_link "skills/$ECC_SKILL/lnk"$'\303\257' ../../docker/target; case_scan
+expect "symlink, non-ASCII name: flagged=true" flagged_is true
+expect "symlink, non-ASCII name: FLAG line shows the target" \
+  gating_has "- FLAG **new or changed symlink**: \`skills/$ECC_SKILL/lnk"$'\303\257'"\` (to \`../../docker/target\`)"
+# A name git would read as pathspec magic is still a file name: ls-tree refuses
+# the magic, so the mode lookup of a new executable came back empty.
+case_new mystery; case_add ':(exclude)run.sh' 'echo hi' x; case_scan
+expect "new executable named like pathspec magic: flagged=true" flagged_is true
+expect "new executable named like pathspec magic: FLAG line" \
+  gating_has "- FLAG **new executable file**: \`:(exclude)run.sh\` (mode 100755)"
+
+# A change git reports as binary has no added lines to scan, whatever it holds.
+# In an installed path it needs a human; elsewhere it is only listed.
+BIN_NOTE='(git treats it as binary, so its content was not scanned; needs review)'
+case_new ecc; case_add_bin "skills/$ECC_SKILL/tool.bin"; case_old
+case_mod_bin "skills/$ECC_SKILL/tool.bin"; case_scan
+expect "modified binary, installed: flagged=true" flagged_is true
+expect "modified binary, installed: FLAG line" \
+  gating_has "- FLAG **binary file changed**: \`skills/$ECC_SKILL/tool.bin\` $BIN_NOTE"
+case_new ecc; case_add_bin docker/blob.bin; case_old
+case_mod_bin docker/blob.bin; case_scan
+expect "modified binary, not installed: flagged=false" flagged_is false
+expect "modified binary, not installed: informational" \
+  info_has "- INFO **binary file changed**: \`upstream/ecc/docker/blob.bin\`"
+expect "modified binary, not installed: no FLAG lines" no_flag_lines
+# A .gitattributes -diff rule makes git call text binary too, which would hide
+# any payload added to an existing script.
+case_new ecc; case_add "skills/$ECC_SKILL/run.sh" 'echo ok'; case_old
+case_add .gitattributes '*.sh -diff'; case_add "skills/$ECC_SKILL/run.sh" "$PAYLOAD"; case_scan
+expect "text hidden by a -diff attribute: flagged=true" flagged_is true
+expect "text hidden by a -diff attribute: FLAG line" \
+  gating_has "- FLAG **binary file changed**: \`skills/$ECC_SKILL/run.sh\` $BIN_NOTE"
+
+# A diff that cannot run (here the old commit does not exist upstream) must not
+# read as "nothing changed". A bump with identical trees still does.
+case_new ecc
+git -C "$CASE_DIR" update-index --cacheinfo "160000,0123456789abcdef0123456789abcdef01234567,upstream/ecc"
+git -C "$CASE_DIR" "${GIT_ID[@]}" commit -q -m 'old commit that upstream does not have'
+case_add docker/run.sh 'echo ok'; case_scan
+expect "diff cannot run: flagged=true" flagged_is true
+expect "diff cannot run: FLAG line says the bump was not scanned" grep -qF -- '- FLAG **diff failed**: ' "$REPORT"
+expect "diff cannot run: no safe-for-auto-merge verdict" report_lacks 'Safe for auto-merge'
+case_new ecc; case_scan
+expect "bump with identical trees: flagged=false" flagged_is false
+expect "bump with identical trees: no FLAG lines" no_flag_lines
+
 # ── 3. Unknown upstream fails closed ─────────────────────────────────────────
 should_flag "unknown upstream, script" mystery tests/helper.sh
 should_flag "unknown upstream, doc" mystery README.md
@@ -370,6 +434,7 @@ should_ignore "omx skills are never copied" omx skills/foo/SKILL.md
 should_flag "gstack root SKILL.md" gstack SKILL.md
 should_flag "gstack setup (no extension, executed)" gstack setup
 should_flag "gstack bin/ script" gstack bin/gstack-thing
+should_flag "gstack non-ASCII name under bin/" gstack "bin/$NON_ASCII_NAME"
 should_flag "gstack browse/src" gstack browse/src/cli.ts
 should_flag "gstack skill SKILL.md" gstack review/SKILL.md
 should_flag "gstack nested crew/docs .md" gstack crew/docs/captain.md

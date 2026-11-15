@@ -88,7 +88,7 @@ The default `core` profile keeps the active skill catalog within its context bud
 
 - Orchestration -> `$ralph`, `$autopilot`, `$ultrawork`, `$team` (OMC execution modes — installed only when the OMC skill set is also present under `~/.codex/skills`; confirm in the registry before routing)
 - Dev process -> superpowers (`brainstorming`, `test-driven-development`, `systematic-debugging`, `verification-before-completion`, `writing-plans`)
-- Ship/QA/deploy/security -> gstack (`/ship`, `/qa`, `/review`, `/cso`, `/investigate`)
+- Ship/QA/deploy/security -> gstack (`/ship`, `/qa`, `/review`, `/cso`)
 - Language/stack knowledge -> ECC skills
 - Diagrams -> `archify`
 - AI/domain work -> vendored agent packs (`codex-agents/packs`; enable with `my-codex-packs enable <pack>`)
@@ -100,7 +100,7 @@ The default `core` profile keeps the active skill catalog within its context bud
 | High completion risk — large scope, many moving parts | `$ralph`, `$autopilot`, `$ultrawork` (OMC-conditional, see Skill Lane Ownership above) |
 | Ambiguity — vague requirements | `prometheus` agent (interview-driven work plan before any code) |
 | Safety-sensitive — auth, secrets, deployment | gstack `/cso`, `verification-before-completion` |
-| Unknown root cause | gstack `/investigate` |
+| Unknown root cause | `systematic-debugging` |
 | Quality concern — AI-generated code, no tests | `test-driven-development`, `code-reviewer` agent |
 | Knowledge gap — new codebase, unfamiliar library | `codebase-onboarding`, `documentation-lookup` |
 | Strategic decision — architecture tradeoffs | `architecture-decision-records`, `oracle` agent |
@@ -185,7 +185,7 @@ Invoke skills with `$name` syntax:
 - `$test-driven-development` — test-driven development discipline (superpowers)
 - `/review` — structured code review (gstack)
 - `/cso` — security audit and threat modeling (gstack)
-- `/investigate` — evidence-driven bug root cause investigation (gstack)
+- `$systematic-debugging` — evidence-driven bug root cause investigation (superpowers)
 
 Codex CLI 0.128.0+ ships a native `/goal` command (single-thread objective + token budget, self-audited completion) behind the experimental `goals` feature flag, which is off by default (enable with `codex features enable goals`). It has no `codex exec`/CLI equivalent, so Boss and gstack-sprint cannot invoke it as an automated pipeline step. Use `/goal` for simple ad-hoc interactive persistence in a single session; use `$ralph` when you need fresh-context restarts, external architect/critic verification, or orchestration by Boss/gstack-sprint.
 

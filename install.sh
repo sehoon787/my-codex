@@ -1152,7 +1152,6 @@ patch_gstack_openclaw_skills() {
 
   for skill_file in \
     "$gstack_root/openclaw/skills/gstack-openclaw-ceo-review/SKILL.md" \
-    "$gstack_root/openclaw/skills/gstack-openclaw-investigate/SKILL.md" \
     "$gstack_root/openclaw/skills/gstack-openclaw-office-hours/SKILL.md"
   do
     patch_yaml_scalar_line "$skill_file" description

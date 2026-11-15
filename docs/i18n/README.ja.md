@@ -129,7 +129,7 @@ Boss は最適なマッチが見つかるまで、すべてのリクエストを
 | 複雑度 | モデル | 対象 |
 |-----------|-------|----------|
 | 最上位のオーケストレーション | `gpt-6.1-sol` (xhigh) | Boss、およびデフォルトのメインセッション |
-| 深い分析、アーキテクチャ、レビュー | `gpt-6-astra` | Oracle、Prometheus、Sisyphus、Hephaestus、Atlas、Metis、Momus、architect、planner、code-reviewer、security-reviewer |
+| 深い分析、アーキテクチャ、レビュー | `gpt-6-astra` | Oracle、Prometheus、Sisyphus、Hephaestus、Atlas、Metis、Momus、Tracer、architect、planner、code-reviewer、security-reviewer |
 | 標準的な実装 | `gpt-6.1-sol` | Librarian、Multimodal-Looker、executor、test-engineer、debugger、およびパックエージェント 17 体のうち 15 体 |
 | 簡単な検索、軽い分析 | `gpt-6-luna` | data-analyst、prompt-regression-tester |
 
@@ -144,7 +144,7 @@ Boss は最適なマッチが見つかるまで、すべてのリクエストを
 | 推論強度 | エージェント |
 |--------|--------|
 | `xhigh` | Boss、Oracle、Prometheus、architect |
-| `high` | Sisyphus、Hephaestus、Atlas、Metis、Momus、planner、code-reviewer、security-reviewer、およびパックエージェント 17 体のうち 15 体 |
+| `high` | Sisyphus、Hephaestus、Atlas、Metis、Momus、Tracer、planner、code-reviewer、security-reviewer、およびパックエージェント 17 体のうち 15 体 |
 | `medium` | Librarian、Multimodal-Looker、executor、test-engineer、debugger、data-analyst、prompt-regression-tester |
 
 ### 3 フェーズスプリントワークフロー
@@ -208,6 +208,7 @@ Boss は作業のあったすべてのターン — ファイル編集、コミ�
 | Metis | gpt-6-astra high | 意図分析、曖昧性の検出 | oh-my-openagent |
 | Momus | gpt-6-astra high | 計画の実現可能性レビュー | oh-my-openagent |
 | Prometheus | gpt-6-astra xhigh | インタビュー形式の詳細計画 | oh-my-openagent |
+| Tracer | gpt-6-astra high | 競合する仮説を比較する、証拠に基づく因果追跡（読み取り専用） | oh-my-claudecode |
 | Librarian | gpt-6.1-sol medium | MCP 経由のオープンソース文書検索 | oh-my-openagent |
 | Multimodal-Looker | gpt-6.1-sol medium | 画像/スクリーンショット/図の分析 | oh-my-openagent |
 

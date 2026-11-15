@@ -185,7 +185,7 @@ Boss cascades every request through a priority chain until the best match is fou
 | Complexity | Model | Used For |
 |-----------|-------|----------|
 | Top-level orchestration | `gpt-6.1-sol` (xhigh) | Boss, and the main session by default |
-| Deep analysis, architecture, review | `gpt-6-astra` | Oracle, Prometheus, Sisyphus, Hephaestus, Atlas, Metis, Momus, architect, planner, code-reviewer, security-reviewer |
+| Deep analysis, architecture, review | `gpt-6-astra` | Oracle, Prometheus, Sisyphus, Hephaestus, Atlas, Metis, Momus, Tracer, architect, planner, code-reviewer, security-reviewer |
 | Standard implementation | `gpt-6.1-sol` | Librarian, Multimodal-Looker, executor, test-engineer, debugger, and 15 of the 17 pack agents |
 | Quick lookup, light analysis | `gpt-6-luna` | data-analyst, prompt-regression-tester |
 
@@ -200,7 +200,7 @@ Model choice sets *which* brain runs a task; the `model_reasoning_effort` field 
 | Effort | Agents |
 |--------|--------|
 | `xhigh` | Boss, Oracle, Prometheus, architect |
-| `high` | Sisyphus, Hephaestus, Atlas, Metis, Momus, planner, code-reviewer, security-reviewer, and 15 of the 17 pack agents |
+| `high` | Sisyphus, Hephaestus, Atlas, Metis, Momus, Tracer, planner, code-reviewer, security-reviewer, and 15 of the 17 pack agents |
 | `medium` | Librarian, Multimodal-Looker, executor, test-engineer, debugger, data-analyst, prompt-regression-tester |
 
 ### 3-Phase Sprint Workflow
@@ -264,6 +264,7 @@ Every agent and skill above is allowlisted in [`scripts/skill-allowlists.sh`](./
 | Metis | gpt-6-astra high | Intent analysis, ambiguity detection | oh-my-openagent |
 | Momus | gpt-6-astra high | Plan feasibility review | oh-my-openagent |
 | Prometheus | gpt-6-astra xhigh | Interview-based detailed planning | oh-my-openagent |
+| Tracer | gpt-6-astra high | Evidence-driven causal tracing with competing hypotheses (read-only) | oh-my-claudecode |
 | Librarian | gpt-6.1-sol medium | Open-source documentation search via MCP | oh-my-openagent |
 | Multimodal-Looker | gpt-6.1-sol medium | Image/screenshot/diagram analysis | oh-my-openagent |
 

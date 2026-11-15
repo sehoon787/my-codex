@@ -129,7 +129,7 @@ Boss führt jede Anfrage durch eine Prioritätskette, bis der beste Treffer gefu
 | Komplexität | Modell | Eingesetzt für |
 |-----------|-------|----------|
 | Orchestrierung auf oberster Ebene | `gpt-6.1-sol` (xhigh) | Boss und standardmäßig die Hauptsitzung |
-| Tiefe Analyse, Architektur, Review | `gpt-6-astra` | Oracle, Prometheus, Sisyphus, Hephaestus, Atlas, Metis, Momus, architect, planner, code-reviewer, security-reviewer |
+| Tiefe Analyse, Architektur, Review | `gpt-6-astra` | Oracle, Prometheus, Sisyphus, Hephaestus, Atlas, Metis, Momus, Tracer, architect, planner, code-reviewer, security-reviewer |
 | Standardimplementierung | `gpt-6.1-sol` | Librarian, Multimodal-Looker, executor, test-engineer, debugger sowie 15 der 17 Pack-Agenten |
 | Schnelles Nachschlagen, leichte Analyse | `gpt-6-luna` | data-analyst, prompt-regression-tester |
 
@@ -144,7 +144,7 @@ Die Modellwahl bestimmt, *welches* Gehirn eine Aufgabe übernimmt; das Feld `mod
 | Aufwand | Agenten |
 |--------|--------|
 | `xhigh` | Boss, Oracle, Prometheus, architect |
-| `high` | Sisyphus, Hephaestus, Atlas, Metis, Momus, planner, code-reviewer, security-reviewer sowie 15 der 17 Pack-Agenten |
+| `high` | Sisyphus, Hephaestus, Atlas, Metis, Momus, Tracer, planner, code-reviewer, security-reviewer sowie 15 der 17 Pack-Agenten |
 | `medium` | Librarian, Multimodal-Looker, executor, test-engineer, debugger, data-analyst, prompt-regression-tester |
 
 ### 3-Phasen-Sprint-Workflow
@@ -208,6 +208,7 @@ Jeder Agent und jeder Skill oben steht auf der Freigabeliste in [`scripts/skill-
 | Metis | gpt-6-astra high | Intent-Analyse, Erkennung von Mehrdeutigkeit | oh-my-openagent |
 | Momus | gpt-6-astra high | Prüfung der Plan-Machbarkeit | oh-my-openagent |
 | Prometheus | gpt-6-astra xhigh | Interviewbasierte Detailplanung | oh-my-openagent |
+| Tracer | gpt-6-astra high | Evidenzbasierte Ursachenverfolgung mit konkurrierenden Hypothesen (nur lesend) | oh-my-claudecode |
 | Librarian | gpt-6.1-sol medium | Suche in Open-Source-Dokumentation über MCP | oh-my-openagent |
 | Multimodal-Looker | gpt-6.1-sol medium | Analyse von Bildern/Screenshots/Diagrammen | oh-my-openagent |
 

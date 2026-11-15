@@ -128,7 +128,7 @@ Boss 会把每个请求沿优先级链依次处理，直到找到最合适的匹
 | 复杂度 | 模型 | 适用对象 |
 |-----------|-------|----------|
 | 顶层编排 | `gpt-6.1-sol` (xhigh) | Boss，以及默认的主会话 |
-| 深度分析、架构、评审 | `gpt-6-astra` | Oracle、Prometheus、Sisyphus、Hephaestus、Atlas、Metis、Momus、architect、planner、code-reviewer、security-reviewer |
+| 深度分析、架构、评审 | `gpt-6-astra` | Oracle、Prometheus、Sisyphus、Hephaestus、Atlas、Metis、Momus、Tracer、architect、planner、code-reviewer、security-reviewer |
 | 标准实现 | `gpt-6.1-sol` | Librarian、Multimodal-Looker、executor、test-engineer、debugger，以及 17 个包 Agent 中的 15 个 |
 | 快速查询、轻量分析 | `gpt-6-luna` | data-analyst、prompt-regression-tester |
 
@@ -143,7 +143,7 @@ Boss 会把每个请求沿优先级链依次处理，直到找到最合适的匹
 | 推理强度 | Agent |
 |--------|--------|
 | `xhigh` | Boss、Oracle、Prometheus、architect |
-| `high` | Sisyphus、Hephaestus、Atlas、Metis、Momus、planner、code-reviewer、security-reviewer，以及 17 个包 Agent 中的 15 个 |
+| `high` | Sisyphus、Hephaestus、Atlas、Metis、Momus、Tracer、planner、code-reviewer、security-reviewer，以及 17 个包 Agent 中的 15 个 |
 | `medium` | Librarian、Multimodal-Looker、executor、test-engineer、debugger、data-analyst、prompt-regression-tester |
 
 ### 三阶段冲刺工作流
@@ -207,6 +207,7 @@ Boss 会为每个有实际工作的回合 —— 编辑了文件、产生提交/
 | Metis | gpt-6-astra high | 意图分析、歧义检测 | oh-my-openagent |
 | Momus | gpt-6-astra high | 计划可行性评审 | oh-my-openagent |
 | Prometheus | gpt-6-astra xhigh | 基于访谈的详细规划 | oh-my-openagent |
+| Tracer | gpt-6-astra high | 基于证据的因果追溯，比较竞争性假设（只读） | oh-my-claudecode |
 | Librarian | gpt-6.1-sol medium | 通过 MCP 检索开源文档 | oh-my-openagent |
 | Multimodal-Looker | gpt-6.1-sol medium | 图片/截图/图表分析 | oh-my-openagent |
 

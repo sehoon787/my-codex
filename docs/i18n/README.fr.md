@@ -129,7 +129,7 @@ Boss fait passer chaque demande dans une chaîne de priorités jusqu'à trouver 
 | Complexité | Modèle | Utilisé pour |
 |-----------|-------|----------|
 | Orchestration de premier niveau | `gpt-6.1-sol` (xhigh) | Boss, et la session principale par défaut |
-| Analyse approfondie, architecture, revue | `gpt-6-astra` | Oracle, Prometheus, Sisyphus, Hephaestus, Atlas, Metis, Momus, architect, planner, code-reviewer, security-reviewer |
+| Analyse approfondie, architecture, revue | `gpt-6-astra` | Oracle, Prometheus, Sisyphus, Hephaestus, Atlas, Metis, Momus, Tracer, architect, planner, code-reviewer, security-reviewer |
 | Implémentation standard | `gpt-6.1-sol` | Librarian, Multimodal-Looker, executor, test-engineer, debugger, ainsi que 15 des 17 agents de packs |
 | Recherche rapide, analyse légère | `gpt-6-luna` | data-analyst, prompt-regression-tester |
 
@@ -144,7 +144,7 @@ Le choix du modèle décide *quel* cerveau exécute une tâche ; le champ `model
 | Effort | Agents |
 |--------|--------|
 | `xhigh` | Boss, Oracle, Prometheus, architect |
-| `high` | Sisyphus, Hephaestus, Atlas, Metis, Momus, planner, code-reviewer, security-reviewer, ainsi que 15 des 17 agents de packs |
+| `high` | Sisyphus, Hephaestus, Atlas, Metis, Momus, Tracer, planner, code-reviewer, security-reviewer, ainsi que 15 des 17 agents de packs |
 | `medium` | Librarian, Multimodal-Looker, executor, test-engineer, debugger, data-analyst, prompt-regression-tester |
 
 ### Workflow en sprint 3 phases
@@ -208,6 +208,7 @@ Tous les agents et skills ci-dessus figurent sur la liste d'autorisation de [`sc
 | Metis | gpt-6-astra high | Analyse d'intention, détection d'ambiguïté | oh-my-openagent |
 | Momus | gpt-6-astra high | Revue de faisabilité des plans | oh-my-openagent |
 | Prometheus | gpt-6-astra xhigh | Planification détaillée par entretien | oh-my-openagent |
+| Tracer | gpt-6-astra high | Traçage causal fondé sur des preuves, avec hypothèses concurrentes (lecture seule) | oh-my-claudecode |
 | Librarian | gpt-6.1-sol medium | Recherche de documentation open source via MCP | oh-my-openagent |
 | Multimodal-Looker | gpt-6.1-sol medium | Analyse d'images/captures/diagrammes | oh-my-openagent |
 

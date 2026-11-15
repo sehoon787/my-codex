@@ -128,7 +128,7 @@ Boss는 가장 적합한 매칭을 찾을 때까지 모든 요청을 우선순�
 | 복잡도 | 모델 | 사용 대상 |
 |-----------|-------|----------|
 | 최상위 오케스트레이션 | `gpt-6.1-sol` (xhigh) | Boss, 기본 메인 세션 |
-| 심층 분석, 아키텍처, 리뷰 | `gpt-6-astra` | Oracle, Prometheus, Sisyphus, Hephaestus, Atlas, Metis, Momus, architect, planner, code-reviewer, security-reviewer |
+| 심층 분석, 아키텍처, 리뷰 | `gpt-6-astra` | Oracle, Prometheus, Sisyphus, Hephaestus, Atlas, Metis, Momus, Tracer, architect, planner, code-reviewer, security-reviewer |
 | 표준 구현 | `gpt-6.1-sol` | Librarian, Multimodal-Looker, executor, test-engineer, debugger 및 팩 에이전트 17개 중 15개 |
 | 빠른 조회, 가벼운 분석 | `gpt-6-luna` | data-analyst, prompt-regression-tester |
 
@@ -143,7 +143,7 @@ Boss는 가장 적합한 매칭을 찾을 때까지 모든 요청을 우선순�
 | 추론 강도 | 에이전트 |
 |--------|--------|
 | `xhigh` | Boss, Oracle, Prometheus, architect |
-| `high` | Sisyphus, Hephaestus, Atlas, Metis, Momus, planner, code-reviewer, security-reviewer 및 팩 에이전트 17개 중 15개 |
+| `high` | Sisyphus, Hephaestus, Atlas, Metis, Momus, Tracer, planner, code-reviewer, security-reviewer 및 팩 에이전트 17개 중 15개 |
 | `medium` | Librarian, Multimodal-Looker, executor, test-engineer, debugger, data-analyst, prompt-regression-tester |
 
 ### 3단계 스프린트 워크플로
@@ -207,6 +207,7 @@ Boss는 작업이 있던 모든 턴 — 파일 편집, 커밋/PR, 설정 변경,
 | Metis | gpt-6-astra high | 의도 분석, 모호성 탐지 | oh-my-openagent |
 | Momus | gpt-6-astra high | 계획 실현 가능성 검토 | oh-my-openagent |
 | Prometheus | gpt-6-astra xhigh | 인터뷰 기반 세부 계획 수립 | oh-my-openagent |
+| Tracer | gpt-6-astra high | 경쟁 가설을 비교하는 증거 기반 인과 추적 (읽기 전용) | oh-my-claudecode |
 | Librarian | gpt-6.1-sol medium | MCP를 통한 오픈소스 문서 검색 | oh-my-openagent |
 | Multimodal-Looker | gpt-6.1-sol medium | 이미지/스크린샷/다이어그램 분석 | oh-my-openagent |
 

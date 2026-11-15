@@ -9,13 +9,13 @@
 # my-codex
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
-![Agents](https://img.shields.io/badge/agents-17_core_%2B_17_opt--in-blue)
+![Agents](https://img.shields.io/badge/agents-18_core_%2B_17_opt--in-blue)
 ![Skills](https://img.shields.io/badge/skills-29_default_%2F_109_installed-purple)
 ![MCP](https://img.shields.io/badge/MCP-5-green)
 ![Auto Sync](https://img.shields.io/badge/upstream_sync-every_3_days-brightgreen)
 
 **面向 Codex CLI 的一体化 Agent 框架。**
-**安装一次，17 个核心 Agent 即刻可用。**
+**安装一次，18 个核心 Agent 即刻可用。**
 
 Boss 在运行时发现每一个 Agent、Skill 和 MCP 工具，<br>
 再通过 `spawn_agent` 把任务路由给合适的专家。无需配置文件，无需样板代码。
@@ -138,7 +138,7 @@ Boss 会把每个请求沿优先级链依次处理，直到找到最合适的匹
 
 ### 推理强度层级
 
-模型选择决定由*哪个*大脑执行任务，而同一个 TOML 中紧挨 `model` 的 `model_reasoning_effort` 决定它*思考多深*。Boss 和 9 个 OMO Agent 在 `codex-agents/` 下已提交的文件中直接声明，7 个 oh-my-codex 工作型 Agent 在转换时从 `scripts/md-to-toml.sh` 的角色表取值，而包 Agent 各自携带自己的取值：
+模型选择决定由*哪个*大脑执行任务，而同一个 TOML 中紧挨 `model` 的 `model_reasoning_effort` 决定它*思考多深*。Boss 和 10 个 OMO Agent 在 `codex-agents/` 下已提交的文件中直接声明，7 个 oh-my-codex 工作型 Agent 在转换时从 `scripts/md-to-toml.sh` 的角色表取值，而包 Agent 各自携带自己的取值：
 
 | 推理强度 | Agent |
 |--------|--------|
@@ -176,7 +176,7 @@ Boss 会为每个有实际工作的回合 —— 编辑了文件、产生提交/
 
 | 类别 | 数量 | 来源 |
 |----------|------:|--------|
-| **核心 Agent**（始终加载） | 17 | Boss 1 + OMO 9 + OMX 7 |
+| **核心 Agent**（始终加载） | 18 | Boss 1 + OMO 10 + OMX 7 |
 | **Agent 包**（可选，默认全部不启用） | 17 | 2 个内置类别：data-ai 13 + llmops 4 |
 | **暴露的 Skill**（默认 `core` 配置） | 29 | 始终开启的集合；其余只需一个车道参数即可加入 |
 | **已安装的 Skill**（`~/.codex/skills/` 下的条目） | 109 | ECC 61 · gstack 29 · Superpowers 14 · Core 4 · archify 1 |
@@ -196,7 +196,7 @@ Boss 会为每个有实际工作的回合 —— 编辑了文件、产生提交/
 </details>
 
 <details>
-<summary><strong>OMO Agent —— 子编排器与专家 (9)</strong></summary>
+<summary><strong>OMO Agent —— 子编排器与专家 (10)</strong></summary>
 
 | Agent | 模型 | 职责 | 来源 |
 |-------|-------|------|--------|
@@ -420,7 +420,7 @@ headroom install apply --profile agent-harness-shared --preset persistent-servic
 | **Boss 元编排器** | 动态能力发现 → 意图分类 → 四级优先路由 → 委派 → 验证 |
 | **三阶段冲刺** | 设计（交互式）→ 执行（通过 executor 自主）→ 评审（与设计文档交互式对照） |
 | **Agent 层级优先** | core > omo > omx > 可选包 的去重顺序。若包内 Agent 与已安装 Agent 重名则跳过。最专精的 Agent 胜出。 |
-| **成本优化** | 由单一文件（`scripts/model-tiers.sh`）管理的三档模型，应用于安装脚本提供的全部 34 个 Agent |
+| **成本优化** | 由单一文件（`scripts/model-tiers.sh`）管理的三档模型，应用于安装脚本提供的全部 35 个 Agent |
 | **Skill 暴露配置** | 一份 209 条目的目录，默认暴露 29 条、13 条可选车道，并支持快照与回滚 —— 让 Skill 预算花在这次会话真正需要的地方 |
 | **简报信号** | 包装器/会话日志填充 `.briefing/agents/agent-log.jsonl`、每日汇总以及路由/画像提示 |
 | **Smart Packs** | 通过项目类型检测，在会话开始时推荐相关的 Agent 包 |

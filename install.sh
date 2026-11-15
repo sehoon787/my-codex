@@ -1364,7 +1364,7 @@ CATALOG_SKILL_NAMES="$(catalog_skill_names)"
 
 echo "=== my-codex installer ==="
 echo ""
-echo "Install footprint: 17 core agents + 17 opt-in AI agents (2 packs), curated skill catalog from 4 upstream sources"
+echo "Install footprint: 18 core agents + 17 opt-in AI agents (2 packs), curated skill catalog from 4 upstream sources"
 if [ -n "$SKILL_LANES" ]; then
   echo "Optional skill lanes: ${SKILL_LANES} (+18 with web)"
 fi

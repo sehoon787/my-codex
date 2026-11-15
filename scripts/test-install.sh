@@ -429,13 +429,13 @@ actual_skills=$(find "$TEST_HOME/.codex/skills" -name 'SKILL.md' | wc -l | tr -d
 
 
 
-# Post-dedup contract (2026-07-27): 17 auto-loaded agents (10 core/omo + 7 omx),
+# Post-dedup contract (2026-07-27): 18 auto-loaded agents (11 core/omo + 7 omx),
 # 17 vendored pack agents (data-ai 13 + llmops 4), packs disabled by default,
 # 105 allowlisted skills on a real install. In this sandboxed harness the
 # gstack network clone is unavailable, so assert a conservative physical floor.
 # Optional lane payloads are copied when first requested, then retained across
 # later profile changes and reinstalls.
-test "$actual_core" -ge 17
+test "$actual_core" -ge 18
 test "$actual_active_pack_links" -eq 0
 test "$actual_packs" -eq 17
 test "$actual_skills" -ge 75

@@ -9,13 +9,13 @@
 # my-codex
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
-![Agents](https://img.shields.io/badge/agents-17_core_%2B_17_opt--in-blue)
+![Agents](https://img.shields.io/badge/agents-18_core_%2B_17_opt--in-blue)
 ![Skills](https://img.shields.io/badge/skills-29_default_%2F_109_installed-purple)
 ![MCP](https://img.shields.io/badge/MCP-5-green)
 ![Auto Sync](https://img.shields.io/badge/upstream_sync-every_3_days-brightgreen)
 
 **Codex CLI 向けオールインワン・エージェントハーネス。**
-**一度インストールするだけで、コアエージェント 17 体がすぐに使えます。**
+**一度インストールするだけで、コアエージェント 18 体がすぐに使えます。**
 
 Boss はランタイムですべてのエージェント・スキル・MCP ツールを検出し、<br>
 `spawn_agent` を通じて適切なスペシャリストにタスクをルーティングします。設定もボイラープレートも不要です。
@@ -139,7 +139,7 @@ Boss は最適なマッチが見つかるまで、すべてのリクエストを
 
 ### 推論強度ティア
 
-モデル選択が*どの*頭脳でタスクを走らせるかを決めるのに対し、同じ TOML の `model` の隣にある `model_reasoning_effort` は*どれだけ深く*考えるかを決めます。Boss と OMO エージェント 9 体は `codex-agents/` 配下のコミット済みファイルで宣言し、oh-my-codex のワーカー 7 体は変換時に `scripts/md-to-toml.sh` のロール表から値を受け取り、パックエージェントはそれぞれ自前の値を持ちます:
+モデル選択が*どの*頭脳でタスクを走らせるかを決めるのに対し、同じ TOML の `model` の隣にある `model_reasoning_effort` は*どれだけ深く*考えるかを決めます。Boss と OMO エージェント 10 体は `codex-agents/` 配下のコミット済みファイルで宣言し、oh-my-codex のワーカー 7 体は変換時に `scripts/md-to-toml.sh` のロール表から値を受け取り、パックエージェントはそれぞれ自前の値を持ちます:
 
 | 推論強度 | エージェント |
 |--------|--------|
@@ -177,7 +177,7 @@ Boss は作業のあったすべてのターン — ファイル編集、コミ�
 
 | カテゴリ | 数量 | 出典 |
 |----------|------:|--------|
-| **コアエージェント**（常時ロード） | 17 | Boss 1 + OMO 9 + OMX 7 |
+| **コアエージェント**（常時ロード） | 18 | Boss 1 + OMO 10 + OMX 7 |
 | **エージェントパック**（オプトイン、既定では無効） | 17 | ベンダリング済みの 2 カテゴリ: data-ai 13 + llmops 4 |
 | **公開スキル**（既定の `core` プロファイル） | 29 | 常時有効な集合。それ以外はレーンのフラグ 1 つで追加 |
 | **インストール済みスキル**（`~/.codex/skills/` の項目） | 109 | ECC 61 · gstack 29 · Superpowers 14 · Core 4 · archify 1 |
@@ -197,7 +197,7 @@ Boss は作業のあったすべてのターン — ファイル編集、コミ�
 </details>
 
 <details>
-<summary><strong>OMO エージェント — サブオーケストレーターとスペシャリスト (9)</strong></summary>
+<summary><strong>OMO エージェント — サブオーケストレーターとスペシャリスト (10)</strong></summary>
 
 | エージェント | モデル | 役割 | 出典 |
 |-------|-------|------|--------|
@@ -421,7 +421,7 @@ headroom install apply --profile agent-harness-shared --preset persistent-servic
 | **Boss メタオーケストレーター** | 動的な能力検出 → 意図分類 → 4 段階の優先ルーティング → 委任 → 検証 |
 | **3 フェーズスプリント** | 設計（対話型） → 実行（executor による自律） → レビュー（設計ドキュメントとの対話型比較） |
 | **エージェント階層の優先度** | core > omo > omx > オプトインパックの順で重複排除。既存エージェントと名前が衝突するパックエージェントはスキップされます。最も特化したエージェントが勝ちます。 |
-| **コスト最適化** | 単一ファイル（`scripts/model-tiers.sh`）で管理する 3 つのモデルティアを、インストールされる 34 体すべてに適用 |
+| **コスト最適化** | 単一ファイル（`scripts/model-tiers.sh`）で管理する 3 つのモデルティアを、インストールされる 35 体すべてに適用 |
 | **スキル公開プロファイル** | 209 エントリのカタログに既定 29 の公開、任意レーン 13、スナップショットとロールバック — スキル予算をそのセッションに必要なものへ使います |
 | **ブリーフィングシグナル** | ラッパー/セッションのログが `.briefing/agents/agent-log.jsonl`、日次集計、ルーティング/プロファイルのヒントを生成 |
 | **Smart Packs** | プロジェクト種別の検出により、セッション開始時に関連するエージェントパックを推奨 |

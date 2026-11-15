@@ -9,13 +9,13 @@
 # my-codex
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
-![Agents](https://img.shields.io/badge/agents-17_core_%2B_17_opt--in-blue)
+![Agents](https://img.shields.io/badge/agents-18_core_%2B_17_opt--in-blue)
 ![Skills](https://img.shields.io/badge/skills-29_default_%2F_109_installed-purple)
 ![MCP](https://img.shields.io/badge/MCP-5-green)
 ![Auto Sync](https://img.shields.io/badge/upstream_sync-every_3_days-brightgreen)
 
 **All-in-one agent harness for Codex CLI.**
-**One installer, 17 core agents ready.**
+**One installer, 18 core agents ready.**
 
 Boss discovers every agent, skill, and MCP tool at runtime,<br>
 then routes your task to the right specialist through `spawn_agent`. No config files. No boilerplate.
@@ -195,7 +195,7 @@ The three tier IDs live in a single file, `scripts/model-tiers.sh`; `scripts/md-
 
 ### Effort Tiers
 
-Model choice sets *which* brain runs a task; the `model_reasoning_effort` field next to `model` in the same TOML sets *how hard* it thinks. Boss and the nine OMO agents declare it in the committed files under `codex-agents/`, the seven oh-my-codex workers receive theirs from the role table in `scripts/md-to-toml.sh` at conversion time, and each pack agent carries its own:
+Model choice sets *which* brain runs a task; the `model_reasoning_effort` field next to `model` in the same TOML sets *how hard* it thinks. Boss and the ten OMO agents declare it in the committed files under `codex-agents/`, the seven oh-my-codex workers receive theirs from the role table in `scripts/md-to-toml.sh` at conversion time, and each pack agent carries its own:
 
 | Effort | Agents |
 |--------|--------|
@@ -233,7 +233,7 @@ It fires only at the very end of the request — never on a turn that launches o
 
 | Category | Count | Source |
 |----------|------:|--------|
-| **Core agents** (always loaded) | 17 | Boss 1 + OMO 9 + OMX 7 |
+| **Core agents** (always loaded) | 18 | Boss 1 + OMO 10 + OMX 7 |
 | **Agent packs** (opt-in, none enabled by default) | 17 | 2 vendored categories: data-ai 13 + llmops 4 |
 | **Skills exposed** (default `core` profile) | 29 | The always-on set; every other entry is one lane flag away |
 | **Skills installed** (entries under `~/.codex/skills/`) | 109 | ECC 61 · gstack 29 · Superpowers 14 · Core 4 · archify 1 |
@@ -253,7 +253,7 @@ Every agent and skill above is allowlisted in [`scripts/skill-allowlists.sh`](./
 </details>
 
 <details>
-<summary><strong>OMO Agents — Sub-orchestrators and specialists (9)</strong></summary>
+<summary><strong>OMO Agents — Sub-orchestrators and specialists (10)</strong></summary>
 
 | Agent | Model | Role | Source |
 |-------|-------|------|--------|
@@ -478,7 +478,7 @@ Features built specifically for this project, beyond what upstream sources provi
 | **Boss Meta-Orchestrator** | Dynamic capability discovery → intent classification → 4-priority routing → delegation → verification |
 | **3-Phase Sprint** | Design (interactive) → Execute (autonomous via executor) → Review (interactive vs design doc) |
 | **Agent Tier Priority** | core > omo > omx > opt-in packs. Pack agents are skipped if their name collides with an already-installed agent. Most specialized agent wins. |
-| **Cost Optimization** | Three model tiers from one source file (`scripts/model-tiers.sh`), applied to all 34 agents the installer ships |
+| **Cost Optimization** | Three model tiers from one source file (`scripts/model-tiers.sh`), applied to all 35 agents the installer ships |
 | **Skill Exposure Profiles** | A managed catalog of 209 entries with a 29-skill default, 13 optional lanes, snapshots, and rollback — so the skills budget is spent on what the session needs |
 | **Briefing Signals** | Wrapper/session logging feeds `.briefing/agents/agent-log.jsonl`, daily summaries, and routing/profile hints |
 | **Smart Packs** | Project-type detection recommends relevant agent packs at session start |

@@ -9,7 +9,7 @@ Thank you for contributing. This guide covers how to author agents for Codex CLI
 ```
 codex-agents/
   core/                   # Self-owned core agent — boss (always loaded)
-  omo/                    # Self-owned OMO agents, 9 (always loaded)
+  omo/                    # Self-owned OMO agents, 10 (always loaded)
   packs/                  # Vendored opt-in agent packs (data-ai 13, llmops 4)
 upstream/                 # Git submodules (4 upstream sources)
   ecc/                    # everything-claude-code (skills)

@@ -46,15 +46,23 @@ ECC_SKILL="$(first_word "$ECC_SKILL_ALLOWLIST")"
 OMX_AGENT="$(first_word "$OMX_AGENT_ALLOWLIST")"
 SP_EXCLUDED_SKILL="$(first_word "$SUPERPOWERS_SKILL_EXCLUDE")"
 ARCHIFY_DIR="$ARCHIFY_SKILL_SUBDIR"
-# A skill only a catalog lane installs: the first one in the opt-in web lane that
-# the default allowlist does not already carry, read from the same
-# scripts/skill-catalog.json the installer reads.
+# Skills only the catalog installs, read from the same scripts/skill-catalog.json
+# the installer reads. LANE_SKILL is the first name in the opt-in web lane that
+# neither the allowlists nor the core list carry; CORE_SKILL is the first core
+# name that neither the allowlists nor any lane carry, so each one isolates the
+# list it comes from.
 LANE_SKILL="$(node -e '
   const catalog = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"));
-  const allowed = new Set(process.argv[2].split(/\s+/));
-  process.stdout.write(catalog.lanes.web.find((name) => !allowed.has(name)) || "");
-' "$REPO/scripts/skill-catalog.json" "$ECC_SKILL_ALLOWLIST")"
-NAMES=(ECC_SKILL OMX_AGENT SP_EXCLUDED_SKILL ARCHIFY_DIR LANE_SKILL)
+  const other = new Set([...process.argv[2].split(/\s+/), ...catalog.core]);
+  process.stdout.write(catalog.lanes.web.find((name) => !other.has(name)) || "");
+' "$REPO/scripts/skill-catalog.json" "$ECC_SKILL_ALLOWLIST $GSTACK_SKILL_ALLOWLIST")"
+CORE_SKILL="$(node -e '
+  const catalog = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"));
+  const other = new Set([...process.argv[2].split(/\s+/), ...Object.values(catalog.lanes).flat()]);
+  process.stdout.write(catalog.core.find((name) => !other.has(name)) || "");
+' "$REPO/scripts/skill-catalog.json" "$ECC_SKILL_ALLOWLIST $GSTACK_SKILL_ALLOWLIST")"
+GSTACK_DIR_ALLOWED="$(first_word "$GSTACK_SKILL_ALLOWLIST")"
+NAMES=(ECC_SKILL OMX_AGENT SP_EXCLUDED_SKILL ARCHIFY_DIR LANE_SKILL CORE_SKILL GSTACK_DIR_ALLOWED)
 # ── end per-repo ─────────────────────────────────────────────────────────────
 for v in "${NAMES[@]}"; do
   [ -n "${!v}" ] || { echo "FAIL: $v is empty; the allowlist or catalog it is read from changed shape"; exit 1; }
@@ -88,6 +96,7 @@ case_new() {
 case_add() {
   local up="$CASE_DIR/upstream/$CASE_UP" f="$CASE_DIR/upstream/$CASE_UP/$1"
   mkdir -p "$(dirname "$f")"
+  rm -f "$f" # a symlink here would otherwise be written through
   printf '%s\n' "$2" > "$f"
   git -C "$up" add -- "$1"
   if [ "${3:-}" = x ]; then git -C "$up" update-index --chmod=+x -- "$1"; fi
@@ -98,14 +107,18 @@ case_add_bin() {
   printf '\000\001\002\003\000' > "$f"
   git -C "$up" add -- "$1"
 }
-# case_link <path> <target>: a symlink, replacing a file already at <path>.
+# case_link <path> <target>: a symlink, replacing whatever is at <path> (a file,
+# another link, or a whole directory).
 case_link() {
   local up="$CASE_DIR/upstream/$CASE_UP" f="$CASE_DIR/upstream/$CASE_UP/$1"
+  git -C "$up" rm -rqf --ignore-unmatch -- "$1"
+  rm -rf "$f"
   mkdir -p "$(dirname "$f")"
-  rm -f "$f"
   ln -s "$2" "$f"
   git -C "$up" add -- "$1"
 }
+# case_rm <path>: delete a tracked file or link in the NEW commit.
+case_rm() { git -C "$CASE_DIR/upstream/$CASE_UP" rm -qf -- "$1"; }
 # case_old: commit what was added so far as the OLD side of the bump, for tests
 # that need a file to exist before the sync moves or changes it.
 case_old() {
@@ -231,6 +244,9 @@ expect "moved executable: flagged=true" flagged_is true
 expect "moved executable: FLAG line" \
   gating_has "- FLAG **new executable file**: \`skills/$ECC_SKILL/run.sh\` (mode 100755)"
 
+# The pattern scan diffs one destination path at a time, so a moved file reads as
+# all-added lines even with rename detection on; this one holds with or without
+# --no-renames, which only the two cases above depend on.
 case_new ecc; case_add docker/evil.sh "$PAYLOAD"; case_old
 case_move docker/evil.sh "skills/$ECC_SKILL/evil.sh"; case_scan
 expect "moved payload: flagged=true" flagged_is true
@@ -254,12 +270,93 @@ expect "file replaced by a symlink: flagged=true" flagged_is true
 expect "file replaced by a symlink: FLAG line" \
   gating_has "- FLAG **new or changed symlink**: \`base.txt\` (to \`elsewhere.txt\`)"
 
+# The directory itself becomes the link: its files vanish from the diff and the
+# link's own diff is a target string. This is the shape the link check exists for.
+case_new ecc; case_add "skills/$ECC_SKILL/SKILL.md" 'clean'; case_add docker/evil-skill/SKILL.md "$PAYLOAD"; case_old
+case_link "skills/$ECC_SKILL" ../docker/evil-skill; case_scan
+expect "skill dir replaced by a symlink: flagged=true" flagged_is true
+expect "skill dir replaced by a symlink: FLAG line" \
+  gating_has "- FLAG **new or changed symlink**: \`skills/$ECC_SKILL\` (to \`../docker/evil-skill\`)"
+
+case_new ecc; case_link "skills/$ECC_SKILL" ../docker/a; case_old
+case_link "skills/$ECC_SKILL" ../docker/b; case_scan
+expect "retargeted symlink: flagged=true" flagged_is true
+expect "retargeted symlink: FLAG line shows the new target" \
+  gating_has "- FLAG **new or changed symlink**: \`skills/$ECC_SKILL\` (to \`../docker/b\`)"
+
+# A link that goes away, or turns into a plain file, is no new way in.
+case_new ecc; case_link docker/link ../README.md; case_old
+case_rm docker/link; case_scan
+expect "deleted symlink: flagged=false" flagged_is false
+expect "deleted symlink: nothing about links in the report" report_lacks symlink
+
+case_new ecc; case_link docker/link ../README.md; case_old
+case_add docker/link 'plain'; case_scan
+expect "symlink replaced by a plain file: flagged=false" flagged_is false
+expect "symlink replaced by a plain file: nothing about links in the report" report_lacks symlink
+
+# A link target can hold a backtick and a newline. The report line must stay one
+# line, or upstream could write its own verdict into the comment.
+case_new ecc; case_link docker/inject $'x`\n:white_check_mark: injected verdict'; case_scan
+expect "symlink target with a newline: one FLAG line, target cut at the newline" \
+  gating_has "- FLAG **new or changed symlink**: \`docker/inject\` (to \`x\`)"
+expect "symlink target with a newline: nothing injected into the report" report_lacks ':white_check_mark: injected'
+
+# A link the maintainers approved once is still a way in: a later sync that only
+# edits the file behind it leaves the link alone. The file is judged at the path
+# the link exposes it at (docker/skill-src/run.sh is skills/<name>/run.sh).
+case_new ecc; case_add docker/skill-src/run.sh 'echo ok'; case_link "skills/$ECC_SKILL" ../docker/skill-src; case_old
+case_add docker/skill-src/run.sh "$PAYLOAD"; case_scan
+expect "edit behind an existing symlink: flagged=true" flagged_is true
+expect "edit behind an existing symlink: FLAG line" gating_has "$(flag_line "$PAYLOAD_LABEL" docker/skill-src/run.sh)"
+expect "edit behind an existing symlink: not informational" report_lacks "upstream/ecc/docker/skill-src/run.sh"
+expect "edit behind an existing symlink: the unchanged link is not flagged again" report_lacks symlink
+
+case_new ecc; case_add docker/real.sh 'echo ok'; case_link "skills/$ECC_SKILL/run.sh" ../../docker/real.sh; case_old
+case_add docker/real.sh "$PAYLOAD"; case_scan
+expect "edit behind a symlink to a file: flagged=true" flagged_is true
+expect "edit behind a symlink to a file: FLAG line" gating_has "$(flag_line "$PAYLOAD_LABEL" docker/real.sh)"
+
+# Judged where the link sits: a link at a path nothing installs exposes nothing,
+# however busy its target is (gstack's connect-chrome -> open-gstack-browser).
+case_new ecc; case_add docker/target/run.sh 'echo ok'; case_link docker/alias ./target; case_old
+case_add docker/target/run.sh "$PAYLOAD"; case_scan
+expect "edit behind a symlink nobody installs: flagged=false" flagged_is false
+expect "edit behind a symlink nobody installs: informational" info_has "$(info_line "$PAYLOAD_LABEL" docker/target/run.sh)"
+
+# Links that leave the repository or point at an absolute path expose nothing.
+case_new ecc; case_add docker/run.sh 'echo ok'; case_link "skills/$ECC_SKILL" ../../outside; case_link docker/abs /etc; case_old
+case_add docker/run.sh "$PAYLOAD"; case_scan
+expect "symlinks out of the repository expose nothing: flagged=false" flagged_is false
+expect "symlinks out of the repository expose nothing: informational" info_has "$(info_line "$PAYLOAD_LABEL" docker/run.sh)"
+
+# A link to the repository root exposes every path beneath the link's own.
+case_new ecc; case_add docker/run.sh 'echo ok'; case_link "skills/$ECC_SKILL" ..; case_old
+case_add docker/run.sh "$PAYLOAD"; case_scan
+expect "symlink to the repository root: flagged=true" flagged_is true
+expect "symlink to the repository root: FLAG line" gating_has "$(flag_line "$PAYLOAD_LABEL" docker/run.sh)"
+
+# A link that points at another link: the chain is followed.
+case_new ecc; case_add docker/payload/run.sh 'echo ok'; case_link docker/hop ./payload; case_link "skills/$ECC_SKILL" ../docker/hop; case_old
+case_add docker/payload/run.sh "$PAYLOAD"; case_scan
+expect "chain of symlinks: flagged=true" flagged_is true
+expect "chain of symlinks: FLAG line" gating_has "$(flag_line "$PAYLOAD_LABEL" docker/payload/run.sh)"
+
+# Links that point at each other must not loop: docker/b/x.sh, deleted in this
+# sync, is looked up through both of them.
+case_new ecc; case_add docker/b/x.sh 'echo ok'; case_old
+case_link docker/b ./a; case_link docker/a ./b; case_scan
+expect "symlinks pointing at each other: the scan finishes with flagged=true" flagged_is true
+expect "symlinks pointing at each other: both links flagged" \
+  gating_has "- FLAG **new or changed symlink**: \`docker/a\` (to \`./b\`)"
+
 # ── 3. Unknown upstream fails closed ─────────────────────────────────────────
 should_flag "unknown upstream, script" mystery tests/helper.sh
 should_flag "unknown upstream, doc" mystery README.md
 
 # ── 4. Per-repo: what each upstream installs ─────────────────────────────────
 should_flag "ecc catalog-lane skill" ecc "skills/$LANE_SKILL/run.sh"
+should_flag "ecc catalog core skill" ecc "skills/$CORE_SKILL/run.sh"
 should_inform "ecc rules (my-codex installs none)" ecc rules/typescript/hook.sh
 
 should_flag "omx allowlisted prompt" omx "prompts/$OMX_AGENT.md"
@@ -269,31 +366,48 @@ should_inform "omx src/ is never copied" omx src/team/runtime.ts
 should_ignore "omx skills are never copied" omx skills/foo/SKILL.md
 
 # gstack: the whole checkout runs from ~/.codex/vendor/gstack, except tests,
-# fixtures, CI config and docs.
+# fixtures and CI config; docs/ and test/helpers/ come back in.
 should_flag "gstack root SKILL.md" gstack SKILL.md
 should_flag "gstack setup (no extension, executed)" gstack setup
 should_flag "gstack bin/ script" gstack bin/gstack-thing
 should_flag "gstack browse/src" gstack browse/src/cli.ts
 should_flag "gstack skill SKILL.md" gstack review/SKILL.md
-should_flag "gstack nested crew/docs .md (only root docs/ is excluded)" gstack crew/docs/captain.md
-should_inform "gstack test/" gstack test/helpers/run.ts
-should_inform "gstack nested tests/" gstack browse/tests/run.sh
+should_flag "gstack nested crew/docs .md" gstack crew/docs/captain.md
+# ./setup links docs/ files into the runtime root for skills to read, and the
+# list lives in setup, which upstream controls; installed bin/ code imports
+# test/helpers.
+should_flag "gstack docs/ .md" gstack docs/guide.md
+should_flag "gstack docs/ script" gstack docs/example.sh
+should_flag "gstack docs/ nested fixtures" gstack docs/fixtures/page.sh
+should_flag "gstack test/helpers (imported by bin/)" gstack test/helpers/run.ts
+should_inform "gstack test/ beyond helpers" gstack test/e2e/run.ts
+should_inform "gstack nested tests/" gstack lib/tests/run.sh
 should_inform "gstack __tests__/" gstack lib/__tests__/run.ts
-should_inform "gstack fixtures/" gstack browse/fixtures/page.html
+should_inform "gstack fixtures/" gstack lib/fixtures/page.html
 should_inform "gstack *.test.*" gstack lib/thing.test.ts
 should_inform "gstack .github/" gstack .github/workflows/ci.yml
-should_ignore "gstack docs/ .md" gstack docs/guide.md
-should_ignore "gstack docs/ script (not installed, so a doc by path)" gstack docs/example.sh
-# install.sh links these two directories whole into ~/.codex/skills, so what is
-# beneath them is installed even where it would otherwise be a test or fixture.
+# A skill directory that install.sh links whole into ~/.codex/skills, or that
+# the catalog CLI copies whole, is installed with everything beneath it, even
+# where that would otherwise be a test or fixture.
 should_flag "gstack linked browser-skill dir, fixtures too" gstack browser-skills/hackernews-frontpage/fixtures/page.sh
 should_flag "gstack linked codex dir, tests too" gstack codex/test/run.sh
+should_flag "gstack allowlisted skill dir, tests too" gstack "$GSTACK_DIR_ALLOWED/test/run.sh"
+should_flag "gstack lane-named skill dir, fixtures too" gstack "$LANE_SKILL/fixtures/page.sh"
+should_flag "gstack core-named skill dir, fixtures too" gstack "$CORE_SKILL/fixtures/page.sh"
 should_inform "gstack browser-skills beyond the linked one" gstack browser-skills/other/fixtures/page.sh
+should_inform "gstack directory that is no skill keeps its tests informational" gstack lib/test/run.sh
 # A skill directory turned into a link to a fixtures directory.
 case_new gstack; case_add test/fixtures/review/SKILL.md "$PAYLOAD"; case_link review test/fixtures/review; case_scan
 expect "gstack skill dir linked to fixtures: flagged=true" flagged_is true
 expect "gstack skill dir linked to fixtures: FLAG line" \
   gating_has "- FLAG **new or changed symlink**: \`review\` (to \`test/fixtures/review\`)"
+# The same link, approved earlier: a later edit to the fixture is judged at
+# review/, so it gates; an edit behind a link at a path nobody installs does not.
+case_new gstack; case_add test/fixtures/review/run.sh 'echo ok'; case_link review test/fixtures/review; case_old
+case_add test/fixtures/review/run.sh "$PAYLOAD"; case_scan
+expect "gstack edit behind an approved skill-dir link: flagged=true" flagged_is true
+expect "gstack edit behind an approved skill-dir link: FLAG line" \
+  gating_has "$(flag_line "$PAYLOAD_LABEL" test/fixtures/review/run.sh)"
 
 should_flag "superpowers skill SKILL.md" superpowers skills/brainstorming/SKILL.md
 should_ignore "superpowers agents/ .md (my-codex installs no agents)" superpowers agents/reviewer.md
@@ -322,11 +436,29 @@ expect "catalog unreadable: flagged=true" flagged_is true
 expect "catalog unreadable: nothing is informational" info_empty
 expect "catalog unreadable: the report says why" grep -qF 'every path was treated as installed' "$REPORT"
 
+# A catalog without its core list has changed shape; read as valid JSON it must
+# still fail closed instead of installing less.
+mkdir -p "$TMP/no-core"
+cp "$SCANNER" "$REPO/scripts/skill-allowlists.sh" "$TMP/no-core/"
+printf '{"lanes":{"web":["zz-web-skill"]}}' > "$TMP/no-core/skill-catalog.json"
+case_new ecc; case_add docker/entrypoint.sh "$PAYLOAD"; case_scan "$TMP/no-core/scan-upstream-diff.sh"
+expect "catalog without core: flagged=true" flagged_is true
+expect "catalog without core: nothing is informational" info_empty
+expect "catalog without core: the report says why" grep -qF 'every path was treated as installed' "$REPORT"
+
 with_lists no-omx-list 'OMX_AGENT_ALLOWLIST=""'
 case_new omx; case_add src/team/runtime.ts "$PAYLOAD"; case_scan "$TMP/no-omx-list/scan-upstream-diff.sh"
 expect "omx allowlist emptied: flagged=true" flagged_is true
 expect "omx allowlist emptied: nothing is informational" info_empty
 expect "omx allowlist emptied: the report says why" grep -qF 'every path was treated as installed' "$REPORT"
+
+# The catalog CLI copies a catalog-named skill from superpowers whether or not
+# SUPERPOWERS_SKILL_EXCLUDE lists it, so the exclusion must not hide it.
+with_lists sp-excluded-core "SUPERPOWERS_SKILL_EXCLUDE=\"\$SUPERPOWERS_SKILL_EXCLUDE $CORE_SKILL\""
+case_new superpowers; case_add "skills/$CORE_SKILL/run.sh" "$PAYLOAD"; case_scan "$TMP/sp-excluded-core/scan-upstream-diff.sh"
+expect "superpowers catalog-named skill that is also excluded: flagged=true" flagged_is true
+expect "superpowers catalog-named skill that is also excluded: FLAG line" \
+  gating_has "$(flag_line "$PAYLOAD_LABEL" "skills/$CORE_SKILL/run.sh")"
 # ── end per-repo ─────────────────────────────────────────────────────────────
 
 # ── 5. Regex fixes: every line lands in one installed file ───────────────────

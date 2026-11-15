@@ -359,6 +359,18 @@ check('47. Stuck: repeated failure + real "Blocked on user" reason, no advisor -
   check('53d. impossibility: "이 작업은 불가능하다." -> block', claim('이 작업은 불가능하다.').blocked);
   check('53e. impossibility: "지금은 할 수 없다." -> block', claim('지금은 할 수 없다.').blocked);
   check('53f. impossibility: "이 작업은 불가능해요." -> block', claim('이 작업은 불가능해요.').blocked);
+  check('53g. impossibility: causal "불가능해서" -> none', !claim('직접 접근이 불가능해서 우회 방법을 썼습니다.').blocked);
+  check('53h. impossibility: causal "할 수 없어서" -> none', !claim('할 수 없어서 다른 경로로 처리했습니다.').blocked);
+  check('53i. impossibility: causal "방법이 없어서" -> none', !claim('다른 방법이 없어서 이 경로를 썼습니다.').blocked);
+  check('53j. impossibility: conditional "불가능하다면" -> none', !claim('불가능하다면 우회합니다.').blocked);
+  check('53k. impossibility: concessive "할 수 없지만" -> none', !claim('할 수 없지만 대안은 있습니다.').blocked);
+  check('53l. impossibility: "불가능합니다만" -> block', claim('불가능합니다만 대안이 있습니다.').blocked);
+  check('53m. impossibility: English "if it is impossible" -> none', !claim('if it is impossible, we fall back').blocked);
+  check('53n. impossibility: English "if it\'s not possible" -> none', !claim("if it's not possible, we fall back").blocked);
+  check('53o. impossibility: English "whether this is impossible" -> none', !claim('We checked whether this is impossible.').blocked);
+  check('53p. impossibility: English "It is impossible." -> block', claim('It is impossible.').blocked);
+  check('53q. impossibility: English "This cannot be done." -> block', claim('This cannot be done.').blocked);
+  check('53r. impossibility: English "there is no way to" -> block', claim('there is no way to do this').blocked);
 }
 
 // ------------------------------ Stuck: impossibility claim is not skippable

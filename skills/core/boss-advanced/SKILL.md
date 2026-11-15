@@ -13,7 +13,7 @@ Boss discovers capabilities at runtime. This is the ownership map for resolving 
 | Lane | Owner | Contents |
 |------|-------|----------|
 | Core orchestration | this repo (`skills/core/`) | boss-advanced, boss-briefing, briefing-vault, gstack-sprint (4) |
-| P0 workflows | gstack | 26 skills + the `gstack` root router (27) — see the domain routing table in boss.toml |
+| P0 workflows | gstack | 25 skills + the `gstack` root router (26) — see the domain routing table in boss.toml |
 | Dev discipline | superpowers | test-driven-development, systematic-debugging, brainstorming, writing-plans, executing-plans, requesting/receiving-code-review, verification-before-completion, using-git-worktrees, subagent-driven-development, writing-skills, using-superpowers, finishing-a-development-branch (13) |
 | Stack + AI knowledge | ECC | 61 skills — language/framework patterns, agent and LLM engineering, codebase tooling |
 | Document deliverables | Anthropic doc skills | pdf, docx, pptx, xlsx |

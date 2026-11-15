@@ -10,7 +10,7 @@
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 ![Agents](https://img.shields.io/badge/agents-17_core_%2B_17_opt--in-blue)
-![Skills](https://img.shields.io/badge/skills-30_default_%2F_110_installed-purple)
+![Skills](https://img.shields.io/badge/skills-29_default_%2F_109_installed-purple)
 ![MCP](https://img.shields.io/badge/MCP-5-green)
 ![Auto Sync](https://img.shields.io/badge/upstream_sync-every_3_days-brightgreen)
 
@@ -43,7 +43,7 @@ rm -rf /tmp/my-codex
 ```
 
 默认安装只暴露精简的 Skill 集合，这是有意为之：Codex 在超出 Skill 预算后会截断
-Skill 描述，因此默认的 `core` 配置只向 Codex 展示已安装的 110 个 Skill 条目中的 30 个，
+Skill 描述，因此默认的 `core` 配置只向 Codex 展示已安装的 109 个 Skill 条目中的 29 个，
 其余的只需一个参数即可开启：
 
 ```bash
@@ -81,7 +81,7 @@ my-codex 所依托的每一个项目、它带来的能力，以及它的引入�
 | # | 项目 | my-codex 取用的内容 | 引入方式 |
 |---|------|---------------------|----------|
 | 1 | <img src="https://github.com/affaan-m.png?size=32" width="20" height="20" align="center"/> **[everything-claude-code](https://github.com/affaan-m/everything-claude-code)** — affaan-m | 61 个白名单 Skill：技术栈模式（TypeScript、React、Python/Django/FastAPI、Spring Boot/Kotlin、SQL/Redis/Prisma、Docker/Kubernetes）、AI 与 Agent 工程，以及上手引导、代码导览、ADR 等通用代码库工具。Claude Code 专有内容已剥离，18 个 Web/UI Skill 车道不在默认安装中。 | 子模块 `upstream/ecc`；`install.sh` 只复制 `scripts/skill-allowlists.sh` 中列出的名称 |
-| 2 | <img src="https://github.com/garrytan.png?size=32" width="20" height="20" align="center"/> **[gstack](https://github.com/garrytan/gstack)** — garrytan | 30 个冲刺流程 Skill 条目 —— 浏览器 QA（`qa`）、范围漂移代码评审（`review`）、安全审计（`cso`），以及完整的计划 → 评审 → 发布流程 —— 外加已编译的 Playwright 浏览器守护进程。 | 子模块 `upstream/gstack`，内置到 `~/.codex/vendor/gstack`，在那里用 bun 运行它自己的 `./setup --host codex`，并在 `~/.codex/skills/` 下创建 29 个符号链接，与 `gstack` 根路由器目录并列；被它取代的 7 个 ECC Skill（`benchmark`、`canary-watch`、`safety-guard`、`browser-qa`、`verification-loop`、`security-review`、`design-system`）会被移除，只保留 gstack 版本可路由 |
+| 2 | <img src="https://github.com/garrytan.png?size=32" width="20" height="20" align="center"/> **[gstack](https://github.com/garrytan/gstack)** — garrytan | 29 个冲刺流程 Skill 条目 —— 浏览器 QA（`qa`）、范围漂移代码评审（`review`）、安全审计（`cso`），以及完整的计划 → 评审 → 发布流程 —— 外加已编译的 Playwright 浏览器守护进程。 | 子模块 `upstream/gstack`，内置到 `~/.codex/vendor/gstack`，在那里用 bun 运行它自己的 `./setup --host codex`，并在 `~/.codex/skills/` 下创建 27 个符号链接，与 `gstack` 根路由器目录并列；被它取代的 7 个 ECC Skill（`benchmark`、`canary-watch`、`safety-guard`、`browser-qa`、`verification-loop`、`security-review`、`design-system`）会被移除，只保留 gstack 版本可路由 |
 | 3 | <img src="https://github.com/Yeachan-Heo.png?size=32" width="20" height="20" align="center"/> **[oh-my-codex](https://github.com/Yeachan-Heo/oh-my-codex)** — Yeachan Heo | 7 个白名单工作型 Agent：`executor`、`planner`、`architect`、`test-engineer`、`security-reviewer`、`code-reviewer`、`debugger`。其余提示词与 Skill 与本仓库已有的 Agent 重复，因此刻意不安装。 | 子模块 `upstream/omx`；`scripts/md-to-toml.sh` 把白名单提示词从 Markdown 转换为 `~/.codex/agents/*.toml` |
 | 4 | <img src="https://github.com/obra.png?size=32" width="20" height="20" align="center"/> **[superpowers](https://github.com/obra/superpowers)** — Jesse Vincent | 14 个开发流程 Skill：头脑风暴、系统化调试、测试驱动开发、计划编写与执行、worktree 操作、代码评审礼仪。不取用任何 Agent —— 它唯一的 `code-reviewer` 提示词与 oh-my-codex 的重叠。 | 子模块 `upstream/superpowers`；15 个 Skill 目录中，除与 Boss 委派路径重复的 `dispatching-parallel-agents` 外全部安装 |
 | 5 | <img src="https://github.com/tt-a1i.png?size=32" width="20" height="20" align="center"/> **[archify](https://github.com/tt-a1i/archify)** — tt-a1i | 1 个图表 Skill，把架构、工作流、时序、数据流和生命周期描述变成一个自包含 HTML 文件，内含内联 SVG、明暗主题切换以及 PNG/JPEG/WebP/SVG 导出。 | 子模块 `upstream/archify`，锁定在标签 `v3.0.1`，因此同步任务不会动它；只把仓库顶层的 `archify/` 目录复制到 `~/.codex/skills/archify`，安装时不会执行 `npx skills add` |
@@ -178,8 +178,8 @@ Boss 会为每个有实际工作的回合 —— 编辑了文件、产生提交/
 |----------|------:|--------|
 | **核心 Agent**（始终加载） | 17 | Boss 1 + OMO 9 + OMX 7 |
 | **Agent 包**（可选，默认全部不启用） | 17 | 2 个内置类别：data-ai 13 + llmops 4 |
-| **暴露的 Skill**（默认 `core` 配置） | 30 | 始终开启的集合；其余只需一个车道参数即可加入 |
-| **已安装的 Skill**（`~/.codex/skills/` 下的条目） | 110 | ECC 61 · gstack 30 · Superpowers 14 · Core 4 · archify 1 |
+| **暴露的 Skill**（默认 `core` 配置） | 29 | 始终开启的集合；其余只需一个车道参数即可加入 |
+| **已安装的 Skill**（`~/.codex/skills/` 下的条目） | 109 | ECC 61 · gstack 29 · Superpowers 14 · Core 4 · archify 1 |
 | **MCP 服务器** | 5 | Context7、Exa、grep.app、Serena、Headroom |
 | **config.toml** | 1 | my-codex |
 | **AGENTS.md** | 1 | my-codex |
@@ -240,17 +240,17 @@ Boss 会为每个有实际工作的回合 —— 编辑了文件、产生提交/
 </details>
 
 <details>
-<summary><strong>Skill —— 默认暴露 30 个，来自 5 个来源共安装 110 个</strong></summary>
+<summary><strong>Skill —— 默认暴露 29 个，来自 5 个来源共安装 109 个</strong></summary>
 
 | 来源 | 已安装 | 主要 Skill |
 |--------|------:|------------|
 | everything-claude-code | 61 | coding-standards, python-testing, api-design, deep-research |
-| gstack | 30 | /qa, /review, /ship, /cso, /investigate, /office-hours |
+| gstack | 29 | /qa, /review, /ship, /cso, /office-hours |
 | superpowers | 14 | brainstorming, systematic-debugging, TDD, writing-plans |
 | [my-codex Core](https://github.com/sehoon787/my-codex) | 4 | boss-advanced, boss-briefing, briefing-vault, gstack-sprint |
 | archify | 1 | archify（架构 / 工作流 / 时序 / 数据流 / 生命周期图） |
 
-gstack 的条目是 `gstack` 根路由器目录，加上指向 `~/.codex/vendor/gstack/.agents/skills/` 的 29 个符号链接。这些链接由 gstack 自己的 `./setup` 创建：`GSTACK_SKILL_ALLOWLIST` 中的 26 个，再加上它始终安装的另外 3 个（`gstack-upgrade`、`hackernews-frontpage`、`codex`）。29 个全部在受管目录中，因此没有「仅链接」的条目，每个都可以由 `core` 或某条车道暴露。110 个条目中 81 个是真实目录、29 个是上述符号链接；`find ~/.codex/skills -name SKILL.md | wc -l` 在没有 `-L` 时不会跟随链接，因此返回 83。无论启用哪个配置，Skill 文件都保持安装状态，变化的只是暴露范围。参见 [Skill 配置与车道](#skill-配置与车道)。
+gstack 的条目是 `gstack` 根路由器目录、`plan-eng-review`（gstack 自己的 `./setup` 不再生成它，因此由安装器从固定版本的子模块复制的真实目录），加上指向 `~/.codex/vendor/gstack/.agents/skills/` 的 27 个符号链接。这些链接由 gstack 自己的 `./setup` 创建：`GSTACK_SKILL_ALLOWLIST` 25 个中的 24 个，再加上它始终安装的另外 3 个（`gstack-upgrade`、`hackernews-frontpage`、`codex`）。27 个全部在受管目录中，因此没有「仅链接」的条目，每个都可以由 `core` 或某条车道暴露。109 个条目中 82 个是真实目录、27 个是上述符号链接；`find ~/.codex/skills -name SKILL.md | wc -l` 在没有 `-L` 时不会跟随链接，因此返回 85。无论启用哪个配置，Skill 文件都保持安装状态，变化的只是暴露范围。参见 [Skill 配置与车道](#skill-配置与车道)。
 
 </details>
 
@@ -421,7 +421,7 @@ headroom install apply --profile agent-harness-shared --preset persistent-servic
 | **三阶段冲刺** | 设计（交互式）→ 执行（通过 executor 自主）→ 评审（与设计文档交互式对照） |
 | **Agent 层级优先** | core > omo > omx > 可选包 的去重顺序。若包内 Agent 与已安装 Agent 重名则跳过。最专精的 Agent 胜出。 |
 | **成本优化** | 由单一文件（`scripts/model-tiers.sh`）管理的三档模型，应用于安装脚本提供的全部 34 个 Agent |
-| **Skill 暴露配置** | 一份 210 条目的目录，默认暴露 30 条、13 条可选车道，并支持快照与回滚 —— 让 Skill 预算花在这次会话真正需要的地方 |
+| **Skill 暴露配置** | 一份 209 条目的目录，默认暴露 29 条、13 条可选车道，并支持快照与回滚 —— 让 Skill 预算花在这次会话真正需要的地方 |
 | **简报信号** | 包装器/会话日志填充 `.briefing/agents/agent-log.jsonl`、每日汇总以及路由/画像提示 |
 | **Smart Packs** | 通过项目类型检测，在会话开始时推荐相关的 Agent 包 |
 | **Agent 包系统** | 通过 `--profile` 和 `my-codex-packs` 助手按需启用领域专家 |
@@ -450,13 +450,13 @@ headroom install apply --profile agent-harness-shared --preset persistent-servic
 
 ### Skill 配置与车道
 
-my-claude 安装一份固定白名单；my-codex 则先安装 110 个 Skill 条目，再控制其中有多少真正呈现给 Codex。Codex 在超出 Skill 预算后会截断 Skill 描述，因此一份没有重点的目录会让每条描述都变得不那么有用。当所有捆绑 Skill 来源都被选中时，全新安装的默认配置 `core` 暴露 30 个 Skill，各车道在其之上叠加：
+my-claude 安装一份固定白名单；my-codex 则先安装 109 个 Skill 条目，再控制其中有多少真正呈现给 Codex。Codex 在超出 Skill 预算后会截断 Skill 描述，因此一份没有重点的目录会让每条描述都变得不那么有用。当所有捆绑 Skill 来源都被选中时，全新安装的默认配置 `core` 暴露 29 个 Skill，各车道在其之上叠加：
 
 | 配置 / 车道 | 新增内容 | 数量 | 启用方式 |
 |----------------|--------------|------:|---------------|
-| `core` | 始终开启的集合：my-codex 核心 Skill、superpowers 开发流程车道、gstack 发布/QA/评审路由器，以及 ECC 规范 | 30 | 默认；用 `--skill-profile=core` 回到该配置 |
+| `core` | 始终开启的集合：my-codex 核心 Skill、superpowers 开发流程车道、gstack 发布/QA/评审路由器，以及 ECC 规范 | 29 | 默认；用 `--skill-profile=core` 回到该配置 |
 | `legacy` | 迁移前的暴露范围；当 `--skip-ecc`、`--skip-gstack`、`--skip-superpowers` 或 `--skip-archify` 省略了某个核心来源且未显式指定配置时自动选用 | 视情况 | `--skill-profile=legacy` |
-| `full` | 一次启用全部车道 —— 已安装的全部 110 个条目；目录共收录 210 个名称，尚未安装的会按需补齐。可能超出上下文预算 | 110 | `--skill-profile=full` 或 `--full-skills` |
+| `full` | 一次启用全部车道 —— 已安装的全部 109 个条目；目录共收录 209 个名称，尚未安装的会按需补齐。可能超出上下文预算 | 109 | `--skill-profile=full` 或 `--full-skills` |
 | `workflow-advanced` | 进阶规划、仓库操作与 worktree 工作流 | 13 | `--skills=workflow-advanced` |
 | `qa-operations` | QA、浏览器检查、发布、部署与运维安全 | 20 | `--skills=qa-operations` |
 | `ai-engineering` | Agent 系统、评估、提示词、检索与 MCP | 18 | `--skills=ai-engineering` |

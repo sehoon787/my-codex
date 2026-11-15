@@ -1,7 +1,7 @@
 # my-codex AI Installation Guide
 
 You are an AI agent setting up a Codex CLI multi-agent orchestration environment.
-The bundle installs 17 auto-loaded agents, 17 opt-in pack agents (2 packs, disabled by default), 110 curated skill entries (30 exposed under the default `core` profile), and 5 MCP servers.
+The bundle installs 17 auto-loaded agents, 17 opt-in pack agents (2 packs, disabled by default), 109 curated skill entries (29 exposed under the default `core` profile), and 5 MCP servers.
 Agents and skills come from curated allowlists (`scripts/skill-allowlists.sh`), not bulk copies — the installed footprint is the allowlist, deduplicated by tier.
 Only 2-3 steps are needed.
 
@@ -98,7 +98,7 @@ This installs:
 - 2 opt-in agent packs in `~/.codex/agent-packs/` (`data-ai` 13, `llmops` 4), vendored from awesome-codex-subagents
 - `~/.codex/enabled-agent-packs.txt` with **no packs enabled** — opt in with `~/.codex/bin/my-codex-packs enable <pack>`
 - `~/.codex/enabled-skill-lanes.txt` with **no optional lane enabled** — add the 18 web/UI skills with `bash install.sh --skills=web`
-- 110 skill entries in `~/.codex/skills/` (ECC 61 · gstack 30 · superpowers 14 · my-codex core 4 · archify 1); the default `core` profile exposes 30 of them. 81 are directories and 29 are symlinks into the vendored gstack tree
+- 109 skill entries in `~/.codex/skills/` (ECC 61 · gstack 29 · superpowers 14 · my-codex core 4 · archify 1); the default `core` profile exposes 29 of them. 82 are directories and 27 are symlinks into the vendored gstack tree
 - gstack also cloned whole to `~/.codex/skills/gstack` as its canonical runtime tree
 - Global `AGENTS.md` instructions with Boss meta-orchestrator as default agent
 - `config.toml` with `multi_agent = true`
@@ -155,7 +155,7 @@ done
 cp -R /tmp/my-codex/skills/core/* ~/.codex/skills/
 # ── archify (diagram skill; only the repo's archify/ directory is installed) ──
 cp -R /tmp/my-codex/upstream/archify/"$ARCHIFY_SKILL_SUBDIR" ~/.codex/skills/"$ARCHIFY_SKILL_NAME" 2>/dev/null
-# ── gstack (sprint-process harness, 27 skill entries) ──
+# ── gstack (sprint-process harness, 26 skill entries) ──
 GSTACK_DIR="$HOME/.codex/skills/gstack"
 if [ -d "$GSTACK_DIR/.git" ]; then
   (cd "$GSTACK_DIR" && git pull --ff-only 2>/dev/null || true)
@@ -278,7 +278,7 @@ Expected:
 - Core agents: 17 (Boss 1 + OMO 9 + OMX 7)
 - Active packs: 0 (packs are opt-in)
 - Agent packs: 17 (data-ai 13 + llmops 4)
-- Skills: 83 on a clean install (more if personal skills were already present) — the installer counts `SKILL.md` files without following the 29 gstack symlinks; 110 entries exist under `~/.codex/skills/` for a clean install
+- Skills: 85 on a clean install (more if personal skills were already present) — the installer counts `SKILL.md` files without following the 27 gstack symlinks; 109 entries exist under `~/.codex/skills/` for a clean install
 - AGENTS.md: OK
 - config.toml: OK
 - Enabled packs: (empty)

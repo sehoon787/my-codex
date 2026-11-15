@@ -139,7 +139,7 @@ web
 "
 
 # ── gstack skills ──
-# The 26 skills Boss P0 routing depends on. Current gstack setup owns its Codex
+# The 25 skills Boss P0 routing depends on. Current gstack setup owns its Codex
 # skill surface; this list is the narrow fallback when bun/setup is unavailable.
 # The full checkout lives outside the recursively scanned skills root.
 GSTACK_SKILL_ALLOWLIST="
@@ -154,7 +154,6 @@ design-review
 document-release
 freeze
 guard
-investigate
 land-and-deploy
 office-hours
 plan-ceo-review

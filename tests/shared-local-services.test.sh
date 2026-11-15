@@ -77,6 +77,25 @@ PY
     fi
     ;;
   http://127.0.0.1:8787/livez)
+    if [ -f "$state/headroom-slow-response" ]; then
+      max_time=1
+      previous=""
+      for argument in "$@"; do
+        [ "$previous" = "--max-time" ] && max_time="$argument"
+        previous="$argument"
+      done
+      if python3 - "$max_time" <<'PY'
+import sys
+raise SystemExit(0 if float(sys.argv[1]) < 1.2 else 1)
+PY
+      then
+        python3 -c 'import sys,time; time.sleep(float(sys.argv[1]))' "$max_time"
+        exit 28
+      fi
+      sleep 1.2
+      printf '{"service":"headroom-proxy","status":"healthy","alive":true}'
+      exit 0
+    fi
     if [ -f "$state/headroom-healthy" ]; then
       printf '{"service":"headroom-proxy","status":"healthy","alive":true}'
       exit 0
@@ -316,6 +335,16 @@ assert_contains "$TMP/http-error-codeburn/output" "codeburn web: REUSED"
   || fail "HTTP error listener was classified before recovery"
 [ ! -e "$TMP/http-error-codeburn/state/codeburn-calls" ] \
   || fail "recovering HTTP error listener started duplicate codeburn"
+
+# Headroom gets the same bounded identity retry: a genuine proxy that answers
+# slower than the fixed one-second probe is reused, never started twice.
+mkdir -p "$TMP/slow-response-headroom/state"
+touch "$TMP/slow-response-headroom/state/headroom-slow-response" \
+  "$TMP/slow-response-headroom/state/headroom-listener"
+run_selected_helper_with_timeout slow-response-headroom headroom 3
+assert_contains "$TMP/slow-response-headroom/output" "Headroom proxy: REUSED"
+[ ! -e "$TMP/slow-response-headroom/state/headroom-calls" ] \
+  || fail "slow healthy Headroom listener started duplicate Headroom"
 
 # A foreign HTTP owner is reported and left alone. The lsof shim models the
 # listener independently from the response identity.

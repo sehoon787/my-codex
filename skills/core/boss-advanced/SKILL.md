@@ -17,7 +17,7 @@ Boss discovers capabilities at runtime. This is the ownership map for resolving 
 | Dev discipline | superpowers | test-driven-development, systematic-debugging, brainstorming, writing-plans, executing-plans, requesting/receiving-code-review, verification-before-completion, using-git-worktrees, subagent-driven-development, writing-skills, using-superpowers, finishing-a-development-branch (13) |
 | Stack + AI knowledge | ECC | 61 skills — language/framework patterns, agent and LLM engineering, codebase tooling |
 | Document deliverables | Anthropic doc skills | pdf, docx, pptx, xlsx |
-| Execution modes | OMC (`ralph`, `autopilot`, `ultrawork`, `team`) | referenced by `codex-AGENTS.md` and `gstack-sprint`, but installed only when the OMC skill set is also present under `~/.codex/skills` — confirm in the registry before routing |
+| Execution modes | OMC (`ralph`, `autopilot`, `ultrawork`, `team`) | referenced by `codex-AGENTS.md`, but installed only when the OMC skill set is also present under `~/.codex/skills` — confirm in the registry before routing |
 | Agents | this repo + omx | 18 active: boss (core) + omo 10 + omx 7. Agent packs (data-ai 13, llmops 4) are opt-in — enable with `~/.codex/bin/my-codex-packs enable <pack>` before delegating |
 
 A name outside these lanes is not installed. Never route to a capability the Phase 0 scan did not discover.
@@ -81,7 +81,7 @@ For end-to-end feature or deployment requests, Boss follows the 3-Phase Sprint s
 - **Phase 2: Execute (autonomous)** — Run `executing-plans` on the plan file (fallback: delegate the plan to `hephaestus`). It ends with its own review and verification; stop before its hand-off to `finishing-a-development-branch`.
 - **Phase 3: Review (interactive)** — Reload the plan from `.briefing/plans/`, falling back to the gstack design doc (`~/.gstack/projects/`), then the original request. Compare vs implementation. If improvements needed, re-enter Phase 2. On approval: `/ship` or manual commit.
 
-Phase transitions are sequential. If gstack is not installed, fall back to standard Priority 1–4 routing.
+Phase transitions are sequential. The sprint does not need gstack: its plan reviews are optional, and the gstack design doc is only a Phase 3 fallback. If the `gstack-sprint` skill is not installed, fall back to standard Priority 1–4 routing.
 
 ---
 

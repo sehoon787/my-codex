@@ -57,7 +57,7 @@ gstack-sprint enforces the three-phase contract: user-confirmed design → autom
 
 6. **Skip condition**: if the user's original message already says the design is done ("design is done, just build it"), skip steps 2 and 5 and ask nothing. Steps 3 and 4 still run on the design the user gave, so that Phase 2 and Phase 3 have a reviewed plan file. If the user gave a finished task plan file, copy it to `.briefing/plans/YYYY-MM-DD-<topic>.md`, use the copy as the plan, and skip step 3 as well. If `momus` still reports a blocking issue after its two rounds, do not skip step 5.
 
-7. **Fallback** (`writing-plans` is not installed): delegate the plan to the `prometheus` agent. Give it the request and any step 2 answers, and tell it to skip its interview, its own Momus loop and its plan presentation, to save the plan to the same path, and to return only that path. Steps 4 and 5 still apply. If `momus` is not available, say so at the approval gate in place of its verdict.
+7. **Fallback** (`writing-plans` is not installed): delegate the plan to the `prometheus` agent. Give it the request and any step 2 answers, and tell it to skip its interview, its own Momus loop and its plan presentation and to return the whole plan as markdown. Save that plan to the same path yourself. Steps 4 and 5 still apply (step 6 can still skip step 5). If `momus` is not available, say so at the approval gate in place of its verdict.
 
 ---
 
@@ -65,7 +65,7 @@ gstack-sprint enforces the three-phase contract: user-confirmed design → autom
 
 1. **Invoke the `executing-plans` skill** on the plan file from Phase 1. Pass the plan's ABSOLUTE path: the plan lives in `.briefing/plans/`, which git ignores, and `executing-plans` works in a separate worktree where a relative path does not resolve.
 
-2. **Do not ask again how to execute.** The approve answer at the Phase 1 approval gate is the user's choice of inline execution.
+2. **Do not ask again how to execute.** The approve answer at the Phase 1 approval gate is the user's choice of inline execution, and it also approves an isolated worktree. When you invoke `executing-plans`, state that the worktree preference is already declared (use an isolated worktree), so `using-git-worktrees` does not ask again.
 
 3. **Let `executing-plans` run to its own verification.** It runs the tasks in order, test-first, and finishes with its own whole-branch review and `verification-before-completion`. Do not add another review or verification chain on top.
 
@@ -109,9 +109,9 @@ gstack-sprint enforces the three-phase contract: user-confirmed design → autom
    - "needs improvement" — significant gaps exist, re-enter Phase 2 with corrections
    - "minor fixes" — minor gaps, specify what to fix before approving
 
-6. **If "needs improvement" or "minor fixes"**: Re-enter Phase 2 with a targeted correction delta. Append the gaps to the plan file as new tasks, then re-run Phase 2 on those tasks only. After correction, return to Phase 3 Step 1.
+6. **If "needs improvement" or "minor fixes"**: Re-enter Phase 2 with a targeted correction delta. Write the gap tasks to a follow-up plan file `.briefing/plans/YYYY-MM-DD-<topic>-followup.md` and run Phase 2 on it in the same worktree and branch. After correction, return to Phase 3 Step 1.
 
-7. **If "approved"**: Suggest next steps — /ship or manual commit. Do not proceed autonomously.
+7. **If "approved"**: Suggest next steps — `/ship` from the Phase 2 worktree, or the `finishing-a-development-branch` skill, so the branch and the worktree are not left unmerged. Do not proceed autonomously.
 
 8. **Optional follow-up chain** (present as options, do not auto-invoke):
    - /land-and-deploy → /canary → /document-release → /retro
@@ -184,6 +184,6 @@ Why bad: Did not read the design doc, did not produce a comparison table, did no
 - [ ] Phase 3: Plan reloaded from disk (Phase 1 plan file, else the gstack design doc, else the original request)
 - [ ] Phase 3: Comparison table presented to user
 - [ ] Phase 3: User selected "approve", "needs improvement", or "minor fixes"
-- [ ] If "needs improvement": gaps appended to the plan file as new tasks, Phase 2 re-run on those tasks only, Phase 3 re-run after correction
-- [ ] If "approve": next steps suggested (/ship or manual commit), no autonomous action taken
+- [ ] If "needs improvement": gap tasks written to a `-followup.md` plan file, Phase 2 run on it in the same worktree and branch, Phase 3 re-run after correction
+- [ ] If "approve": `/ship` from the Phase 2 worktree or `finishing-a-development-branch` suggested, no autonomous action taken
 </Final_Checklist>

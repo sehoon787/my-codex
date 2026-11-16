@@ -18,7 +18,7 @@ const ROUTING_MAP = 'hooks/routing-map.json';
 
 // sha256 of the Phase 1 block (LF line endings, trailing whitespace trimmed,
 // one final newline). my-claude pins the same value in its copy of this test.
-const PHASE1_SHA256 = '74d3682ecb29a2098dcee36552e4408004969eaaf3b272d543f246cb8b9c0df7';
+const PHASE1_SHA256 = '264e339acc630da491b0242dc92546df303552ffc203d072ae919e3f2410cb82';
 // The Boss Phase 1 bullets, byte-identical to my-claude agents/core/boss.md.
 const BOSS_PHASE1_BULLETS = [
   '- Recall: search `.briefing/decisions/`, `.briefing/learnings/` and `.briefing/plans/` for related notes.',
@@ -28,6 +28,8 @@ const BOSS_PHASE1_BULLETS = [
   '- Approval gate: exactly one AskUserQuestion (approve / revise / stop); Phase 2 starts only on approve, unless the user already said the design is done.',
   '- `/plan-ceo-review`, `/plan-eng-review` and `/autoplan` are optional extra reviews, run only on request.'
 ];
+// Phase 3 step 1 lookup order, identical to my-claude.
+const PHASE3_ORDER = ['.briefing/plans/', '~/.gstack/projects/', 'the original request'];
 const RALPH = /\b(ralph|ultrawork)\b/i;
 
 function read(rel) {
@@ -131,6 +133,13 @@ check('X2. boss.toml and boss-advanced sprint sections name executing-plans and 
 check('X3. routing-map Build members start with the gstack-sprint skill', () => {
   const first = JSON.parse(read(ROUTING_MAP)).intents.Build.members[0];
   assert(first.name === 'gstack-sprint' && first.kind === 'skill', `members[0] is ${JSON.stringify(first)}`);
+});
+
+check('X4. Phase 3 lookup order: plan file, then gstack design doc, then the original request', () => {
+  const phase3 = section(SKILL, (l) => l.startsWith('## Phase 3:'), (l) => l === '</Steps>');
+  const at = PHASE3_ORDER.map((item) => phase3.indexOf(item));
+  assert(at.every((i, n) => i >= 0 && (n === 0 || i > at[n - 1])),
+    `first indexes ${JSON.stringify(at)} for ${JSON.stringify(PHASE3_ORDER)}`);
 });
 
 const failed = results.filter((ok) => !ok).length;

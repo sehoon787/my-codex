@@ -210,7 +210,7 @@ For end-to-end feature implementation, Boss orchestrates a structured sprint:
 | Phase | Mode | What Happens |
 |-------|------|--------------|
 | **1 · Design** | interactive | Recall past notes · clarify only if ambiguous · `writing-plans` saves a plan · `momus` review · one approval gate |
-| **2 · Execute** | autonomous | executor runs the tasks · auto code review · architect verification |
+| **2 · Execute** | autonomous | `executing-plans` runs the tasks test-first · final review · `hephaestus` as fallback |
 | **3 · Review** | interactive | Compare against the plan · present comparison table · user approves or asks for improvement |
 
 ### Structured Final Report
@@ -477,7 +477,7 @@ Features built specifically for this project, beyond what upstream sources provi
 | Feature | Description |
 |---------|-------------|
 | **Boss Meta-Orchestrator** | Dynamic capability discovery → intent classification → 4-priority routing → delegation → verification |
-| **3-Phase Sprint** | Design (interactive) → Execute (autonomous via executor) → Review (interactive vs design doc) |
+| **3-Phase Sprint** | Design (interactive) → Execute (autonomous via executing-plans) → Review (interactive vs the plan) |
 | **Agent Tier Priority** | core > omo > omx > opt-in packs. Pack agents are skipped if their name collides with an already-installed agent. Most specialized agent wins. |
 | **Cost Optimization** | Three model tiers from one source file (`scripts/model-tiers.sh`), applied to all 35 agents the installer ships |
 | **Skill Exposure Profiles** | A managed catalog of 209 entries with a 29-skill default, 13 optional lanes, snapshots, and rollback — so the skills budget is spent on what the session needs |

@@ -69,7 +69,7 @@ gstack-sprint enforces the three-phase contract: user-confirmed design → autom
 
 3. **Let `executing-plans` run to its own verification.** It runs the tasks in order, test-first, and finishes with its own whole-branch review and `verification-before-completion`. Do not add another review or verification chain on top.
 
-4. **Stop before the branch hand-off.** `executing-plans` ends by handing off to `finishing-a-development-branch`. Do not follow that hand-off: Phase 3 of this skill replaces it. Carry the worktree path, the branch name and the verification output into Phase 3.
+4. **Stop before the branch hand-off.** `executing-plans` ends by handing off to `finishing-a-development-branch`. Do not follow that hand-off: Phase 3 of this skill defers it. Carry the worktree path, the branch name, the verification output, and the "Rulings I made" and "Deferred minors" lists from the final message of `executing-plans` into Phase 3: it deletes the ledger that holds them before the hand-off.
 
 5. **Fallback** (`executing-plans` is not installed): delegate one autonomous end-to-end run of the plan to the `hephaestus` agent. Afterwards run the project's tests, then continue with Phase 3.
 
@@ -103,6 +103,8 @@ gstack-sprint enforces the three-phase contract: user-confirmed design → autom
    | Feature B | Partial | Missing edge case X |
    | Feature C | Not implemented | Descoped during Phase 2 |
    | Bonus: Feature D | Added (not in design) | Confirm or revert |
+
+   Under the table, show the "Rulings I made" and "Deferred minors" lists carried over from Phase 2, or say that a list is empty.
 
 5. **AskUserQuestion** with the following options:
    - "approve" — implementation matches design intent, proceed to next step
@@ -182,7 +184,7 @@ Why bad: Did not read the design doc, did not produce a comparison table, did no
 - [ ] Phase 1: plan file saved under `.briefing/plans/`, momus verdict appended, approve answer at the approval gate (or the gate skipped under the Phase 1 skip condition)
 - [ ] Phase 2: `executing-plans` (or the `hephaestus` fallback) ran every plan task with its own verification and stopped before the hand-off to `finishing-a-development-branch`
 - [ ] Phase 3: Plan reloaded from disk (Phase 1 plan file, else the gstack design doc, else the original request)
-- [ ] Phase 3: Comparison table presented to user
+- [ ] Phase 3: Comparison table presented to user, with the rulings and deferred minors from Phase 2 under it
 - [ ] Phase 3: User selected "approve", "needs improvement", or "minor fixes"
 - [ ] If "needs improvement": gap tasks written to a `-followup.md` plan file, Phase 2 run on it in the same worktree and branch, Phase 3 re-run after correction
 - [ ] If "approve": `/ship` from the Phase 2 worktree or `finishing-a-development-branch` suggested, no autonomous action taken

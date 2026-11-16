@@ -79,9 +79,9 @@ For end-to-end feature or deployment requests, Boss follows the 3-Phase Sprint s
 
 - **Phase 1: Design (interactive — one approval gate)** — recall `.briefing/` notes → `metis` only if the request is ambiguous → `writing-plans` saves the plan to `.briefing/plans/` and asks no review or execution question → `momus` review → one AskUserQuestion approval gate (approve / revise / stop), skipped only when the user already said the design is done. `/plan-ceo-review`, `/plan-eng-review` and `/autoplan` are optional, on request only.
 - **Phase 2: Execute (autonomous)** — Run `executing-plans` on the plan file (fallback: delegate the plan to `hephaestus`). It ends with its own review and verification; stop before its hand-off to `finishing-a-development-branch`.
-- **Phase 3: Review (interactive)** — Reload the plan from `.briefing/plans/`, falling back to the gstack design doc (`~/.gstack/projects/`), then the original request. Compare vs implementation. If improvements needed, re-enter Phase 2. On approval: `/ship` or manual commit.
+- **Phase 3: Review (interactive)** — Reload the plan from `.briefing/plans/`, falling back to the gstack design doc (`~/.gstack/projects/`), then the original request. Compare vs implementation. If improvements needed, write the gap tasks to `.briefing/plans/YYYY-MM-DD-<topic>-followup.md` and re-enter Phase 2 on it in the same worktree and branch. On approval, suggest `/ship` from the Phase 2 worktree or the `finishing-a-development-branch` skill.
 
-Phase transitions are sequential. The sprint does not need gstack: its plan reviews are optional, and the gstack design doc is only a Phase 3 fallback. If the `gstack-sprint` skill is not installed, fall back to standard Priority 1–4 routing.
+Phase transitions are sequential. The sprint does not need gstack: its plan reviews are optional, and the gstack design doc is only a Phase 3 fallback. If the `gstack-sprint` skill is not installed, use the Boss rule fallback in boss.toml: `prometheus` → `executing-plans` → manual review.
 
 ---
 

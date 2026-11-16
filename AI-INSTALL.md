@@ -98,7 +98,7 @@ This installs:
 - 2 opt-in agent packs in `~/.codex/agent-packs/` (`data-ai` 13, `llmops` 4), vendored from awesome-codex-subagents
 - `~/.codex/enabled-agent-packs.txt` with **no packs enabled** — opt in with `~/.codex/bin/my-codex-packs enable <pack>`
 - `~/.codex/enabled-skill-lanes.txt` with **no optional lane enabled** — add the 18 web/UI skills with `bash install.sh --skills=web`
-- 109 skill entries in `~/.codex/skills/` (ECC 61 · gstack 29 · superpowers 14 · my-codex core 4 · archify 1); the default `core` profile exposes 29 of them. 82 are directories and 27 are symlinks into the vendored gstack tree
+- 109 skill entries in `~/.codex/skills/` (ECC 61 · gstack 29 · superpowers 14 · my-codex core 4 · archify 1); the default `core` profile exposes 29 of them. 81 are directories and 28 are symlinks into the vendored gstack tree
 - gstack also cloned whole to `~/.codex/skills/gstack` as its canonical runtime tree
 - Global `AGENTS.md` instructions with Boss meta-orchestrator as default agent
 - `config.toml` with `multi_agent = true`
@@ -278,7 +278,7 @@ Expected:
 - Core agents: 18 (Boss 1 + OMO 10 + OMX 7)
 - Active packs: 0 (packs are opt-in)
 - Agent packs: 17 (data-ai 13 + llmops 4)
-- Skills: 85 on a clean install (more if personal skills were already present) — the installer counts `SKILL.md` files without following the 27 gstack symlinks; 109 entries exist under `~/.codex/skills/` for a clean install
+- Skills: 84 on a clean install (more if personal skills were already present) — the installer counts `SKILL.md` files without following the 28 gstack symlinks; 109 entries exist under `~/.codex/skills/` for a clean install
 - AGENTS.md: OK
 - config.toml: OK
 - Enabled packs: (empty)

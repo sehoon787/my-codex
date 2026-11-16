@@ -81,17 +81,19 @@ gstack-sprint enforces the three-phase contract: user-confirmed design → autom
 
 1. **Reload the plan from disk** in this order:
    1. the Phase 1 plan file; if its path is not known, the newest matching file in `.briefing/plans/`
-   2. the gstack design doc `~/.gstack/projects/<org>-<repo>/*-design-*.md`, found with this lookup:
-      ```bash
-      REPO=$(basename "$(git rev-parse --show-toplevel 2>/dev/null)")
-      ORG=$(git remote get-url origin 2>/dev/null | sed 's|.*[:/]\([^/]*\)/.*|\1|' || echo "unknown")
-      DESIGN_DOC=$(ls -t ~/.gstack/projects/${ORG}-${REPO}/*-design-*.md 2>/dev/null | head -1)
-      ```
+   2. the gstack design doc `~/.gstack/projects/<org>-<repo>/*-design-*.md`
    3. the original request
 
-2. **Read the design doc** in full, then read all files implemented during Phase 2
+   The gstack design doc lookup:
+   ```bash
+   REPO=$(basename "$(git rev-parse --show-toplevel 2>/dev/null)")
+   ORG=$(git remote get-url origin 2>/dev/null | sed 's|.*[:/]\([^/]*\)/.*|\1|' || echo "unknown")
+   DESIGN_DOC=$(ls -t ~/.gstack/projects/${ORG}-${REPO}/*-design-*.md 2>/dev/null | head -1)
+   ```
 
-3. **Compare implementation against design**: For each item in the design doc, determine whether it was implemented, partially implemented, or skipped. Note any implementation that was added beyond the design scope.
+2. **Read what step 1 loaded** in full (the plan file, or the gstack design doc when there is no plan file), then read all files implemented during Phase 2
+
+3. **Compare implementation against design**: For each item in what step 1 loaded, determine whether it was implemented, partially implemented, or skipped. Note any implementation that was added beyond the design scope.
 
 4. **Present a comparison table** to the user:
 
@@ -114,7 +116,7 @@ gstack-sprint enforces the three-phase contract: user-confirmed design → autom
 8. **Optional follow-up chain** (present as options, do not auto-invoke):
    - /land-and-deploy → /canary → /document-release → /retro
 
-9. **Fallback** (gstack not installed): Read the implemented files directly, compare against the original user request and Phase 1 notes, and present the comparison to the user for their review.
+9. **Fallback** (gstack not installed): Read the implemented files directly, compare them against what step 1 loaded (the plan file, or the original request when there is no plan file), and present the comparison to the user for their review.
 
 </Steps>
 
@@ -179,7 +181,7 @@ Why bad: Did not read the design doc, did not produce a comparison table, did no
 <Final_Checklist>
 - [ ] Phase 1: plan file saved under `.briefing/plans/`, momus verdict appended, approve answer at the approval gate (or the gate skipped under the Phase 1 skip condition)
 - [ ] Phase 2: `executing-plans` (or the `hephaestus` fallback) ran every plan task with its own verification and stopped before the hand-off to `finishing-a-development-branch`
-- [ ] Phase 3: plan reloaded from disk (plan file, else gstack design doc, else original request)
+- [ ] Phase 3: Plan reloaded from disk (Phase 1 plan file, else the gstack design doc, else the original request)
 - [ ] Phase 3: Comparison table presented to user
 - [ ] Phase 3: User selected "approve", "needs improvement", or "minor fixes"
 - [ ] If "needs improvement": gaps appended to the plan file as new tasks, Phase 2 re-run on those tasks only, Phase 3 re-run after correction

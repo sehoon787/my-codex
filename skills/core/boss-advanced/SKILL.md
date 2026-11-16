@@ -17,7 +17,7 @@ Boss discovers capabilities at runtime. This is the ownership map for resolving 
 | Dev discipline | superpowers | test-driven-development, systematic-debugging, brainstorming, writing-plans, executing-plans, requesting/receiving-code-review, verification-before-completion, using-git-worktrees, subagent-driven-development, writing-skills, using-superpowers, finishing-a-development-branch (13) |
 | Stack + AI knowledge | ECC | 61 skills — language/framework patterns, agent and LLM engineering, codebase tooling |
 | Document deliverables | Anthropic doc skills | pdf, docx, pptx, xlsx |
-| Execution modes | OMC (`ralph`, `autopilot`, `ultrawork`, `team`) | referenced by `codex-AGENTS.md` and `gstack-sprint`, but installed only when the OMC skill set is also present under `~/.codex/skills` — confirm in the registry before routing |
+| Execution modes | OMC (`ralph`, `autopilot`, `ultrawork`, `team`) | referenced by `codex-AGENTS.md`, but installed only when the OMC skill set is also present under `~/.codex/skills` — confirm in the registry before routing |
 | Agents | this repo + omx | 18 active: boss (core) + omo 10 + omx 7. Agent packs (data-ai 13, llmops 4) are opt-in — enable with `~/.codex/bin/my-codex-packs enable <pack>` before delegating |
 
 A name outside these lanes is not installed. Never route to a capability the Phase 0 scan did not discover.
@@ -77,11 +77,11 @@ Q1. Are the subtasks fully independent? (no file overlap)
 
 For end-to-end feature or deployment requests, Boss follows the 3-Phase Sprint sequence:
 
-- **Phase 1: Design (interactive)** — `/plan-ceo-review` → `/plan-eng-review`. User confirms design before Phase 2.
-- **Phase 2: Execute (autonomous)** — Delegate to `ralph`. gstack `/review` is attempted non-blocking (skip silently if unavailable). Architect/critic verification always runs after.
-- **Phase 3: Review (interactive)** — Re-read design doc from `~/.gstack/projects/`. Compare vs implementation. If improvements needed, re-enter Phase 2. On approval: `/ship` or manual commit.
+- **Phase 1: Design (interactive — one approval gate)** — recall `.briefing/` notes → `metis` only if the request is ambiguous → `writing-plans` saves the plan to `.briefing/plans/` and asks no review or execution question → `momus` review → one AskUserQuestion approval gate (approve / revise / stop), skipped only when the user already said the design is done. `/plan-ceo-review`, `/plan-eng-review` and `/autoplan` are optional, on request only.
+- **Phase 2: Execute (autonomous)** — Run `executing-plans` on the plan file (fallback: delegate the plan to `hephaestus`). It ends with its own review and verification; stop before its hand-off to `finishing-a-development-branch`.
+- **Phase 3: Review (interactive)** — Reload the plan from `.briefing/plans/`, falling back to the gstack design doc (`~/.gstack/projects/`), then the original request. Compare vs implementation. If improvements needed, write the gap tasks to `.briefing/plans/YYYY-MM-DD-<topic>-followup.md` and re-enter Phase 2 on it in the same worktree and branch. On approval, suggest `/ship` from the Phase 2 worktree or the `finishing-a-development-branch` skill.
 
-Phase transitions are sequential. If gstack is not installed, fall back to standard Priority 1–4 routing.
+Phase transitions are sequential. The sprint does not need gstack: its plan reviews are optional, and the gstack design doc is only a Phase 3 fallback. If the `gstack-sprint` skill is not installed, use the Boss rule fallback in boss.toml: `prometheus` → `executing-plans` → manual review.
 
 ---
 

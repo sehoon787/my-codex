@@ -153,9 +153,9 @@ Pour une implémentation de fonctionnalité de bout en bout, Boss orchestre un s
 
 | Phase | Mode | Ce qui se passe |
 |-------|------|--------------|
-| **1 · Conception** | interactif | L'utilisateur fixe le périmètre · revue d'ingénierie · confirmation « conception terminée » |
-| **2 · Exécution** | autonome | executor réalise les tâches · revue de code automatique · vérification par architect |
-| **3 · Revue** | interactif | Comparaison avec le document de conception · tableau comparatif · l'utilisateur valide ou demande des améliorations |
+| **1 · Conception** | interactif | Rappel des notes passées · clarification seulement si la demande est ambiguë · `writing-plans` enregistre un plan · revue par `momus` · une seule validation |
+| **2 · Exécution** | autonome | `executing-plans` réalise les tâches en commençant par les tests · revue finale · `hephaestus` en repli |
+| **3 · Revue** | interactif | Comparaison avec le plan · tableau comparatif · l'utilisateur valide ou demande des améliorations |
 
 ### Rapport final structuré
 
@@ -420,7 +420,7 @@ Fonctionnalités conçues spécifiquement pour ce projet, au-delà de ce que fou
 | Fonctionnalité | Description |
 |---------|-------------|
 | **Méta-orchestrateur Boss** | Découverte dynamique de capacités → classification d'intention → routage à 4 priorités → délégation → vérification |
-| **Sprint 3 phases** | Conception (interactif) → Exécution (autonome via executor) → Revue (interactif face au document de conception) |
+| **Sprint 3 phases** | Conception (interactif) → Exécution (autonome via executing-plans) → Revue (interactif face au plan) |
 | **Priorité par palier d'agents** | core > omo > omx > packs optionnels pour la déduplication. Un agent de pack est ignoré si son nom entre en collision avec un agent déjà installé. L'agent le plus spécialisé l'emporte. |
 | **Optimisation des coûts** | Trois paliers de modèles issus d'un fichier unique (`scripts/model-tiers.sh`), appliqués aux 35 agents livrés par l'installeur |
 | **Profils d'exposition des skills** | Un catalogue géré de 209 entrées avec 29 exposées par défaut, 13 voies optionnelles, instantanés et retour arrière — pour dépenser le budget de skills là où la session en a besoin |

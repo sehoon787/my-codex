@@ -153,9 +153,9 @@ Für die durchgängige Umsetzung eines Features orchestriert Boss einen struktur
 
 | Phase | Modus | Was passiert |
 |-------|------|--------------|
-| **1 · Design** | interaktiv | Nutzer legt den Umfang fest · Engineering-Review · „Design fertig" bestätigen |
-| **2 · Ausführung** | autonom | executor erledigt die Aufgaben · automatisches Code-Review · Prüfung durch architect |
-| **3 · Review** | interaktiv | Abgleich mit dem Designdokument · Vergleichstabelle vorlegen · Nutzer gibt frei oder fordert Nachbesserung |
+| **1 · Design** | interaktiv | Frühere Notizen abrufen · nur bei Unklarheit nachfragen · `writing-plans` speichert einen Plan · Review durch `momus` · eine einzige Freigabe |
+| **2 · Ausführung** | autonom | `executing-plans` erledigt die Aufgaben testgetrieben · abschließendes Review · `hephaestus` als Fallback |
+| **3 · Review** | interaktiv | Abgleich mit dem Plan · Vergleichstabelle vorlegen · Nutzer gibt frei oder fordert Nachbesserung |
 
 ### Strukturierter Abschlussbericht
 
@@ -420,7 +420,7 @@ Funktionen, die eigens für dieses Projekt entstanden sind, über das hinaus, wa
 | Funktion | Beschreibung |
 |---------|-------------|
 | **Boss-Meta-Orchestrator** | Dynamische Fähigkeitserkennung → Intent-Klassifikation → 4-stufiges Prioritäts-Routing → Delegation → Verifikation |
-| **3-Phasen-Sprint** | Design (interaktiv) → Ausführung (autonom via executor) → Review (interaktiv gegen das Designdokument) |
+| **3-Phasen-Sprint** | Design (interaktiv) → Ausführung (autonom via executing-plans) → Review (interaktiv gegen den Plan) |
 | **Agenten-Tier-Priorität** | core > omo > omx > Opt-in-Packs bei der Entdopplung. Pack-Agenten werden übersprungen, wenn ihr Name mit einem bereits installierten Agenten kollidiert. Der spezialisiertere Agent gewinnt. |
 | **Kostenoptimierung** | Drei Modellstufen aus einer einzigen Datei (`scripts/model-tiers.sh`), angewandt auf alle 35 Agenten, die das Installationsskript mitbringt |
 | **Skill-Sichtbarkeitsprofile** | Ein verwalteter Katalog mit 209 Einträgen, 29 davon standardmäßig sichtbar, 13 optionale Spuren, Schnappschüsse und Rollback — damit das Skill-Budget dort landet, wo die Sitzung es braucht |

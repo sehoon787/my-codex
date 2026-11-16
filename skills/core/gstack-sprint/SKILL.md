@@ -1,6 +1,6 @@
 ---
 name: gstack-sprint
-description: 3-Phase Sprint workflow — design → execute → review with user interaction at decision points
+description: 3-Phase Sprint workflow — plan (writing-plans + momus, one approval gate) → execute (executing-plans) → review against the plan
 level: 4
 user-invocable: true
 ---
@@ -29,67 +29,71 @@ End-to-end feature work fails silently in three predictable ways:
 2. Execution proceeds without structured iteration — partial implementations declared done
 3. Review skips comparison against the design doc — drift goes unnoticed
 
-gstack-sprint enforces the three-phase contract: user-confirmed design → automated execution via ralph → user-confirmed review against the design doc. Each phase boundary requires explicit user confirmation before the next phase begins.
+gstack-sprint enforces the three-phase contract: user-confirmed design → automated execution via executing-plans → user-confirmed review against the design doc. Each phase boundary requires explicit user confirmation before the next phase begins.
 </Why_This_Exists>
 
 <Steps>
 
-## Phase 1: Design (interactive — user decisions)
+## Phase 1: Design (interactive — one approval gate)
 
-1. **Determine scale** from the user's request:
-   - Large (new feature, cross-system architecture, significant refactor) → invoke /plan-ceo-review first, then proceed to step 2
-   - Medium (scoped feature, single-service change) → skip /plan-ceo-review, proceed directly to step 2
+1. **Recall**: search `.briefing/decisions/`, `.briefing/learnings/` and `.briefing/plans/` for two or three keywords from the request. Read at most the three most relevant notes, and note any earlier decision that the request conflicts with. If `.briefing/` does not exist, skip this step.
 
-2. **Invoke /plan-eng-review** (mandatory for all scales) to produce a structured engineering design document
+2. **Clarify** (only when the request is ambiguous): if the goal or the scope has several plausible readings, call the `metis` advisor once, then ask the user at most two clarifying questions in ONE AskUserQuestion call. If the request is clear, skip this step and ask nothing.
 
-3. **Surface all key decisions** using AskUserQuestion for each ambiguity:
-   - Technology choices with tradeoffs
-   - API contract decisions
-   - Data model decisions
-   - Scope boundary decisions
-   - Do not batch decisions silently — each decision that affects implementation requires explicit user input
+3. **Spec and slice**: the request and any step 2 answers are the spec, so do not invoke the brainstorming skill first. Invoke the `writing-plans` skill with two things already decided:
+   - Save path: `.briefing/plans/YYYY-MM-DD-<topic>.md`. Create the directory if it is missing.
+   - Execution method: Phase 2 of this skill. `writing-plans` must save the plan and return its path. It must not ask which execution approach to use, and it must not ask the user to review the plan: the approval gate in step 5 replaces both questions.
 
-4. **Wait for user to confirm "design complete"** before transitioning to Phase 2. Do not proceed to Phase 2 on your own judgment.
+   The plan lists small tasks with exact file paths, test-first steps, a verification command for each task, and the dependencies between tasks. `/plan-ceo-review`, `/plan-eng-review` and `/autoplan` are optional extra reviews: run one only when the user asks for it.
 
-5. **Skip condition**: If the user's original message already confirms design is done ("design is done, just build it") → skip Phase 1 entirely and proceed to Phase 2 with the provided design context
+4. **Plan review**: call the `momus` advisor on the plan file. Fix its blocking issues in the plan, for at most two rounds, then append the final momus verdict to the plan file.
 
-6. **Fallback** (gstack not installed): Use the OMC planner agent (opus) to produce a structured plan. Present the plan to the user and wait for their confirmation before proceeding.
+5. **APPROVAL GATE**: ask exactly one AskUserQuestion. It shows the plan path, the momus verdict and every decision that is still open, and it offers three options: approve, revise, stop.
+   - approve → start Phase 2.
+   - revise → change the plan, repeat step 4, then ask this gate again.
+   - stop → end the sprint and keep the plan file.
+
+   Phase 2 never starts without an approve answer at this gate (except under step 6). Do not ask for approval anywhere else in Phase 1.
+
+6. **Skip condition**: if the user's original message already says the design is done ("design is done, just build it"), skip steps 2 and 5 and ask nothing. Steps 3 and 4 still run on the design the user gave, so that Phase 2 and Phase 3 have a reviewed plan file. If the user gave a finished task plan file, copy it to `.briefing/plans/YYYY-MM-DD-<topic>.md`, use the copy as the plan, and skip step 3 as well. If `momus` still reports a blocking issue after its two rounds, do not skip step 5.
+
+7. **Fallback** (`writing-plans` is not installed): delegate the plan to the `prometheus` agent. Give it the request and any step 2 answers, and tell it to skip its interview, its own Momus loop and its plan presentation and to return the whole plan as markdown. Save that plan to the same path yourself. Steps 4 and 5 still apply (step 6 can still skip step 5). If `momus` is not available, say so at the approval gate in place of its verdict.
 
 ---
 
-## Phase 2: Execute (autonomous/automated — ralph)
+## Phase 2: Execute (autonomous — executing-plans)
 
-Phase 2 runs as an independent skill invocation, not nested within gstack-sprint's prompt context. Boss invokes `Skill(skill: "ralph")` for this phase.
+1. **Invoke the `executing-plans` skill** on the plan file from Phase 1. Pass the plan's ABSOLUTE path: the plan lives in `.briefing/plans/`, which git ignores, and `executing-plans` works in a separate worktree where a relative path does not resolve.
 
-1. **Invoke the ralph skill** — ralph internally selects its execution strategy based on scale:
-   - Parallel multi-agent (ultrawork) for large, multi-story work
-   - Single executor for simple, well-scoped implementation
+2. **Do not ask again how to execute.** The approve answer at the Phase 1 approval gate is the user's choice of inline execution, and it also approves an isolated worktree. When you invoke `executing-plans`, state that the worktree preference is already declared (use an isolated worktree), so `using-git-worktrees` does not ask again.
 
-2. **ralph Step 7a** (inside ralph): attempts gstack /review for code review — non-blocking, skips silently if gstack is not installed or /review fails
+3. **Let `executing-plans` run to its own verification.** It runs the tasks in order, test-first, and finishes with its own whole-branch review and `verification-before-completion`. Do not add another review or verification chain on top.
 
-3. **ralph Step 7b** (inside ralph): architect/critic verification — always runs regardless of Step 7a result
+4. **Stop before the branch hand-off.** `executing-plans` ends by handing off to `finishing-a-development-branch`. Do not follow that hand-off: Phase 3 of this skill defers it. Carry the worktree path, the branch name, the verification output, and the "Rulings I made" and "Deferred minors" lists from the final message of `executing-plans` into Phase 3: it deletes the ledger that holds them before the hand-off.
 
-4. **Agent teams** for complex work (ralph delegates to executor + code-reviewer + test-engineer in parallel as needed)
+5. **Fallback** (`executing-plans` is not installed): delegate one autonomous end-to-end run of the plan to the `hephaestus` agent. Afterwards run the project's tests, then continue with Phase 3.
 
-5. **Fallback** (gstack not installed): ralph's existing verification flow runs unchanged — no behavior difference from ralph's perspective
-
-6. **Phase 2 completion**: ralph signals completion via its standard cancel/completion flow. After ralph completes, gstack-sprint resumes Phase 3.
+6. **On a blocker**: if `executing-plans` stops on something it cannot resolve, report it to the user with the task number and the failing output. Do not move to Phase 3 with unfinished tasks.
 
 ---
 
 ## Phase 3: Review (interactive/iterative — user confirmation)
 
-1. **Find design doc**: Search `~/.gstack/projects/` for the most recent design file matching the current repo.
+1. **Reload the plan from disk** in this order:
+   1. the Phase 1 plan file; if its path is not known, the newest `.briefing/plans/*-<topic>.md` for this request
+   2. the gstack design doc `~/.gstack/projects/<org>-<repo>/*-design-*.md`
+   3. the original request
+
+   The gstack design doc lookup:
    ```bash
    REPO=$(basename "$(git rev-parse --show-toplevel 2>/dev/null)")
    ORG=$(git remote get-url origin 2>/dev/null | sed 's|.*[:/]\([^/]*\)/.*|\1|' || echo "unknown")
    DESIGN_DOC=$(ls -t ~/.gstack/projects/${ORG}-${REPO}/*-design-*.md 2>/dev/null | head -1)
    ```
-   If no design doc is found, fall back to comparing against the original user request and any notes captured during Phase 1.
 
-2. **Read the design doc** in full, then read all files implemented during Phase 2
+2. **Read what step 1 loaded** in full (the plan file, or the gstack design doc when there is no plan file), then read all files implemented during Phase 2
 
-3. **Compare implementation against design**: For each item in the design doc, determine whether it was implemented, partially implemented, or skipped. Note any implementation that was added beyond the design scope.
+3. **Compare implementation against design**: For each item in what step 1 loaded, determine whether it was implemented, partially implemented, or skipped. Note any implementation that was added beyond the design scope.
 
 4. **Present a comparison table** to the user:
 
@@ -100,41 +104,43 @@ Phase 2 runs as an independent skill invocation, not nested within gstack-sprint
    | Feature C | Not implemented | Descoped during Phase 2 |
    | Bonus: Feature D | Added (not in design) | Confirm or revert |
 
+   Under the table, show the "Rulings I made" and "Deferred minors" lists carried over from Phase 2, or say that a list is empty.
+
 5. **AskUserQuestion** with the following options:
    - "approve" — implementation matches design intent, proceed to next step
    - "needs improvement" — significant gaps exist, re-enter Phase 2 with corrections
    - "minor fixes" — minor gaps, specify what to fix before approving
 
-6. **If "needs improvement" or "minor fixes"**: Re-enter Phase 2 with a targeted correction delta. Pass the specific gaps to ralph rather than re-running the full implementation. After correction, return to Phase 3 Step 1.
+6. **If "needs improvement" or "minor fixes"**: Re-enter Phase 2 with a targeted correction delta. Write the gap tasks to a follow-up plan file `.briefing/plans/YYYY-MM-DD-<topic>-followup.md` and run Phase 2 on it in the same worktree and branch. After correction, return to Phase 3 Step 1.
 
-7. **If "approved"**: Suggest next steps — /ship or manual commit. Do not proceed autonomously.
+7. **If "approved"**: Suggest next steps — `/ship` from the Phase 2 worktree, or the `finishing-a-development-branch` skill, so the branch and the worktree are not left unmerged. Do not proceed autonomously.
 
 8. **Optional follow-up chain** (present as options, do not auto-invoke):
    - /land-and-deploy → /canary → /document-release → /retro
 
-9. **Fallback** (gstack not installed): Read the implemented files directly, compare against the original user request and Phase 1 notes, and present the comparison to the user for their review.
+9. **Fallback** (gstack not installed): Read the implemented files directly, compare them against what step 1 loaded (the plan file, or the original request when there is no plan file), and present the comparison to the user for their review.
 
 </Steps>
 
 <Escalation_And_Stop_Conditions>
 - Stop and report when a fundamental blocker requires user input (missing credentials, unclear requirements, external service down)
 - Stop when the user says "stop", "cancel", or "abort"
-- Never auto-advance phase boundaries — each phase requires explicit user confirmation
-- If Phase 1 design decisions cannot be resolved after three rounds of AskUserQuestion, escalate to the user with a clear statement of what is blocking progress
-- If Phase 2 (ralph) fails after the maximum retry attempts, surface the blocker to the user rather than silently retrying or declaring completion
+- Never auto-advance into Phase 2 — it starts only on an approve answer at the Phase 1 approval gate (or under the Phase 1 skip condition)
+- If the plan is still not approved after three revise rounds at the approval gate, escalate to the user with a clear statement of what is blocking progress
+- If Phase 2 (`executing-plans`, or the `hephaestus` fallback) stops on a blocker it cannot resolve, surface it to the user with the task number and the failing output rather than silently retrying or declaring completion
 - If Phase 3 comparison reveals that more than 50% of design items are unimplemented, flag this as a significant implementation gap before asking for user decision
 </Escalation_And_Stop_Conditions>
 
 <Examples>
 <Good>
-Phase 1 — surfacing decisions before implementation:
+Phase 1 — the one approval gate:
 ```
-AskUserQuestion: "Two decisions are needed while reviewing the design:
-1. API auth: Should we use JWT tokens or session cookies?
-2. Data storage: Should we add a Redis cache for real-time lookups, or start with direct DB queries?
-Once you've decided, say 'design complete' and we'll start implementation."
+AskUserQuestion: "Plan saved: .briefing/plans/2026-03-26-auth-tokens.md (6 tasks)
+momus: OKAY after round 2; the verdict is appended to the plan.
+Open decision: store refresh tokens in Redis or in the database? The plan assumes the database.
+approve / revise / stop"
 ```
-Why good: Decisions are explicit, user controls phase transition, implementation cannot start without confirmation.
+Why good: One question shows the plan path, the momus verdict and the open decision; Phase 2 cannot start without an approve answer.
 </Good>
 
 <Good>
@@ -175,11 +181,11 @@ Why bad: Did not read the design doc, did not produce a comparison table, did no
 </Examples>
 
 <Final_Checklist>
-- [ ] Phase 1: Design doc produced and user confirmed "design complete" (or Phase 1 explicitly skipped per user request)
-- [ ] Phase 2: ralph invoked and completed with its own verification (7a + 7b)
-- [ ] Phase 3: Design doc located (or fallback to original request)
-- [ ] Phase 3: Comparison table presented to user
+- [ ] Phase 1: plan file saved under `.briefing/plans/`, momus verdict appended, approve answer at the approval gate (or the gate skipped under the Phase 1 skip condition)
+- [ ] Phase 2: `executing-plans` (or the `hephaestus` fallback) ran every plan task with its own verification and stopped before the hand-off to `finishing-a-development-branch`
+- [ ] Phase 3: Plan reloaded from disk (Phase 1 plan file, else the gstack design doc, else the original request)
+- [ ] Phase 3: Comparison table presented to user, with the rulings and deferred minors from Phase 2 under it
 - [ ] Phase 3: User selected "approve", "needs improvement", or "minor fixes"
-- [ ] If "needs improvement": correction delta passed to ralph, Phase 3 re-run after correction
-- [ ] If "approve": next steps suggested (/ship or manual commit), no autonomous action taken
+- [ ] If "needs improvement": gap tasks written to a `-followup.md` plan file, Phase 2 run on it in the same worktree and branch, Phase 3 re-run after correction
+- [ ] If "approve": `/ship` from the Phase 2 worktree or `finishing-a-development-branch` suggested, no autonomous action taken
 </Final_Checklist>

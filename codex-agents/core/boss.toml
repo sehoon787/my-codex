@@ -141,16 +141,22 @@ Keyword → skill mappings (including semantically equivalent requests in any la
 gstack 3-Phase Sprint Workflow:
 When handling end-to-end feature requests or deployment workflows, execute in 3 phases:
 
-Phase 1: Design (interactive) — Use gstack /office-hours or /plan-ceo-review, then /plan-eng-review (required). All key decisions via user interaction. User confirms design completion before Phase 2.
+Phase 1: Design (interactive — one approval gate)
+- Recall: search `.briefing/decisions/`, `.briefing/learnings/` and `.briefing/plans/` for related notes.
+- Clarify only when the request is ambiguous: `metis`, then at most two questions in one AskUserQuestion.
+- Plan: `writing-plans` saves a task plan to `.briefing/plans/YYYY-MM-DD-<topic>.md` and asks no review or execution question.
+- Plan review: `momus`, at most two rounds; the verdict is appended to the plan.
+- Approval gate: exactly one AskUserQuestion (approve / revise / stop); Phase 2 starts only on approve, unless the user already said the design is done.
+- `/plan-ceo-review`, `/plan-eng-review` and `/autoplan` are optional extra reviews, run only on request.
 
-Phase 2: Execute (autonomous) — Always use ralph for execution. If gstack is installed, ralph should try /review for code review verification (non-blocking — skip if unavailable). Then run architect/critic verification (always). Retry on failure.
+Phase 2: Execute (autonomous) — Run the `executing-plans` skill on the Phase 1 plan file, passing its absolute path. The approve answer at the Phase 1 gate also approves an isolated worktree: tell `executing-plans` that the worktree preference is declared (use an isolated worktree), so it does not ask again. It runs the tasks test-first and finishes with its own review and verification; stop before its hand-off to `finishing-a-development-branch`, because Phase 3 defers it, and carry its "Rulings I made" and "Deferred minors" lists into Phase 3. If `executing-plans` is not installed, delegate one end-to-end run of the plan to `hephaestus`, then run the project's tests.
 
-Phase 3: Review (interactive) — Re-read design doc from disk (~/.gstack/projects/). Compare implementation against design. Present improvements/approval to user. If improvements needed, re-enter Phase 2. On approval, proceed to /ship or manual commit. Optional follow-up: /land-and-deploy, /canary, /document-release, /retro.
+Phase 3: Review (interactive) — Reload the plan from disk (`.briefing/plans/`), falling back to the gstack design doc (`~/.gstack/projects/` path), then the original request. Compare implementation against it. Present improvements/approval to user. If improvements needed, write the gap tasks to a follow-up plan file (`.briefing/plans/YYYY-MM-DD-<topic>-followup.md`) and re-enter Phase 2 on it in the same worktree and branch. On approval, suggest `/ship` from the Phase 2 worktree or the `finishing-a-development-branch` skill. Optional follow-up: /land-and-deploy, /canary, /document-release, /retro.
 
-Boss rule: For end-to-end requests, invoke the `gstack-sprint` skill (spawn_agent with skill="gstack-sprint"). The gstack-sprint skill manages the full Phase 1(design/interactive) → Phase 2(execute/autonomous) → Phase 3(review/interactive) workflow. If gstack-sprint is not installed, fall back to: planner → ralph → manual review.
+Boss rule: For end-to-end requests, invoke the `gstack-sprint` skill (spawn_agent with skill="gstack-sprint"). The gstack-sprint skill manages the full Phase 1(design/interactive) → Phase 2(execute/autonomous) → Phase 3(review/interactive) workflow. If gstack-sprint is not installed, fall back to: `prometheus` → `executing-plans` → manual review.
 
 gstack skill reference:
-- Plan: /plan-ceo-review → /plan-eng-review (CEO + engineering review)
+- Plan: `writing-plans` → `momus` (optional extra reviews: /plan-ceo-review, /plan-eng-review, /autoplan)
 - Review: /review (code review — scope drift, adversarial review)
 - QA: /qa (browser QA + auto-fix loop)
 - Ship: /ship (test → commit → PR with readiness dashboard)

@@ -617,9 +617,49 @@ test "$(find "$TEST_HOME/.codex/agents" -maxdepth 1 -type l -name '*.toml' | wc 
 HOME="$TEST_HOME" "$TEST_HOME/.codex/bin/my-codex-packs" set-profile dev
 test "$(find "$TEST_HOME/.codex/agents" -maxdepth 1 -type l -name '*.toml' | wc -l | tr -d ' ')" -ge 1
 
+# Upgrade from a machine whose older gstack setup aliased skills that upstream
+# has since retired (/plan-eng-review in GST-1698, /investigate in GST-1717).
+# Those aliases dangle and were never in the manifest, so nothing cleaned them
+# up. plan-eng-review is a core catalog skill and the catalog step refuses to
+# write over a symlink ("unsafe managed file"), so the repeat install below
+# aborted. A clean HOME never reaches this state, so seed it. A dangling link
+# that points outside gstack's generated tree is the user's own and must survive.
+generated_skills="$TEST_HOME/.codex/vendor/gstack/.agents/skills"
+test ! -e "$generated_skills/gstack-plan-eng-review"
+test ! -e "$generated_skills/gstack-investigate"
+retired_plan_eng_review="$TEST_HOME/.codex/skills/plan-eng-review"
+retired_investigate="$TEST_HOME/.codex/skills/investigate"
+retired_relative="$TEST_HOME/.codex/skills/retired-relative-alias"
+user_gone="$TEST_HOME/.codex/skills/user-gone"
+test -f "$retired_plan_eng_review/SKILL.md"
+rm -rf "$retired_plan_eng_review"
+ln -s "$generated_skills/gstack-plan-eng-review/" "$retired_plan_eng_review"
+ln -s "$generated_skills/gstack-investigate/" "$retired_investigate"
+ln -s "../vendor/gstack/.agents/skills/gstack-retired-relative-alias/" "$retired_relative"
+mkdir -p "$TEST_HOME/elsewhere"
+ln -s "$TEST_HOME/elsewhere/gone/" "$user_gone"
+grep -qx 'skills/plan-eng-review' "$TEST_HOME/.codex/.my-codex-manifest.txt"
+grep -vx 'skills/plan-eng-review' "$TEST_HOME/.codex/.my-codex-manifest.txt" > "$TMP_ROOT/manifest-legacy.txt"
+cp "$TMP_ROOT/manifest-legacy.txt" "$TEST_HOME/.codex/.my-codex-manifest.txt"
+test "$(grep -cx 'skills/plan-eng-review' "$TEST_HOME/.codex/.my-codex-manifest.txt")" = "0"
+
 HOME="$TEST_HOME" PATH="$BIN_DIR:$PATH" MY_CODEX_TEST_LOG="$LOG_FILE" MY_CODEX_TEST_UV_STATE="$UV_STATE" \
   bash "$REPO_ROOT/install.sh" --profile minimal > "$TMP_ROOT/install-minimal.out"
 test "$(find "$TEST_HOME/.codex/agents" -maxdepth 1 -type l -name '*.toml' | wc -l | tr -d ' ')" = "0"
+
+# The retired aliases are pruned and the catalog skill is materialized from the
+# pinned payload. The user's dangling link and a live gstack alias are untouched.
+test -d "$retired_plan_eng_review"
+test ! -L "$retired_plan_eng_review"
+test -f "$retired_plan_eng_review/SKILL.md"
+test ! -e "$retired_investigate"
+test ! -L "$retired_investigate"
+test ! -e "$retired_relative"
+test ! -L "$retired_relative"
+test -L "$user_gone"
+test "$(readlink "$user_gone")" = "$TEST_HOME/elsewhere/gone/"
+test -L "$TEST_HOME/.codex/skills/review"
+test -f "$TEST_HOME/.codex/skills/review/SKILL.md"
 
 HOME="$TEST_HOME" "$TEST_HOME/.codex/bin/my-codex-packs" enable data-ai
 grep -q '^data-ai$' "$TEST_HOME/.codex/enabled-agent-packs.txt"

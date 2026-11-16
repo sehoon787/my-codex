@@ -1714,6 +1714,26 @@ if [ "$SKIP_GSTACK" = "0" ]; then
       fi
     done
 
+    # Upstream retires skills over time, so the loop above, which walks only
+    # what setup still generates, never sees the unprefixed alias an older setup
+    # left for a retired one. Such a link dangles, is not in the manifest, and
+    # blocks the catalog from materializing a skill of the same name. Remove a
+    # dangling link whose destination sits directly in gstack's generated skills
+    # directory; leave everything else alone.
+    generated_root="$(cd "$GSTACK_DIR/.agents/skills" 2>/dev/null && pwd -P || true)"
+    if [ -n "$generated_root" ]; then
+      for target in "$CODEX_ROOT/skills/"*; do
+        [ -L "$target" ] || continue
+        [ ! -e "$target" ] || continue
+        link_dest="$(readlink "$target" 2>/dev/null || true)"
+        case "$link_dest" in /*) ;; *) link_dest="$(dirname "$target")/$link_dest" ;; esac
+        link_parent="$(cd "$(dirname "$link_dest")" 2>/dev/null && pwd -P || true)"
+        if [ "$link_parent" = "$generated_root" ]; then
+          rm -f "$target"
+        fi
+      done
+    fi
+
     # This browser sub-skill is intentionally nested upstream but was visible
     # in the old recursive checkout. Preserve it without re-exposing tests or
     # the rest of the repository tree.

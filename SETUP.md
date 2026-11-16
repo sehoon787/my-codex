@@ -54,7 +54,7 @@ What gets installed:
 
 | Destination | Contents |
 |---|---|
-| `~/.codex/agents/` | 17 core agents (Boss 1 + OMO 9 + OMX 7), deduplicated by tier |
+| `~/.codex/agents/` | 18 core agents (Boss 1 + OMO 10 + OMX 7), deduplicated by tier |
 | `~/.codex/agent-packs/` | 17 opt-in pack agents across 2 packs (data-ai 13, llmops 4) |
 | `~/.codex/skills/` | 109 skill entries (ECC 61 + gstack 29 + superpowers 14 + core 4 + archify 1) — 82 directories plus 27 symlinks into the vendored gstack tree; the default `core` profile exposes 29 of them |
 | `~/.codex/AGENTS.md` | Agent catalog and routing instructions |
@@ -84,7 +84,7 @@ echo "Enabled set:  $(grep -Ev '^(#|$)' ~/.codex/enabled-agent-packs.txt | paste
 
 Expected output:
 ```
-Core agents:  17
+Core agents:  18
 Active packs: 0
 Agent packs:  17
 Skills:       85
@@ -155,7 +155,7 @@ git config --global my-codex.codexAttribution false
 
 ## 5. Agent Packs Activation
 
-Agent packs are stored in `~/.codex/agent-packs/`. **No pack is enabled on install** — the empty set is persisted in `~/.codex/enabled-agent-packs.txt`, and re-running `install.sh` rehydrates the symlinks from that file. Packs stay opt-in so the core registry of 17 agents is what Boss discovers by default; enable a pack only when a task needs its specialists.
+Agent packs are stored in `~/.codex/agent-packs/`. **No pack is enabled on install** — the empty set is persisted in `~/.codex/enabled-agent-packs.txt`, and re-running `install.sh` rehydrates the symlinks from that file. Packs stay opt-in so the core registry of 18 agents is what Boss discovers by default; enable a pack only when a task needs its specialists.
 
 ```bash
 # Inspect current state
@@ -278,7 +278,7 @@ You are boss. The goal is to add OAuth2 support.
 ```bash
 # Verify agents exist
 ls ~/.codex/agents/*.toml | wc -l
-# Should be 17 (plus one symlink per enabled pack agent)
+# Should be 18 (plus one symlink per enabled pack agent)
 ```
 
 **`spawn_agent` fails**

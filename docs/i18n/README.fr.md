@@ -9,13 +9,13 @@
 # my-codex
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
-![Agents](https://img.shields.io/badge/agents-17_core_%2B_17_opt--in-blue)
+![Agents](https://img.shields.io/badge/agents-18_core_%2B_17_opt--in-blue)
 ![Skills](https://img.shields.io/badge/skills-29_default_%2F_109_installed-purple)
 ![MCP](https://img.shields.io/badge/MCP-5-green)
 ![Auto Sync](https://img.shields.io/badge/upstream_sync-every_3_days-brightgreen)
 
 **Harnais d'agents tout-en-un pour Codex CLI.**
-**Installez une fois, 17 agents principaux prêts à l'emploi.**
+**Installez une fois, 18 agents principaux prêts à l'emploi.**
 
 Boss détecte à l'exécution chaque agent, chaque skill et chaque outil MCP,<br>
 puis route votre tâche vers le bon spécialiste via `spawn_agent`. Aucune configuration. Aucun code superflu.
@@ -129,7 +129,7 @@ Boss fait passer chaque demande dans une chaîne de priorités jusqu'à trouver 
 | Complexité | Modèle | Utilisé pour |
 |-----------|-------|----------|
 | Orchestration de premier niveau | `gpt-6.1-sol` (xhigh) | Boss, et la session principale par défaut |
-| Analyse approfondie, architecture, revue | `gpt-6-astra` | Oracle, Prometheus, Sisyphus, Hephaestus, Atlas, Metis, Momus, architect, planner, code-reviewer, security-reviewer |
+| Analyse approfondie, architecture, revue | `gpt-6-astra` | Oracle, Prometheus, Sisyphus, Hephaestus, Atlas, Metis, Momus, Tracer, architect, planner, code-reviewer, security-reviewer |
 | Implémentation standard | `gpt-6.1-sol` | Librarian, Multimodal-Looker, executor, test-engineer, debugger, ainsi que 15 des 17 agents de packs |
 | Recherche rapide, analyse légère | `gpt-6-luna` | data-analyst, prompt-regression-tester |
 
@@ -139,12 +139,12 @@ Les trois identifiants de palier vivent dans un seul fichier, `scripts/model-tie
 
 ### Paliers d'effort
 
-Le choix du modèle décide *quel* cerveau exécute une tâche ; le champ `model_reasoning_effort`, voisin de `model` dans le même TOML, décide *avec quelle profondeur* il réfléchit. Boss et les neuf agents OMO le déclarent dans les fichiers versionnés sous `codex-agents/`, les sept workers oh-my-codex reçoivent le leur de la table de rôles de `scripts/md-to-toml.sh` au moment de la conversion, et chaque agent de pack porte le sien :
+Le choix du modèle décide *quel* cerveau exécute une tâche ; le champ `model_reasoning_effort`, voisin de `model` dans le même TOML, décide *avec quelle profondeur* il réfléchit. Boss et les dix agents OMO le déclarent dans les fichiers versionnés sous `codex-agents/`, les sept workers oh-my-codex reçoivent le leur de la table de rôles de `scripts/md-to-toml.sh` au moment de la conversion, et chaque agent de pack porte le sien :
 
 | Effort | Agents |
 |--------|--------|
 | `xhigh` | Boss, Oracle, Prometheus, architect |
-| `high` | Sisyphus, Hephaestus, Atlas, Metis, Momus, planner, code-reviewer, security-reviewer, ainsi que 15 des 17 agents de packs |
+| `high` | Sisyphus, Hephaestus, Atlas, Metis, Momus, Tracer, planner, code-reviewer, security-reviewer, ainsi que 15 des 17 agents de packs |
 | `medium` | Librarian, Multimodal-Looker, executor, test-engineer, debugger, data-analyst, prompt-regression-tester |
 
 ### Workflow en sprint 3 phases
@@ -177,7 +177,7 @@ Il ne se déclenche qu'à la toute fin de la demande — jamais sur un tour qui 
 
 | Catégorie | Nombre | Source |
 |----------|------:|--------|
-| **Agents principaux** (toujours chargés) | 17 | Boss 1 + OMO 9 + OMX 7 |
+| **Agents principaux** (toujours chargés) | 18 | Boss 1 + OMO 10 + OMX 7 |
 | **Packs d'agents** (optionnels, aucun actif par défaut) | 17 | 2 catégories intégrées : data-ai 13 + llmops 4 |
 | **Skills exposés** (profil `core` par défaut) | 29 | L'ensemble toujours actif ; tout le reste est à un drapeau de voie de distance |
 | **Skills installés** (entrées sous `~/.codex/skills/`) | 109 | ECC 61 · gstack 29 · Superpowers 14 · Core 4 · archify 1 |
@@ -197,7 +197,7 @@ Tous les agents et skills ci-dessus figurent sur la liste d'autorisation de [`sc
 </details>
 
 <details>
-<summary><strong>Agents OMO — sous-orchestrateurs et spécialistes (9)</strong></summary>
+<summary><strong>Agents OMO — sous-orchestrateurs et spécialistes (10)</strong></summary>
 
 | Agent | Modèle | Rôle | Source |
 |-------|-------|------|--------|
@@ -208,6 +208,7 @@ Tous les agents et skills ci-dessus figurent sur la liste d'autorisation de [`sc
 | Metis | gpt-6-astra high | Analyse d'intention, détection d'ambiguïté | oh-my-openagent |
 | Momus | gpt-6-astra high | Revue de faisabilité des plans | oh-my-openagent |
 | Prometheus | gpt-6-astra xhigh | Planification détaillée par entretien | oh-my-openagent |
+| Tracer | gpt-6-astra high | Traçage causal fondé sur des preuves, avec hypothèses concurrentes (lecture seule) | oh-my-claudecode |
 | Librarian | gpt-6.1-sol medium | Recherche de documentation open source via MCP | oh-my-openagent |
 | Multimodal-Looker | gpt-6.1-sol medium | Analyse d'images/captures/diagrammes | oh-my-openagent |
 
@@ -421,7 +422,7 @@ Fonctionnalités conçues spécifiquement pour ce projet, au-delà de ce que fou
 | **Méta-orchestrateur Boss** | Découverte dynamique de capacités → classification d'intention → routage à 4 priorités → délégation → vérification |
 | **Sprint 3 phases** | Conception (interactif) → Exécution (autonome via executor) → Revue (interactif face au document de conception) |
 | **Priorité par palier d'agents** | core > omo > omx > packs optionnels pour la déduplication. Un agent de pack est ignoré si son nom entre en collision avec un agent déjà installé. L'agent le plus spécialisé l'emporte. |
-| **Optimisation des coûts** | Trois paliers de modèles issus d'un fichier unique (`scripts/model-tiers.sh`), appliqués aux 34 agents livrés par l'installeur |
+| **Optimisation des coûts** | Trois paliers de modèles issus d'un fichier unique (`scripts/model-tiers.sh`), appliqués aux 35 agents livrés par l'installeur |
 | **Profils d'exposition des skills** | Un catalogue géré de 209 entrées avec 29 exposées par défaut, 13 voies optionnelles, instantanés et retour arrière — pour dépenser le budget de skills là où la session en a besoin |
 | **Signaux de briefing** | La journalisation wrapper/session alimente `.briefing/agents/agent-log.jsonl`, les synthèses quotidiennes et les indices de routage/profil |
 | **Smart Packs** | La détection du type de projet recommande les packs d'agents pertinents au démarrage de la session |

@@ -9,13 +9,13 @@
 # my-codex
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
-![Agents](https://img.shields.io/badge/agents-17_core_%2B_17_opt--in-blue)
+![Agents](https://img.shields.io/badge/agents-18_core_%2B_17_opt--in-blue)
 ![Skills](https://img.shields.io/badge/skills-29_default_%2F_109_installed-purple)
 ![MCP](https://img.shields.io/badge/MCP-5-green)
 ![Auto Sync](https://img.shields.io/badge/upstream_sync-every_3_days-brightgreen)
 
 **Codex CLI를 위한 올인원 에이전트 하네스.**
-**한 번 설치하면 핵심 에이전트 17개가 준비됩니다.**
+**한 번 설치하면 핵심 에이전트 18개가 준비됩니다.**
 
 Boss가 런타임에 모든 에이전트·스킬·MCP 도구를 탐색하고,<br>
 `spawn_agent`로 작업을 적합한 전문가에게 라우팅합니다. 설정도, 보일러플레이트도 없습니다.
@@ -128,7 +128,7 @@ Boss는 가장 적합한 매칭을 찾을 때까지 모든 요청을 우선순�
 | 복잡도 | 모델 | 사용 대상 |
 |-----------|-------|----------|
 | 최상위 오케스트레이션 | `gpt-6.1-sol` (xhigh) | Boss, 기본 메인 세션 |
-| 심층 분석, 아키텍처, 리뷰 | `gpt-6-astra` | Oracle, Prometheus, Sisyphus, Hephaestus, Atlas, Metis, Momus, architect, planner, code-reviewer, security-reviewer |
+| 심층 분석, 아키텍처, 리뷰 | `gpt-6-astra` | Oracle, Prometheus, Sisyphus, Hephaestus, Atlas, Metis, Momus, Tracer, architect, planner, code-reviewer, security-reviewer |
 | 표준 구현 | `gpt-6.1-sol` | Librarian, Multimodal-Looker, executor, test-engineer, debugger 및 팩 에이전트 17개 중 15개 |
 | 빠른 조회, 가벼운 분석 | `gpt-6-luna` | data-analyst, prompt-regression-tester |
 
@@ -138,12 +138,12 @@ Boss는 가장 적합한 매칭을 찾을 때까지 모든 요청을 우선순�
 
 ### 추론 강도 티어
 
-모델 선택이 *어떤* 두뇌가 작업을 맡을지를 정한다면, 같은 TOML의 `model` 옆에 있는 `model_reasoning_effort`는 *얼마나 깊이* 생각할지를 정합니다. Boss와 OMO 에이전트 9개는 `codex-agents/` 아래 커밋된 파일에서 직접 선언하고, oh-my-codex 작업자 7개는 변환 시점에 `scripts/md-to-toml.sh`의 역할 표에서 값을 받으며, 팩 에이전트는 각자의 값을 가집니다:
+모델 선택이 *어떤* 두뇌가 작업을 맡을지를 정한다면, 같은 TOML의 `model` 옆에 있는 `model_reasoning_effort`는 *얼마나 깊이* 생각할지를 정합니다. Boss와 OMO 에이전트 10개는 `codex-agents/` 아래 커밋된 파일에서 직접 선언하고, oh-my-codex 작업자 7개는 변환 시점에 `scripts/md-to-toml.sh`의 역할 표에서 값을 받으며, 팩 에이전트는 각자의 값을 가집니다:
 
 | 추론 강도 | 에이전트 |
 |--------|--------|
 | `xhigh` | Boss, Oracle, Prometheus, architect |
-| `high` | Sisyphus, Hephaestus, Atlas, Metis, Momus, planner, code-reviewer, security-reviewer 및 팩 에이전트 17개 중 15개 |
+| `high` | Sisyphus, Hephaestus, Atlas, Metis, Momus, Tracer, planner, code-reviewer, security-reviewer 및 팩 에이전트 17개 중 15개 |
 | `medium` | Librarian, Multimodal-Looker, executor, test-engineer, debugger, data-analyst, prompt-regression-tester |
 
 ### 3단계 스프린트 워크플로
@@ -176,7 +176,7 @@ Boss는 작업이 있던 모든 턴 — 파일 편집, 커밋/PR, 설정 변경,
 
 | 카테고리 | 수량 | 출처 |
 |----------|------:|--------|
-| **핵심 에이전트** (항상 로드됨) | 17 | Boss 1 + OMO 9 + OMX 7 |
+| **핵심 에이전트** (항상 로드됨) | 18 | Boss 1 + OMO 10 + OMX 7 |
 | **에이전트 팩** (옵트인, 기본 비활성) | 17 | 벤더링된 2개 카테고리: data-ai 13 + llmops 4 |
 | **노출 스킬** (기본 `core` 프로필) | 29 | 항상 켜져 있는 집합. 나머지는 레인 플래그 하나로 추가 |
 | **설치 스킬** (`~/.codex/skills/` 항목) | 109 | ECC 61 · gstack 29 · Superpowers 14 · Core 4 · archify 1 |
@@ -196,7 +196,7 @@ Boss는 작업이 있던 모든 턴 — 파일 편집, 커밋/PR, 설정 변경,
 </details>
 
 <details>
-<summary><strong>OMO 에이전트 — 서브 오케스트레이터 및 전문가 (9)</strong></summary>
+<summary><strong>OMO 에이전트 — 서브 오케스트레이터 및 전문가 (10)</strong></summary>
 
 | 에이전트 | 모델 | 역할 | 출처 |
 |-------|-------|------|--------|
@@ -207,6 +207,7 @@ Boss는 작업이 있던 모든 턴 — 파일 편집, 커밋/PR, 설정 변경,
 | Metis | gpt-6-astra high | 의도 분석, 모호성 탐지 | oh-my-openagent |
 | Momus | gpt-6-astra high | 계획 실현 가능성 검토 | oh-my-openagent |
 | Prometheus | gpt-6-astra xhigh | 인터뷰 기반 세부 계획 수립 | oh-my-openagent |
+| Tracer | gpt-6-astra high | 경쟁 가설을 비교하는 증거 기반 인과 추적 (읽기 전용) | oh-my-claudecode |
 | Librarian | gpt-6.1-sol medium | MCP를 통한 오픈소스 문서 검색 | oh-my-openagent |
 | Multimodal-Looker | gpt-6.1-sol medium | 이미지/스크린샷/다이어그램 분석 | oh-my-openagent |
 
@@ -420,7 +421,7 @@ headroom install apply --profile agent-harness-shared --preset persistent-servic
 | **Boss 메타 오케스트레이터** | 동적 역량 탐색 → 의도 분류 → 4단계 우선순위 라우팅 → 위임 → 검증 |
 | **3단계 스프린트** | 설계 (대화형) → 실행 (executor를 통한 자율) → 리뷰 (설계 문서와 대화형 비교) |
 | **에이전트 티어 우선순위** | core > omo > omx > 옵트인 팩 순으로 중복 제거. 이미 설치된 에이전트와 이름이 겹치는 팩 에이전트는 건너뜁니다. 가장 특화된 에이전트가 선택됩니다. |
-| **비용 최적화** | 단일 파일(`scripts/model-tiers.sh`)에서 관리하는 모델 티어 3종을 설치되는 34개 에이전트 전체에 적용 |
+| **비용 최적화** | 단일 파일(`scripts/model-tiers.sh`)에서 관리하는 모델 티어 3종을 설치되는 35개 에이전트 전체에 적용 |
 | **스킬 노출 프로필** | 카탈로그 209개 항목에 기본 29개 노출, 선택 레인 13개, 스냅샷과 롤백까지 — 스킬 예산을 그 세션에 필요한 것에만 씁니다 |
 | **브리핑 신호** | 래퍼/세션 로깅이 `.briefing/agents/agent-log.jsonl`, 일별 요약, 라우팅/프로필 힌트를 채웁니다 |
 | **Smart Packs** | 프로젝트 유형 감지로 세션 시작 시 관련 에이전트 팩 추천 |

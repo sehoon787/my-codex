@@ -1,7 +1,7 @@
 # my-codex AI Installation Guide
 
 You are an AI agent setting up a Codex CLI multi-agent orchestration environment.
-The bundle installs 17 auto-loaded agents, 17 opt-in pack agents (2 packs, disabled by default), 109 curated skill entries (29 exposed under the default `core` profile), and 5 MCP servers.
+The bundle installs 18 auto-loaded agents, 17 opt-in pack agents (2 packs, disabled by default), 109 curated skill entries (29 exposed under the default `core` profile), and 5 MCP servers.
 Agents and skills come from curated allowlists (`scripts/skill-allowlists.sh`), not bulk copies — the installed footprint is the allowlist, deduplicated by tier.
 Only 2-3 steps are needed.
 
@@ -94,7 +94,7 @@ through `install.sh` and its manifest, so a re-run always refreshes them — the
 separate stale-agent source to reconcile.
 
 This installs:
-- 17 core agents in `~/.codex/agents/` (always loaded by Codex CLI via `spawn_agent`): Boss 1 + OMO 9 + OMX 7
+- 18 core agents in `~/.codex/agents/` (always loaded by Codex CLI via `spawn_agent`): Boss 1 + OMO 10 + OMX 7
 - 2 opt-in agent packs in `~/.codex/agent-packs/` (`data-ai` 13, `llmops` 4), vendored from awesome-codex-subagents
 - `~/.codex/enabled-agent-packs.txt` with **no packs enabled** — opt in with `~/.codex/bin/my-codex-packs enable <pack>`
 - `~/.codex/enabled-skill-lanes.txt` with **no optional lane enabled** — add the 18 web/UI skills with `bash install.sh --skills=web`
@@ -275,7 +275,7 @@ echo "Enabled packs: $(grep -Ev '^(#|$)' ~/.codex/enabled-agent-packs.txt 2>/dev
 ```
 
 Expected:
-- Core agents: 17 (Boss 1 + OMO 9 + OMX 7)
+- Core agents: 18 (Boss 1 + OMO 10 + OMX 7)
 - Active packs: 0 (packs are opt-in)
 - Agent packs: 17 (data-ai 13 + llmops 4)
 - Skills: 85 on a clean install (more if personal skills were already present) — the installer counts `SKILL.md` files without following the 27 gstack symlinks; 109 entries exist under `~/.codex/skills/` for a clean install

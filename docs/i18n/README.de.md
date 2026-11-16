@@ -9,13 +9,13 @@
 # my-codex
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
-![Agents](https://img.shields.io/badge/agents-17_core_%2B_17_opt--in-blue)
+![Agents](https://img.shields.io/badge/agents-18_core_%2B_17_opt--in-blue)
 ![Skills](https://img.shields.io/badge/skills-29_default_%2F_109_installed-purple)
 ![MCP](https://img.shields.io/badge/MCP-5-green)
 ![Auto Sync](https://img.shields.io/badge/upstream_sync-every_3_days-brightgreen)
 
 **All-in-one-Agentenharness für die Codex CLI.**
-**Einmal installieren, 17 Kernagenten sind einsatzbereit.**
+**Einmal installieren, 18 Kernagenten sind einsatzbereit.**
 
 Boss erkennt zur Laufzeit jeden Agenten, jeden Skill und jedes MCP-Werkzeug<br>
 und leitet Ihre Aufgabe über `spawn_agent` an den passenden Spezialisten weiter. Keine Konfigurationsdateien. Kein Boilerplate.
@@ -129,7 +129,7 @@ Boss führt jede Anfrage durch eine Prioritätskette, bis der beste Treffer gefu
 | Komplexität | Modell | Eingesetzt für |
 |-----------|-------|----------|
 | Orchestrierung auf oberster Ebene | `gpt-6.1-sol` (xhigh) | Boss und standardmäßig die Hauptsitzung |
-| Tiefe Analyse, Architektur, Review | `gpt-6-astra` | Oracle, Prometheus, Sisyphus, Hephaestus, Atlas, Metis, Momus, architect, planner, code-reviewer, security-reviewer |
+| Tiefe Analyse, Architektur, Review | `gpt-6-astra` | Oracle, Prometheus, Sisyphus, Hephaestus, Atlas, Metis, Momus, Tracer, architect, planner, code-reviewer, security-reviewer |
 | Standardimplementierung | `gpt-6.1-sol` | Librarian, Multimodal-Looker, executor, test-engineer, debugger sowie 15 der 17 Pack-Agenten |
 | Schnelles Nachschlagen, leichte Analyse | `gpt-6-luna` | data-analyst, prompt-regression-tester |
 
@@ -139,12 +139,12 @@ Die drei Tier-IDs stehen in einer einzigen Datei, `scripts/model-tiers.sh`; sowo
 
 ### Aufwandsstufen
 
-Die Modellwahl bestimmt, *welches* Gehirn eine Aufgabe übernimmt; das Feld `model_reasoning_effort` neben `model` in derselben TOML-Datei bestimmt, *wie gründlich* es denkt. Boss und die neun OMO-Agenten deklarieren es in den eingecheckten Dateien unter `codex-agents/`, die sieben oh-my-codex-Worker erhalten ihren Wert beim Konvertieren aus der Rollentabelle in `scripts/md-to-toml.sh`, und jeder Pack-Agent bringt seinen eigenen mit:
+Die Modellwahl bestimmt, *welches* Gehirn eine Aufgabe übernimmt; das Feld `model_reasoning_effort` neben `model` in derselben TOML-Datei bestimmt, *wie gründlich* es denkt. Boss und die zehn OMO-Agenten deklarieren es in den eingecheckten Dateien unter `codex-agents/`, die sieben oh-my-codex-Worker erhalten ihren Wert beim Konvertieren aus der Rollentabelle in `scripts/md-to-toml.sh`, und jeder Pack-Agent bringt seinen eigenen mit:
 
 | Aufwand | Agenten |
 |--------|--------|
 | `xhigh` | Boss, Oracle, Prometheus, architect |
-| `high` | Sisyphus, Hephaestus, Atlas, Metis, Momus, planner, code-reviewer, security-reviewer sowie 15 der 17 Pack-Agenten |
+| `high` | Sisyphus, Hephaestus, Atlas, Metis, Momus, Tracer, planner, code-reviewer, security-reviewer sowie 15 der 17 Pack-Agenten |
 | `medium` | Librarian, Multimodal-Looker, executor, test-engineer, debugger, data-analyst, prompt-regression-tester |
 
 ### 3-Phasen-Sprint-Workflow
@@ -177,7 +177,7 @@ Er erscheint nur ganz am Ende der Anfrage — nie in einer Runde, die Hintergrun
 
 | Kategorie | Anzahl | Quelle |
 |----------|------:|--------|
-| **Kernagenten** (immer geladen) | 17 | Boss 1 + OMO 9 + OMX 7 |
+| **Kernagenten** (immer geladen) | 18 | Boss 1 + OMO 10 + OMX 7 |
 | **Agenten-Packs** (Opt-in, standardmäßig keines aktiv) | 17 | 2 eingebettete Kategorien: data-ai 13 + llmops 4 |
 | **Sichtbare Skills** (Standardprofil `core`) | 29 | Die immer aktive Auswahl; alles andere ist einen Spur-Schalter entfernt |
 | **Installierte Skills** (Einträge unter `~/.codex/skills/`) | 109 | ECC 61 · gstack 29 · Superpowers 14 · Core 4 · archify 1 |
@@ -197,7 +197,7 @@ Jeder Agent und jeder Skill oben steht auf der Freigabeliste in [`scripts/skill-
 </details>
 
 <details>
-<summary><strong>OMO-Agenten — Sub-Orchestratoren und Spezialisten (9)</strong></summary>
+<summary><strong>OMO-Agenten — Sub-Orchestratoren und Spezialisten (10)</strong></summary>
 
 | Agent | Modell | Rolle | Quelle |
 |-------|-------|------|--------|
@@ -208,6 +208,7 @@ Jeder Agent und jeder Skill oben steht auf der Freigabeliste in [`scripts/skill-
 | Metis | gpt-6-astra high | Intent-Analyse, Erkennung von Mehrdeutigkeit | oh-my-openagent |
 | Momus | gpt-6-astra high | Prüfung der Plan-Machbarkeit | oh-my-openagent |
 | Prometheus | gpt-6-astra xhigh | Interviewbasierte Detailplanung | oh-my-openagent |
+| Tracer | gpt-6-astra high | Evidenzbasierte Ursachenverfolgung mit konkurrierenden Hypothesen (nur lesend) | oh-my-claudecode |
 | Librarian | gpt-6.1-sol medium | Suche in Open-Source-Dokumentation über MCP | oh-my-openagent |
 | Multimodal-Looker | gpt-6.1-sol medium | Analyse von Bildern/Screenshots/Diagrammen | oh-my-openagent |
 
@@ -421,7 +422,7 @@ Funktionen, die eigens für dieses Projekt entstanden sind, über das hinaus, wa
 | **Boss-Meta-Orchestrator** | Dynamische Fähigkeitserkennung → Intent-Klassifikation → 4-stufiges Prioritäts-Routing → Delegation → Verifikation |
 | **3-Phasen-Sprint** | Design (interaktiv) → Ausführung (autonom via executor) → Review (interaktiv gegen das Designdokument) |
 | **Agenten-Tier-Priorität** | core > omo > omx > Opt-in-Packs bei der Entdopplung. Pack-Agenten werden übersprungen, wenn ihr Name mit einem bereits installierten Agenten kollidiert. Der spezialisiertere Agent gewinnt. |
-| **Kostenoptimierung** | Drei Modellstufen aus einer einzigen Datei (`scripts/model-tiers.sh`), angewandt auf alle 34 Agenten, die das Installationsskript mitbringt |
+| **Kostenoptimierung** | Drei Modellstufen aus einer einzigen Datei (`scripts/model-tiers.sh`), angewandt auf alle 35 Agenten, die das Installationsskript mitbringt |
 | **Skill-Sichtbarkeitsprofile** | Ein verwalteter Katalog mit 209 Einträgen, 29 davon standardmäßig sichtbar, 13 optionale Spuren, Schnappschüsse und Rollback — damit das Skill-Budget dort landet, wo die Sitzung es braucht |
 | **Briefing-Signale** | Wrapper-/Sitzungsprotokolle speisen `.briefing/agents/agent-log.jsonl`, tägliche Auswertungen und Routing-/Profilhinweise |
 | **Smart Packs** | Projekttyp-Erkennung empfiehlt zu Sitzungsbeginn passende Agenten-Packs |

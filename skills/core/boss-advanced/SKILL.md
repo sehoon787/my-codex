@@ -77,9 +77,9 @@ Q1. Are the subtasks fully independent? (no file overlap)
 
 For end-to-end feature or deployment requests, Boss follows the 3-Phase Sprint sequence:
 
-- **Phase 1: Design (interactive)** — `/plan-ceo-review` → `/plan-eng-review`. User confirms design before Phase 2.
-- **Phase 2: Execute (autonomous)** — Delegate to `ralph`. gstack `/review` is attempted non-blocking (skip silently if unavailable). Architect/critic verification always runs after.
-- **Phase 3: Review (interactive)** — Re-read design doc from `~/.gstack/projects/`. Compare vs implementation. If improvements needed, re-enter Phase 2. On approval: `/ship` or manual commit.
+- **Phase 1: Design (interactive — one approval gate)** — recall `.briefing/` notes → `metis` only if the request is ambiguous → `writing-plans` saves the plan to `.briefing/plans/` → `momus` review → one AskUserQuestion approval gate (approve / revise / stop). `/plan-ceo-review`, `/plan-eng-review` and `/autoplan` are optional, on request only.
+- **Phase 2: Execute (autonomous)** — Run `executing-plans` on the plan file (fallback: delegate the plan to `hephaestus`). It ends with its own review and verification; stop before its hand-off to `finishing-a-development-branch`.
+- **Phase 3: Review (interactive)** — Re-read the plan from `.briefing/plans/` (else the design doc in `~/.gstack/projects/`). Compare vs implementation. If improvements needed, re-enter Phase 2. On approval: `/ship` or manual commit.
 
 Phase transitions are sequential. If gstack is not installed, fall back to standard Priority 1–4 routing.
 

@@ -160,6 +160,7 @@
     "Build": {
       "priority": 20,
       "members": [
+        { "name": "gstack-sprint", "kind": "skill" },
         { "name": "hephaestus", "kind": "agent" },
         { "name": "executor", "kind": "agent" },
         { "name": "executing-plans", "kind": "skill" }

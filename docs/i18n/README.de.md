@@ -155,7 +155,7 @@ Für die durchgängige Umsetzung eines Features orchestriert Boss einen struktur
 |-------|------|--------------|
 | **1 · Design** | interaktiv | Frühere Notizen abrufen · nur bei Unklarheit nachfragen · `writing-plans` speichert einen Plan · Review durch `momus` · eine einzige Freigabe |
 | **2 · Ausführung** | autonom | executor erledigt die Aufgaben · automatisches Code-Review · Prüfung durch architect |
-| **3 · Review** | interaktiv | Abgleich mit dem Designdokument · Vergleichstabelle vorlegen · Nutzer gibt frei oder fordert Nachbesserung |
+| **3 · Review** | interaktiv | Abgleich mit dem Plan · Vergleichstabelle vorlegen · Nutzer gibt frei oder fordert Nachbesserung |
 
 ### Strukturierter Abschlussbericht
 

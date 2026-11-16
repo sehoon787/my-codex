@@ -144,14 +144,14 @@ When handling end-to-end feature requests or deployment workflows, execute in 3 
 Phase 1: Design (interactive — one approval gate)
 - Recall: search `.briefing/decisions/`, `.briefing/learnings/` and `.briefing/plans/` for related notes.
 - Clarify only when the request is ambiguous: `metis`, then at most two questions in one AskUserQuestion.
-- Plan: `writing-plans` saves a task plan to `.briefing/plans/YYYY-MM-DD-<topic>.md`.
+- Plan: `writing-plans` saves a task plan to `.briefing/plans/YYYY-MM-DD-<topic>.md` and asks no review or execution question.
 - Plan review: `momus`, at most two rounds; the verdict is appended to the plan.
-- Approval gate: exactly one AskUserQuestion (approve / revise / stop); Phase 2 starts only on approve.
+- Approval gate: exactly one AskUserQuestion (approve / revise / stop); Phase 2 starts only on approve, unless the user already said the design is done.
 - `/plan-ceo-review`, `/plan-eng-review` and `/autoplan` are optional extra reviews, run only on request.
 
 Phase 2: Execute (autonomous) — Run the `executing-plans` skill on the Phase 1 plan file, passing its absolute path. It runs the tasks test-first and finishes with its own review and verification; stop before its hand-off to `finishing-a-development-branch`, because Phase 3 replaces it. If `executing-plans` is not installed, delegate one end-to-end run of the plan to `hephaestus`, then run the project's tests.
 
-Phase 3: Review (interactive) — Re-read the plan from disk (`.briefing/plans/`, else the gstack design doc in `~/.gstack/projects/`). Compare implementation against it. Present improvements/approval to user. If improvements needed, re-enter Phase 2. On approval, proceed to /ship or manual commit. Optional follow-up: /land-and-deploy, /canary, /document-release, /retro.
+Phase 3: Review (interactive) — Reload the plan from disk (`.briefing/plans/`), falling back to the gstack design doc (`~/.gstack/projects/` path), then the original request. Compare implementation against it. Present improvements/approval to user. If improvements needed, re-enter Phase 2. On approval, proceed to /ship or manual commit. Optional follow-up: /land-and-deploy, /canary, /document-release, /retro.
 
 Boss rule: For end-to-end requests, invoke the `gstack-sprint` skill (spawn_agent with skill="gstack-sprint"). The gstack-sprint skill manages the full Phase 1(design/interactive) → Phase 2(execute/autonomous) → Phase 3(review/interactive) workflow. If gstack-sprint is not installed, fall back to: `prometheus` → `executing-plans` → manual review.
 

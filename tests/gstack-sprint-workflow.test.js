@@ -18,7 +18,16 @@ const ROUTING_MAP = 'hooks/routing-map.json';
 
 // sha256 of the Phase 1 block (LF line endings, trailing whitespace trimmed,
 // one final newline). my-claude pins the same value in its copy of this test.
-const PHASE1_SHA256 = 'f437128dad52c3ba7d5ee04fe75d733fd7d1b539da0fc06dd88812125f7f2f3c';
+const PHASE1_SHA256 = '74d3682ecb29a2098dcee36552e4408004969eaaf3b272d543f246cb8b9c0df7';
+// The Boss Phase 1 bullets, byte-identical to my-claude agents/core/boss.md.
+const BOSS_PHASE1_BULLETS = [
+  '- Recall: search `.briefing/decisions/`, `.briefing/learnings/` and `.briefing/plans/` for related notes.',
+  '- Clarify only when the request is ambiguous: `metis`, then at most two questions in one AskUserQuestion.',
+  '- Plan: `writing-plans` saves a task plan to `.briefing/plans/YYYY-MM-DD-<topic>.md` and asks no review or execution question.',
+  '- Plan review: `momus`, at most two rounds; the verdict is appended to the plan.',
+  '- Approval gate: exactly one AskUserQuestion (approve / revise / stop); Phase 2 starts only on approve, unless the user already said the design is done.',
+  '- `/plan-ceo-review`, `/plan-eng-review` and `/autoplan` are optional extra reviews, run only on request.'
+];
 const RALPH = /\b(ralph|ultrawork)\b/i;
 
 function read(rel) {
@@ -69,9 +78,9 @@ check('A1. SKILL.md does not say "mandatory for all scales"', () => {
   assert(!read(SKILL).includes('mandatory for all scales'), 'found "mandatory for all scales"');
 });
 
-check('A2. no line makes /plan-eng-review mandatory or required (SKILL.md, boss.toml sprint section)', () => {
+check('A2. no line names /plan-eng-review with mandatory, required, always or must (SKILL.md, boss.toml sprint section)', () => {
   const lines = [...read(SKILL).split('\n'), ...bossSprint().split('\n')];
-  const bad = lines.filter((line) => line.includes('/plan-eng-review') && /\b(mandatory|required)\b/i.test(line));
+  const bad = lines.filter((line) => line.includes('/plan-eng-review') && /\b(mandatory|required|always|must)\b/i.test(line));
   assert(bad.length === 0, bad.map((line) => line.trim().slice(0, 80)).join(' | '));
 });
 
@@ -94,8 +103,17 @@ check('A5. Phase 1 block sha256 equals PHASE1_SHA256', () => {
     "repos' tests/gstack-sprint-workflow.test.js");
 });
 
-check('A6. boss.toml sprint section names writing-plans, momus, .briefing/plans/ and one AskUserQuestion', () => {
-  assertNames(bossSprint(), 'boss.toml sprint section', ['writing-plans', 'momus', '.briefing/plans/', 'one AskUserQuestion']);
+check('A6. the "- " lines right after the boss.toml Phase 1 label equal BOSS_PHASE1_BULLETS', () => {
+  const lines = bossSprint().split('\n');
+  const label = lines.findIndex((line) => line.startsWith('Phase 1:'));
+  assert(label >= 0, 'boss.toml sprint section: Phase 1 label line not found');
+  const bullets = [];
+  for (let i = label + 1; i < lines.length && lines[i].startsWith('- '); i += 1) bullets.push(lines[i]);
+  const at = BOSS_PHASE1_BULLETS.findIndex((bullet, i) => bullets[i] !== bullet);
+  assert(at < 0 && bullets.length === BOSS_PHASE1_BULLETS.length,
+    `got ${bullets.length} bullets, first difference at #${at < 0 ? BOSS_PHASE1_BULLETS.length + 1 : at + 1}: ` +
+    `${JSON.stringify(bullets[at < 0 ? BOSS_PHASE1_BULLETS.length : at])}. ` +
+    'my-claude agents/core/boss.md carries the same six bullets; change both');
 });
 
 check('X1. SKILL.md has no ralph/ultrawork, and Phase 2 names executing-plans and hephaestus', () => {

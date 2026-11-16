@@ -36,28 +36,28 @@ gstack-sprint enforces the three-phase contract: user-confirmed design → autom
 
 ## Phase 1: Design (interactive — one approval gate)
 
-1. **Recall** (always): search `.briefing/decisions/`, `.briefing/learnings/` and `.briefing/plans/` for two or three keywords from the request. Read at most the three most relevant notes, and note any earlier decision that the request conflicts with. If `.briefing/` does not exist, skip this step.
+1. **Recall**: search `.briefing/decisions/`, `.briefing/learnings/` and `.briefing/plans/` for two or three keywords from the request. Read at most the three most relevant notes, and note any earlier decision that the request conflicts with. If `.briefing/` does not exist, skip this step.
 
 2. **Clarify** (only when the request is ambiguous): if the goal or the scope has several plausible readings, call the `metis` advisor once, then ask the user at most two clarifying questions in ONE AskUserQuestion call. If the request is clear, skip this step and ask nothing.
 
-3. **Spec and slice** (always): invoke the `writing-plans` skill with two things already decided:
+3. **Spec and slice**: the request and any step 2 answers are the spec, so do not invoke the brainstorming skill first. Invoke the `writing-plans` skill with two things already decided:
    - Save path: `.briefing/plans/YYYY-MM-DD-<topic>.md`. Create the directory if it is missing.
    - Execution method: Phase 2 of this skill. `writing-plans` must save the plan and return its path. It must not ask which execution approach to use, and it must not ask the user to review the plan: the approval gate in step 5 replaces both questions.
 
    The plan lists small tasks with exact file paths, test-first steps, a verification command for each task, and the dependencies between tasks. `/plan-ceo-review`, `/plan-eng-review` and `/autoplan` are optional extra reviews: run one only when the user asks for it.
 
-4. **Plan review** (always): call the `momus` advisor on the plan file. Fix its blocking issues in the plan, for at most two rounds, then append the final momus verdict to the plan file.
+4. **Plan review**: call the `momus` advisor on the plan file. Fix its blocking issues in the plan, for at most two rounds, then append the final momus verdict to the plan file.
 
-5. **APPROVAL GATE** (always): ask exactly one AskUserQuestion. It shows the plan path, the momus verdict and every decision that is still open, and it offers three options: approve, revise, stop.
+5. **APPROVAL GATE**: ask exactly one AskUserQuestion. It shows the plan path, the momus verdict and every decision that is still open, and it offers three options: approve, revise, stop.
    - approve → start Phase 2.
    - revise → change the plan, repeat step 4, then ask this gate again.
    - stop → end the sprint and keep the plan file.
 
    Phase 2 never starts without an approve answer at this gate (except under step 6). Do not ask for approval anywhere else in Phase 1.
 
-6. **Skip condition**: if the user's original message already says the design is done ("design is done, just build it"), skip steps 2 and 5 and ask nothing. Steps 3 and 4 still run on the design the user gave, so that Phase 2 and Phase 3 have a reviewed plan file. If the user gave a finished task plan file, use it as the plan and skip step 3 as well. If `momus` still reports a blocking issue after its two rounds, do not skip step 5.
+6. **Skip condition**: if the user's original message already says the design is done ("design is done, just build it"), skip steps 2 and 5 and ask nothing. Steps 3 and 4 still run on the design the user gave, so that Phase 2 and Phase 3 have a reviewed plan file. If the user gave a finished task plan file, copy it to `.briefing/plans/YYYY-MM-DD-<topic>.md`, use the copy as the plan, and skip step 3 as well. If `momus` still reports a blocking issue after its two rounds, do not skip step 5.
 
-7. **Fallback** (`writing-plans` is not installed): delegate the plan to the `prometheus` agent, which writes it to the same path. Steps 4 and 5 still apply. If `momus` is not available, say so at the approval gate in place of its verdict.
+7. **Fallback** (`writing-plans` is not installed): delegate the plan to the `prometheus` agent. Give it the request and any step 2 answers, and tell it to skip its interview, its own Momus loop and its plan presentation, to save the plan to the same path, and to return only that path. Steps 4 and 5 still apply. If `momus` is not available, say so at the approval gate in place of its verdict.
 
 ---
 
@@ -80,7 +80,7 @@ gstack-sprint enforces the three-phase contract: user-confirmed design → autom
 ## Phase 3: Review (interactive/iterative — user confirmation)
 
 1. **Reload the plan from disk** in this order:
-   1. the Phase 1 plan file; if its path is not known, the newest matching file in `.briefing/plans/`
+   1. the Phase 1 plan file; if its path is not known, the newest `.briefing/plans/*-<topic>.md` for this request
    2. the gstack design doc `~/.gstack/projects/<org>-<repo>/*-design-*.md`
    3. the original request
 

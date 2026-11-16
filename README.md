@@ -211,7 +211,7 @@ For end-to-end feature implementation, Boss orchestrates a structured sprint:
 |-------|------|--------------|
 | **1 · Design** | interactive | Recall past notes · clarify only if ambiguous · `writing-plans` saves a plan · `momus` review · one approval gate |
 | **2 · Execute** | autonomous | executor runs the tasks · auto code review · architect verification |
-| **3 · Review** | interactive | Compare against the design doc · present comparison table · user approves or asks for improvement |
+| **3 · Review** | interactive | Compare against the plan · present comparison table · user approves or asks for improvement |
 
 ### Structured Final Report
 

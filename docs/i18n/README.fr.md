@@ -155,7 +155,7 @@ Pour une implémentation de fonctionnalité de bout en bout, Boss orchestre un s
 |-------|------|--------------|
 | **1 · Conception** | interactif | Rappel des notes passées · clarification seulement si la demande est ambiguë · `writing-plans` enregistre un plan · revue par `momus` · une seule validation |
 | **2 · Exécution** | autonome | executor réalise les tâches · revue de code automatique · vérification par architect |
-| **3 · Revue** | interactif | Comparaison avec le document de conception · tableau comparatif · l'utilisateur valide ou demande des améliorations |
+| **3 · Revue** | interactif | Comparaison avec le plan · tableau comparatif · l'utilisateur valide ou demande des améliorations |
 
 ### Rapport final structuré
 

@@ -252,7 +252,7 @@ Boss は作業のあったすべてのターン — ファイル編集、コミ�
 | [my-codex Core](https://github.com/sehoon787/my-codex) | 4 | boss-advanced, boss-briefing, briefing-vault, gstack-sprint |
 | archify | 1 | archify（アーキテクチャ・ワークフロー・シーケンス・データフロー・ライフサイクル図） |
 
-gstack の項目は `gstack` ルートルーターのディレクトリ、`plan-eng-review`（gstack 自身の `./setup` がもう生成しないため、インストーラーが固定されたサブモジュールからコピーする実ディレクトリ）、そして `~/.codex/vendor/gstack/.agents/skills/` を指す 27 個のシンボリックリンクです。リンクは gstack 自身の `./setup` が作成し、`GSTACK_SKILL_ALLOWLIST` の 25 個のうち 24 個に、常に導入される 3 個（`gstack-upgrade`、`hackernews-frontpage`、`codex`）が加わります。27 個すべてが管理カタログにあるためリンク専用の項目はなく、いずれも `core` かレーンで公開できます。109 項目のうち 82 は実ディレクトリ、27 はこのシンボリックリンクで、`find ~/.codex/skills -name SKILL.md | wc -l` は `-L` なしではリンクをたどらないため 85 を返します。どのプロファイルでもスキルファイルはインストールされたままで、変わるのは公開範囲だけです。[スキルプロファイルとレーン](#スキルプロファイルとレーン)を参照してください。
+gstack の項目は `gstack` ルートルーターのディレクトリと、`~/.codex/vendor/gstack/.agents/skills/` を指す 28 個のシンボリックリンクです。リンクは gstack 自身の `./setup` が作成し、`GSTACK_SKILL_ALLOWLIST` の 25 個すべてに、常に導入される 3 個（`gstack-upgrade`、`hackernews-frontpage`、`codex`）が加わります。28 個すべてが管理カタログにあるためリンク専用の項目はなく、いずれも `core` かレーンで公開できます。109 項目のうち 81 は実ディレクトリ、28 はこのシンボリックリンクで、`find ~/.codex/skills -name SKILL.md | wc -l` は `-L` なしではリンクをたどらないため 84 を返します。どのプロファイルでもスキルファイルはインストールされたままで、変わるのは公開範囲だけです。[スキルプロファイルとレーン](#スキルプロファイルとレーン)を参照してください。
 
 </details>
 

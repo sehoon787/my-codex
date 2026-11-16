@@ -251,7 +251,7 @@ Boss 会为每个有实际工作的回合 —— 编辑了文件、产生提交/
 | [my-codex Core](https://github.com/sehoon787/my-codex) | 4 | boss-advanced, boss-briefing, briefing-vault, gstack-sprint |
 | archify | 1 | archify（架构 / 工作流 / 时序 / 数据流 / 生命周期图） |
 
-gstack 的条目是 `gstack` 根路由器目录、`plan-eng-review`（gstack 自己的 `./setup` 不再生成它，因此由安装器从固定版本的子模块复制的真实目录），加上指向 `~/.codex/vendor/gstack/.agents/skills/` 的 27 个符号链接。这些链接由 gstack 自己的 `./setup` 创建：`GSTACK_SKILL_ALLOWLIST` 25 个中的 24 个，再加上它始终安装的另外 3 个（`gstack-upgrade`、`hackernews-frontpage`、`codex`）。27 个全部在受管目录中，因此没有「仅链接」的条目，每个都可以由 `core` 或某条车道暴露。109 个条目中 82 个是真实目录、27 个是上述符号链接；`find ~/.codex/skills -name SKILL.md | wc -l` 在没有 `-L` 时不会跟随链接，因此返回 85。无论启用哪个配置，Skill 文件都保持安装状态，变化的只是暴露范围。参见 [Skill 配置与车道](#skill-配置与车道)。
+gstack 的条目是 `gstack` 根路由器目录，加上指向 `~/.codex/vendor/gstack/.agents/skills/` 的 28 个符号链接。这些链接由 gstack 自己的 `./setup` 创建：`GSTACK_SKILL_ALLOWLIST` 的全部 25 个，再加上它始终安装的另外 3 个（`gstack-upgrade`、`hackernews-frontpage`、`codex`）。28 个全部在受管目录中，因此没有「仅链接」的条目，每个都可以由 `core` 或某条车道暴露。109 个条目中 81 个是真实目录、28 个是上述符号链接；`find ~/.codex/skills -name SKILL.md | wc -l` 在没有 `-L` 时不会跟随链接，因此返回 84。无论启用哪个配置，Skill 文件都保持安装状态，变化的只是暴露范围。参见 [Skill 配置与车道](#skill-配置与车道)。
 
 </details>
 

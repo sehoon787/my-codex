@@ -251,7 +251,7 @@ Boss는 작업이 있던 모든 턴 — 파일 편집, 커밋/PR, 설정 변경,
 | [my-codex Core](https://github.com/sehoon787/my-codex) | 4 | boss-advanced, boss-briefing, briefing-vault, gstack-sprint |
 | archify | 1 | archify (아키텍처·워크플로·시퀀스·데이터 흐름·라이프사이클 다이어그램) |
 
-gstack 항목은 `gstack` 루트 라우터 디렉터리, `plan-eng-review`(gstack 자체의 `./setup`이 더 이상 만들지 않아 설치 프로그램이 고정된 서브모듈에서 복사하는 실제 디렉터리), 그리고 `~/.codex/vendor/gstack/.agents/skills/`를 가리키는 심볼릭 링크 27개입니다. 링크는 gstack 자체의 `./setup`이 만들며, `GSTACK_SKILL_ALLOWLIST` 25개 중 24개에 항상 설치되는 3개(`gstack-upgrade`, `hackernews-frontpage`, `codex`)가 더해집니다. 27개 모두 관리 카탈로그에 있으므로 링크 전용 항목은 없고, 각각 `core`나 레인으로 노출될 수 있습니다. 전체 109개 항목 중 82개는 실제 디렉터리, 27개는 이 심볼릭 링크이며, `find ~/.codex/skills -name SKILL.md | wc -l`은 `-L` 없이는 링크를 따라가지 않으므로 85를 반환합니다. 어떤 프로필을 쓰든 스킬 파일은 설치된 상태로 남고 바뀌는 것은 노출 범위뿐입니다. [스킬 프로필과 레인](#스킬-프로필과-레인)을 참조하세요.
+gstack 항목은 `gstack` 루트 라우터 디렉터리와 `~/.codex/vendor/gstack/.agents/skills/`를 가리키는 심볼릭 링크 28개입니다. 링크는 gstack 자체의 `./setup`이 만들며, `GSTACK_SKILL_ALLOWLIST` 25개 전부에 항상 설치되는 3개(`gstack-upgrade`, `hackernews-frontpage`, `codex`)가 더해집니다. 28개 모두 관리 카탈로그에 있으므로 링크 전용 항목은 없고, 각각 `core`나 레인으로 노출될 수 있습니다. 전체 109개 항목 중 81개는 실제 디렉터리, 28개는 이 심볼릭 링크이며, `find ~/.codex/skills -name SKILL.md | wc -l`은 `-L` 없이는 링크를 따라가지 않으므로 84를 반환합니다. 어떤 프로필을 쓰든 스킬 파일은 설치된 상태로 남고 바뀌는 것은 노출 범위뿐입니다. [스킬 프로필과 레인](#스킬-프로필과-레인)을 참조하세요.
 
 </details>
 

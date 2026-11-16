@@ -618,22 +618,22 @@ HOME="$TEST_HOME" "$TEST_HOME/.codex/bin/my-codex-packs" set-profile dev
 test "$(find "$TEST_HOME/.codex/agents" -maxdepth 1 -type l -name '*.toml' | wc -l | tr -d ' ')" -ge 1
 
 # Upgrade from a machine whose older gstack setup aliased skills that upstream
-# has since retired (/plan-eng-review in GST-1698, /investigate in GST-1717).
-# Those aliases dangle and were never in the manifest, so nothing cleaned them
-# up. plan-eng-review is a core catalog skill and the catalog step refuses to
-# write over a symlink ("unsafe managed file"), so the repeat install below
-# aborted. A clean HOME never reaches this state, so seed it. A dangling link
-# that points outside gstack's generated tree is the user's own and must survive.
+# later retired (/plan-eng-review in GST-1698, /investigate in GST-1717). Those
+# aliases were never in the manifest, so nothing cleaned them up. A dangling
+# plan-eng-review alias aborted the repeat install below: it is a core catalog
+# skill and the catalog step refuses to write over a symlink ("unsafe managed
+# file"). Upstream restored /plan-eng-review in GST-2726, so its alias is live
+# again; investigate's still dangles. A clean HOME never reaches this state, so
+# seed it. A dangling link that points outside gstack's generated tree is the
+# user's own and must survive.
 generated_skills="$TEST_HOME/.codex/vendor/gstack/.agents/skills"
-test ! -e "$generated_skills/gstack-plan-eng-review"
-test ! -e "$generated_skills/gstack-investigate"
-retired_plan_eng_review="$TEST_HOME/.codex/skills/plan-eng-review"
+plan_eng_review_alias="$TEST_HOME/.codex/skills/plan-eng-review"
 retired_investigate="$TEST_HOME/.codex/skills/investigate"
 retired_relative="$TEST_HOME/.codex/skills/retired-relative-alias"
 user_gone="$TEST_HOME/.codex/skills/user-gone"
-test -f "$retired_plan_eng_review/SKILL.md"
-rm -rf "$retired_plan_eng_review"
-ln -s "$generated_skills/gstack-plan-eng-review/" "$retired_plan_eng_review"
+test -f "$plan_eng_review_alias/SKILL.md"
+rm -rf "$plan_eng_review_alias"
+ln -s "$generated_skills/gstack-plan-eng-review/" "$plan_eng_review_alias"
 ln -s "$generated_skills/gstack-investigate/" "$retired_investigate"
 ln -s "../vendor/gstack/.agents/skills/gstack-retired-relative-alias/" "$retired_relative"
 mkdir -p "$TEST_HOME/elsewhere"
@@ -647,11 +647,19 @@ HOME="$TEST_HOME" PATH="$BIN_DIR:$PATH" MY_CODEX_TEST_LOG="$LOG_FILE" MY_CODEX_T
   bash "$REPO_ROOT/install.sh" --profile minimal > "$TMP_ROOT/install-minimal.out"
 test "$(find "$TEST_HOME/.codex/agents" -maxdepth 1 -type l -name '*.toml' | wc -l | tr -d ' ')" = "0"
 
-# The retired aliases are pruned and the catalog skill is materialized from the
-# pinned payload. The user's dangling link and a live gstack alias are untouched.
-test -d "$retired_plan_eng_review"
-test ! -L "$retired_plan_eng_review"
-test -f "$retired_plan_eng_review/SKILL.md"
+# The retired aliases are pruned. plan-eng-review's alias is live again, so it is
+# left alone and setup's prefixed link to the same skill is removed: exactly one
+# plan-eng-review remains. Were upstream to retire it again, its alias would be
+# pruned too and the catalog would materialize the skill from the pinned
+# payload. The user's dangling link and a live gstack alias are untouched.
+if [ -d "$generated_skills/gstack-plan-eng-review" ]; then
+  test "$(readlink "$plan_eng_review_alias")" = "$generated_skills/gstack-plan-eng-review/"
+else
+  test ! -L "$plan_eng_review_alias"
+fi
+test -f "$plan_eng_review_alias/SKILL.md"
+test ! -e "$TEST_HOME/.codex/skills/gstack-plan-eng-review"
+test ! -L "$TEST_HOME/.codex/skills/gstack-plan-eng-review"
 test ! -e "$retired_investigate"
 test ! -L "$retired_investigate"
 test ! -e "$retired_relative"

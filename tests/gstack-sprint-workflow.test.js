@@ -136,8 +136,10 @@ check('X3. routing-map Build members start with the gstack-sprint skill', () => 
 });
 
 check('X4. Phase 3 lookup order: plan file, then gstack design doc, then the original request', () => {
-  const phase3 = section(SKILL, (l) => l.startsWith('## Phase 3:'), (l) => l === '</Steps>');
-  const at = PHASE3_ORDER.map((item) => phase3.indexOf(item));
+  // Step 1 only, up to the column-0 "2. " of step 2: later Phase 3 steps
+  // mention the original request again, which would hide a deleted item.
+  const step1 = section(SKILL, (l) => l.startsWith('## Phase 3:'), (l) => l.startsWith('2. '));
+  const at = PHASE3_ORDER.map((item) => step1.indexOf(item));
   assert(at.every((i, n) => i >= 0 && (n === 0 || i > at[n - 1])),
     `first indexes ${JSON.stringify(at)} for ${JSON.stringify(PHASE3_ORDER)}`);
 });

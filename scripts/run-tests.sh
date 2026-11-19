@@ -21,24 +21,10 @@ set -uo pipefail
 repo_root="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$repo_root"
 
-# A test that cannot run on an ubuntu runner goes here, with its reason:
-#   tests/<name>.test.sh) echo "<one-line reason>" ;;
-skip_reason() {
-  case "$1" in
-    *) return 1 ;;
-  esac
-}
-
 passed=0
-skipped=0
 failed=""
 for t in scripts/test-*.sh tests/*.test.sh tests/*.test.js tests/validate-sync.sh; do
   [ -f "$t" ] || continue
-  if reason="$(skip_reason "$t")"; then
-    echo "SKIP  $t: $reason"
-    skipped=$((skipped + 1))
-    continue
-  fi
   echo "==> $t"
   case "$t" in
     *.js) node "$t" </dev/null ;;
@@ -59,7 +45,7 @@ fi
 
 failed_count=$(echo "$failed" | wc -w | tr -d ' ')
 echo ""
-echo "Tests: $passed passed, $failed_count failed, $skipped skipped"
+echo "Tests: $passed passed, $failed_count failed"
 if [ "$failed_count" -gt 0 ]; then
   echo "Failed: $failed"
   exit 1

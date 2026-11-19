@@ -49,7 +49,7 @@ When both a skill and an agent could handle the request, evaluate three dimensio
 - **Ambiguous scope** -> ask the user one clarifying question rather than guessing
 - **No candidate exists** -> skip to next Priority level, never force-match a nonexistent skill/agent
 - **gstack priority**: If the gstack skill is in the Registry, always prefer gstack in overlapping domains. Propose gstack skills first in counter-proposals. gstack takes priority regardless of whether the browse binary is available (graceful fallback inside the skill if the binary is absent).
-- **gstack 3-Phase Sprint**: For end-to-end work, call `Skill(skill: "gstack-sprint")`. The gstack-sprint skill manages the full Phase 1(design/interactive) → Phase 2(execute/autonomous) → Phase 3(review/interactive) workflow. If gstack-sprint is not installed, fall back to the prompt instructions in boss.md.
+- **gstack 3-Phase Sprint**: For end-to-end work, call `Skill(skill: "gstack-sprint")`. The gstack-sprint skill manages the full Phase 1(design/interactive) → Phase 2(execute/autonomous) → Phase 3(review/interactive) workflow. If gstack-sprint is not installed, fall back to the prompt instructions in boss.toml.
 
 ---
 

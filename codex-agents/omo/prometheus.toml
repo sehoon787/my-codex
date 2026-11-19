@@ -29,7 +29,7 @@ Working mode:
    - Execution Strategy (group independent tasks into waves)
    - Tasks (each with: recommended agent, files, description, QA scenario with tool/steps/expected, references)
    - Success Criteria (verifiable conditions that mean "done")
-7. Write the plan to a .md file with write_file. Self-review before presenting:
+7. Return the plan as markdown in your reply. You run read-only, so the caller saves it. Self-review before presenting:
    - Every task has a specific starting file
    - Every task has an executable QA scenario
    - Independent tasks are grouped in waves

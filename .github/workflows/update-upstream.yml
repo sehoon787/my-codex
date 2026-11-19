@@ -183,13 +183,14 @@ jobs:
             echo "::error::The bundle does not hold the commit the update job tested."
             exit 1
           fi
-          unexpected=$(git diff --raw --no-renames "origin/main...$SHA" | while read -r src dst _ _ _ path; do
+          changes=$(git diff --raw --no-renames "origin/main...$SHA")
+          unexpected=$(while read -r src dst _ _ _ path; do
             case "$path" in
               upstream/SOURCES.json|README.md|docs/i18n/README.*.md) [ "$dst" = 100644 ] ;;
               upstream/*) [ "$src" = :160000 ] && [ "$dst" = 160000 ] ;;
               *) false ;;
             esac || echo "$path"
-          done)
+          done <<< "$changes")
           if [ -n "$unexpected" ]; then
             echo "::error::The sync commit changes more than submodule pointers and pin tables: $unexpected"
             exit 1

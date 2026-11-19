@@ -112,4 +112,5 @@ jobs:
             esac
           done)
           shellcheck --version
+          echo "Checking ${#files[@]} files"
           shellcheck --severity=error "${files[@]}"

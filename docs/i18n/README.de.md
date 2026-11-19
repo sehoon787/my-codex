@@ -438,9 +438,9 @@ Eingebunden über git-Submodule. Die gepinnten Commits verfolgt `.gitmodules` na
 
 | Quelle | SHA | Datum | Diff |
 |--------|-----|------|------|
-| [everything-claude-code](https://github.com/affaan-m/everything-claude-code) | `d2ef268` | 2026-11-13 | [compare](https://github.com/affaan-m/everything-claude-code/compare/d2ef268...HEAD) |
-| [gstack](https://github.com/garrytan/gstack) | `5dcd76b` | 2026-11-16 | [compare](https://github.com/garrytan/gstack/compare/5dcd76b...HEAD) |
-| [oh-my-codex](https://github.com/Yeachan-Heo/oh-my-codex) | `66ca2c5` | 2026-11-16 | [compare](https://github.com/Yeachan-Heo/oh-my-codex/compare/66ca2c5...HEAD) |
+| [everything-claude-code](https://github.com/affaan-m/everything-claude-code) | `3f14a10` | 2026-11-19 | [compare](https://github.com/affaan-m/everything-claude-code/compare/3f14a10...HEAD) |
+| [gstack](https://github.com/garrytan/gstack) | `2714e9f` | 2026-11-19 | [compare](https://github.com/garrytan/gstack/compare/2714e9f...HEAD) |
+| [oh-my-codex](https://github.com/Yeachan-Heo/oh-my-codex) | `a648682` | 2026-11-19 | [compare](https://github.com/Yeachan-Heo/oh-my-codex/compare/a648682...HEAD) |
 | [superpowers](https://github.com/obra/superpowers) | `22f0b46` | 2026-11-13 | [compare](https://github.com/obra/superpowers/compare/22f0b46...HEAD) |
 | [archify](https://github.com/tt-a1i/archify) | `2ab3cae` (`v3.0.1`) | 2026-09-28 | [compare](https://github.com/tt-a1i/archify/compare/2ab3cae...HEAD) |
 

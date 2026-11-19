@@ -27,9 +27,9 @@ gstack-sprint wraps the 3-Phase Sprint workflow (design→execute→review) as a
 End-to-end feature work fails silently in three predictable ways:
 1. Implementation starts before design is aligned — wrong thing built
 2. Execution proceeds without structured iteration — partial implementations declared done
-3. Review skips comparison against the design doc — drift goes unnoticed
+3. Review skips comparison against the plan — drift goes unnoticed
 
-gstack-sprint enforces the three-phase contract: user-confirmed design → automated execution via executing-plans → user-confirmed review against the design doc. Each phase boundary requires explicit user confirmation before the next phase begins.
+gstack-sprint enforces the three-phase contract: user-confirmed design → automated execution via executing-plans → user-confirmed review against the plan. Each phase boundary requires explicit user confirmation before the next phase begins.
 </Why_This_Exists>
 
 <Steps>

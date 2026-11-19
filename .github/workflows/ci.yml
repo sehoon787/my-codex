@@ -96,31 +96,20 @@ jobs:
             count=$((count + 1))
           done
           echo "All $count self-owned skills have valid frontmatter"
-      - name: Installer smoke test
+      # Every scripts/test-*.sh, tests/*.test.sh, tests/*.test.js and
+      # tests/validate-sync.sh, so a new test file runs here without editing
+      # this workflow. The upstream sync runs the same script before it may
+      # auto-merge.
+      - name: Run every test
+        run: bash scripts/run-tests.sh
+      - name: Shellcheck the repo's own shell scripts (errors only)
         run: |
-          bash scripts/test-install.sh
-          bash scripts/test-codex-attribution.sh
-          bash scripts/test-skills-only-install.sh
-          bash scripts/test-agent-pack-activation.sh
-          bash tests/agents-section-upsert.test.sh
-          bash tests/uv-guard.test.sh
-          bash tests/mcp-table-upsert.test.sh
-          bash tests/main-model-default.test.sh
-          bash tests/learned-survives-install.test.sh
-          bash tests/tool-verification.test.sh
-          bash tests/optional-tools-install.test.sh
-          bash tests/shared-local-services.test.sh
-          bash tests/scan-upstream-diff.test.sh
-          node tests/hook-output-shape.test.js
-          node tests/capability-registry.test.js
-          node tests/advisor-gate.test.js
-          node tests/adoption-ledger.test.js
-          node tests/learning-loop.test.js
-          node tests/stop-session-enforcement.test.js
-          node tests/context-budget.test.js
-          node tests/skill-catalog.test.js
-          node tests/skill-catalog-budget.test.js
-          node tests/stop-final-report.test.js
-          node tests/normalize-skill-english.test.js
-          node tests/refresh-pin-table.test.js
-          node tests/gstack-sprint-workflow.test.js
+          # Every tracked *.sh, plus extensionless files with a bash/sh shebang.
+          mapfile -t files < <(git ls-files | while IFS= read -r f; do
+            case "$f" in
+              *.sh) echo "$f" ;;
+              *) if [ -f "$f" ] && head -n1 "$f" | grep -qE '^#!.*[/ ](ba)?sh$'; then echo "$f"; fi ;;
+            esac
+          done)
+          shellcheck --version
+          shellcheck --severity=error "${files[@]}"

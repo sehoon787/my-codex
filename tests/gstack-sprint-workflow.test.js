@@ -2,7 +2,8 @@
 // Static checks on the gstack-sprint workflow text. Phase 1 is recall →
 // clarify → writing-plans → momus → one approval gate, and Phase 2 runs on
 // executing-plans because Codex has no ralph. The Phase 1 block is pinned by
-// sha256: my-claude ships the same block byte for byte.
+// sha256: my-claude ships the same block byte for byte. prometheus.toml is the
+// writing-plans fallback, so its read-only contract is checked here too.
 // `node tests/gstack-sprint-workflow.test.js`
 'use strict';
 const assert = require('assert');
@@ -14,6 +15,7 @@ const REPO_ROOT = path.resolve(__dirname, '..');
 const SKILL = 'skills/core/gstack-sprint/SKILL.md';
 const BOSS = 'codex-agents/core/boss.toml';
 const ADVANCED = 'skills/core/boss-advanced/SKILL.md';
+const PROMETHEUS = 'codex-agents/omo/prometheus.toml';
 const ROUTING_MAP = 'hooks/routing-map.json';
 
 // sha256 of the Phase 1 block (LF line endings, trailing whitespace trimmed,
@@ -142,6 +144,35 @@ check('X4. Phase 3 lookup order: plan file, then gstack design doc, then the ori
   const at = PHASE3_ORDER.map((item) => step1.indexOf(item));
   assert(at.every((i, n) => i >= 0 && (n === 0 || i > at[n - 1])),
     `first indexes ${JSON.stringify(at)} for ${JSON.stringify(PHASE3_ORDER)}`);
+});
+
+check('P1. prometheus.toml runs read-only and returns the plan as markdown instead of calling write_file', () => {
+  const toml = read(PROMETHEUS);
+  assert(/^sandbox_mode = "read-only"$/m.test(toml), 'sandbox_mode is not "read-only"');
+  assert(!toml.includes('write_file'), 'still mentions write_file');
+  const step = toml.split('\n').find((line) => line.startsWith('7. '));
+  assert(step && step.includes('Return the plan as markdown') && step.includes('the caller saves it'),
+    `working-mode step 7 is ${JSON.stringify(step)}`);
+});
+
+check('P2. prometheus.toml skips the interview only under the caller-supplied-spec exception', () => {
+  const lines = read(PROMETHEUS).split('\n');
+  const line = (prefix) => lines.find((l) => l.startsWith(prefix));
+  const rule = line('- never skip the interview phase');
+  assert(rule && rule.includes('except under the caller-supplied-spec exception'), `interview rule is ${JSON.stringify(rule)}`);
+  const exception = line('- exception:');
+  assert(exception, 'the "- exception:" line is missing');
+  assertNames(exception, 'exception line',
+    ['the caller already supplies the spec', 'the gstack-sprint fallback', 'skip the interview', 'plan presentation', 'hand the plan back']);
+  const closing = line('Do not write application code');
+  assert(closing && closing.includes('skip interviews (except under the caller-supplied-spec exception)'),
+    `closing rule is ${JSON.stringify(closing)}`);
+});
+
+check('P3. Phase 1 fallback hands the plan to prometheus as markdown and the sprint saves it', () => {
+  const step = phaseBlock(1).split('\n').find((l) => l.startsWith('7. **Fallback**'));
+  assert(step, 'Phase 1 step 7 (Fallback) not found');
+  assertNames(step, 'Phase 1 step 7', ['`writing-plans`', '`prometheus`', 'return the whole plan as markdown', 'Save that plan']);
 });
 
 const failed = results.filter((ok) => !ok).length;

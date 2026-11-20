@@ -2147,7 +2147,6 @@ if ! grep -q 'multi_agent' "$CONFIG_FILE" 2>/dev/null; then
 # my-codex managed settings
 [features]
 multi_agent = true
-child_agents_md = true
 hooks = true
 
 [agents]
@@ -2156,6 +2155,25 @@ TOML
   echo "  config.toml updated (multi_agent + hooks enabled, max_threads=8)"
 else
   echo "  config.toml already configured"
+fi
+
+# `features.child_agents_md` was removed from Codex.  Strip stale copies from
+# existing installations so upgrades do not emit an "unrecognized setting"
+# warning, while leaving identically named keys in other TOML tables alone.
+remove_unsupported_child_agents_md() {
+  awk '
+    /^[[:space:]]*\[[[:space:]]*features[[:space:]]*\][[:space:]]*(#.*)?$/ { in_features = 1; print; next }
+    /^[[:space:]]*\[/ { in_features = 0 }
+    in_features && /^[[:space:]]*child_agents_md[[:space:]]*=/ { next }
+    { print }
+  ' "$1"
+}
+
+if grep -qE '^[[:space:]]*child_agents_md[[:space:]]*=' "$CONFIG_FILE" 2>/dev/null; then
+  CONFIG_TMP="$(mktemp)"
+  remove_unsupported_child_agents_md "$CONFIG_FILE" > "$CONFIG_TMP" && cat "$CONFIG_TMP" > "$CONFIG_FILE"
+  rm -f "$CONFIG_TMP"
+  echo "  config.toml: removed unsupported features.child_agents_md"
 fi
 
 # Codex runs lifecycle hooks only when features.hooks is on. Configs written before

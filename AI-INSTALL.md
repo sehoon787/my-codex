@@ -204,7 +204,6 @@ done < ~/.codex/enabled-agent-packs.txt
 cat >> ~/.codex/config.toml << 'TOML'
 [features]
 multi_agent = true
-child_agents_md = true
 
 [agents]
 max_threads = 8

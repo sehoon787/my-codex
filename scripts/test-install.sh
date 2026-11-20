@@ -462,7 +462,7 @@ test -x "$TEST_HOME/.codex/git-hooks/prepare-commit-msg"
 test -x "$TEST_HOME/.codex/git-hooks/commit-msg"
 test -x "$TEST_HOME/.codex/git-hooks/post-commit"
 grep -q 'multi_agent = true' "$TEST_HOME/.codex/config.toml"
-grep -q 'child_agents_md = true' "$TEST_HOME/.codex/config.toml"
+! grep -q 'child_agents_md' "$TEST_HOME/.codex/config.toml"
 grep -q 'max_threads = 8' "$TEST_HOME/.codex/config.toml"
 
 # Codex reads lifecycle hooks from $CODEX_HOME/hooks.json (root) and only when
@@ -983,6 +983,7 @@ test ! -e "$LEGACY_HOME/.codex/my-codex/skill-catalog-state.json"
 grep -q 'Existing noninteractive install: preserving current skill exposure' "$TMP_ROOT/install-legacy.out"
 
 assert_features_hooks_enabled "$LEGACY_HOME/.codex/config.toml"
+! grep -q 'child_agents_md' "$LEGACY_HOME/.codex/config.toml"
 test "$(awk 'f && /^\[/ { exit } /^[[:space:]]*\[[[:space:]]*features[[:space:]]*\][[:space:]]*(#.*)?$/ { f = 1 } f' "$LEGACY_HOME/.codex/config.toml" | grep -c '^hooks = true$')" = "1"
 test "$(grep -cE '^[[:space:]]*\[[[:space:]]*features[[:space:]]*\][[:space:]]*(#.*)?$' "$LEGACY_HOME/.codex/config.toml")" = "1"
 python3 -c "import sys,tomllib; tomllib.load(open(sys.argv[1],'rb'))" "$LEGACY_HOME/.codex/config.toml"

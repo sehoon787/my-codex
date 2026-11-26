@@ -295,15 +295,23 @@ test ! -e "$TEST_HOME/.codex/vendor/my-codex/$VENDOR_IGNORED_PROBE"
 # Without rsync (Git Bash has none) the snapshot is a tar copy, and a source
 # git cannot read (no git, or no .git of its own, as in an npm or tarball copy)
 # keeps everything. Run the installer's own functions on a small checkout: the
-# ignored directory and file go, an untracked file and a nested repository
-# standing in for a submodule checkout stay.
+# ignored directory and file go; a tracked file that matches an ignore pattern,
+# an untracked file and a nested repository standing in for a submodule
+# checkout stay. Only the source's own repository decides: neither an enclosing
+# repository that git reaches through a broken .git nor an inherited GIT_DIR.
 snapshot_fixture="$TMP_ROOT/snapshot-fixture"
 mkdir -p "$snapshot_fixture/src/docs" "$snapshot_fixture/src/.omc" "$snapshot_fixture/src/upstream/sub/skills/x" \
-  "$snapshot_fixture/tools-no-rsync" "$snapshot_fixture/tools-no-git"
+  "$snapshot_fixture/tools-no-rsync" "$snapshot_fixture/tools-no-git" \
+  "$snapshot_fixture/outer/inner/docs" "$snapshot_fixture/outer/inner/.git"
 git -C "$snapshot_fixture/src" init -q
 printf '.omc/\n*.log\n' > "$snapshot_fixture/src/.gitignore"
 printf 'tracked\n' > "$snapshot_fixture/src/docs/readme.md"
+printf 'tracked\n' > "$snapshot_fixture/src/docs/keep.log"
 git -C "$snapshot_fixture/src" add .gitignore docs/readme.md
+git -C "$snapshot_fixture/src" add -f docs/keep.log
+git -C "$snapshot_fixture/outer" init -q
+printf 'inner/docs/b.md\n' > "$snapshot_fixture/outer/.gitignore"
+printf 'kept\n' > "$snapshot_fixture/outer/inner/docs/b.md"
 printf 'untracked\n' > "$snapshot_fixture/src/new-file.txt"
 printf '{}\n' > "$snapshot_fixture/src/.omc/state.json"
 printf 'trace\n' > "$snapshot_fixture/src/docs/trace.log"
@@ -327,8 +335,14 @@ snapshot_functions="$(sed -n '/^copy_repo_snapshot() {/,/^}/p; /^remove_git_igno
   PATH="$snapshot_fixture/tools-no-rsync"
   copy_repo_snapshot "$snapshot_fixture/no-git-copy" "$snapshot_fixture/plain-copy"
   remove_git_ignored_paths "$snapshot_fixture/no-git-copy" "$snapshot_fixture/plain-copy"
+  copy_repo_snapshot "$snapshot_fixture/outer/inner" "$snapshot_fixture/broken-git-copy"
+  remove_git_ignored_paths "$snapshot_fixture/outer/inner" "$snapshot_fixture/broken-git-copy"
+  export GIT_DIR="$snapshot_fixture/outer/.git"
+  copy_repo_snapshot "$snapshot_fixture/src" "$snapshot_fixture/git-dir-copy"
+  remove_git_ignored_paths "$snapshot_fixture/src" "$snapshot_fixture/git-dir-copy"
 )
 test -f "$snapshot_fixture/tar-copy/docs/readme.md"
+test -f "$snapshot_fixture/tar-copy/docs/keep.log"
 test -f "$snapshot_fixture/tar-copy/new-file.txt"
 test -f "$snapshot_fixture/tar-copy/upstream/sub/skills/x/SKILL.md"
 test -f "$snapshot_fixture/tar-copy/upstream/sub/build.log"
@@ -339,24 +353,32 @@ test -f "$snapshot_fixture/no-git-copy/.omc/state.json"
 test -f "$snapshot_fixture/no-git-copy/docs/trace.log"
 test -f "$snapshot_fixture/plain-copy/.omc/state.json"
 test -f "$snapshot_fixture/plain-copy/docs/trace.log"
+test -f "$snapshot_fixture/broken-git-copy/docs/b.md"
+test -f "$snapshot_fixture/git-dir-copy/docs/keep.log"
+test ! -e "$snapshot_fixture/git-dir-copy/docs/trace.log"
 
-# Deletion never leaves the copy, whatever git lists: an absolute entry, a ..
-# component, a path below a symlinked directory and a symlinked copy root are
-# skipped, and an entry that is itself a link is removed as a link only.
+# Deletion never leaves the copy, whatever git lists: an absolute entry, a . or
+# .. component, a backslash, a path below a symlinked directory and a symlinked
+# copy root are skipped, and an entry that is itself a link is removed as a
+# link only.
 guard_root="$snapshot_fixture/guard"
 mkdir -p "$guard_root/src" "$guard_root/dest/docs" "$guard_root/dest/abs" "$guard_root/outside/linked" "$guard_root/tools"
 git -C "$guard_root/src" init -q
 printf 'keep\n' > "$guard_root/outside/escape.log"
 printf 'keep\n' > "$guard_root/outside/linked/x.log"
 printf 'keep\n' > "$guard_root/dest/abs/victim.log"
+printf 'keep\n' > "$guard_root/dest/..\\victim.log"
 printf 'drop\n' > "$guard_root/dest/docs/trace.log"
 ln -s "$guard_root/outside/linked" "$guard_root/dest/via-link"
 ln -s "$guard_root/outside/linked" "$guard_root/dest/shortcut"
 ln -s "$guard_root/outside" "$guard_root/dest-link"
 cat > "$guard_root/tools/git" <<'EOF'
 #!/usr/bin/env bash
-printf '%s\0' ../outside/escape.log docs/../../outside/escape.log /abs/victim.log \
-  via-link/x.log linked/x.log escape.log shortcut/ docs/trace.log
+case " $* " in
+  *" rev-parse "*) echo ;;
+  *) printf '%s\0' ../outside/escape.log docs/../../outside/escape.log /abs/victim.log ./ '..\victim.log' \
+       via-link/x.log linked/x.log escape.log shortcut/ docs/trace.log ;;
+esac
 EOF
 chmod +x "$guard_root/tools/git"
 (
@@ -368,6 +390,7 @@ chmod +x "$guard_root/tools/git"
 test -f "$guard_root/outside/escape.log"
 test -f "$guard_root/outside/linked/x.log"
 test -f "$guard_root/dest/abs/victim.log"
+test -f "$guard_root/dest/..\\victim.log"
 test -L "$guard_root/dest/via-link"
 test ! -e "$guard_root/dest/shortcut"
 test ! -L "$guard_root/dest/shortcut"

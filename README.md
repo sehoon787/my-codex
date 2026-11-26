@@ -9,13 +9,13 @@
 # my-codex
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
-![Agents](https://img.shields.io/badge/agents-18_core_%2B_17_opt--in-blue)
-![Skills](https://img.shields.io/badge/skills-29_default_%2F_109_installed-purple)
+![Agents](https://img.shields.io/badge/agents-19_core_%2B_17_opt--in-blue)
+![Skills](https://img.shields.io/badge/skills-30_default_%2F_110_installed-purple)
 ![MCP](https://img.shields.io/badge/MCP-5-green)
 ![Auto Sync](https://img.shields.io/badge/upstream_sync-every_3_days-brightgreen)
 
 **All-in-one agent harness for Codex CLI.**
-**One installer, 18 core agents ready.**
+**One installer, 19 core agents ready.**
 
 Boss discovers every agent, skill, and MCP tool at runtime,<br>
 then routes your task to the right specialist through `spawn_agent`. No config files. No boilerplate.
@@ -44,7 +44,7 @@ rm -rf /tmp/my-codex
 
 The default install exposes a lean skill set on purpose: Codex truncates skill
 descriptions once its skills budget is hit, so the default `core` profile shows
-Codex 29 of the 109 installed skill entries and keeps the rest one flag away:
+Codex 30 of the 110 installed skill entries and keeps the rest one flag away:
 
 ```bash
 bash install.sh --skills=web          # add the 18-skill web/UI lane
@@ -185,7 +185,7 @@ Boss cascades every request through a priority chain until the best match is fou
 | Complexity | Model | Used For |
 |-----------|-------|----------|
 | Top-level orchestration | `gpt-6.1-sol` (xhigh) | Boss, and the main session by default |
-| Deep analysis, architecture, review | `gpt-6-astra` | Oracle, Prometheus, Sisyphus, Hephaestus, Atlas, Metis, Momus, Tracer, architect, planner, code-reviewer, security-reviewer |
+| Deep analysis, architecture, review | `gpt-6-astra` | Oracle, Prometheus, Sisyphus, Hephaestus, Atlas, Metis, Momus, Tracer, Academic-English-Editor, architect, planner, code-reviewer, security-reviewer |
 | Standard implementation | `gpt-6.1-sol` | Librarian, Multimodal-Looker, executor, test-engineer, debugger, and 15 of the 17 pack agents |
 | Quick lookup, light analysis | `gpt-6-luna` | data-analyst, prompt-regression-tester |
 
@@ -195,11 +195,11 @@ The three tier IDs live in a single file, `scripts/model-tiers.sh`; `scripts/md-
 
 ### Effort Tiers
 
-Model choice sets *which* brain runs a task; the `model_reasoning_effort` field next to `model` in the same TOML sets *how hard* it thinks. Boss and the ten OMO agents declare it in the committed files under `codex-agents/`, the seven oh-my-codex workers receive theirs from the role table in `scripts/md-to-toml.sh` at conversion time, and each pack agent carries its own:
+Model choice sets *which* brain runs a task; the `model_reasoning_effort` field next to `model` in the same TOML sets *how hard* it thinks. Boss, academic-english-editor and the ten OMO agents declare it in the committed files under `codex-agents/`, the seven oh-my-codex workers receive theirs from the role table in `scripts/md-to-toml.sh` at conversion time, and each pack agent carries its own:
 
 | Effort | Agents |
 |--------|--------|
-| `xhigh` | Boss, Oracle, Prometheus, architect |
+| `xhigh` | Boss, Oracle, Prometheus, Academic-English-Editor, architect |
 | `high` | Sisyphus, Hephaestus, Atlas, Metis, Momus, Tracer, planner, code-reviewer, security-reviewer, and 15 of the 17 pack agents |
 | `medium` | Librarian, Multimodal-Looker, executor, test-engineer, debugger, data-analyst, prompt-regression-tester |
 
@@ -233,10 +233,10 @@ It fires only at the very end of the request — never on a turn that launches o
 
 | Category | Count | Source |
 |----------|------:|--------|
-| **Core agents** (always loaded) | 18 | Boss 1 + OMO 10 + OMX 7 |
+| **Core agents** (always loaded) | 19 | Core 2 + OMO 10 + OMX 7 |
 | **Agent packs** (opt-in, none enabled by default) | 17 | 2 vendored categories: data-ai 13 + llmops 4 |
-| **Skills exposed** (default `core` profile) | 29 | The always-on set; every other entry is one lane flag away |
-| **Skills installed** (entries under `~/.codex/skills/`) | 109 | ECC 61 · gstack 29 · Superpowers 14 · Core 4 · archify 1 |
+| **Skills exposed** (default `core` profile) | 30 | The always-on set; every other entry is one lane flag away |
+| **Skills installed** (entries under `~/.codex/skills/`) | 110 | ECC 61 · gstack 29 · Superpowers 14 · Core 5 · archify 1 |
 | **MCP Servers** | 5 | Context7, Exa, grep.app, Serena, Headroom |
 | **config.toml** | 1 | my-codex |
 | **AGENTS.md** | 1 | my-codex |
@@ -244,11 +244,12 @@ It fires only at the very end of the request — never on a turn that launches o
 Every agent and skill above is allowlisted in [`scripts/skill-allowlists.sh`](./scripts/skill-allowlists.sh) — that file is the authority for what ships. This bundle deliberately does not ship `pdf`, `docx`, `pptx`, or `xlsx`; externally installed skills of that kind are preserved untouched.
 
 <details>
-<summary><strong>Core Agent — Boss meta-orchestrator (1)</strong></summary>
+<summary><strong>Core Agents — Boss meta-orchestrator and academic-english-editor (2)</strong></summary>
 
 | Agent | Model | Role | Source |
 |-------|-------|------|--------|
 | Boss | gpt-6.1-sol xhigh | Dynamic runtime discovery → capability matching → optimal routing. Never writes code. | my-codex |
+| academic-english-editor | gpt-6-astra xhigh | Two-pass English academic-writing review and polish; apply-ready proposals, never edits | my-codex |
 
 </details>
 
@@ -298,17 +299,17 @@ Installed to `~/.codex/agent-packs/` and disabled until you opt in — see [Agen
 </details>
 
 <details>
-<summary><strong>Skills — 29 exposed by default, 109 installed from 5 sources</strong></summary>
+<summary><strong>Skills — 30 exposed by default, 110 installed from 5 sources</strong></summary>
 
 | Source | Installed | Key Skills |
 |--------|----------:|------------|
 | everything-claude-code | 61 | coding-standards, python-testing, api-design, deep-research |
 | gstack | 29 | /qa, /review, /gstack-ship, /cso, /office-hours |
 | superpowers | 14 | brainstorming, systematic-debugging, TDD, writing-plans |
-| [my-codex Core](https://github.com/sehoon787/my-codex) | 4 | boss-advanced, boss-briefing, briefing-vault, gstack-sprint |
+| [my-codex Core](https://github.com/sehoon787/my-codex) | 5 | boss-advanced, boss-briefing, briefing-vault, gstack-sprint, academic-english-polish |
 | archify | 1 | archify (architecture / workflow / sequence / data-flow / lifecycle diagrams) |
 
-The gstack entries are the `gstack` root router directory and 28 symlinks. 26 of them point into `~/.codex/vendor/gstack/.agents/skills/` and are created by gstack’s own `./setup`: all 25 names in `GSTACK_SKILL_ALLOWLIST` and `gstack-upgrade`, which it always installs. `install.sh` itself links the other two, `codex` (to `~/.codex/vendor/gstack/codex`) and `hackernews-frontpage` (to `~/.codex/vendor/gstack/browser-skills/hackernews-frontpage`); setup never references either. All 28 are in the managed catalog, so none of them is link-only — each can be exposed by `core` or by a lane. Of the 109 entries, 81 are real directories and 28 are those symlinks; `find ~/.codex/skills -name SKILL.md | wc -l` reports 84 because `find` does not follow them without `-L`. Skill files stay installed no matter which profile is active — exposure is what changes. See [Skill Profiles and Lanes](#skill-profiles-and-lanes).
+The gstack entries are the `gstack` root router directory and 28 symlinks. 26 of them point into `~/.codex/vendor/gstack/.agents/skills/` and are created by gstack’s own `./setup`: all 25 names in `GSTACK_SKILL_ALLOWLIST` and `gstack-upgrade`, which it always installs. `install.sh` itself links the other two, `codex` (to `~/.codex/vendor/gstack/codex`) and `hackernews-frontpage` (to `~/.codex/vendor/gstack/browser-skills/hackernews-frontpage`); setup never references either. All 28 are in the managed catalog, so none of them is link-only — each can be exposed by `core` or by a lane. Of the 110 entries, 82 are real directories and 28 are those symlinks; `find ~/.codex/skills -name SKILL.md | wc -l` reports 85 because `find` does not follow them without `-L`. Skill files stay installed no matter which profile is active — exposure is what changes. See [Skill Profiles and Lanes](#skill-profiles-and-lanes).
 
 </details>
 
@@ -480,7 +481,7 @@ Features built specifically for this project, beyond what upstream sources provi
 | **3-Phase Sprint** | Design (interactive) → Execute (autonomous via executing-plans) → Review (interactive vs the plan) |
 | **Agent Tier Priority** | core > omo > omx > opt-in packs. Pack agents are skipped if their name collides with an already-installed agent. Most specialized agent wins. |
 | **Cost Optimization** | Three model tiers from one source file (`scripts/model-tiers.sh`), applied to all 35 agents the installer ships |
-| **Skill Exposure Profiles** | A managed catalog of 209 entries with a 29-skill default, 13 optional lanes, snapshots, and rollback — so the skills budget is spent on what the session needs |
+| **Skill Exposure Profiles** | A managed catalog of 210 entries with a 30-skill default, 13 optional lanes, snapshots, and rollback — so the skills budget is spent on what the session needs |
 | **Briefing Signals** | Wrapper/session logging feeds `.briefing/agents/agent-log.jsonl`, daily summaries, and routing/profile hints |
 | **Smart Packs** | Project-type detection recommends relevant agent packs at session start |
 | **Agent Pack System** | On-demand domain specialist activation via `--profile` and `my-codex-packs` helper |
@@ -509,13 +510,13 @@ Re-running the same command refreshes to the latest `main` build, replaces only 
 
 ### Skill Profiles and Lanes
 
-my-claude installs one fixed allowlist; my-codex installs 109 skill entries and then controls how many of them Codex actually sees. Codex truncates skill descriptions once its skills budget is hit, so an unfocused catalog makes every description less useful. `core` — the default on a fresh install with all bundled skill sources selected — exposes 29 skills, and each lane is added on top of it:
+my-claude installs one fixed allowlist; my-codex installs 110 skill entries and then controls how many of them Codex actually sees. Codex truncates skill descriptions once its skills budget is hit, so an unfocused catalog makes every description less useful. `core` — the default on a fresh install with all bundled skill sources selected — exposes 30 skills, and each lane is added on top of it:
 
 | Profile / lane | What it adds | Count | How to enable |
 |----------------|--------------|------:|---------------|
-| `core` | The always-on set: my-codex core skills, the superpowers dev-process lane, the gstack ship/QA/review routers, and the ECC standards | 29 | default; `--skill-profile=core` to return to it |
+| `core` | The always-on set: my-codex core skills, the superpowers dev-process lane, the gstack ship/QA/review routers, and the ECC standards | 30 | default; `--skill-profile=core` to return to it |
 | `legacy` | Pre-migration exposure; chosen automatically when `--skip-ecc`, `--skip-gstack`, `--skip-superpowers`, or `--skip-archify` omits a core source without an explicit profile | varies | `--skill-profile=legacy` |
-| `full` | Every lane at once — all 109 installed entries; the catalog names 209, and the ones not installed yet materialize on demand. Can exceed the context budget | 109 | `--skill-profile=full` or `--full-skills` |
+| `full` | Every lane at once — all 110 installed entries; the catalog names 210, and the ones not installed yet materialize on demand. Can exceed the context budget | 110 | `--skill-profile=full` or `--full-skills` |
 | `workflow-advanced` | Advanced planning, repository operations, and worktree workflows | 13 | `--skills=workflow-advanced` |
 | `qa-operations` | QA, browser checks, release, deployment, and operational safety | 20 | `--skills=qa-operations` |
 | `ai-engineering` | Agent systems, evaluation, prompts, retrieval, and MCP | 18 | `--skills=ai-engineering` |

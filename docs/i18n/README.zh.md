@@ -9,13 +9,13 @@
 # my-codex
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
-![Agents](https://img.shields.io/badge/agents-18_core_%2B_17_opt--in-blue)
-![Skills](https://img.shields.io/badge/skills-29_default_%2F_109_installed-purple)
+![Agents](https://img.shields.io/badge/agents-19_core_%2B_17_opt--in-blue)
+![Skills](https://img.shields.io/badge/skills-30_default_%2F_110_installed-purple)
 ![MCP](https://img.shields.io/badge/MCP-5-green)
 ![Auto Sync](https://img.shields.io/badge/upstream_sync-every_3_days-brightgreen)
 
 **面向 Codex CLI 的一体化 Agent 框架。**
-**安装一次，18 个核心 Agent 即刻可用。**
+**安装一次，19 个核心 Agent 即刻可用。**
 
 Boss 在运行时发现每一个 Agent、Skill 和 MCP 工具，<br>
 再通过 `spawn_agent` 把任务路由给合适的专家。无需配置文件，无需样板代码。
@@ -43,7 +43,7 @@ rm -rf /tmp/my-codex
 ```
 
 默认安装只暴露精简的 Skill 集合，这是有意为之：Codex 在超出 Skill 预算后会截断
-Skill 描述，因此默认的 `core` 配置只向 Codex 展示已安装的 109 个 Skill 条目中的 29 个，
+Skill 描述，因此默认的 `core` 配置只向 Codex 展示已安装的 110 个 Skill 条目中的 30 个，
 其余的只需一个参数即可开启：
 
 ```bash
@@ -128,7 +128,7 @@ Boss 会把每个请求沿优先级链依次处理，直到找到最合适的匹
 | 复杂度 | 模型 | 适用对象 |
 |-----------|-------|----------|
 | 顶层编排 | `gpt-6.1-sol` (xhigh) | Boss，以及默认的主会话 |
-| 深度分析、架构、评审 | `gpt-6-astra` | Oracle、Prometheus、Sisyphus、Hephaestus、Atlas、Metis、Momus、Tracer、architect、planner、code-reviewer、security-reviewer |
+| 深度分析、架构、评审 | `gpt-6-astra` | Oracle、Prometheus、Sisyphus、Hephaestus、Atlas、Metis、Momus、Tracer、academic-english-editor、architect、planner、code-reviewer、security-reviewer |
 | 标准实现 | `gpt-6.1-sol` | Librarian、Multimodal-Looker、executor、test-engineer、debugger，以及 17 个包 Agent 中的 15 个 |
 | 快速查询、轻量分析 | `gpt-6-luna` | data-analyst、prompt-regression-tester |
 
@@ -138,11 +138,11 @@ Boss 会把每个请求沿优先级链依次处理，直到找到最合适的匹
 
 ### 推理强度层级
 
-模型选择决定由*哪个*大脑执行任务，而同一个 TOML 中紧挨 `model` 的 `model_reasoning_effort` 决定它*思考多深*。Boss 和 10 个 OMO Agent 在 `codex-agents/` 下已提交的文件中直接声明，7 个 oh-my-codex 工作型 Agent 在转换时从 `scripts/md-to-toml.sh` 的角色表取值，而包 Agent 各自携带自己的取值：
+模型选择决定由*哪个*大脑执行任务，而同一个 TOML 中紧挨 `model` 的 `model_reasoning_effort` 决定它*思考多深*。Boss、academic-english-editor 和 10 个 OMO Agent 在 `codex-agents/` 下已提交的文件中直接声明，7 个 oh-my-codex 工作型 Agent 在转换时从 `scripts/md-to-toml.sh` 的角色表取值，而包 Agent 各自携带自己的取值：
 
 | 推理强度 | Agent |
 |--------|--------|
-| `xhigh` | Boss、Oracle、Prometheus、architect |
+| `xhigh` | Boss、Oracle、Prometheus、academic-english-editor、architect |
 | `high` | Sisyphus、Hephaestus、Atlas、Metis、Momus、Tracer、planner、code-reviewer、security-reviewer，以及 17 个包 Agent 中的 15 个 |
 | `medium` | Librarian、Multimodal-Looker、executor、test-engineer、debugger、data-analyst、prompt-regression-tester |
 
@@ -176,10 +176,10 @@ Boss 会为每个有实际工作的回合 —— 编辑了文件、产生提交/
 
 | 类别 | 数量 | 来源 |
 |----------|------:|--------|
-| **核心 Agent**（始终加载） | 18 | Boss 1 + OMO 10 + OMX 7 |
+| **核心 Agent**（始终加载） | 19 | Core 2 + OMO 10 + OMX 7 |
 | **Agent 包**（可选，默认全部不启用） | 17 | 2 个内置类别：data-ai 13 + llmops 4 |
-| **暴露的 Skill**（默认 `core` 配置） | 29 | 始终开启的集合；其余只需一个车道参数即可加入 |
-| **已安装的 Skill**（`~/.codex/skills/` 下的条目） | 109 | ECC 61 · gstack 29 · Superpowers 14 · Core 4 · archify 1 |
+| **暴露的 Skill**（默认 `core` 配置） | 30 | 始终开启的集合；其余只需一个车道参数即可加入 |
+| **已安装的 Skill**（`~/.codex/skills/` 下的条目） | 110 | ECC 61 · gstack 29 · Superpowers 14 · Core 5 · archify 1 |
 | **MCP 服务器** | 5 | Context7、Exa、grep.app、Serena、Headroom |
 | **config.toml** | 1 | my-codex |
 | **AGENTS.md** | 1 | my-codex |
@@ -187,11 +187,12 @@ Boss 会为每个有实际工作的回合 —— 编辑了文件、产生提交/
 以上所有 Agent 和 Skill 都列在 [`scripts/skill-allowlists.sh`](../../scripts/skill-allowlists.sh) 的白名单中，该文件是「装什么」的唯一依据。本捆绑包本身不提供 `pdf`、`docx`、`pptx`、`xlsx`；外部安装的同类 Skill 会被原样保留。
 
 <details>
-<summary><strong>核心 Agent —— Boss 元编排器 (1)</strong></summary>
+<summary><strong>核心 Agent —— Boss 元编排器与 academic-english-editor (2)</strong></summary>
 
 | Agent | 模型 | 职责 | 来源 |
 |-------|-------|------|--------|
 | Boss | gpt-6.1-sol xhigh | 动态运行时发现 → 能力匹配 → 最优路由。从不写代码。 | my-codex |
+| academic-english-editor | gpt-6-astra xhigh | 英文学术写作的两轮审阅与润色；提供可直接应用的修改建议，从不直接编辑 | my-codex |
 
 </details>
 
@@ -241,17 +242,17 @@ Boss 会为每个有实际工作的回合 —— 编辑了文件、产生提交/
 </details>
 
 <details>
-<summary><strong>Skill —— 默认暴露 29 个，来自 5 个来源共安装 109 个</strong></summary>
+<summary><strong>Skill —— 默认暴露 30 个，来自 5 个来源共安装 110 个</strong></summary>
 
 | 来源 | 已安装 | 主要 Skill |
 |--------|------:|------------|
 | everything-claude-code | 61 | coding-standards, python-testing, api-design, deep-research |
 | gstack | 29 | /qa, /review, /gstack-ship, /cso, /office-hours |
 | superpowers | 14 | brainstorming, systematic-debugging, TDD, writing-plans |
-| [my-codex Core](https://github.com/sehoon787/my-codex) | 4 | boss-advanced, boss-briefing, briefing-vault, gstack-sprint |
+| [my-codex Core](https://github.com/sehoon787/my-codex) | 5 | boss-advanced, boss-briefing, briefing-vault, gstack-sprint, academic-english-polish |
 | archify | 1 | archify（架构 / 工作流 / 时序 / 数据流 / 生命周期图） |
 
-gstack 的条目是 `gstack` 根路由器目录，加上 28 个符号链接。其中 26 个指向 `~/.codex/vendor/gstack/.agents/skills/`，由 gstack 自己的 `./setup` 创建：`GSTACK_SKILL_ALLOWLIST` 的全部 25 个，再加上它始终安装的 `gstack-upgrade`。另外两个由 `install.sh` 自己链接：`codex` 指向 `~/.codex/vendor/gstack/codex`，`hackernews-frontpage` 指向 `~/.codex/vendor/gstack/browser-skills/hackernews-frontpage`，`./setup` 对二者都没有引用。28 个全部在受管目录中，因此没有「仅链接」的条目，每个都可以由 `core` 或某条车道暴露。109 个条目中 81 个是真实目录、28 个是上述符号链接；`find ~/.codex/skills -name SKILL.md | wc -l` 在没有 `-L` 时不会跟随链接，因此返回 84。无论启用哪个配置，Skill 文件都保持安装状态，变化的只是暴露范围。参见 [Skill 配置与车道](#skill-配置与车道)。
+gstack 的条目是 `gstack` 根路由器目录，加上 28 个符号链接。其中 26 个指向 `~/.codex/vendor/gstack/.agents/skills/`，由 gstack 自己的 `./setup` 创建：`GSTACK_SKILL_ALLOWLIST` 的全部 25 个，再加上它始终安装的 `gstack-upgrade`。另外两个由 `install.sh` 自己链接：`codex` 指向 `~/.codex/vendor/gstack/codex`，`hackernews-frontpage` 指向 `~/.codex/vendor/gstack/browser-skills/hackernews-frontpage`，`./setup` 对二者都没有引用。28 个全部在受管目录中，因此没有「仅链接」的条目，每个都可以由 `core` 或某条车道暴露。110 个条目中 82 个是真实目录、28 个是上述符号链接；`find ~/.codex/skills -name SKILL.md | wc -l` 在没有 `-L` 时不会跟随链接，因此返回 85。无论启用哪个配置，Skill 文件都保持安装状态，变化的只是暴露范围。参见 [Skill 配置与车道](#skill-配置与车道)。
 
 </details>
 
@@ -422,7 +423,7 @@ headroom install apply --profile agent-harness-shared --preset persistent-servic
 | **三阶段冲刺** | 设计（交互式）→ 执行（通过 executing-plans 自主）→ 评审（与计划交互式对照） |
 | **Agent 层级优先** | core > omo > omx > 可选包 的去重顺序。若包内 Agent 与已安装 Agent 重名则跳过。最专精的 Agent 胜出。 |
 | **成本优化** | 由单一文件（`scripts/model-tiers.sh`）管理的三档模型，应用于安装脚本提供的全部 35 个 Agent |
-| **Skill 暴露配置** | 一份 209 条目的目录，默认暴露 29 条、13 条可选车道，并支持快照与回滚 —— 让 Skill 预算花在这次会话真正需要的地方 |
+| **Skill 暴露配置** | 一份 210 条目的目录，默认暴露 30 条、13 条可选车道，并支持快照与回滚 —— 让 Skill 预算花在这次会话真正需要的地方 |
 | **简报信号** | 包装器/会话日志填充 `.briefing/agents/agent-log.jsonl`、每日汇总以及路由/画像提示 |
 | **Smart Packs** | 通过项目类型检测，在会话开始时推荐相关的 Agent 包 |
 | **Agent 包系统** | 通过 `--profile` 和 `my-codex-packs` 助手按需启用领域专家 |
@@ -451,13 +452,13 @@ headroom install apply --profile agent-harness-shared --preset persistent-servic
 
 ### Skill 配置与车道
 
-my-claude 安装一份固定白名单；my-codex 则先安装 109 个 Skill 条目，再控制其中有多少真正呈现给 Codex。Codex 在超出 Skill 预算后会截断 Skill 描述，因此一份没有重点的目录会让每条描述都变得不那么有用。当所有捆绑 Skill 来源都被选中时，全新安装的默认配置 `core` 暴露 29 个 Skill，各车道在其之上叠加：
+my-claude 安装一份固定白名单；my-codex 则先安装 110 个 Skill 条目，再控制其中有多少真正呈现给 Codex。Codex 在超出 Skill 预算后会截断 Skill 描述，因此一份没有重点的目录会让每条描述都变得不那么有用。当所有捆绑 Skill 来源都被选中时，全新安装的默认配置 `core` 暴露 30 个 Skill，各车道在其之上叠加：
 
 | 配置 / 车道 | 新增内容 | 数量 | 启用方式 |
 |----------------|--------------|------:|---------------|
 | `core` | 始终开启的集合：my-codex 核心 Skill、superpowers 开发流程车道、gstack 发布/QA/评审路由器，以及 ECC 规范 | 29 | 默认；用 `--skill-profile=core` 回到该配置 |
 | `legacy` | 迁移前的暴露范围；当 `--skip-ecc`、`--skip-gstack`、`--skip-superpowers` 或 `--skip-archify` 省略了某个核心来源且未显式指定配置时自动选用 | 视情况 | `--skill-profile=legacy` |
-| `full` | 一次启用全部车道 —— 已安装的全部 109 个条目；目录共收录 209 个名称，尚未安装的会按需补齐。可能超出上下文预算 | 109 | `--skill-profile=full` 或 `--full-skills` |
+| `full` | 一次启用全部车道 —— 已安装的全部 110 个条目；目录共收录 210 个名称，尚未安装的会按需补齐。可能超出上下文预算 | 110 | `--skill-profile=full` 或 `--full-skills` |
 | `workflow-advanced` | 进阶规划、仓库操作与 worktree 工作流 | 13 | `--skills=workflow-advanced` |
 | `qa-operations` | QA、浏览器检查、发布、部署与运维安全 | 20 | `--skills=qa-operations` |
 | `ai-engineering` | Agent 系统、评估、提示词、检索与 MCP | 18 | `--skills=ai-engineering` |

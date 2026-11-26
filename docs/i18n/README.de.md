@@ -9,13 +9,13 @@
 # my-codex
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
-![Agents](https://img.shields.io/badge/agents-18_core_%2B_17_opt--in-blue)
-![Skills](https://img.shields.io/badge/skills-29_default_%2F_109_installed-purple)
+![Agents](https://img.shields.io/badge/agents-19_core_%2B_17_opt--in-blue)
+![Skills](https://img.shields.io/badge/skills-30_default_%2F_110_installed-purple)
 ![MCP](https://img.shields.io/badge/MCP-5-green)
 ![Auto Sync](https://img.shields.io/badge/upstream_sync-every_3_days-brightgreen)
 
 **All-in-one-Agentenharness für die Codex CLI.**
-**Einmal installieren, 18 Kernagenten sind einsatzbereit.**
+**Einmal installieren, 19 Kernagenten sind einsatzbereit.**
 
 Boss erkennt zur Laufzeit jeden Agenten, jeden Skill und jedes MCP-Werkzeug<br>
 und leitet Ihre Aufgabe über `spawn_agent` an den passenden Spezialisten weiter. Keine Konfigurationsdateien. Kein Boilerplate.
@@ -44,7 +44,7 @@ rm -rf /tmp/my-codex
 
 Dass die Standardinstallation nur wenige Skills sichtbar macht, ist Absicht:
 Codex kürzt Skill-Beschreibungen, sobald sein Skill-Budget überschritten ist.
-Deshalb zeigt das Standardprofil `core` Codex nur 29 der 109 installierten
+Deshalb zeigt das Standardprofil `core` Codex nur 30 der 110 installierten
 Skill-Einträge; der Rest ist einen Schalter entfernt:
 
 ```bash
@@ -129,7 +129,7 @@ Boss führt jede Anfrage durch eine Prioritätskette, bis der beste Treffer gefu
 | Komplexität | Modell | Eingesetzt für |
 |-----------|-------|----------|
 | Orchestrierung auf oberster Ebene | `gpt-6.1-sol` (xhigh) | Boss und standardmäßig die Hauptsitzung |
-| Tiefe Analyse, Architektur, Review | `gpt-6-astra` | Oracle, Prometheus, Sisyphus, Hephaestus, Atlas, Metis, Momus, Tracer, architect, planner, code-reviewer, security-reviewer |
+| Tiefe Analyse, Architektur, Review | `gpt-6-astra` | Oracle, Prometheus, Sisyphus, Hephaestus, Atlas, Metis, Momus, Tracer, academic-english-editor, architect, planner, code-reviewer, security-reviewer |
 | Standardimplementierung | `gpt-6.1-sol` | Librarian, Multimodal-Looker, executor, test-engineer, debugger sowie 15 der 17 Pack-Agenten |
 | Schnelles Nachschlagen, leichte Analyse | `gpt-6-luna` | data-analyst, prompt-regression-tester |
 
@@ -139,11 +139,11 @@ Die drei Tier-IDs stehen in einer einzigen Datei, `scripts/model-tiers.sh`; sowo
 
 ### Aufwandsstufen
 
-Die Modellwahl bestimmt, *welches* Gehirn eine Aufgabe übernimmt; das Feld `model_reasoning_effort` neben `model` in derselben TOML-Datei bestimmt, *wie gründlich* es denkt. Boss und die zehn OMO-Agenten deklarieren es in den eingecheckten Dateien unter `codex-agents/`, die sieben oh-my-codex-Worker erhalten ihren Wert beim Konvertieren aus der Rollentabelle in `scripts/md-to-toml.sh`, und jeder Pack-Agent bringt seinen eigenen mit:
+Die Modellwahl bestimmt, *welches* Gehirn eine Aufgabe übernimmt; das Feld `model_reasoning_effort` neben `model` in derselben TOML-Datei bestimmt, *wie gründlich* es denkt. Boss, academic-english-editor und die zehn OMO-Agenten deklarieren es in den eingecheckten Dateien unter `codex-agents/`, die sieben oh-my-codex-Worker erhalten ihren Wert beim Konvertieren aus der Rollentabelle in `scripts/md-to-toml.sh`, und jeder Pack-Agent bringt seinen eigenen mit:
 
 | Aufwand | Agenten |
 |--------|--------|
-| `xhigh` | Boss, Oracle, Prometheus, architect |
+| `xhigh` | Boss, Oracle, Prometheus, academic-english-editor, architect |
 | `high` | Sisyphus, Hephaestus, Atlas, Metis, Momus, Tracer, planner, code-reviewer, security-reviewer sowie 15 der 17 Pack-Agenten |
 | `medium` | Librarian, Multimodal-Looker, executor, test-engineer, debugger, data-analyst, prompt-regression-tester |
 
@@ -177,10 +177,10 @@ Er erscheint nur ganz am Ende der Anfrage — nie in einer Runde, die Hintergrun
 
 | Kategorie | Anzahl | Quelle |
 |----------|------:|--------|
-| **Kernagenten** (immer geladen) | 18 | Boss 1 + OMO 10 + OMX 7 |
+| **Kernagenten** (immer geladen) | 19 | Core 2 + OMO 10 + OMX 7 |
 | **Agenten-Packs** (Opt-in, standardmäßig keines aktiv) | 17 | 2 eingebettete Kategorien: data-ai 13 + llmops 4 |
-| **Sichtbare Skills** (Standardprofil `core`) | 29 | Die immer aktive Auswahl; alles andere ist einen Spur-Schalter entfernt |
-| **Installierte Skills** (Einträge unter `~/.codex/skills/`) | 109 | ECC 61 · gstack 29 · Superpowers 14 · Core 4 · archify 1 |
+| **Sichtbare Skills** (Standardprofil `core`) | 30 | Die immer aktive Auswahl; alles andere ist einen Spur-Schalter entfernt |
+| **Installierte Skills** (Einträge unter `~/.codex/skills/`) | 110 | ECC 61 · gstack 29 · Superpowers 14 · Core 5 · archify 1 |
 | **MCP-Server** | 5 | Context7, Exa, grep.app, Serena, Headroom |
 | **config.toml** | 1 | my-codex |
 | **AGENTS.md** | 1 | my-codex |
@@ -188,11 +188,12 @@ Er erscheint nur ganz am Ende der Anfrage — nie in einer Runde, die Hintergrun
 Jeder Agent und jeder Skill oben steht auf der Freigabeliste in [`scripts/skill-allowlists.sh`](../../scripts/skill-allowlists.sh) — diese Datei entscheidet, was ausgeliefert wird. Dieses Bündel liefert bewusst kein `pdf`, `docx`, `pptx` oder `xlsx`; extern installierte Skills dieser Art bleiben unangetastet.
 
 <details>
-<summary><strong>Kernagent — Boss-Meta-Orchestrator (1)</strong></summary>
+<summary><strong>Kernagenten — Boss-Meta-Orchestrator und academic-english-editor (2)</strong></summary>
 
 | Agent | Modell | Rolle | Quelle |
 |-------|-------|------|--------|
 | Boss | gpt-6.1-sol xhigh | Dynamische Laufzeiterkennung → Fähigkeitsabgleich → optimales Routing. Schreibt nie Code. | my-codex |
+| academic-english-editor | gpt-6-astra xhigh | Zweistufige Prüfung und Überarbeitung englischer wissenschaftlicher Texte; umsetzbare Änderungsvorschläge, bearbeitet nie selbst | my-codex |
 
 </details>
 
@@ -242,17 +243,17 @@ Installiert nach `~/.codex/agent-packs/` und deaktiviert, bis Sie sie einschalte
 </details>
 
 <details>
-<summary><strong>Skills — 29 standardmäßig sichtbar, 109 aus 5 Quellen installiert</strong></summary>
+<summary><strong>Skills — 30 standardmäßig sichtbar, 110 aus 5 Quellen installiert</strong></summary>
 
 | Quelle | Installiert | Wichtige Skills |
 |--------|------:|------------|
 | everything-claude-code | 61 | coding-standards, python-testing, api-design, deep-research |
 | gstack | 29 | /qa, /review, /gstack-ship, /cso, /office-hours |
 | superpowers | 14 | brainstorming, systematic-debugging, TDD, writing-plans |
-| [my-codex Core](https://github.com/sehoon787/my-codex) | 4 | boss-advanced, boss-briefing, briefing-vault, gstack-sprint |
+| [my-codex Core](https://github.com/sehoon787/my-codex) | 5 | boss-advanced, boss-briefing, briefing-vault, gstack-sprint, academic-english-polish |
 | archify | 1 | archify (Architektur- / Workflow- / Sequenz- / Datenfluss- / Lebenszyklusdiagramme) |
 
-Die gstack-Einträge sind das `gstack`-Router-Verzeichnis und 28 Symlinks. 26 davon zeigen auf `~/.codex/vendor/gstack/.agents/skills/` und werden von gstacks eigenem `./setup` angelegt: alle 25 Namen aus `GSTACK_SKILL_ALLOWLIST` plus `gstack-upgrade` (wird immer installiert). `install.sh` verlinkt die anderen beiden selbst, `codex` (nach `~/.codex/vendor/gstack/codex`) und `hackernews-frontpage` (nach `~/.codex/vendor/gstack/browser-skills/hackernews-frontpage`); `./setup` erwähnt keinen von beiden. Alle 28 stehen im verwalteten Katalog, keiner ist also nur ein Link — jeder kann über `core` oder eine Spur sichtbar werden. Von den 109 Einträgen sind 81 echte Verzeichnisse und 28 diese Symlinks; `find ~/.codex/skills -name SKILL.md | wc -l` meldet 84, weil `find` ihnen ohne `-L` nicht folgt. Unabhängig vom aktiven Profil bleiben die Skill-Dateien installiert — es ändert sich nur die Sichtbarkeit. Siehe [Skill-Profile und Spuren](#skill-profile-und-spuren).
+Die gstack-Einträge sind das `gstack`-Router-Verzeichnis und 28 Symlinks. 26 davon zeigen auf `~/.codex/vendor/gstack/.agents/skills/` und werden von gstacks eigenem `./setup` angelegt: alle 25 Namen aus `GSTACK_SKILL_ALLOWLIST` plus `gstack-upgrade` (wird immer installiert). `install.sh` verlinkt die anderen beiden selbst, `codex` (nach `~/.codex/vendor/gstack/codex`) und `hackernews-frontpage` (nach `~/.codex/vendor/gstack/browser-skills/hackernews-frontpage`); `./setup` erwähnt keinen von beiden. Alle 28 stehen im verwalteten Katalog, keiner ist also nur ein Link — jeder kann über `core` oder eine Spur sichtbar werden. Von den 110 Einträgen sind 82 echte Verzeichnisse und 28 diese Symlinks; `find ~/.codex/skills -name SKILL.md | wc -l` meldet 85, weil `find` ihnen ohne `-L` nicht folgt. Unabhängig vom aktiven Profil bleiben die Skill-Dateien installiert — es ändert sich nur die Sichtbarkeit. Siehe [Skill-Profile und Spuren](#skill-profile-und-spuren).
 
 </details>
 
@@ -423,7 +424,7 @@ Funktionen, die eigens für dieses Projekt entstanden sind, über das hinaus, wa
 | **3-Phasen-Sprint** | Design (interaktiv) → Ausführung (autonom via executing-plans) → Review (interaktiv gegen den Plan) |
 | **Agenten-Tier-Priorität** | core > omo > omx > Opt-in-Packs bei der Entdopplung. Pack-Agenten werden übersprungen, wenn ihr Name mit einem bereits installierten Agenten kollidiert. Der spezialisiertere Agent gewinnt. |
 | **Kostenoptimierung** | Drei Modellstufen aus einer einzigen Datei (`scripts/model-tiers.sh`), angewandt auf alle 35 Agenten, die das Installationsskript mitbringt |
-| **Skill-Sichtbarkeitsprofile** | Ein verwalteter Katalog mit 209 Einträgen, 29 davon standardmäßig sichtbar, 13 optionale Spuren, Schnappschüsse und Rollback — damit das Skill-Budget dort landet, wo die Sitzung es braucht |
+| **Skill-Sichtbarkeitsprofile** | Ein verwalteter Katalog mit 210 Einträgen, 30 davon standardmäßig sichtbar, 13 optionale Spuren, Schnappschüsse und Rollback — damit das Skill-Budget dort landet, wo die Sitzung es braucht |
 | **Briefing-Signale** | Wrapper-/Sitzungsprotokolle speisen `.briefing/agents/agent-log.jsonl`, tägliche Auswertungen und Routing-/Profilhinweise |
 | **Smart Packs** | Projekttyp-Erkennung empfiehlt zu Sitzungsbeginn passende Agenten-Packs |
 | **Agenten-Pack-System** | Bedarfsgesteuerte Aktivierung von Domänenspezialisten über `--profile` und das Hilfsprogramm `my-codex-packs` |
@@ -452,13 +453,13 @@ Führt man denselben Befehl erneut aus, wird auf den neuesten `main`-Stand aktua
 
 ### Skill-Profile und Spuren
 
-my-claude installiert eine einzige feste Freigabeliste; my-codex installiert 109 Skill-Einträge und steuert anschließend, wie viele davon Codex tatsächlich sieht. Codex kürzt Skill-Beschreibungen, sobald sein Skill-Budget überschritten ist, und ein unfokussierter Katalog macht damit jede Beschreibung weniger nützlich. `core` — der Standard bei einer Neuinstallation mit allen gebündelten Skill-Quellen — zeigt 29 Skills, und jede Spur kommt obendrauf:
+my-claude installiert eine einzige feste Freigabeliste; my-codex installiert 110 Skill-Einträge und steuert anschließend, wie viele davon Codex tatsächlich sieht. Codex kürzt Skill-Beschreibungen, sobald sein Skill-Budget überschritten ist, und ein unfokussierter Katalog macht damit jede Beschreibung weniger nützlich. `core` — der Standard bei einer Neuinstallation mit allen gebündelten Skill-Quellen — zeigt 30 Skills, und jede Spur kommt obendrauf:
 
 | Profil / Spur | Was sie ergänzt | Anzahl | Aktivierung |
 |----------------|--------------|------:|---------------|
 | `core` | Die immer aktive Auswahl: my-codex-Kern-Skills, die superpowers-Entwicklungsprozessspur, die gstack-Router für Ship/QA/Review und die ECC-Standards | 29 | Standard; mit `--skill-profile=core` zurückkehren |
 | `legacy` | Sichtbarkeit vor der Migration; wird automatisch gewählt, wenn `--skip-ecc`, `--skip-gstack`, `--skip-superpowers` oder `--skip-archify` eine Kernquelle ohne explizites Profil auslässt | variabel | `--skill-profile=legacy` |
-| `full` | Alle Spuren auf einmal — alle 109 installierten Einträge; der Katalog nennt 209 Namen, die noch nicht installierten werden bei Bedarf nachgezogen. Kann das Kontextbudget übersteigen | 109 | `--skill-profile=full` oder `--full-skills` |
+| `full` | Alle Spuren auf einmal — alle 110 installierten Einträge; der Katalog nennt 210 Namen, die noch nicht installierten werden bei Bedarf nachgezogen. Kann das Kontextbudget übersteigen | 110 | `--skill-profile=full` oder `--full-skills` |
 | `workflow-advanced` | Fortgeschrittene Planung, Repository-Operationen und Worktree-Workflows | 13 | `--skills=workflow-advanced` |
 | `qa-operations` | QA, Browserprüfungen, Release, Deployment und betriebliche Sicherheit | 20 | `--skills=qa-operations` |
 | `ai-engineering` | Agentensysteme, Evaluation, Prompts, Retrieval und MCP | 18 | `--skills=ai-engineering` |

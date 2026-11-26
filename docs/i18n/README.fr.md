@@ -9,13 +9,13 @@
 # my-codex
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
-![Agents](https://img.shields.io/badge/agents-18_core_%2B_17_opt--in-blue)
-![Skills](https://img.shields.io/badge/skills-29_default_%2F_109_installed-purple)
+![Agents](https://img.shields.io/badge/agents-19_core_%2B_17_opt--in-blue)
+![Skills](https://img.shields.io/badge/skills-30_default_%2F_110_installed-purple)
 ![MCP](https://img.shields.io/badge/MCP-5-green)
 ![Auto Sync](https://img.shields.io/badge/upstream_sync-every_3_days-brightgreen)
 
 **Harnais d'agents tout-en-un pour Codex CLI.**
-**Installez une fois, 18 agents principaux prêts à l'emploi.**
+**Installez une fois, 19 agents principaux prêts à l'emploi.**
 
 Boss détecte à l'exécution chaque agent, chaque skill et chaque outil MCP,<br>
 puis route votre tâche vers le bon spécialiste via `spawn_agent`. Aucune configuration. Aucun code superflu.
@@ -44,8 +44,8 @@ rm -rf /tmp/my-codex
 
 Si l'installation par défaut n'expose qu'un jeu restreint de skills, c'est
 volontaire : Codex tronque les descriptions de skills dès que son budget de
-skills est dépassé. Le profil par défaut `core` ne montre donc à Codex que 29
-des 109 entrées de skills installées, le reste restant à un drapeau de distance :
+skills est dépassé. Le profil par défaut `core` ne montre donc à Codex que 30
+des 110 entrées de skills installées, le reste restant à un drapeau de distance :
 
 ```bash
 bash install.sh --skills=web          # ajoute les 18 skills de la voie web/UI
@@ -129,7 +129,7 @@ Boss fait passer chaque demande dans une chaîne de priorités jusqu'à trouver 
 | Complexité | Modèle | Utilisé pour |
 |-----------|-------|----------|
 | Orchestration de premier niveau | `gpt-6.1-sol` (xhigh) | Boss, et la session principale par défaut |
-| Analyse approfondie, architecture, revue | `gpt-6-astra` | Oracle, Prometheus, Sisyphus, Hephaestus, Atlas, Metis, Momus, Tracer, architect, planner, code-reviewer, security-reviewer |
+| Analyse approfondie, architecture, revue | `gpt-6-astra` | Oracle, Prometheus, Sisyphus, Hephaestus, Atlas, Metis, Momus, Tracer, academic-english-editor, architect, planner, code-reviewer, security-reviewer |
 | Implémentation standard | `gpt-6.1-sol` | Librarian, Multimodal-Looker, executor, test-engineer, debugger, ainsi que 15 des 17 agents de packs |
 | Recherche rapide, analyse légère | `gpt-6-luna` | data-analyst, prompt-regression-tester |
 
@@ -139,11 +139,11 @@ Les trois identifiants de palier vivent dans un seul fichier, `scripts/model-tie
 
 ### Paliers d'effort
 
-Le choix du modèle décide *quel* cerveau exécute une tâche ; le champ `model_reasoning_effort`, voisin de `model` dans le même TOML, décide *avec quelle profondeur* il réfléchit. Boss et les dix agents OMO le déclarent dans les fichiers versionnés sous `codex-agents/`, les sept workers oh-my-codex reçoivent le leur de la table de rôles de `scripts/md-to-toml.sh` au moment de la conversion, et chaque agent de pack porte le sien :
+Le choix du modèle décide *quel* cerveau exécute une tâche ; le champ `model_reasoning_effort`, voisin de `model` dans le même TOML, décide *avec quelle profondeur* il réfléchit. Boss, academic-english-editor et les dix agents OMO le déclarent dans les fichiers versionnés sous `codex-agents/`, les sept workers oh-my-codex reçoivent le leur de la table de rôles de `scripts/md-to-toml.sh` au moment de la conversion, et chaque agent de pack porte le sien :
 
 | Effort | Agents |
 |--------|--------|
-| `xhigh` | Boss, Oracle, Prometheus, architect |
+| `xhigh` | Boss, Oracle, Prometheus, academic-english-editor, architect |
 | `high` | Sisyphus, Hephaestus, Atlas, Metis, Momus, Tracer, planner, code-reviewer, security-reviewer, ainsi que 15 des 17 agents de packs |
 | `medium` | Librarian, Multimodal-Looker, executor, test-engineer, debugger, data-analyst, prompt-regression-tester |
 
@@ -177,10 +177,10 @@ Il ne se déclenche qu'à la toute fin de la demande — jamais sur un tour qui 
 
 | Catégorie | Nombre | Source |
 |----------|------:|--------|
-| **Agents principaux** (toujours chargés) | 18 | Boss 1 + OMO 10 + OMX 7 |
+| **Agents principaux** (toujours chargés) | 19 | Core 2 + OMO 10 + OMX 7 |
 | **Packs d'agents** (optionnels, aucun actif par défaut) | 17 | 2 catégories intégrées : data-ai 13 + llmops 4 |
-| **Skills exposés** (profil `core` par défaut) | 29 | L'ensemble toujours actif ; tout le reste est à un drapeau de voie de distance |
-| **Skills installés** (entrées sous `~/.codex/skills/`) | 109 | ECC 61 · gstack 29 · Superpowers 14 · Core 4 · archify 1 |
+| **Skills exposés** (profil `core` par défaut) | 30 | L'ensemble toujours actif ; tout le reste est à un drapeau de voie de distance |
+| **Skills installés** (entrées sous `~/.codex/skills/`) | 110 | ECC 61 · gstack 29 · Superpowers 14 · Core 5 · archify 1 |
 | **Serveurs MCP** | 5 | Context7, Exa, grep.app, Serena, Headroom |
 | **config.toml** | 1 | my-codex |
 | **AGENTS.md** | 1 | my-codex |
@@ -188,11 +188,12 @@ Il ne se déclenche qu'à la toute fin de la demande — jamais sur un tour qui 
 Tous les agents et skills ci-dessus figurent sur la liste d'autorisation de [`scripts/skill-allowlists.sh`](../../scripts/skill-allowlists.sh) — ce fichier fait autorité sur ce qui est livré. Ce bundle ne fournit délibérément pas `pdf`, `docx`, `pptx` ni `xlsx` ; les skills de ce type installés par ailleurs restent intacts.
 
 <details>
-<summary><strong>Agent principal — méta-orchestrateur Boss (1)</strong></summary>
+<summary><strong>Agents principaux — méta-orchestrateur Boss et academic-english-editor (2)</strong></summary>
 
 | Agent | Modèle | Rôle | Source |
 |-------|-------|------|--------|
 | Boss | gpt-6.1-sol xhigh | Découverte dynamique à l'exécution → appariement de capacités → routage optimal. N'écrit jamais de code. | my-codex |
+| academic-english-editor | gpt-6-astra xhigh | Relecture et amélioration en deux passes de textes académiques en anglais ; propositions prêtes à appliquer, ne modifie jamais | my-codex |
 
 </details>
 
@@ -242,17 +243,17 @@ Installés dans `~/.codex/agent-packs/` et désactivés tant que vous ne les act
 </details>
 
 <details>
-<summary><strong>Skills — 29 exposés par défaut, 109 installés depuis 5 sources</strong></summary>
+<summary><strong>Skills — 30 exposés par défaut, 110 installés depuis 5 sources</strong></summary>
 
 | Source | Installés | Skills clés |
 |--------|------:|------------|
 | everything-claude-code | 61 | coding-standards, python-testing, api-design, deep-research |
 | gstack | 29 | /qa, /review, /gstack-ship, /cso, /office-hours |
 | superpowers | 14 | brainstorming, systematic-debugging, TDD, writing-plans |
-| [my-codex Core](https://github.com/sehoon787/my-codex) | 4 | boss-advanced, boss-briefing, briefing-vault, gstack-sprint |
+| [my-codex Core](https://github.com/sehoon787/my-codex) | 5 | boss-advanced, boss-briefing, briefing-vault, gstack-sprint, academic-english-polish |
 | archify | 1 | archify (diagrammes d'architecture / workflow / séquence / flux de données / cycle de vie) |
 
-Les entrées gstack sont le répertoire routeur `gstack` et 28 liens symboliques. 26 d'entre eux pointent vers `~/.codex/vendor/gstack/.agents/skills/` et sont créés par le `./setup` de gstack : les 25 noms de `GSTACK_SKILL_ALLOWLIST` plus `gstack-upgrade`, qu'il installe toujours. `install.sh` lie lui-même les deux autres, `codex` (vers `~/.codex/vendor/gstack/codex`) et `hackernews-frontpage` (vers `~/.codex/vendor/gstack/browser-skills/hackernews-frontpage`) ; `./setup` ne référence ni l'un ni l'autre. Les 28 figurent tous dans le catalogue géré, donc aucun n'est un simple lien — chacun peut être exposé par `core` ou par une voie. Sur les 109 entrées, 81 sont de vrais répertoires et 28 sont ces liens ; `find ~/.codex/skills -name SKILL.md | wc -l` renvoie 84 car `find` ne les suit pas sans `-L`. Quel que soit le profil actif, les fichiers de skills restent installés — seule l'exposition change. Voir [Profils de skills et voies](#profils-de-skills-et-voies).
+Les entrées gstack sont le répertoire routeur `gstack` et 28 liens symboliques. 26 d'entre eux pointent vers `~/.codex/vendor/gstack/.agents/skills/` et sont créés par le `./setup` de gstack : les 25 noms de `GSTACK_SKILL_ALLOWLIST` plus `gstack-upgrade`, qu'il installe toujours. `install.sh` lie lui-même les deux autres, `codex` (vers `~/.codex/vendor/gstack/codex`) et `hackernews-frontpage` (vers `~/.codex/vendor/gstack/browser-skills/hackernews-frontpage`) ; `./setup` ne référence ni l'un ni l'autre. Les 28 figurent tous dans le catalogue géré, donc aucun n'est un simple lien — chacun peut être exposé par `core` ou par une voie. Sur les 110 entrées, 82 sont de vrais répertoires et 28 sont ces liens ; `find ~/.codex/skills -name SKILL.md | wc -l` renvoie 85 car `find` ne les suit pas sans `-L`. Quel que soit le profil actif, les fichiers de skills restent installés — seule l'exposition change. Voir [Profils de skills et voies](#profils-de-skills-et-voies).
 
 </details>
 
@@ -423,7 +424,7 @@ Fonctionnalités conçues spécifiquement pour ce projet, au-delà de ce que fou
 | **Sprint 3 phases** | Conception (interactif) → Exécution (autonome via executing-plans) → Revue (interactif face au plan) |
 | **Priorité par palier d'agents** | core > omo > omx > packs optionnels pour la déduplication. Un agent de pack est ignoré si son nom entre en collision avec un agent déjà installé. L'agent le plus spécialisé l'emporte. |
 | **Optimisation des coûts** | Trois paliers de modèles issus d'un fichier unique (`scripts/model-tiers.sh`), appliqués aux 35 agents livrés par l'installeur |
-| **Profils d'exposition des skills** | Un catalogue géré de 209 entrées avec 29 exposées par défaut, 13 voies optionnelles, instantanés et retour arrière — pour dépenser le budget de skills là où la session en a besoin |
+| **Profils d'exposition des skills** | Un catalogue géré de 210 entrées avec 30 exposées par défaut, 13 voies optionnelles, instantanés et retour arrière — pour dépenser le budget de skills là où la session en a besoin |
 | **Signaux de briefing** | La journalisation wrapper/session alimente `.briefing/agents/agent-log.jsonl`, les synthèses quotidiennes et les indices de routage/profil |
 | **Smart Packs** | La détection du type de projet recommande les packs d'agents pertinents au démarrage de la session |
 | **Système de packs d'agents** | Activation à la demande de spécialistes de domaine via `--profile` et l'utilitaire `my-codex-packs` |
@@ -452,13 +453,13 @@ Relancer la même commande met à jour vers la dernière build de `main`, ne rem
 
 ### Profils de skills et voies
 
-my-claude installe une unique liste d'autorisation figée ; my-codex installe 109 entrées de skills puis contrôle combien d'entre eux Codex voit réellement. Codex tronque les descriptions de skills dès que son budget de skills est dépassé : un catalogue sans priorité rend donc chaque description moins utile. `core` — le profil par défaut d'une installation neuve avec toutes les sources de skills groupées — expose 29 skills, et chaque voie s'y ajoute :
+my-claude installe une unique liste d'autorisation figée ; my-codex installe 110 entrées de skills puis contrôle combien d'entre eux Codex voit réellement. Codex tronque les descriptions de skills dès que son budget de skills est dépassé : un catalogue sans priorité rend donc chaque description moins utile. `core` — le profil par défaut d'une installation neuve avec toutes les sources de skills groupées — expose 30 skills, et chaque voie s'y ajoute :
 
 | Profil / voie | Ce qu'elle ajoute | Nombre | Activation |
 |----------------|--------------|------:|---------------|
 | `core` | L'ensemble toujours actif : skills de base my-codex, voie processus de développement superpowers, routeurs gstack livraison/QA/revue et standards ECC | 29 | par défaut ; `--skill-profile=core` pour y revenir |
 | `legacy` | Exposition d'avant la migration ; choisie automatiquement quand `--skip-ecc`, `--skip-gstack`, `--skip-superpowers` ou `--skip-archify` omet une source principale sans profil explicite | variable | `--skill-profile=legacy` |
-| `full` | Toutes les voies d'un coup — les 109 entrées installées ; le catalogue nomme 209 entrées, celles qui ne sont pas encore installées sont matérialisées à la demande. Peut dépasser le budget de contexte | 109 | `--skill-profile=full` ou `--full-skills` |
+| `full` | Toutes les voies d'un coup — les 110 entrées installées ; le catalogue nomme 210 entrées, celles qui ne sont pas encore installées sont matérialisées à la demande. Peut dépasser le budget de contexte | 110 | `--skill-profile=full` ou `--full-skills` |
 | `workflow-advanced` | Planification avancée, opérations sur le dépôt et workflows worktree | 13 | `--skills=workflow-advanced` |
 | `qa-operations` | QA, contrôles navigateur, release, déploiement et sûreté opérationnelle | 20 | `--skills=qa-operations` |
 | `ai-engineering` | Systèmes d'agents, évaluation, prompts, recherche d'information et MCP | 18 | `--skills=ai-engineering` |

@@ -138,6 +138,7 @@ Use `spawn_agent` with `agent_type` to delegate work. Tier priority when several
 | Agent | Tier | Purpose | When to Use |
 |-------|------|---------|-------------|
 | boss | core | Meta-orchestration | Default entry point for any non-trivial request |
+| academic-english-editor | core | English academic-writing review and polish (read-only on the document) | Proofread or polish paper/thesis prose; proposals only |
 | sisyphus | omo | Multi-step orchestration | No plan yet; needs delegation and verification to completion |
 | atlas | omo | Plan execution | A plan already exists; each step needs delegating and tracking |
 | hephaestus | omo | Autonomous execution | One agent should finish the task end-to-end, no check-ins |

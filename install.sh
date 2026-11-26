@@ -1778,7 +1778,20 @@ if [ "$SKIP_GSTACK" = "0" ]; then
         # the catalog step copies a skill in from the pinned payload when no
         # alias exists, and on Windows every alias is a copy. Unlike a link it
         # never follows gstack, so replace it with what setup just generated.
-        rm -rf "${target:?}"
+        # The manifest cannot tell such a copy from a user's own directory put
+        # in place of an installer link, so a slot that differs from the
+        # generated skill is moved to backups/ rather than deleted.
+        if diff -qr "$target" "$generated_source" >/dev/null 2>&1; then
+          rm -rf "${target:?}"
+        else
+          slot_backup="$CODEX_ROOT/backups/skill-$skill_name-$(date +%Y%m%dT%H%M%S)"
+          while [ -e "$slot_backup" ]; do
+            slot_backup="${slot_backup}-1"
+          done
+          mkdir -p "$CODEX_ROOT/backups"
+          mv "$target" "$slot_backup"
+          echo "  [gstack] skills/$skill_name replaced by the generated skill; the previous copy is in $slot_backup"
+        fi
         mv "$generated_target" "$target"
         add_manifest_entry "skills/$skill_name"
       else

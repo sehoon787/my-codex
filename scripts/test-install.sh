@@ -873,6 +873,17 @@ rm -rf "$renamed_cso_alias"
 cp -R "$TEST_HOME/.codex/vendor/my-codex/upstream/gstack/cso" "$renamed_cso_alias"
 grep -qx 'skills/cso' "$TEST_HOME/.codex/.my-codex-manifest.txt"
 
+# A user who put a directory of their own, with a note, in place of the
+# installer's link at an allowlisted name. The manifest still lists the slot,
+# so nothing can tell it from the installer's own copy.
+user_retro="$TEST_HOME/.codex/skills/retro"
+grep -qx 'skills/retro' "$TEST_HOME/.codex/.my-codex-manifest.txt"
+test -L "$user_retro"
+rm "$user_retro"
+mkdir -p "$user_retro"
+cp "$generated_skills/gstack-retro/SKILL.md" "$user_retro/SKILL.md"
+printf 'my retro notes\n' > "$user_retro/user-notes.md"
+
 # Earlier installs wrote auto_upgrade=true into gstack's legacy config.json.
 mkdir -p "$TEST_HOME/.gstack"
 printf '{"auto_upgrade": true, "user_key": "kept"}\n' > "$TEST_HOME/.gstack/config.json"
@@ -903,6 +914,18 @@ test -f "$renamed_cso_alias/SKILL.md"
 test ! -e "$TEST_HOME/.codex/skills/gstack-cso"
 test ! -L "$TEST_HOME/.codex/skills/gstack-cso"
 assert_generated_slot "$renamed_cso_alias" "$generated_skills/gstack-cso"
+
+# Both replaced slots differ from the generated skill, so each one is moved to
+# backups/ with a one-line notice instead of being deleted: the user's retro
+# directory keeps its note there.
+retro_backup="$(find "$TEST_HOME/.codex/backups" -maxdepth 1 -name 'skill-retro-*' | head -n 1)"
+test -n "$retro_backup"
+test "$(cat "$retro_backup/user-notes.md")" = "my retro notes"
+test "$(grep -cF "skills/retro replaced by the generated skill; the previous copy is in $retro_backup" "$TMP_ROOT/reinstall.out")" = "1"
+assert_generated_slot "$user_retro" "$generated_skills/gstack-retro"
+cso_backup="$(find "$TEST_HOME/.codex/backups" -maxdepth 1 -name 'skill-cso-*' | head -n 1)"
+test -n "$cso_backup"
+test -f "$cso_backup/SKILL.md"
 
 # The config.toml diff above already proves the MCP tables were not re-appended;
 # assert the count directly too, since a duplicate table is the failure mode that

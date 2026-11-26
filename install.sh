@@ -1106,6 +1106,48 @@ copy_repo_snapshot() {
   fi
 }
 
+# Take what git ignores in the source checkout back out of a fresh snapshot of
+# it: local state such as .briefing/, .omc/ and .serena/ is not part of
+# my-codex. Everything else stays, untracked files and submodule working trees
+# included (git lists nothing inside a submodule here, and
+# scripts/skill-catalog.js materializes skills from vendor/my-codex/upstream/*).
+# Deleting the listed paths after the copy works the same for the rsync and the
+# tar copy, with no exclude patterns to escape. A source without git metadata
+# of its own, or a machine without git, keeps the full copy.
+# Only the source's own repository decides what is ignored: with a broken .git,
+# git walks up to an enclosing repository and would apply its rules, so the
+# source has to be the top of git's work tree (an empty --show-prefix), and an
+# inherited GIT_DIR, GIT_WORK_TREE or GIT_INDEX_FILE is not let in.
+# Deletion stays inside the copy: an entry that is absolute, has a . or ..
+# component, or contains a backslash (a ..\ path on Git Bash) is skipped, and
+# so is one below a symlink, so rm never resolves a link on the way down. An
+# entry that is itself a link is removed as a link.
+remove_git_ignored_paths() {
+  local src_dir="$1"
+  local dest_dir="$2"
+  local rel_path parent rest
+  [ -e "$src_dir/.git" ] || return 0
+  [ -d "$dest_dir" ] && [ ! -L "$dest_dir" ] || return 0
+  command -v git >/dev/null 2>&1 || return 0
+  [ -z "$(unset GIT_DIR GIT_WORK_TREE GIT_INDEX_FILE
+          git -C "$src_dir" rev-parse --show-prefix 2>/dev/null || echo outside)" ] || return 0
+
+  while IFS= read -r -d '' rel_path; do
+    rel_path="${rel_path%/}"
+    case "$rel_path" in ''|/*|*\\*) continue ;; esac
+    case "/$rel_path/" in */./*|*/../*) continue ;; esac
+    parent="$dest_dir"
+    rest="$rel_path"
+    while [ "${rest#*/}" != "$rest" ]; do
+      parent="$parent/${rest%%/*}"
+      rest="${rest#*/}"
+      if [ -L "$parent" ] || [ ! -d "$parent" ]; then continue 2; fi
+    done
+    rm -rf -- "${dest_dir:?}/${rel_path:?}" || true
+  done < <(unset GIT_DIR GIT_WORK_TREE GIT_INDEX_FILE
+           git -C "$src_dir" ls-files -z --others --ignored --exclude-standard --directory 2>/dev/null)
+}
+
 # Refresh a long-lived upstream runtime without discarding its generated build
 # output on every my-codex reinstall. The fallback remains correct on systems
 # without rsync, but may require gstack to rebuild its local artifacts.
@@ -1650,6 +1692,27 @@ if [ "$SKIP_GSTACK" = "0" ]; then
       add_manifest_entry "skills/gstack/SKILL.md"
     fi
 
+    # Upstream retires and renames skills over time, and the loop below walks
+    # only what setup generates now, so it never sees the unprefixed alias an
+    # older setup left behind. Such a link dangles, is not in the manifest, and
+    # would keep its slot from the loop and from the catalog step. Remove a
+    # dangling link whose destination sits directly in gstack's generated skills
+    # directory before the loop, so a skill setup generates again takes its slot
+    # in this same run; leave everything else alone.
+    generated_root="$(cd "$GSTACK_DIR/.agents/skills" 2>/dev/null && pwd -P || true)"
+    if [ -n "$generated_root" ]; then
+      for target in "$CODEX_ROOT/skills/"*; do
+        [ -L "$target" ] || continue
+        [ ! -e "$target" ] || continue
+        link_dest="$(readlink "$target" 2>/dev/null || true)"
+        case "$link_dest" in /*) ;; *) link_dest="$(dirname "$target")/$link_dest" ;; esac
+        link_parent="$(cd "$(dirname "$link_dest")" 2>/dev/null && pwd -P || true)"
+        if [ "$link_parent" = "$generated_root" ]; then
+          rm -f "$target"
+        fi
+      done
+    fi
+
     # gstack generates Codex-correct skills under gstack-* directory names.
     # Keep my-codex's established unprefixed routing surface and remove the
     # duplicate prefixed path, but only when the installed entry is provably
@@ -1709,30 +1772,32 @@ if [ "$SKIP_GSTACK" = "0" ]; then
       elif [ ! -e "$target" ] && [ ! -L "$target" ]; then
         mv "$generated_target" "$target"
         add_manifest_entry "skills/$skill_name"
+      elif [ -d "$target" ] && [ ! -L "$target" ] && \
+           grep -qxF "skills/$skill_name" "$MANIFEST_FILE" 2>/dev/null; then
+        # A copy the previous manifest lists is the installer's own snapshot:
+        # the catalog step copies a skill in from the pinned payload when no
+        # alias exists, and on Windows every alias is a copy. Unlike a link it
+        # never follows gstack, so replace it with what setup just generated.
+        # The manifest cannot tell such a copy from a user's own directory put
+        # in place of an installer link, so a slot that differs from the
+        # generated skill is moved to backups/ rather than deleted.
+        if diff -qr "$target" "$generated_source" >/dev/null 2>&1; then
+          rm -rf "${target:?}"
+        else
+          slot_backup="$CODEX_ROOT/backups/skill-$skill_name-$(date +%Y%m%dT%H%M%S)"
+          while [ -e "$slot_backup" ]; do
+            slot_backup="${slot_backup}-1"
+          done
+          mkdir -p "$CODEX_ROOT/backups"
+          mv "$target" "$slot_backup"
+          echo "  [gstack] skills/$skill_name replaced by the generated skill; the previous copy is in $slot_backup"
+        fi
+        mv "$generated_target" "$target"
+        add_manifest_entry "skills/$skill_name"
       else
         rm -rf "$generated_target"
       fi
     done
-
-    # Upstream retires skills over time, so the loop above, which walks only
-    # what setup still generates, never sees the unprefixed alias an older setup
-    # left for a retired one. Such a link dangles, is not in the manifest, and
-    # blocks the catalog from materializing a skill of the same name. Remove a
-    # dangling link whose destination sits directly in gstack's generated skills
-    # directory; leave everything else alone.
-    generated_root="$(cd "$GSTACK_DIR/.agents/skills" 2>/dev/null && pwd -P || true)"
-    if [ -n "$generated_root" ]; then
-      for target in "$CODEX_ROOT/skills/"*; do
-        [ -L "$target" ] || continue
-        [ ! -e "$target" ] || continue
-        link_dest="$(readlink "$target" 2>/dev/null || true)"
-        case "$link_dest" in /*) ;; *) link_dest="$(dirname "$target")/$link_dest" ;; esac
-        link_parent="$(cd "$(dirname "$link_dest")" 2>/dev/null && pwd -P || true)"
-        if [ "$link_parent" = "$generated_root" ]; then
-          rm -f "$target"
-        fi
-      done
-    fi
 
     # This browser sub-skill is intentionally nested upstream but was visible
     # in the old recursive checkout. Preserve it without re-exposing tests or
@@ -1779,18 +1844,22 @@ if [ "$SKIP_GSTACK" = "0" ]; then
       done
     fi
 
-    # gstack auto_upgrade config
-    mkdir -p "$HOME/.gstack"
+    # gstack auto-upgrade is never turned on: it would move gstack past the
+    # pinned commit. Earlier my-codex (and my-claude) installs wrote
+    # auto_upgrade=true into this legacy file; gstack itself reads config.yaml
+    # and GSTACK_AUTO_UPGRADE, never this key, so a true here is theirs and is
+    # turned off. Any other value is the user's and is left as it is.
     GSTACK_CONFIG="$HOME/.gstack/config.json"
     if [ -f "$GSTACK_CONFIG" ]; then
-      node -e "
-        const fs = require('fs');
-        const cfg = JSON.parse(fs.readFileSync('$GSTACK_CONFIG', 'utf8'));
-        cfg.auto_upgrade = true;
-        fs.writeFileSync('$GSTACK_CONFIG', JSON.stringify(cfg, null, 2));
-      " 2>/dev/null || true
-    else
-      echo '{"auto_upgrade":true}' > "$GSTACK_CONFIG"
+      node -e '
+        const fs = require("fs");
+        const file = process.argv[1];
+        const cfg = JSON.parse(fs.readFileSync(file, "utf8"));
+        if (cfg && cfg.auto_upgrade === true) {
+          fs.writeFileSync(file, JSON.stringify({ ...cfg, auto_upgrade: false }, null, 2));
+          console.log("  [gstack] auto_upgrade turned off in " + file + " (an earlier my-codex or my-claude install set it)");
+        }
+      ' "$GSTACK_CONFIG" 2>/dev/null || true
     fi
   fi
 fi
@@ -2108,6 +2177,7 @@ MARKETPLACE_FILE="$MARKETPLACE_DIR/marketplace.json"
 
 mkdir -p "$(dirname "$VENDOR_REPO_ROOT")"
 copy_repo_snapshot "$REPO_ROOT" "$VENDOR_REPO_ROOT"
+remove_git_ignored_paths "$REPO_ROOT" "$VENDOR_REPO_ROOT"
 add_manifest_entry "vendor/my-codex"
 
 # Symlink plugin into marketplace root so source.path stays relative.

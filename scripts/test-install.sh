@@ -11,6 +11,9 @@ TEST_HOME="$TMP_ROOT/home"
 BIN_DIR="$TMP_ROOT/bin"
 LOG_FILE="$TMP_ROOT/codex.log"
 SERVICE_STATE="$TMP_ROOT/shared-services"
+# A file git ignores, left in the source checkout while the test runs so the
+# vendor-copy check below has something to leave out even on a fresh clone.
+VENDOR_IGNORED_PROBE="install-test-ignored.$$.log"
 VAULT_ONLY=0
 GSTACK_ONLY=0
 export AGENT_HARNESS_STATE_DIR="$SERVICE_STATE"
@@ -55,6 +58,24 @@ to_git_bash_path() {
   printf '%s' "$value" | sed -E 's#^([A-Za-z]):#/\L\1#; s#\\#/#g'
 }
 
+# bash exempts a `!`-negated command from `set -e`, so a bare `! grep ...`
+# never fails the test. Checks that something is absent end in `|| fail`, and
+# because `!` also turns grep's missing-file error into a pass, the file is
+# asserted first (`test -f ... &&`) unless the line before already does.
+fail() {
+  echo "FAILED at line ${BASH_LINENO[0]}: $*" >&2
+  exit 1
+}
+
+# A skill slot holds what gstack setup generated: a link to it, or on Windows,
+# where setup copies, an identical copy.
+assert_generated_slot() {
+  case "$(uname -s)" in
+    MINGW*|MSYS*|CYGWIN*) diff -r "$2" "$1" > /dev/null ;;
+    *) test "$(cd "$1" && pwd -P)" = "$(cd "$2" && pwd -P)" ;;
+  esac
+}
+
 # `hooks = true` must live inside the [features] table. Appending it at EOF would
 # park it under whatever table comes last (usually an [mcp_servers.*] one), where
 # Codex never reads it -- so assert placement, not mere presence.
@@ -74,6 +95,7 @@ cleanup() {
     pid="$(cat "$pid_file")"
     kill "$pid" 2>/dev/null || true
   done
+  rm -f "$REPO_ROOT/$VENDOR_IGNORED_PROBE"
   if [ "${KEEP_TMP_ROOT:-0}" = "1" ]; then
     echo "Preserving test root: $TMP_ROOT" >&2
     return
@@ -236,6 +258,8 @@ printf -- '---\nname: review\ndescription: legacy\n---\n' > \
   "$TEST_HOME/.codex/skills/gstack/review/SKILL.md"
 ln -s "$TEST_HOME/.codex/skills/gstack/review" "$TEST_HOME/.codex/skills/review"
 chmod +x "$TEST_HOME/.codex/skills/gstack/setup" "$TEST_HOME/.codex/skills/gstack/bin/gstack-config"
+printf 'local state\n' > "$REPO_ROOT/$VENDOR_IGNORED_PROBE"
+git -C "$REPO_ROOT" check-ignore -q "$VENDOR_IGNORED_PROBE"
 
 HOME="$TEST_HOME" CODEX_HOME="$HOSTILE_CODEX_HOME" PATH="$BIN_DIR:$PATH" MY_CODEX_TEST_LOG="$LOG_FILE" MY_CODEX_TEST_UV_STATE="$UV_STATE" MY_CODEX_TEST_SERVICE_ROOT="$SERVICE_ROOT" \
   bash "$REPO_ROOT/install.sh" > "$TMP_ROOT/install.out"
@@ -268,7 +292,122 @@ grep -q '"name": "my-codex"' "$TEST_HOME/.agents/plugins/marketplace.json"
 test -L "$TEST_HOME/.agents/plugins/plugins/my-codex"
 test "$(readlink "$TEST_HOME/.agents/plugins/plugins/my-codex")" = "$TEST_HOME/.codex/vendor/my-codex"
 test -f "$TEST_HOME/.codex/vendor/my-codex/.codex-plugin/plugin.json"
-! grep -q '"hooks"' "$TEST_HOME/.codex/vendor/my-codex/.codex-plugin/plugin.json"
+! grep -q '"hooks"' "$TEST_HOME/.codex/vendor/my-codex/.codex-plugin/plugin.json" || fail "vendor plugin.json declares hooks"
+# vendor/my-codex is the whole working tree, submodule checkouts included (the
+# skill catalog materializes skills from them), minus what git ignores in the
+# source checkout.
+test -f "$TEST_HOME/.codex/vendor/my-codex/upstream/ecc/skills/api-design/SKILL.md"
+test -f "$TEST_HOME/.codex/vendor/my-codex/upstream/superpowers/skills/brainstorming/SKILL.md"
+test -f "$REPO_ROOT/$VENDOR_IGNORED_PROBE"
+test ! -e "$TEST_HOME/.codex/vendor/my-codex/$VENDOR_IGNORED_PROBE"
+
+# Without rsync (Git Bash has none) the snapshot is a tar copy, and a source
+# git cannot read (no git, or no .git of its own, as in an npm or tarball copy)
+# keeps everything. Run the installer's own functions on a small checkout: the
+# ignored directory and file go; a tracked file that matches an ignore pattern,
+# an untracked file and a nested repository standing in for a submodule
+# checkout stay. Only the source's own repository decides: neither an enclosing
+# repository that git reaches through a broken .git nor an inherited GIT_DIR.
+snapshot_fixture="$TMP_ROOT/snapshot-fixture"
+mkdir -p "$snapshot_fixture/src/docs" "$snapshot_fixture/src/.omc" "$snapshot_fixture/src/upstream/sub/skills/x" \
+  "$snapshot_fixture/tools-no-rsync" "$snapshot_fixture/tools-no-git" \
+  "$snapshot_fixture/outer/inner/docs" "$snapshot_fixture/outer/inner/.git"
+git -C "$snapshot_fixture/src" init -q
+printf '.omc/\n*.log\n' > "$snapshot_fixture/src/.gitignore"
+printf 'tracked\n' > "$snapshot_fixture/src/docs/readme.md"
+printf 'tracked\n' > "$snapshot_fixture/src/docs/keep.log"
+git -C "$snapshot_fixture/src" add .gitignore docs/readme.md
+git -C "$snapshot_fixture/src" add -f docs/keep.log
+git -C "$snapshot_fixture/outer" init -q
+printf 'inner/docs/b.md\n' > "$snapshot_fixture/outer/.gitignore"
+printf 'kept\n' > "$snapshot_fixture/outer/inner/docs/b.md"
+printf 'untracked\n' > "$snapshot_fixture/src/new-file.txt"
+printf '{}\n' > "$snapshot_fixture/src/.omc/state.json"
+printf 'trace\n' > "$snapshot_fixture/src/docs/trace.log"
+git -C "$snapshot_fixture/src/upstream/sub" init -q
+printf -- '---\nname: x\n---\n' > "$snapshot_fixture/src/upstream/sub/skills/x/SKILL.md"
+printf 'build\n' > "$snapshot_fixture/src/upstream/sub/build.log"
+for tool in tar rm mkdir; do
+  ln -s "$(command -v "$tool")" "$snapshot_fixture/tools-no-rsync/$tool"
+  ln -s "$(command -v "$tool")" "$snapshot_fixture/tools-no-git/$tool"
+done
+ln -s "$(command -v git)" "$snapshot_fixture/tools-no-rsync/git"
+snapshot_functions="$(sed -n '/^copy_repo_snapshot() {/,/^}/p; /^remove_git_ignored_paths() {/,/^}/p' "$REPO_ROOT/install.sh")"
+(
+  eval "$snapshot_functions"
+  PATH="$snapshot_fixture/tools-no-rsync"
+  copy_repo_snapshot "$snapshot_fixture/src" "$snapshot_fixture/tar-copy"
+  remove_git_ignored_paths "$snapshot_fixture/src" "$snapshot_fixture/tar-copy"
+  PATH="$snapshot_fixture/tools-no-git"
+  copy_repo_snapshot "$snapshot_fixture/src" "$snapshot_fixture/no-git-copy"
+  remove_git_ignored_paths "$snapshot_fixture/src" "$snapshot_fixture/no-git-copy"
+  PATH="$snapshot_fixture/tools-no-rsync"
+  copy_repo_snapshot "$snapshot_fixture/no-git-copy" "$snapshot_fixture/plain-copy"
+  remove_git_ignored_paths "$snapshot_fixture/no-git-copy" "$snapshot_fixture/plain-copy"
+  copy_repo_snapshot "$snapshot_fixture/outer/inner" "$snapshot_fixture/broken-git-copy"
+  remove_git_ignored_paths "$snapshot_fixture/outer/inner" "$snapshot_fixture/broken-git-copy"
+  export GIT_DIR="$snapshot_fixture/outer/.git"
+  copy_repo_snapshot "$snapshot_fixture/src" "$snapshot_fixture/git-dir-copy"
+  remove_git_ignored_paths "$snapshot_fixture/src" "$snapshot_fixture/git-dir-copy"
+)
+test -f "$snapshot_fixture/tar-copy/docs/readme.md"
+test -f "$snapshot_fixture/tar-copy/docs/keep.log"
+test -f "$snapshot_fixture/tar-copy/new-file.txt"
+test -f "$snapshot_fixture/tar-copy/upstream/sub/skills/x/SKILL.md"
+test -f "$snapshot_fixture/tar-copy/upstream/sub/build.log"
+test ! -e "$snapshot_fixture/tar-copy/.git"
+test ! -e "$snapshot_fixture/tar-copy/.omc"
+test ! -e "$snapshot_fixture/tar-copy/docs/trace.log"
+test -f "$snapshot_fixture/no-git-copy/.omc/state.json"
+test -f "$snapshot_fixture/no-git-copy/docs/trace.log"
+test -f "$snapshot_fixture/plain-copy/.omc/state.json"
+test -f "$snapshot_fixture/plain-copy/docs/trace.log"
+test -f "$snapshot_fixture/broken-git-copy/docs/b.md"
+test -f "$snapshot_fixture/git-dir-copy/docs/keep.log"
+test ! -e "$snapshot_fixture/git-dir-copy/docs/trace.log"
+
+# Deletion never leaves the copy, whatever git lists: an absolute entry, a . or
+# .. component, a backslash, a path below a symlinked directory and a symlinked
+# copy root are skipped, and an entry that is itself a link is removed as a
+# link only.
+guard_root="$snapshot_fixture/guard"
+mkdir -p "$guard_root/src" "$guard_root/dest/docs" "$guard_root/dest/abs" "$guard_root/outside/linked" "$guard_root/tools"
+git -C "$guard_root/src" init -q
+printf 'keep\n' > "$guard_root/outside/escape.log"
+printf 'keep\n' > "$guard_root/outside/linked/x.log"
+printf 'keep\n' > "$guard_root/dest/abs/victim.log"
+printf 'keep\n' > "$guard_root/dest/..\\victim.log"
+printf 'drop\n' > "$guard_root/dest/docs/trace.log"
+ln -s "$guard_root/outside/linked" "$guard_root/dest/via-link"
+ln -s "$guard_root/outside/linked" "$guard_root/dest/shortcut"
+ln -s "$guard_root/outside" "$guard_root/dest-link"
+cat > "$guard_root/tools/git" <<'EOF'
+#!/usr/bin/env bash
+case " $* " in
+  *" rev-parse "*) echo ;;
+  *) printf '%s\0' ../outside/escape.log docs/../../outside/escape.log /abs/victim.log ./ '..\victim.log' \
+       via-link/x.log linked/x.log escape.log shortcut/ docs/trace.log ;;
+esac
+EOF
+chmod +x "$guard_root/tools/git"
+(
+  eval "$snapshot_functions"
+  PATH="$guard_root/tools:$PATH"
+  remove_git_ignored_paths "$guard_root/src" "$guard_root/dest"
+  remove_git_ignored_paths "$guard_root/src" "$guard_root/dest-link"
+)
+test -f "$guard_root/outside/escape.log"
+test -f "$guard_root/outside/linked/x.log"
+test -f "$guard_root/dest/abs/victim.log"
+test -f "$guard_root/dest/..\\victim.log"
+test -L "$guard_root/dest/via-link"
+test ! -e "$guard_root/dest/shortcut"
+test ! -L "$guard_root/dest/shortcut"
+test ! -e "$guard_root/dest/docs/trace.log"
+
+# The installer never turns gstack auto-upgrade on, so a fresh install leaves no
+# legacy ~/.gstack/config.json behind (gstack itself keeps config.yaml).
+test ! -e "$TEST_HOME/.gstack/config.json"
 test -f "$TEST_HOME/.codex/hooks/session-sync.js"
 test -f "$TEST_HOME/.codex/hooks/briefing-runtime.js"
 test -f "$TEST_HOME/.codex/hooks/session-start-state.js"
@@ -350,8 +489,8 @@ if [ "$VAULT_ONLY" = "1" ]; then
   test "$session_topic_count" -ge 1
   test "$learning_topic_count" = "0"
   test "$decision_topic_count" = "0"
-  ! grep -q '\.gitignore' "$session_auto"
-  ! grep -q '\.gitignore' "$learning_auto"
+  test -f "$session_auto" && ! grep -q '\.gitignore' "$session_auto" || fail "session note mentions .gitignore"
+  test -f "$learning_auto" && ! grep -q '\.gitignore' "$learning_auto" || fail "learning note mentions .gitignore"
   test ! -e "$PROJECT_ROOT/.briefing/.session-start-head"
   test ! -e "$PROJECT_ROOT/.briefing/.session-start-status"
   test ! -e "$PROJECT_ROOT/.briefing/.session-message-count"
@@ -450,7 +589,7 @@ test ! -e "$TEST_HOME/.codex/skills/laravel-patterns"
 test ! -e "$TEST_HOME/.codex/skills/react-patterns"
 test ! -e "$TEST_HOME/.codex/skills/vue-patterns"
 test -f "$TEST_HOME/.codex/enabled-skill-lanes.txt"
-! grep -q '^web$' "$TEST_HOME/.codex/enabled-skill-lanes.txt"
+! grep -q '^web$' "$TEST_HOME/.codex/enabled-skill-lanes.txt" || fail "web lane enabled on a default install"
 test -f "$TEST_HOME/.codex/skills/brainstorming/SKILL.md"
 test ! -e "$TEST_HOME/.codex/skills/dispatching-parallel-agents"
 test -f "$TEST_HOME/.codex/enabled-agent-packs.txt"
@@ -462,7 +601,7 @@ test -x "$TEST_HOME/.codex/git-hooks/prepare-commit-msg"
 test -x "$TEST_HOME/.codex/git-hooks/commit-msg"
 test -x "$TEST_HOME/.codex/git-hooks/post-commit"
 grep -q 'multi_agent = true' "$TEST_HOME/.codex/config.toml"
-! grep -q 'child_agents_md' "$TEST_HOME/.codex/config.toml"
+! grep -q 'child_agents_md' "$TEST_HOME/.codex/config.toml" || fail "config.toml still sets child_agents_md"
 grep -q 'max_threads = 8' "$TEST_HOME/.codex/config.toml"
 
 # Codex reads lifecycle hooks from $CODEX_HOME/hooks.json (root) and only when
@@ -479,7 +618,7 @@ grep -q '<!-- my-codex:context-hygiene -->' "$TEST_HOME/.codex/AGENTS.md"
 grep -q '<!-- my-codex:tooling-mcp -->' "$TEST_HOME/.codex/AGENTS.md"
 test "$(grep -c 'my-codex:' "$TEST_HOME/.codex/AGENTS.md")" = "6"
 grep -q 'The root agent is the \*\*Boss orchestrator\*\*' "$TEST_HOME/.codex/AGENTS.md"
-! grep -q 'spawn_agent(prompt="<user.s full request>", agent_type="boss")' "$TEST_HOME/.codex/AGENTS.md"
+! grep -q 'spawn_agent(prompt="<user.s full request>", agent_type="boss")' "$TEST_HOME/.codex/AGENTS.md" || fail "AGENTS.md still has the pre-marker boss spawn line"
 # A successful gstack install keeps the checkout outside Codex's recursively
 # scanned skills root and exposes only the upstream minimal runtime facade.
 if [ -f "$TEST_HOME/.codex/vendor/gstack/setup" ]; then
@@ -499,6 +638,17 @@ grep -q '^name: gstack$' "$TEST_HOME/.codex/skills/gstack/SKILL.md"
 grep -q '^name: codex$' "$TEST_HOME/.codex/skills/codex/SKILL.md"
 grep -q '^name: gstack-upgrade$' "$TEST_HOME/.codex/skills/gstack-upgrade/SKILL.md"
 grep -q '^name: hackernews-frontpage$' "$TEST_HOME/.codex/skills/hackernews-frontpage/SKILL.md"
+# install.sh, not gstack setup, exposes these two skills, and records them as
+# its own. Outside Windows they are links into the pinned runtime.
+grep -qx 'skills/hackernews-frontpage' "$TEST_HOME/.codex/.my-codex-manifest.txt"
+grep -qx 'skills/codex' "$TEST_HOME/.codex/.my-codex-manifest.txt"
+case "$(uname -s)" in
+  MINGW*|MSYS*|CYGWIN*) ;;
+  *)
+    test "$(readlink "$TEST_HOME/.codex/skills/hackernews-frontpage")" = "$TEST_HOME/.codex/vendor/gstack/browser-skills/hackernews-frontpage"
+    test "$(readlink "$TEST_HOME/.codex/skills/codex")" = "$TEST_HOME/.codex/vendor/gstack/codex"
+    ;;
+esac
 
 # gstack setup currently generates every upstream gstack-* skill. my-codex's
 # public Codex catalog is narrower: only names in GSTACK_SKILL_ALLOWLIST may be
@@ -554,11 +704,11 @@ if [ "$GSTACK_ONLY" = "1" ]; then
   test ! -L "$custom_gstack_review"
   test -f "$custom_gstack_review/SKILL.md"
   test "$(cat "$custom_gstack_review/user-notes.md")" = "keep this user note"
-  ! grep -qx 'skills/gstack-review' "$TEST_HOME/.codex/.my-codex-manifest.txt"
+  test -f "$TEST_HOME/.codex/.my-codex-manifest.txt" && ! grep -qx 'skills/gstack-review' "$TEST_HOME/.codex/.my-codex-manifest.txt" || fail "manifest claims the user's skills/gstack-review"
   test -L "$custom_design_html"
   test "$(readlink "$custom_design_html")" = "$custom_design_html_source"
   test -f "$custom_design_html/SKILL.md"
-  ! grep -qx 'skills/design-html' "$TEST_HOME/.codex/.my-codex-manifest.txt"
+  test -f "$TEST_HOME/.codex/.my-codex-manifest.txt" && ! grep -qx 'skills/design-html' "$TEST_HOME/.codex/.my-codex-manifest.txt" || fail "manifest claims the user's skills/design-html"
   test -d "$custom_generated_design_html"
   test ! -L "$custom_generated_design_html"
   test -f "$custom_generated_design_html/SKILL.md"
@@ -582,7 +732,7 @@ test -f "$TEST_HOME/.codex/.my-codex-manifest.txt"
 test "$(cat "$TEST_HOME/.codex/.my-codex-version")" = "$expected_version"
 # Post-dedup contract: no packs enabled by default (opt-in only).
 test -f "$TEST_HOME/.codex/enabled-agent-packs.txt"
-! grep -q '^[a-z]' "$TEST_HOME/.codex/enabled-agent-packs.txt"
+! grep -q '^[a-z]' "$TEST_HOME/.codex/enabled-agent-packs.txt" || fail "an agent pack is enabled by default"
 grep -q 'mcp add context7' "$LOG_FILE"
 grep -q 'mcp add exa' "$LOG_FILE"
 grep -q 'mcp add grep_app' "$LOG_FILE"
@@ -624,24 +774,33 @@ test "$(find "$TEST_HOME/.codex/agents" -maxdepth 1 -type l -name '*.toml' | wc 
 # skill and the catalog step refuses to write over a symlink ("unsafe managed
 # file"). Upstream restored /plan-eng-review in GST-2726, so its alias is live
 # again; investigate's still dangles. A clean HOME never reaches this state, so
-# seed it. A dangling link that points outside gstack's generated tree is the
-# user's own and must survive.
+# seed it. The cso alias dangles at a catalog skill's name whatever upstream
+# retires, and the two retired-*-alias links do not depend on upstream either.
+# A dangling link that points outside gstack's generated tree is the user's own
+# and must survive.
 generated_skills="$TEST_HOME/.codex/vendor/gstack/.agents/skills"
 plan_eng_review_alias="$TEST_HOME/.codex/skills/plan-eng-review"
+renamed_cso_alias="$TEST_HOME/.codex/skills/cso"
 retired_investigate="$TEST_HOME/.codex/skills/investigate"
 retired_relative="$TEST_HOME/.codex/skills/retired-relative-alias"
+retired_absolute="$TEST_HOME/.codex/skills/retired-absolute-alias"
 user_gone="$TEST_HOME/.codex/skills/user-gone"
 test -f "$plan_eng_review_alias/SKILL.md"
 rm -rf "$plan_eng_review_alias"
 ln -s "$generated_skills/gstack-plan-eng-review/" "$plan_eng_review_alias"
+test -f "$renamed_cso_alias/SKILL.md"
+rm -rf "$renamed_cso_alias"
+ln -s "$generated_skills/gstack-cso-renamed/" "$renamed_cso_alias"
 ln -s "$generated_skills/gstack-investigate/" "$retired_investigate"
 ln -s "../vendor/gstack/.agents/skills/gstack-retired-relative-alias/" "$retired_relative"
+ln -s "$generated_skills/gstack-retired-absolute-alias/" "$retired_absolute"
 mkdir -p "$TEST_HOME/elsewhere"
 ln -s "$TEST_HOME/elsewhere/gone/" "$user_gone"
 grep -qx 'skills/plan-eng-review' "$TEST_HOME/.codex/.my-codex-manifest.txt"
-grep -vx 'skills/plan-eng-review' "$TEST_HOME/.codex/.my-codex-manifest.txt" > "$TMP_ROOT/manifest-legacy.txt"
+grep -qx 'skills/cso' "$TEST_HOME/.codex/.my-codex-manifest.txt"
+grep -vx -e 'skills/plan-eng-review' -e 'skills/cso' "$TEST_HOME/.codex/.my-codex-manifest.txt" > "$TMP_ROOT/manifest-legacy.txt"
 cp "$TMP_ROOT/manifest-legacy.txt" "$TEST_HOME/.codex/.my-codex-manifest.txt"
-test "$(grep -cx 'skills/plan-eng-review' "$TEST_HOME/.codex/.my-codex-manifest.txt")" = "0"
+test "$(grep -cx -e 'skills/plan-eng-review' -e 'skills/cso' "$TEST_HOME/.codex/.my-codex-manifest.txt")" = "0"
 
 HOME="$TEST_HOME" PATH="$BIN_DIR:$PATH" MY_CODEX_TEST_LOG="$LOG_FILE" MY_CODEX_TEST_UV_STATE="$UV_STATE" \
   bash "$REPO_ROOT/install.sh" --profile minimal > "$TMP_ROOT/install-minimal.out"
@@ -651,7 +810,9 @@ test "$(find "$TEST_HOME/.codex/agents" -maxdepth 1 -type l -name '*.toml' | wc 
 # left alone and setup's prefixed link to the same skill is removed: exactly one
 # plan-eng-review remains. Were upstream to retire it again, its alias would be
 # pruned too and the catalog would materialize the skill from the pinned
-# payload. The user's dangling link and a live gstack alias are untouched.
+# payload. cso's alias dangles at a skill setup still generates: it is pruned
+# before the slot loop, so setup's skill takes the slot in this same run. The
+# user's dangling link and a live gstack alias are untouched.
 if [ -d "$generated_skills/gstack-plan-eng-review" ]; then
   test "$(readlink "$plan_eng_review_alias")" = "$generated_skills/gstack-plan-eng-review/"
 else
@@ -660,10 +821,17 @@ fi
 test -f "$plan_eng_review_alias/SKILL.md"
 test ! -e "$TEST_HOME/.codex/skills/gstack-plan-eng-review"
 test ! -L "$TEST_HOME/.codex/skills/gstack-plan-eng-review"
+test -f "$renamed_cso_alias/SKILL.md"
+assert_generated_slot "$renamed_cso_alias" "$generated_skills/gstack-cso"
+grep -qx 'skills/cso' "$TEST_HOME/.codex/.my-codex-manifest.txt"
+test ! -e "$TEST_HOME/.codex/skills/gstack-cso"
+test ! -L "$TEST_HOME/.codex/skills/gstack-cso"
 test ! -e "$retired_investigate"
 test ! -L "$retired_investigate"
 test ! -e "$retired_relative"
 test ! -L "$retired_relative"
+test ! -e "$retired_absolute"
+test ! -L "$retired_absolute"
 test -L "$user_gone"
 test "$(readlink "$user_gone")" = "$TEST_HOME/elsewhere/gone/"
 test -L "$TEST_HOME/.codex/skills/review"
@@ -698,8 +866,35 @@ cp "$TEST_HOME/.codex/hooks.json" "$TMP_ROOT/idempotency-before/hooks.json"
 cp "$TEST_HOME/.codex/config.toml" "$TMP_ROOT/idempotency-before/config.toml"
 cp "$TEST_HOME/.codex/AGENTS.md" "$TMP_ROOT/idempotency-before/AGENTS.md"
 
+# While gstack does not generate a skill (plan-eng-review between GST-1698 and
+# GST-2726), the catalog step fills its slot with a copy of the pinned payload
+# and lists it in the manifest. Put such a copy in cso's slot.
+rm -rf "$renamed_cso_alias"
+cp -R "$TEST_HOME/.codex/vendor/my-codex/upstream/gstack/cso" "$renamed_cso_alias"
+grep -qx 'skills/cso' "$TEST_HOME/.codex/.my-codex-manifest.txt"
+
+# A user who put a directory of their own, with a note, in place of the
+# installer's link at an allowlisted name. The manifest still lists the slot,
+# so nothing can tell it from the installer's own copy.
+user_retro="$TEST_HOME/.codex/skills/retro"
+grep -qx 'skills/retro' "$TEST_HOME/.codex/.my-codex-manifest.txt"
+test -L "$user_retro"
+rm "$user_retro"
+mkdir -p "$user_retro"
+cp "$generated_skills/gstack-retro/SKILL.md" "$user_retro/SKILL.md"
+printf 'my retro notes\n' > "$user_retro/user-notes.md"
+
+# Earlier installs wrote auto_upgrade=true into gstack's legacy config.json.
+mkdir -p "$TEST_HOME/.gstack"
+printf '{"auto_upgrade": true, "user_key": "kept"}\n' > "$TEST_HOME/.gstack/config.json"
+
 HOME="$TEST_HOME" PATH="$BIN_DIR:$PATH" MY_CODEX_TEST_LOG="$LOG_FILE" MY_CODEX_TEST_UV_STATE="$UV_STATE" \
   bash "$REPO_ROOT/install.sh" > "$TMP_ROOT/reinstall.out"
+
+# The installer turns that flag off, says so once, and keeps the rest.
+node -e 'const c = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8")); if (c.auto_upgrade !== false || c.user_key !== "kept") process.exit(1)' \
+  "$TEST_HOME/.gstack/config.json"
+test "$(grep -c 'auto_upgrade turned off in' "$TMP_ROOT/reinstall.out")" = "1"
 
 diff -u "$TMP_ROOT/idempotency-before/hooks.json" "$TEST_HOME/.codex/hooks.json"
 diff -u "$TMP_ROOT/idempotency-before/config.toml" "$TEST_HOME/.codex/config.toml"
@@ -709,6 +904,28 @@ test "$(cksum "$TEST_HOME/.agents/skills/external-normalizer-trap/SKILL.md")" = 
 test "$(cksum "$TEST_HOME/.codex/skills/docx/SKILL.md")" = "$docx_checksum"
 test "$(cksum "$TEST_HOME/.codex/skills/pdf/SKILL.md")" = "$pdf_checksum"
 test ! -f "$TEST_HOME/.codex/hooks/hooks.json"
+
+# That copy of cso is the installer's own: the manifest lists it. gstack
+# generates cso on this run, so the slot must be handed back to the generated
+# skill instead of keeping, through every later pin bump, the payload it was
+# copied from.
+grep -qx 'skills/cso' "$TEST_HOME/.codex/.my-codex-manifest.txt"
+test -f "$renamed_cso_alias/SKILL.md"
+test ! -e "$TEST_HOME/.codex/skills/gstack-cso"
+test ! -L "$TEST_HOME/.codex/skills/gstack-cso"
+assert_generated_slot "$renamed_cso_alias" "$generated_skills/gstack-cso"
+
+# Both replaced slots differ from the generated skill, so each one is moved to
+# backups/ with a one-line notice instead of being deleted: the user's retro
+# directory keeps its note there.
+retro_backup="$(find "$TEST_HOME/.codex/backups" -maxdepth 1 -name 'skill-retro-*' | head -n 1)"
+test -n "$retro_backup"
+test "$(cat "$retro_backup/user-notes.md")" = "my retro notes"
+test "$(grep -cF "skills/retro replaced by the generated skill; the previous copy is in $retro_backup" "$TMP_ROOT/reinstall.out")" = "1"
+assert_generated_slot "$user_retro" "$generated_skills/gstack-retro"
+cso_backup="$(find "$TEST_HOME/.codex/backups" -maxdepth 1 -name 'skill-cso-*' | head -n 1)"
+test -n "$cso_backup"
+test -f "$cso_backup/SKILL.md"
 
 # The config.toml diff above already proves the MCP tables were not re-appended;
 # assert the count directly too, since a duplicate table is the failure mode that
@@ -727,7 +944,7 @@ test -d "$custom_gstack_review"
 test ! -L "$custom_gstack_review"
 test -f "$custom_gstack_review/SKILL.md"
 test "$(cat "$custom_gstack_review/user-notes.md")" = "keep this user note"
-! grep -qx 'skills/gstack-review' "$TEST_HOME/.codex/.my-codex-manifest.txt"
+test -f "$TEST_HOME/.codex/.my-codex-manifest.txt" && ! grep -qx 'skills/gstack-review' "$TEST_HOME/.codex/.my-codex-manifest.txt" || fail "manifest claims the user's skills/gstack-review"
 test "$(cat "$TEST_HOME/.codex/.my-codex-version")" = "$expected_version"
 
 # ── Optional skill lane (--skills=web) ──
@@ -774,7 +991,7 @@ awk -v wanted="$react_skill_path" '
   in_entry && /^enabled = / { enabled=$3; if (path == wanted && enabled == "false") found=1; in_entry=0 }
   END { exit(found ? 0 : 1) }
 ' "$TEST_HOME/.codex/config.toml"
-! grep -q '^web$' "$TEST_HOME/.codex/enabled-skill-lanes.txt"
+test -f "$TEST_HOME/.codex/enabled-skill-lanes.txt" && ! grep -q '^web$' "$TEST_HOME/.codex/enabled-skill-lanes.txt" || fail "web lane still enabled after --skills=none"
 test -f "$TEST_HOME/.codex/skills/unmanaged-web-note/SKILL.md"
 test -f "$TEST_HOME/.codex/skills/custom-skill/SKILL.md"
 test "$(find "$TEST_HOME/.codex/skills" -name 'SKILL.md' | wc -l | tr -d ' ')" = "$skills_web_count"
@@ -788,7 +1005,7 @@ HOME="$TEST_HOME" PATH="$BIN_DIR:$PATH" MY_CODEX_TEST_LOG="$LOG_FILE" MY_CODEX_T
 grep -q '^web$' "$TEST_HOME/.codex/enabled-skill-lanes.txt"
 HOME="$TEST_HOME" PATH="$BIN_DIR:$PATH" MY_CODEX_TEST_LOG="$LOG_FILE" MY_CODEX_TEST_UV_STATE="$UV_STATE" \
   MY_CODEX_SKILLS=none bash "$REPO_ROOT/install.sh" > "$TMP_ROOT/install-skills-env-none.out"
-! grep -q '^web$' "$TEST_HOME/.codex/enabled-skill-lanes.txt"
+test -f "$TEST_HOME/.codex/enabled-skill-lanes.txt" && ! grep -q '^web$' "$TEST_HOME/.codex/enabled-skill-lanes.txt" || fail "web lane still enabled after MY_CODEX_SKILLS=none"
 node -e 'const s=require(process.argv[1]);if(s.enabledLanes.length)process.exit(1)' \
   "$TEST_HOME/.codex/my-codex/skill-catalog-state.json"
 test -f "$TEST_HOME/.codex/skills/react-patterns/SKILL.md"
@@ -809,7 +1026,7 @@ if HOME="$TEST_HOME" PATH="$BIN_DIR:$PATH" MY_CODEX_TEST_LOG="$LOG_FILE" \
 fi
 grep -q 'unknown skill lane: nope' "$TMP_ROOT/install-skills-bad.out"
 # ...and it rejects before touching anything: the persisted set stays empty.
-! grep -q '^web$' "$TEST_HOME/.codex/enabled-skill-lanes.txt"
+test -f "$TEST_HOME/.codex/enabled-skill-lanes.txt" && ! grep -q '^web$' "$TEST_HOME/.codex/enabled-skill-lanes.txt" || fail "web lane enabled by the rejected --skills=nope"
 test -f "$TEST_HOME/.codex/skills/react-patterns/SKILL.md"
 
 PIPE_HOME="$TMP_ROOT/pipe-home"
@@ -868,8 +1085,8 @@ grep -q '## Candidate Decisions' "$decision_auto"
 test "$session_topic_count" -ge 1
 test "$learning_topic_count" = "0"
 test "$decision_topic_count" = "0"
-! grep -q '\.gitignore' "$session_auto"
-! grep -q '\.gitignore' "$learning_auto"
+test -f "$session_auto" && ! grep -q '\.gitignore' "$session_auto" || fail "session note mentions .gitignore"
+test -f "$learning_auto" && ! grep -q '\.gitignore' "$learning_auto" || fail "learning note mentions .gitignore"
 test ! -e "$PROJECT_ROOT/.briefing/.session-start-head"
 test ! -e "$PROJECT_ROOT/.briefing/.session-start-status"
 test ! -e "$PROJECT_ROOT/.briefing/.session-message-count"
@@ -983,7 +1200,7 @@ test ! -e "$LEGACY_HOME/.codex/my-codex/skill-catalog-state.json"
 grep -q 'Existing noninteractive install: preserving current skill exposure' "$TMP_ROOT/install-legacy.out"
 
 assert_features_hooks_enabled "$LEGACY_HOME/.codex/config.toml"
-! grep -q 'child_agents_md' "$LEGACY_HOME/.codex/config.toml"
+! grep -q 'child_agents_md' "$LEGACY_HOME/.codex/config.toml" || fail "legacy config.toml still sets child_agents_md"
 test "$(awk 'f && /^\[/ { exit } /^[[:space:]]*\[[[:space:]]*features[[:space:]]*\][[:space:]]*(#.*)?$/ { f = 1 } f' "$LEGACY_HOME/.codex/config.toml" | grep -c '^hooks = true$')" = "1"
 test "$(grep -cE '^[[:space:]]*\[[[:space:]]*features[[:space:]]*\][[:space:]]*(#.*)?$' "$LEGACY_HOME/.codex/config.toml")" = "1"
 python3 -c "import sys,tomllib; tomllib.load(open(sys.argv[1],'rb'))" "$LEGACY_HOME/.codex/config.toml"

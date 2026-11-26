@@ -8,15 +8,33 @@ on:
         description: 'Specific submodule to update (blank = all)'
         required: false
         default: ''
+      dry_run:
+        description: 'Update, scan and test only: no push, PR, status or merge'
+        required: false
+        type: boolean
+        default: false
 
+# One sync at a time: a second run waits for the first instead of racing it.
+concurrency:
+  group: update-upstream
+  cancel-in-progress: false
+
+# Read-only unless a job says otherwise. The test job executes upstream code,
+# so it runs on its own runner with this token and no secrets; only the
+# publish job, which runs no upstream code, can write.
 permissions:
-  contents: write
-  pull-requests: write
-  statuses: write
+  contents: read
 
 jobs:
   update:
     runs-on: ubuntu-latest
+    outputs:
+      changed: ${{ steps.check.outputs.changed }}
+      flagged: ${{ steps.scan.outputs.flagged }}
+      branch: ${{ steps.commit.outputs.branch }}
+      sha: ${{ steps.commit.outputs.sha }}
+      bundle_sha256: ${{ steps.commit.outputs.bundle_sha256 }}
+      report_sha256: ${{ steps.commit.outputs.report_sha256 }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -93,49 +111,231 @@ jobs:
           bash scripts/scan-upstream-diff.sh
           cat scan-report.md >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Create PR
-        id: pr
+      # Commit and rebase before anything is pushed, so the test job runs on
+      # exactly the tree the PR would merge.
+      - name: Commit and rebase onto main
+        id: commit
         if: steps.check.outputs.changed == 'true'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          BRANCH="chore/update-upstream-$(date +%Y%m%d)"
+          # The run id and attempt keep a second sync on the same day, or a
+          # re-run, off this run's branch.
+          BRANCH="chore/update-upstream-$(date +%Y%m%d)-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
           git checkout -b "$BRANCH"
           git commit -m "chore: update upstream submodules $(date +%Y-%m-%d)"
-          git push origin "$BRANCH"
           # Rebase onto latest main to avoid diverged-branch auto-merge failures
           git fetch origin main
           git rebase origin/main
-          git push --force-with-lease origin "$BRANCH"
-          SHA=$(git rev-parse HEAD)
-          gh api repos/${{ github.repository }}/statuses/$SHA \
-            -f state=success \
+          # The test and publish jobs take this exact commit from a bundle. The
+          # sha256 recorded here is how publish knows the artifact is still the
+          # one this job made.
+          mkdir -p "$RUNNER_TEMP/sync"
+          git bundle create "$RUNNER_TEMP/sync/sync.bundle" "origin/main..$BRANCH"
+          cp scan-report.md "$RUNNER_TEMP/sync/"
+          {
+            echo "branch=$BRANCH"
+            echo "sha=$(git rev-parse HEAD)"
+            echo "bundle_sha256=$(sha256sum "$RUNNER_TEMP/sync/sync.bundle" | cut -d' ' -f1)"
+            echo "report_sha256=$(sha256sum "$RUNNER_TEMP/sync/scan-report.md" | cut -d' ' -f1)"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Upload the commit and the scan report
+        if: steps.check.outputs.changed == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: sync
+          path: ${{ runner.temp }}/sync/
+
+  # Pushes and PRs made with GITHUB_TOKEN start no workflows, so ci.yml never
+  # runs on the sync PR: run its tests here, through the same script. The
+  # tests execute upstream code, so this job has the read-only token, no
+  # secrets and no stored git credentials, and publish trusts nothing from it
+  # but its result.
+  test:
+    needs: update
+    if: needs.update.outputs.sha != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    outputs:
+      failed: ${{ steps.tests.outputs.failed }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: sync
+          path: ${{ runner.temp }}/sync
+
+      - name: Check out the sync commit and its submodules
+        env:
+          BRANCH: ${{ needs.update.outputs.branch }}
+          SHA: ${{ needs.update.outputs.sha }}
+        run: |
+          git fetch "$RUNNER_TEMP/sync/sync.bundle" "refs/heads/$BRANCH"
+          test "$(git rev-parse FETCH_HEAD)" = "$SHA"
+          git checkout --detach "$SHA"
+          git submodule update --init --depth 1
+
+      - name: Run the test suite
+        id: tests
+        run: bash scripts/run-tests.sh
+
+  publish:
+    needs: [update, test]
+    # Never on a dry run, and never from a branch other than main. !cancelled()
+    # lets it run after the test job failed, to open and flag the PR; sha is
+    # set once the commit exists.
+    if: ${{ !cancelled() && !inputs.dry_run && github.ref == 'refs/heads/main' && needs.update.outputs.sha != '' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      statuses: write
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      BRANCH: ${{ needs.update.outputs.branch }}
+      SHA: ${{ needs.update.outputs.sha }}
+      TESTS: ${{ needs.test.result }}
+      RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: sync
+          path: ${{ runner.temp }}/sync
+
+      # The test job ran upstream code and could have replaced the artifact, so
+      # check the bundle and the scan report against the update job's sha256
+      # before using either. Then push only that commit, and only if it changes
+      # what the update job stages: submodule pointers, SOURCES.json and the
+      # README pin tables (scripts/check-sync-commit.sh, from this checkout).
+      - name: Verify and push the sync commit
+        env:
+          BUNDLE_SHA256: ${{ needs.update.outputs.bundle_sha256 }}
+          REPORT_SHA256: ${{ needs.update.outputs.report_sha256 }}
+        run: |
+          printf '%s  %s\n' \
+            "$BUNDLE_SHA256" "$RUNNER_TEMP/sync/sync.bundle" \
+            "$REPORT_SHA256" "$RUNNER_TEMP/sync/scan-report.md" | sha256sum --check --strict
+          git fetch "$RUNNER_TEMP/sync/sync.bundle" "refs/heads/$BRANCH"
+          if [ "$(git rev-parse FETCH_HEAD)" != "$SHA" ]; then
+            echo "::error::The bundle does not hold the commit the update job made."
+            exit 1
+          fi
+          if ! bash scripts/check-sync-commit.sh origin/main "$SHA"; then
+            echo "::error::The sync commit changes more than submodule pointers and pin tables."
+            exit 1
+          fi
+          git push origin "$SHA:refs/heads/$BRANCH"
+
+      # validate is the required check, and ci.yml never runs on this PR: report
+      # the test job's result, success only when every test passed.
+      - name: Report the test result as the validate status
+        run: |
+          if [ "$TESTS" = success ]; then
+            STATE=success DESCRIPTION="Test suite passed in the upstream sync run"
+          else
+            STATE=failure DESCRIPTION="Test suite did not pass in the upstream sync run"
+          fi
+          gh api "repos/$GITHUB_REPOSITORY/statuses/$SHA" \
+            -f state="$STATE" \
             -f context=validate \
-            -f description="Submodule pointer update"
+            -f description="$DESCRIPTION" \
+            -f target_url="$RUN_URL"
+
+      - name: Create PR
+        id: pr
+        run: |
           PR_URL=$(gh pr create \
+            --head "$BRANCH" \
             --title "chore: update upstream submodules $(date +%Y-%m-%d)" \
             --body "Automated upstream submodule update." \
             --base main)
           echo "url=$PR_URL" >> "$GITHUB_OUTPUT"
 
-      # Clean scan → merge automatically, as before.
-      - name: Auto-merge (scan clean)
-        if: steps.check.outputs.changed == 'true' && steps.scan.outputs.flagged == 'false'
+      # Clean scan and passing tests → merge automatically, and only the commit
+      # that was tested.
+      - name: Auto-merge (scan clean, tests passed)
+        id: merge
+        if: needs.update.outputs.flagged == 'false' && needs.test.result == 'success'
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_URL: ${{ steps.pr.outputs.url }}
         run: |
-          gh pr merge "${{ steps.pr.outputs.url }}" --squash --delete-branch
+          gh pr merge "$PR_URL" --squash --delete-branch --match-head-commit "$SHA"
 
       # Flagged scan → leave PR open, label it, and post the scan report.
       - name: Flag for manual review (scan flagged)
-        if: steps.check.outputs.changed == 'true' && steps.scan.outputs.flagged == 'true'
+        if: ${{ !cancelled() && steps.pr.outputs.url != '' && needs.update.outputs.flagged == 'true' }}
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_URL: ${{ steps.pr.outputs.url }}
         run: |
           gh label create needs-review \
             --color FBCA04 \
             --description "Automated change flagged by security scan; needs human review" \
             2>/dev/null || true
-          gh pr edit "${{ steps.pr.outputs.url }}" --add-label needs-review
-          gh pr comment "${{ steps.pr.outputs.url }}" --body-file scan-report.md
+          gh pr edit "$PR_URL" --add-label needs-review
+          gh pr comment "$PR_URL" --body-file "$RUNNER_TEMP/sync/scan-report.md"
           echo "::warning::Upstream sync flagged by security scan — PR left open for manual review."
+
+      # Failed tests → leave PR open, label it, and name the failed step and tests.
+      - name: Flag for manual review (tests failed)
+        if: ${{ !cancelled() && steps.pr.outputs.url != '' && needs.test.result != 'success' }}
+        env:
+          PR_URL: ${{ steps.pr.outputs.url }}
+          FAILED: ${{ needs.test.outputs.failed }}
+        run: |
+          # FAILED comes from the job that ran upstream code: list only names
+          # that look like test paths and exist in this checkout.
+          read -r -a reported <<< "$FAILED"
+          listed=""
+          for t in "${reported[@]}"; do
+            if [[ $t =~ ^(tests|scripts)/[A-Za-z0-9._/-]+$ && $t != *..* && -f $t ]]; then
+              listed+="- \`$t\`"$'\n'
+            fi
+          done
+          {
+            echo ":x: **The test suite did not pass in this sync run** (\`test\` job: $TESTS). Auto-merge was skipped."
+            echo ""
+            if [ -n "$listed" ]; then
+              echo 'Failed step: `Run the test suite` in job `test`. Failed tests:'
+              echo ""
+              printf '%s' "$listed"
+            else
+              echo 'No failed test was reported: the `test` job stopped before or outside `Run the test suite`.'
+            fi
+            echo ""
+            echo "Run: $RUN_URL"
+          } > "$RUNNER_TEMP/tests-comment.md"
+          gh pr comment "$PR_URL" --body-file "$RUNNER_TEMP/tests-comment.md"
+          gh label create tests-failed \
+            --color D93F0B \
+            --description "Automated upstream sync whose test suite failed; needs a fix" \
+            2>/dev/null || true
+          gh pr edit "$PR_URL" --add-label tests-failed
+          echo "::warning::Upstream sync tests failed — PR left open for manual review."
+
+      # Merge refused (main moved during the test run, or the PR head is not the
+      # tested commit) → leave PR open, label it, and say why it is still open.
+      - name: Flag for manual review (auto-merge failed)
+        if: ${{ !cancelled() && steps.merge.outcome == 'failure' }}
+        env:
+          PR_URL: ${{ steps.pr.outputs.url }}
+        run: |
+          {
+            echo ":warning: **Auto-merge failed.** The scan was clean and the tests passed on \`$SHA\`, but the merge was refused, for example because main moved during the test run."
+            echo ""
+            echo "Run: $RUN_URL"
+          } > "$RUNNER_TEMP/merge-comment.md"
+          gh pr comment "$PR_URL" --body-file "$RUNNER_TEMP/merge-comment.md"
+          gh label create auto-merge-failed \
+            --color D93F0B \
+            --description "Automated upstream sync whose auto-merge was refused; needs a rebase or a manual merge" \
+            2>/dev/null || true
+          gh pr edit "$PR_URL" --add-label auto-merge-failed
+          echo "::warning::Upstream sync auto-merge failed — PR left open for manual review."

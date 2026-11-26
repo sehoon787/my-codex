@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
+# `npx skills add --agent codex claude-code` writes into $CODEX_HOME and
+# $CLAUDE_CONFIG_DIR when they are set, past the throwaway HOME below: a run
+# from a session that exports them replaced real skills with links into this
+# test's temp dir. Pass on neither.
+unset CLAUDE_CONFIG_DIR CODEX_HOME
 
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 TMP_ROOT="${TMPDIR:-/tmp}/my-codex-skills-only-test.$$"

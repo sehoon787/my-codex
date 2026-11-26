@@ -1,7 +1,7 @@
 {
   "version": 1,
   "core": [
-    "boss-advanced", "boss-briefing", "briefing-vault", "gstack-sprint", "brainstorming", "writing-plans", "executing-plans", "systematic-debugging", "test-driven-development", "verification-before-completion", "requesting-code-review", "receiving-code-review", "using-git-worktrees", "using-superpowers", "gstack", "review", "cso", "qa", "ship", "careful", "plan-eng-review", "coding-standards", "codebase-onboarding", "documentation-lookup", "context-budget", "api-design", "architecture-decision-records", "archify", "security-scan"
+    "boss-advanced", "boss-briefing", "briefing-vault", "gstack-sprint", "brainstorming", "writing-plans", "executing-plans", "systematic-debugging", "test-driven-development", "verification-before-completion", "requesting-code-review", "receiving-code-review", "using-git-worktrees", "using-superpowers", "gstack", "review", "cso", "qa", "gstack-ship", "careful", "plan-eng-review", "coding-standards", "codebase-onboarding", "documentation-lookup", "context-budget", "api-design", "architecture-decision-records", "archify", "security-scan"
   ],
   "preserve": ["docx", "pdf", "computer-use", "find-skills", "laravel-verification", "orca-cli", "orchestration", "skill-stocktake"],
   "laneDescriptions": {
@@ -32,7 +32,7 @@
     "research-content": ["deep-research", "exa-search", "article-writing", "content-engine", "crosspost", "market-research", "investor-materials", "investor-outreach", "frontend-slides", "product-lens", "x-api"],
     "media-documents": ["computer-use", "data-scraper-agent", "fal-ai-media", "nutrient-document-processing", "video-editing", "videodb", "visa-doc-translate"],
     "business-domains": ["carrier-relationship-management", "customs-trade-compliance", "energy-procurement", "inventory-demand-planning", "logistics-exception-management", "production-scheduling", "quality-nonconformance", "returns-reverse-logistics"],
-    "alternative-workflows": ["autonomous-loops", "blueprint", "browser-qa", "canary-watch", "claude-devfleet", "configure-ecc", "continuous-agent-loop", "continuous-learning", "design-system", "dmux-workflows", "enterprise-agent-ops", "find-skills", "nanoclaw-repl", "omc-plan", "orca-cli", "orchestration", "plankton-code-quality", "project-guidelines-example", "ralphinho-rfc-pipeline", "rules-distill", "safety-guard", "santa-method", "search-first", "security-review", "skill-comply", "skill-stocktake", "strategic-compact", "tdd-workflow", "team-builder", "verification-loop"]
+    "alternative-workflows": ["autonomous-loops", "blueprint", "browser-qa", "canary-watch", "configure-ecc", "continuous-agent-loop", "continuous-learning", "design-system", "devfleet", "dmux-workflows", "enterprise-agent-ops", "find-skills", "nanoclaw-repl", "omc-plan", "orca-cli", "orchestration", "plankton-code-quality", "project-guidelines-example", "ralphinho-rfc-pipeline", "rules-distill", "safety-guard", "santa-method", "search-first", "security-review", "skill-comply", "skill-stocktake", "strategic-compact", "tdd-workflow", "team-builder", "verification-loop"]
   },
   "canonicalSources": {"benchmark": "gstack"},
   "managedRepositories": ["sehoon787/my-codex", "sehoon787/my-claude"],

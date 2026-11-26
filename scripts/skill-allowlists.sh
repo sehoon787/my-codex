@@ -142,6 +142,11 @@ web
 # The 25 skills Boss P0 routing depends on. Current gstack setup owns its Codex
 # skill surface; this list is the narrow fallback when bun/setup is unavailable.
 # The full checkout lives outside the recursively scanned skills root.
+# install.sh matches these names against the frontmatter name of each skill
+# setup generates for Codex. gstack names its shipping skill gstack-ship in
+# every prefix mode (upstream #4775) while the folder stays ship/, so this list
+# says gstack-ship where my-claude's, which lists folders, says ship. The no-bun
+# fallback links folders by these names and so has no shipping skill.
 GSTACK_SKILL_ALLOWLIST="
 autoplan
 benchmark
@@ -153,6 +158,7 @@ design-consultation
 design-review
 document-release
 freeze
+gstack-ship
 guard
 land-and-deploy
 office-hours
@@ -166,7 +172,6 @@ retro
 review
 setup-browser-cookies
 setup-deploy
-ship
 unfreeze
 "
 

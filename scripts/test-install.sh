@@ -671,6 +671,16 @@ for generated_source in "$TEST_HOME/.codex/vendor/gstack/.agents/skills/"gstack-
   test ! -L "$TEST_HOME/.codex/skills/$skill_name"
 done
 
+# Codex lists a skill by its frontmatter name, and gstack names its shipping
+# skill gstack-ship (upstream #4775; the folder stays ship/). Codex must get
+# setup's generated Codex variant under that name, and no copy of the
+# Claude-format ship/ source may take its place.
+grep -q '^name: gstack-ship$' "$TEST_HOME/.codex/skills/gstack-ship/SKILL.md"
+cmp -s "$TEST_HOME/.codex/vendor/gstack/.agents/skills/gstack-ship/SKILL.md" \
+  "$TEST_HOME/.codex/skills/gstack-ship/SKILL.md"
+test ! -e "$TEST_HOME/.codex/skills/ship"
+test ! -L "$TEST_HOME/.codex/skills/ship"
+
 # A user-owned symlink that collides with an unallowlisted generated name must
 # survive a later install. Exact provenance, rather than the target name, owns
 # the cleanup decision.

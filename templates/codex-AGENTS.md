@@ -88,7 +88,7 @@ The default `core` profile keeps the active skill catalog within its context bud
 
 - Orchestration -> `$ralph`, `$autopilot`, `$ultrawork`, `$team` (OMC execution modes — installed only when the OMC skill set is also present under `~/.codex/skills`; confirm in the registry before routing)
 - Dev process -> superpowers (`brainstorming`, `test-driven-development`, `systematic-debugging`, `verification-before-completion`, `writing-plans`)
-- Ship/QA/deploy/security -> gstack (`/ship`, `/qa`, `/review`, `/cso`)
+- Ship/QA/deploy/security -> gstack (`/gstack-ship`, `/qa`, `/review`, `/cso`)
 - Language/stack knowledge -> ECC skills
 - Diagrams -> `archify`
 - AI/domain work -> vendored agent packs (`codex-agents/packs`; enable with `my-codex-packs enable <pack>`)

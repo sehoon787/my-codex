@@ -59,7 +59,9 @@ to_git_bash_path() {
 }
 
 # bash exempts a `!`-negated command from `set -e`, so a bare `! grep ...`
-# never fails the test. Checks that something is absent end in `|| fail`.
+# never fails the test. Checks that something is absent end in `|| fail`, and
+# because `!` also turns grep's missing-file error into a pass, the file is
+# asserted first (`test -f ... &&`) unless the line before already does.
 fail() {
   echo "FAILED at line ${BASH_LINENO[0]}: $*" >&2
   exit 1
@@ -455,8 +457,8 @@ if [ "$VAULT_ONLY" = "1" ]; then
   test "$session_topic_count" -ge 1
   test "$learning_topic_count" = "0"
   test "$decision_topic_count" = "0"
-  ! grep -q '\.gitignore' "$session_auto" || fail "session note mentions .gitignore"
-  ! grep -q '\.gitignore' "$learning_auto" || fail "learning note mentions .gitignore"
+  test -f "$session_auto" && ! grep -q '\.gitignore' "$session_auto" || fail "session note mentions .gitignore"
+  test -f "$learning_auto" && ! grep -q '\.gitignore' "$learning_auto" || fail "learning note mentions .gitignore"
   test ! -e "$PROJECT_ROOT/.briefing/.session-start-head"
   test ! -e "$PROJECT_ROOT/.briefing/.session-start-status"
   test ! -e "$PROJECT_ROOT/.briefing/.session-message-count"
@@ -670,11 +672,11 @@ if [ "$GSTACK_ONLY" = "1" ]; then
   test ! -L "$custom_gstack_review"
   test -f "$custom_gstack_review/SKILL.md"
   test "$(cat "$custom_gstack_review/user-notes.md")" = "keep this user note"
-  ! grep -qx 'skills/gstack-review' "$TEST_HOME/.codex/.my-codex-manifest.txt" || fail "manifest claims the user's skills/gstack-review"
+  test -f "$TEST_HOME/.codex/.my-codex-manifest.txt" && ! grep -qx 'skills/gstack-review' "$TEST_HOME/.codex/.my-codex-manifest.txt" || fail "manifest claims the user's skills/gstack-review"
   test -L "$custom_design_html"
   test "$(readlink "$custom_design_html")" = "$custom_design_html_source"
   test -f "$custom_design_html/SKILL.md"
-  ! grep -qx 'skills/design-html' "$TEST_HOME/.codex/.my-codex-manifest.txt" || fail "manifest claims the user's skills/design-html"
+  test -f "$TEST_HOME/.codex/.my-codex-manifest.txt" && ! grep -qx 'skills/design-html' "$TEST_HOME/.codex/.my-codex-manifest.txt" || fail "manifest claims the user's skills/design-html"
   test -d "$custom_generated_design_html"
   test ! -L "$custom_generated_design_html"
   test -f "$custom_generated_design_html/SKILL.md"
@@ -883,7 +885,7 @@ test -d "$custom_gstack_review"
 test ! -L "$custom_gstack_review"
 test -f "$custom_gstack_review/SKILL.md"
 test "$(cat "$custom_gstack_review/user-notes.md")" = "keep this user note"
-! grep -qx 'skills/gstack-review' "$TEST_HOME/.codex/.my-codex-manifest.txt" || fail "manifest claims the user's skills/gstack-review"
+test -f "$TEST_HOME/.codex/.my-codex-manifest.txt" && ! grep -qx 'skills/gstack-review' "$TEST_HOME/.codex/.my-codex-manifest.txt" || fail "manifest claims the user's skills/gstack-review"
 test "$(cat "$TEST_HOME/.codex/.my-codex-version")" = "$expected_version"
 
 # ── Optional skill lane (--skills=web) ──
@@ -930,7 +932,7 @@ awk -v wanted="$react_skill_path" '
   in_entry && /^enabled = / { enabled=$3; if (path == wanted && enabled == "false") found=1; in_entry=0 }
   END { exit(found ? 0 : 1) }
 ' "$TEST_HOME/.codex/config.toml"
-! grep -q '^web$' "$TEST_HOME/.codex/enabled-skill-lanes.txt" || fail "web lane still enabled after --skills=none"
+test -f "$TEST_HOME/.codex/enabled-skill-lanes.txt" && ! grep -q '^web$' "$TEST_HOME/.codex/enabled-skill-lanes.txt" || fail "web lane still enabled after --skills=none"
 test -f "$TEST_HOME/.codex/skills/unmanaged-web-note/SKILL.md"
 test -f "$TEST_HOME/.codex/skills/custom-skill/SKILL.md"
 test "$(find "$TEST_HOME/.codex/skills" -name 'SKILL.md' | wc -l | tr -d ' ')" = "$skills_web_count"
@@ -944,7 +946,7 @@ HOME="$TEST_HOME" PATH="$BIN_DIR:$PATH" MY_CODEX_TEST_LOG="$LOG_FILE" MY_CODEX_T
 grep -q '^web$' "$TEST_HOME/.codex/enabled-skill-lanes.txt"
 HOME="$TEST_HOME" PATH="$BIN_DIR:$PATH" MY_CODEX_TEST_LOG="$LOG_FILE" MY_CODEX_TEST_UV_STATE="$UV_STATE" \
   MY_CODEX_SKILLS=none bash "$REPO_ROOT/install.sh" > "$TMP_ROOT/install-skills-env-none.out"
-! grep -q '^web$' "$TEST_HOME/.codex/enabled-skill-lanes.txt" || fail "web lane still enabled after MY_CODEX_SKILLS=none"
+test -f "$TEST_HOME/.codex/enabled-skill-lanes.txt" && ! grep -q '^web$' "$TEST_HOME/.codex/enabled-skill-lanes.txt" || fail "web lane still enabled after MY_CODEX_SKILLS=none"
 node -e 'const s=require(process.argv[1]);if(s.enabledLanes.length)process.exit(1)' \
   "$TEST_HOME/.codex/my-codex/skill-catalog-state.json"
 test -f "$TEST_HOME/.codex/skills/react-patterns/SKILL.md"
@@ -965,7 +967,7 @@ if HOME="$TEST_HOME" PATH="$BIN_DIR:$PATH" MY_CODEX_TEST_LOG="$LOG_FILE" \
 fi
 grep -q 'unknown skill lane: nope' "$TMP_ROOT/install-skills-bad.out"
 # ...and it rejects before touching anything: the persisted set stays empty.
-! grep -q '^web$' "$TEST_HOME/.codex/enabled-skill-lanes.txt" || fail "web lane enabled by the rejected --skills=nope"
+test -f "$TEST_HOME/.codex/enabled-skill-lanes.txt" && ! grep -q '^web$' "$TEST_HOME/.codex/enabled-skill-lanes.txt" || fail "web lane enabled by the rejected --skills=nope"
 test -f "$TEST_HOME/.codex/skills/react-patterns/SKILL.md"
 
 PIPE_HOME="$TMP_ROOT/pipe-home"
@@ -1024,8 +1026,8 @@ grep -q '## Candidate Decisions' "$decision_auto"
 test "$session_topic_count" -ge 1
 test "$learning_topic_count" = "0"
 test "$decision_topic_count" = "0"
-! grep -q '\.gitignore' "$session_auto" || fail "session note mentions .gitignore"
-! grep -q '\.gitignore' "$learning_auto" || fail "learning note mentions .gitignore"
+test -f "$session_auto" && ! grep -q '\.gitignore' "$session_auto" || fail "session note mentions .gitignore"
+test -f "$learning_auto" && ! grep -q '\.gitignore' "$learning_auto" || fail "learning note mentions .gitignore"
 test ! -e "$PROJECT_ROOT/.briefing/.session-start-head"
 test ! -e "$PROJECT_ROOT/.briefing/.session-start-status"
 test ! -e "$PROJECT_ROOT/.briefing/.session-message-count"

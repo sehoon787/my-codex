@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
+# install.sh runs gstack's setup, which follows CLAUDE_CONFIG_DIR (Codex tools:
+# CODEX_HOME) past the throwaway HOME: pass on neither.
+unset CLAUDE_CONFIG_DIR CODEX_HOME
 
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 TMP_ROOT="${TMPDIR:-/tmp}/my-codex-pack-test.$$"

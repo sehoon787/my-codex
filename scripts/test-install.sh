@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 trap 'echo "FAILED at line $LINENO (exit $?)" >&2' ERR
+# install.sh runs gstack's setup, which follows CLAUDE_CONFIG_DIR (Codex tools:
+# CODEX_HOME) past the throwaway HOME: pass on neither. Cases that need a
+# CODEX_HOME set their own.
+unset CLAUDE_CONFIG_DIR CODEX_HOME
 
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 TMP_PARENT="${TMPDIR:-$REPO_ROOT/.tmp-install-tests}"

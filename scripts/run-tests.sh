@@ -11,9 +11,10 @@
 # Runs scripts/test-*.sh (the installer smoke tests), tests/*.test.sh,
 # tests/*.test.js and tests/validate-sync.sh, keeps going past a failure, and
 # names every failed test at the end. Each test gets its own throwaway HOME,
-# XDG_CONFIG_HOME and TMPDIR, removed when it ends, and no CODEX_HOME, so a
-# test that forgets to isolate one cannot reach the real one. Under GitHub
-# Actions it also writes failed=<space-separated test paths> to $GITHUB_OUTPUT.
+# XDG_CONFIG_HOME and TMPDIR, removed when it ends, and no CLAUDE_CONFIG_DIR
+# or CODEX_HOME, so a test that forgets to isolate one cannot reach the real
+# one. Under GitHub Actions it also writes failed=<space-separated test paths>
+# to $GITHUB_OUTPUT.
 #
 # Exit 0 = every test passed; exit 1 = at least one failed, or none ran.
 # `bash scripts/run-tests.sh`
@@ -23,9 +24,11 @@ set -uo pipefail
 repo_root="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$repo_root"
 
-# A Codex session sets CODEX_HOME to the real ~/.codex; a test that wants one
-# sets its own.
-unset CODEX_HOME
+# A session can point CODEX_HOME at the real ~/.codex, and CLAUDE_CONFIG_DIR
+# at a real Claude config dir, that a throwaway HOME does not cover: Codex
+# tools follow the first, and the claude CLI, `npx skills`, omc and gstack's
+# setup the second. A test that wants one sets its own.
+unset CLAUDE_CONFIG_DIR CODEX_HOME
 
 passed=0
 failed=""

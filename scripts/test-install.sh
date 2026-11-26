@@ -67,6 +67,15 @@ fail() {
   exit 1
 }
 
+# A skill slot holds what gstack setup generated: a link to it, or on Windows,
+# where setup copies, an identical copy.
+assert_generated_slot() {
+  case "$(uname -s)" in
+    MINGW*|MSYS*|CYGWIN*) diff -r "$2" "$1" > /dev/null ;;
+    *) test "$(cd "$1" && pwd -P)" = "$(cd "$2" && pwd -P)" ;;
+  esac
+}
+
 # `hooks = true` must live inside the [features] table. Appending it at EOF would
 # park it under whatever table comes last (usually an [mcp_servers.*] one), where
 # Codex never reads it -- so assert placement, not mere presence.
@@ -801,9 +810,9 @@ test "$(find "$TEST_HOME/.codex/agents" -maxdepth 1 -type l -name '*.toml' | wc 
 # left alone and setup's prefixed link to the same skill is removed: exactly one
 # plan-eng-review remains. Were upstream to retire it again, its alias would be
 # pruned too and the catalog would materialize the skill from the pinned
-# payload, which is what happens to cso: its alias is pruned, setup's prefixed
-# link is removed, and the catalog copies cso into the slot. The user's
-# dangling link and a live gstack alias are untouched.
+# payload. cso's alias dangles at a skill setup still generates: it is pruned
+# before the slot loop, so setup's skill takes the slot in this same run. The
+# user's dangling link and a live gstack alias are untouched.
 if [ -d "$generated_skills/gstack-plan-eng-review" ]; then
   test "$(readlink "$plan_eng_review_alias")" = "$generated_skills/gstack-plan-eng-review/"
 else
@@ -813,7 +822,7 @@ test -f "$plan_eng_review_alias/SKILL.md"
 test ! -e "$TEST_HOME/.codex/skills/gstack-plan-eng-review"
 test ! -L "$TEST_HOME/.codex/skills/gstack-plan-eng-review"
 test -f "$renamed_cso_alias/SKILL.md"
-test ! -L "$renamed_cso_alias"
+assert_generated_slot "$renamed_cso_alias" "$generated_skills/gstack-cso"
 grep -qx 'skills/cso' "$TEST_HOME/.codex/.my-codex-manifest.txt"
 test ! -e "$TEST_HOME/.codex/skills/gstack-cso"
 test ! -L "$TEST_HOME/.codex/skills/gstack-cso"
@@ -857,6 +866,13 @@ cp "$TEST_HOME/.codex/hooks.json" "$TMP_ROOT/idempotency-before/hooks.json"
 cp "$TEST_HOME/.codex/config.toml" "$TMP_ROOT/idempotency-before/config.toml"
 cp "$TEST_HOME/.codex/AGENTS.md" "$TMP_ROOT/idempotency-before/AGENTS.md"
 
+# While gstack does not generate a skill (plan-eng-review between GST-1698 and
+# GST-2726), the catalog step fills its slot with a copy of the pinned payload
+# and lists it in the manifest. Put such a copy in cso's slot.
+rm -rf "$renamed_cso_alias"
+cp -R "$TEST_HOME/.codex/vendor/my-codex/upstream/gstack/cso" "$renamed_cso_alias"
+grep -qx 'skills/cso' "$TEST_HOME/.codex/.my-codex-manifest.txt"
+
 # Earlier installs wrote auto_upgrade=true into gstack's legacy config.json.
 mkdir -p "$TEST_HOME/.gstack"
 printf '{"auto_upgrade": true, "user_key": "kept"}\n' > "$TEST_HOME/.gstack/config.json"
@@ -878,18 +894,15 @@ test "$(cksum "$TEST_HOME/.codex/skills/docx/SKILL.md")" = "$docx_checksum"
 test "$(cksum "$TEST_HOME/.codex/skills/pdf/SKILL.md")" = "$pdf_checksum"
 test ! -f "$TEST_HOME/.codex/hooks/hooks.json"
 
-# The catalog's copy of cso (above) is the installer's own: the manifest lists
-# it. gstack generates cso on this run, so the slot must be handed back to the
-# generated skill instead of keeping, through every later pin bump, the
-# payload it was copied from.
+# That copy of cso is the installer's own: the manifest lists it. gstack
+# generates cso on this run, so the slot must be handed back to the generated
+# skill instead of keeping, through every later pin bump, the payload it was
+# copied from.
 grep -qx 'skills/cso' "$TEST_HOME/.codex/.my-codex-manifest.txt"
 test -f "$renamed_cso_alias/SKILL.md"
 test ! -e "$TEST_HOME/.codex/skills/gstack-cso"
 test ! -L "$TEST_HOME/.codex/skills/gstack-cso"
-case "$(uname -s)" in
-  MINGW*|MSYS*|CYGWIN*) diff -r "$generated_skills/gstack-cso" "$renamed_cso_alias" > /dev/null ;;
-  *) test "$(cd "$renamed_cso_alias" && pwd -P)" = "$(cd "$generated_skills/gstack-cso" && pwd -P)" ;;
-esac
+assert_generated_slot "$renamed_cso_alias" "$generated_skills/gstack-cso"
 
 # The config.toml diff above already proves the MCP tables were not re-appended;
 # assert the count directly too, since a duplicate table is the failure mode that

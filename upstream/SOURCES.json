@@ -23,7 +23,7 @@
     "path": "upstream/omx",
     "method": "submodule + npm-cli",
     "package": "oh-my-codex-sisyphus",
-    "pinned_sha": "a416ae80e64af67a61874387cc3f82f86975cdf3",
+    "pinned_sha": "cfe486210749386678b564fbd696cce2cae72ad9",
     "pinned_date": "2026-11-26",
     "license": "MIT",
     "license_source": "package.json (no LICENSE file at repo root)"
@@ -41,7 +41,7 @@
       "security-review",
       "design-system"
     ],
-    "pinned_sha": "a48df18f516c69e0e142d286e60082a55d568230",
+    "pinned_sha": "e6dd567349e85506127c2f4cf69a0392923c032c",
     "pinned_date": "2026-11-26",
     "license": "MIT"
   },

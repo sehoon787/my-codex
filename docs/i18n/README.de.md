@@ -439,8 +439,8 @@ Eingebunden über git-Submodule. Die gepinnten Commits verfolgt `.gitmodules` na
 | Quelle | SHA | Datum | Diff |
 |--------|-----|------|------|
 | [everything-claude-code](https://github.com/affaan-m/everything-claude-code) | `4adeee6` | 2026-11-26 | [compare](https://github.com/affaan-m/everything-claude-code/compare/4adeee6...HEAD) |
-| [gstack](https://github.com/garrytan/gstack) | `a48df18` | 2026-11-26 | [compare](https://github.com/garrytan/gstack/compare/a48df18...HEAD) |
-| [oh-my-codex](https://github.com/Yeachan-Heo/oh-my-codex) | `a416ae8` | 2026-11-26 | [compare](https://github.com/Yeachan-Heo/oh-my-codex/compare/a416ae8...HEAD) |
+| [gstack](https://github.com/garrytan/gstack) | `e6dd567` | 2026-11-26 | [compare](https://github.com/garrytan/gstack/compare/e6dd567...HEAD) |
+| [oh-my-codex](https://github.com/Yeachan-Heo/oh-my-codex) | `cfe4862` | 2026-11-26 | [compare](https://github.com/Yeachan-Heo/oh-my-codex/compare/cfe4862...HEAD) |
 | [superpowers](https://github.com/obra/superpowers) | `22f0b46` | 2026-11-13 | [compare](https://github.com/obra/superpowers/compare/22f0b46...HEAD) |
 | [archify](https://github.com/tt-a1i/archify) | `2ab3cae` (`v3.0.1`) | 2026-09-28 | [compare](https://github.com/tt-a1i/archify/compare/2ab3cae...HEAD) |
 

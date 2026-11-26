@@ -338,6 +338,39 @@ test -f "$snapshot_fixture/no-git-copy/docs/trace.log"
 test -f "$snapshot_fixture/plain-copy/.omc/state.json"
 test -f "$snapshot_fixture/plain-copy/docs/trace.log"
 
+# Deletion never leaves the copy, whatever git lists: an absolute entry, a ..
+# component, a path below a symlinked directory and a symlinked copy root are
+# skipped, and an entry that is itself a link is removed as a link only.
+guard_root="$snapshot_fixture/guard"
+mkdir -p "$guard_root/src" "$guard_root/dest/docs" "$guard_root/dest/abs" "$guard_root/outside/linked" "$guard_root/tools"
+git -C "$guard_root/src" init -q
+printf 'keep\n' > "$guard_root/outside/escape.log"
+printf 'keep\n' > "$guard_root/outside/linked/x.log"
+printf 'keep\n' > "$guard_root/dest/abs/victim.log"
+printf 'drop\n' > "$guard_root/dest/docs/trace.log"
+ln -s "$guard_root/outside/linked" "$guard_root/dest/via-link"
+ln -s "$guard_root/outside/linked" "$guard_root/dest/shortcut"
+ln -s "$guard_root/outside" "$guard_root/dest-link"
+cat > "$guard_root/tools/git" <<'EOF'
+#!/usr/bin/env bash
+printf '%s\0' ../outside/escape.log docs/../../outside/escape.log /abs/victim.log \
+  via-link/x.log linked/x.log escape.log shortcut/ docs/trace.log
+EOF
+chmod +x "$guard_root/tools/git"
+(
+  eval "$snapshot_functions"
+  PATH="$guard_root/tools:$PATH"
+  remove_git_ignored_paths "$guard_root/src" "$guard_root/dest"
+  remove_git_ignored_paths "$guard_root/src" "$guard_root/dest-link"
+)
+test -f "$guard_root/outside/escape.log"
+test -f "$guard_root/outside/linked/x.log"
+test -f "$guard_root/dest/abs/victim.log"
+test -L "$guard_root/dest/via-link"
+test ! -e "$guard_root/dest/shortcut"
+test ! -L "$guard_root/dest/shortcut"
+test ! -e "$guard_root/dest/docs/trace.log"
+
 # The installer never turns gstack auto-upgrade on, so a fresh install leaves no
 # legacy ~/.gstack/config.json behind (gstack itself keeps config.yaml).
 test ! -e "$TEST_HOME/.gstack/config.json"

@@ -1114,17 +1114,29 @@ copy_repo_snapshot() {
 # Deleting the listed paths after the copy works the same for the rsync and the
 # tar copy, with no exclude patterns to escape. A source without git metadata
 # of its own, or a machine without git, keeps the full copy.
+# Deletion stays inside the copy: an entry that is absolute or has a ..
+# component is skipped, and so is one below a symlink, so rm never resolves a
+# link on the way down. An entry that is itself a link is removed as a link.
 remove_git_ignored_paths() {
   local src_dir="$1"
   local dest_dir="$2"
-  local rel_path
+  local rel_path parent rest
   [ -e "$src_dir/.git" ] || return 0
+  [ -d "$dest_dir" ] && [ ! -L "$dest_dir" ] || return 0
   command -v git >/dev/null 2>&1 || return 0
 
   while IFS= read -r -d '' rel_path; do
     rel_path="${rel_path%/}"
-    [ -n "$rel_path" ] || continue
-    rm -rf "${dest_dir:?}/$rel_path" || true
+    case "$rel_path" in ''|/*) continue ;; esac
+    case "/$rel_path/" in */../*) continue ;; esac
+    parent="$dest_dir"
+    rest="$rel_path"
+    while [ "${rest#*/}" != "$rest" ]; do
+      parent="$parent/${rest%%/*}"
+      rest="${rest#*/}"
+      if [ -L "$parent" ] || [ ! -d "$parent" ]; then continue 2; fi
+    done
+    rm -rf -- "${dest_dir:?}/${rel_path:?}" || true
   done < <(git -C "$src_dir" ls-files -z --others --ignored --exclude-standard --directory 2>/dev/null)
 }
 

@@ -36,7 +36,7 @@ jobs:
       bundle_sha256: ${{ steps.commit.outputs.bundle_sha256 }}
       report_sha256: ${{ steps.commit.outputs.report_sha256 }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4.4.0
         with:
           submodules: true
           fetch-depth: 0
@@ -158,7 +158,7 @@ jobs:
     outputs:
       failed: ${{ steps.tests.outputs.failed }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4.4.0
         with:
           fetch-depth: 0
           persist-credentials: false
@@ -200,7 +200,7 @@ jobs:
       TESTS: ${{ needs.test.result }}
       RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}/attempts/${{ github.run_attempt }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4.4.0
         with:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -255,7 +255,7 @@ jobs:
       - name: Create or reuse the PR
         id: pr
         run: |
-          PR_URL=$(gh pr list --head "$BRANCH" --state open --json url,isCrossRepository \
+          PR_URL=$(gh pr list --head "$BRANCH" --base main --state open --json url,isCrossRepository \
             -q 'map(select(.isCrossRepository | not)) | .[0].url // empty')
           if [ -n "$PR_URL" ]; then
             echo "reused=true" >> "$GITHUB_OUTPUT"
@@ -270,9 +270,11 @@ jobs:
           echo "url=$PR_URL" >> "$GITHUB_OUTPUT"
 
       # A reused PR may still carry tests-failed from the earlier attempt. Once
-      # the tests pass, that label is stale: remove it and say so.
+      # the tests pass, that label is stale: remove it and say so. Housekeeping
+      # only, so a failure here must not skip the merge below.
       - name: Clear a stale tests-failed label
         if: steps.pr.outputs.reused == 'true' && needs.test.result == 'success'
+        continue-on-error: true
         env:
           PR_URL: ${{ steps.pr.outputs.url }}
         run: |

@@ -58,6 +58,13 @@ to_git_bash_path() {
   printf '%s' "$value" | sed -E 's#^([A-Za-z]):#/\L\1#; s#\\#/#g'
 }
 
+# bash exempts a `!`-negated command from `set -e`, so a bare `! grep ...`
+# never fails the test. Checks that something is absent end in `|| fail`.
+fail() {
+  echo "FAILED at line ${BASH_LINENO[0]}: $*" >&2
+  exit 1
+}
+
 # `hooks = true` must live inside the [features] table. Appending it at EOF would
 # park it under whatever table comes last (usually an [mcp_servers.*] one), where
 # Codex never reads it -- so assert placement, not mere presence.
@@ -274,7 +281,7 @@ grep -q '"name": "my-codex"' "$TEST_HOME/.agents/plugins/marketplace.json"
 test -L "$TEST_HOME/.agents/plugins/plugins/my-codex"
 test "$(readlink "$TEST_HOME/.agents/plugins/plugins/my-codex")" = "$TEST_HOME/.codex/vendor/my-codex"
 test -f "$TEST_HOME/.codex/vendor/my-codex/.codex-plugin/plugin.json"
-! grep -q '"hooks"' "$TEST_HOME/.codex/vendor/my-codex/.codex-plugin/plugin.json"
+! grep -q '"hooks"' "$TEST_HOME/.codex/vendor/my-codex/.codex-plugin/plugin.json" || fail "vendor plugin.json declares hooks"
 # vendor/my-codex is the whole working tree, submodule checkouts included (the
 # skill catalog materializes skills from them), minus what git ignores in the
 # source checkout.
@@ -415,8 +422,8 @@ if [ "$VAULT_ONLY" = "1" ]; then
   test "$session_topic_count" -ge 1
   test "$learning_topic_count" = "0"
   test "$decision_topic_count" = "0"
-  ! grep -q '\.gitignore' "$session_auto"
-  ! grep -q '\.gitignore' "$learning_auto"
+  ! grep -q '\.gitignore' "$session_auto" || fail "session note mentions .gitignore"
+  ! grep -q '\.gitignore' "$learning_auto" || fail "learning note mentions .gitignore"
   test ! -e "$PROJECT_ROOT/.briefing/.session-start-head"
   test ! -e "$PROJECT_ROOT/.briefing/.session-start-status"
   test ! -e "$PROJECT_ROOT/.briefing/.session-message-count"
@@ -515,7 +522,7 @@ test ! -e "$TEST_HOME/.codex/skills/laravel-patterns"
 test ! -e "$TEST_HOME/.codex/skills/react-patterns"
 test ! -e "$TEST_HOME/.codex/skills/vue-patterns"
 test -f "$TEST_HOME/.codex/enabled-skill-lanes.txt"
-! grep -q '^web$' "$TEST_HOME/.codex/enabled-skill-lanes.txt"
+! grep -q '^web$' "$TEST_HOME/.codex/enabled-skill-lanes.txt" || fail "web lane enabled on a default install"
 test -f "$TEST_HOME/.codex/skills/brainstorming/SKILL.md"
 test ! -e "$TEST_HOME/.codex/skills/dispatching-parallel-agents"
 test -f "$TEST_HOME/.codex/enabled-agent-packs.txt"
@@ -527,7 +534,7 @@ test -x "$TEST_HOME/.codex/git-hooks/prepare-commit-msg"
 test -x "$TEST_HOME/.codex/git-hooks/commit-msg"
 test -x "$TEST_HOME/.codex/git-hooks/post-commit"
 grep -q 'multi_agent = true' "$TEST_HOME/.codex/config.toml"
-! grep -q 'child_agents_md' "$TEST_HOME/.codex/config.toml"
+! grep -q 'child_agents_md' "$TEST_HOME/.codex/config.toml" || fail "config.toml still sets child_agents_md"
 grep -q 'max_threads = 8' "$TEST_HOME/.codex/config.toml"
 
 # Codex reads lifecycle hooks from $CODEX_HOME/hooks.json (root) and only when
@@ -544,7 +551,7 @@ grep -q '<!-- my-codex:context-hygiene -->' "$TEST_HOME/.codex/AGENTS.md"
 grep -q '<!-- my-codex:tooling-mcp -->' "$TEST_HOME/.codex/AGENTS.md"
 test "$(grep -c 'my-codex:' "$TEST_HOME/.codex/AGENTS.md")" = "6"
 grep -q 'The root agent is the \*\*Boss orchestrator\*\*' "$TEST_HOME/.codex/AGENTS.md"
-! grep -q 'spawn_agent(prompt="<user.s full request>", agent_type="boss")' "$TEST_HOME/.codex/AGENTS.md"
+! grep -q 'spawn_agent(prompt="<user.s full request>", agent_type="boss")' "$TEST_HOME/.codex/AGENTS.md" || fail "AGENTS.md still has the pre-marker boss spawn line"
 # A successful gstack install keeps the checkout outside Codex's recursively
 # scanned skills root and exposes only the upstream minimal runtime facade.
 if [ -f "$TEST_HOME/.codex/vendor/gstack/setup" ]; then
@@ -630,11 +637,11 @@ if [ "$GSTACK_ONLY" = "1" ]; then
   test ! -L "$custom_gstack_review"
   test -f "$custom_gstack_review/SKILL.md"
   test "$(cat "$custom_gstack_review/user-notes.md")" = "keep this user note"
-  ! grep -qx 'skills/gstack-review' "$TEST_HOME/.codex/.my-codex-manifest.txt"
+  ! grep -qx 'skills/gstack-review' "$TEST_HOME/.codex/.my-codex-manifest.txt" || fail "manifest claims the user's skills/gstack-review"
   test -L "$custom_design_html"
   test "$(readlink "$custom_design_html")" = "$custom_design_html_source"
   test -f "$custom_design_html/SKILL.md"
-  ! grep -qx 'skills/design-html' "$TEST_HOME/.codex/.my-codex-manifest.txt"
+  ! grep -qx 'skills/design-html' "$TEST_HOME/.codex/.my-codex-manifest.txt" || fail "manifest claims the user's skills/design-html"
   test -d "$custom_generated_design_html"
   test ! -L "$custom_generated_design_html"
   test -f "$custom_generated_design_html/SKILL.md"
@@ -658,7 +665,7 @@ test -f "$TEST_HOME/.codex/.my-codex-manifest.txt"
 test "$(cat "$TEST_HOME/.codex/.my-codex-version")" = "$expected_version"
 # Post-dedup contract: no packs enabled by default (opt-in only).
 test -f "$TEST_HOME/.codex/enabled-agent-packs.txt"
-! grep -q '^[a-z]' "$TEST_HOME/.codex/enabled-agent-packs.txt"
+! grep -q '^[a-z]' "$TEST_HOME/.codex/enabled-agent-packs.txt" || fail "an agent pack is enabled by default"
 grep -q 'mcp add context7' "$LOG_FILE"
 grep -q 'mcp add exa' "$LOG_FILE"
 grep -q 'mcp add grep_app' "$LOG_FILE"
@@ -843,7 +850,7 @@ test -d "$custom_gstack_review"
 test ! -L "$custom_gstack_review"
 test -f "$custom_gstack_review/SKILL.md"
 test "$(cat "$custom_gstack_review/user-notes.md")" = "keep this user note"
-! grep -qx 'skills/gstack-review' "$TEST_HOME/.codex/.my-codex-manifest.txt"
+! grep -qx 'skills/gstack-review' "$TEST_HOME/.codex/.my-codex-manifest.txt" || fail "manifest claims the user's skills/gstack-review"
 test "$(cat "$TEST_HOME/.codex/.my-codex-version")" = "$expected_version"
 
 # ── Optional skill lane (--skills=web) ──
@@ -890,7 +897,7 @@ awk -v wanted="$react_skill_path" '
   in_entry && /^enabled = / { enabled=$3; if (path == wanted && enabled == "false") found=1; in_entry=0 }
   END { exit(found ? 0 : 1) }
 ' "$TEST_HOME/.codex/config.toml"
-! grep -q '^web$' "$TEST_HOME/.codex/enabled-skill-lanes.txt"
+! grep -q '^web$' "$TEST_HOME/.codex/enabled-skill-lanes.txt" || fail "web lane still enabled after --skills=none"
 test -f "$TEST_HOME/.codex/skills/unmanaged-web-note/SKILL.md"
 test -f "$TEST_HOME/.codex/skills/custom-skill/SKILL.md"
 test "$(find "$TEST_HOME/.codex/skills" -name 'SKILL.md' | wc -l | tr -d ' ')" = "$skills_web_count"
@@ -904,7 +911,7 @@ HOME="$TEST_HOME" PATH="$BIN_DIR:$PATH" MY_CODEX_TEST_LOG="$LOG_FILE" MY_CODEX_T
 grep -q '^web$' "$TEST_HOME/.codex/enabled-skill-lanes.txt"
 HOME="$TEST_HOME" PATH="$BIN_DIR:$PATH" MY_CODEX_TEST_LOG="$LOG_FILE" MY_CODEX_TEST_UV_STATE="$UV_STATE" \
   MY_CODEX_SKILLS=none bash "$REPO_ROOT/install.sh" > "$TMP_ROOT/install-skills-env-none.out"
-! grep -q '^web$' "$TEST_HOME/.codex/enabled-skill-lanes.txt"
+! grep -q '^web$' "$TEST_HOME/.codex/enabled-skill-lanes.txt" || fail "web lane still enabled after MY_CODEX_SKILLS=none"
 node -e 'const s=require(process.argv[1]);if(s.enabledLanes.length)process.exit(1)' \
   "$TEST_HOME/.codex/my-codex/skill-catalog-state.json"
 test -f "$TEST_HOME/.codex/skills/react-patterns/SKILL.md"
@@ -925,7 +932,7 @@ if HOME="$TEST_HOME" PATH="$BIN_DIR:$PATH" MY_CODEX_TEST_LOG="$LOG_FILE" \
 fi
 grep -q 'unknown skill lane: nope' "$TMP_ROOT/install-skills-bad.out"
 # ...and it rejects before touching anything: the persisted set stays empty.
-! grep -q '^web$' "$TEST_HOME/.codex/enabled-skill-lanes.txt"
+! grep -q '^web$' "$TEST_HOME/.codex/enabled-skill-lanes.txt" || fail "web lane enabled by the rejected --skills=nope"
 test -f "$TEST_HOME/.codex/skills/react-patterns/SKILL.md"
 
 PIPE_HOME="$TMP_ROOT/pipe-home"
@@ -984,8 +991,8 @@ grep -q '## Candidate Decisions' "$decision_auto"
 test "$session_topic_count" -ge 1
 test "$learning_topic_count" = "0"
 test "$decision_topic_count" = "0"
-! grep -q '\.gitignore' "$session_auto"
-! grep -q '\.gitignore' "$learning_auto"
+! grep -q '\.gitignore' "$session_auto" || fail "session note mentions .gitignore"
+! grep -q '\.gitignore' "$learning_auto" || fail "learning note mentions .gitignore"
 test ! -e "$PROJECT_ROOT/.briefing/.session-start-head"
 test ! -e "$PROJECT_ROOT/.briefing/.session-start-status"
 test ! -e "$PROJECT_ROOT/.briefing/.session-message-count"
@@ -1099,7 +1106,7 @@ test ! -e "$LEGACY_HOME/.codex/my-codex/skill-catalog-state.json"
 grep -q 'Existing noninteractive install: preserving current skill exposure' "$TMP_ROOT/install-legacy.out"
 
 assert_features_hooks_enabled "$LEGACY_HOME/.codex/config.toml"
-! grep -q 'child_agents_md' "$LEGACY_HOME/.codex/config.toml"
+! grep -q 'child_agents_md' "$LEGACY_HOME/.codex/config.toml" || fail "legacy config.toml still sets child_agents_md"
 test "$(awk 'f && /^\[/ { exit } /^[[:space:]]*\[[[:space:]]*features[[:space:]]*\][[:space:]]*(#.*)?$/ { f = 1 } f' "$LEGACY_HOME/.codex/config.toml" | grep -c '^hooks = true$')" = "1"
 test "$(grep -cE '^[[:space:]]*\[[[:space:]]*features[[:space:]]*\][[:space:]]*(#.*)?$' "$LEGACY_HOME/.codex/config.toml")" = "1"
 python3 -c "import sys,tomllib; tomllib.load(open(sys.argv[1],'rb'))" "$LEGACY_HOME/.codex/config.toml"

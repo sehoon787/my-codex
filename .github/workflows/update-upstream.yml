@@ -140,7 +140,7 @@ jobs:
 
       - name: Upload the commit and the scan report
         if: steps.check.outputs.changed == 'true'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4.6.2
         with:
           name: sync
           path: ${{ runner.temp }}/sync/
@@ -163,7 +163,7 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093  # v4.3.0
         with:
           name: sync
           path: ${{ runner.temp }}/sync
@@ -198,14 +198,14 @@ jobs:
       BRANCH: ${{ needs.update.outputs.branch }}
       SHA: ${{ needs.update.outputs.sha }}
       TESTS: ${{ needs.test.result }}
-      RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+      RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}/attempts/${{ github.run_attempt }}
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093  # v4.3.0
         with:
           name: sync
           path: ${{ runner.temp }}/sync
@@ -249,15 +249,37 @@ jobs:
             -f description="$DESCRIPTION" \
             -f target_url="$RUN_URL"
 
-      - name: Create PR
+      # "Re-run failed jobs" keeps the update job's branch, and with it the PR
+      # an earlier attempt opened: reuse that PR instead of failing on a second
+      # gh pr create.
+      - name: Create or reuse the PR
         id: pr
         run: |
-          PR_URL=$(gh pr create \
-            --head "$BRANCH" \
-            --title "chore: update upstream submodules $(date +%Y-%m-%d)" \
-            --body "Automated upstream submodule update." \
-            --base main)
+          PR_URL=$(gh pr list --head "$BRANCH" --state open --json url,isCrossRepository \
+            -q 'map(select(.isCrossRepository | not)) | .[0].url // empty')
+          if [ -n "$PR_URL" ]; then
+            echo "reused=true" >> "$GITHUB_OUTPUT"
+          else
+            PR_URL=$(gh pr create \
+              --head "$BRANCH" \
+              --title "chore: update upstream submodules $(date +%Y-%m-%d)" \
+              --body "Automated upstream submodule update." \
+              --base main)
+            echo "reused=false" >> "$GITHUB_OUTPUT"
+          fi
           echo "url=$PR_URL" >> "$GITHUB_OUTPUT"
+
+      # A reused PR may still carry tests-failed from the earlier attempt. Once
+      # the tests pass, that label is stale: remove it and say so.
+      - name: Clear a stale tests-failed label
+        if: steps.pr.outputs.reused == 'true' && needs.test.result == 'success'
+        env:
+          PR_URL: ${{ steps.pr.outputs.url }}
+        run: |
+          if gh pr view "$PR_URL" --json labels -q '.labels[].name' | grep -qx tests-failed; then
+            gh pr edit "$PR_URL" --remove-label tests-failed
+            gh pr comment "$PR_URL" --body "The test suite passed on a re-run: $RUN_URL"
+          fi
 
       # Clean scan and passing tests → merge automatically, and only the commit
       # that was tested.

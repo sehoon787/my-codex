@@ -11,6 +11,9 @@ TEST_HOME="$TMP_ROOT/home"
 BIN_DIR="$TMP_ROOT/bin"
 LOG_FILE="$TMP_ROOT/codex.log"
 SERVICE_STATE="$TMP_ROOT/shared-services"
+# A file git ignores, left in the source checkout while the test runs so the
+# vendor-copy check below has something to leave out even on a fresh clone.
+VENDOR_IGNORED_PROBE="install-test-ignored.$$.log"
 VAULT_ONLY=0
 GSTACK_ONLY=0
 export AGENT_HARNESS_STATE_DIR="$SERVICE_STATE"
@@ -74,6 +77,7 @@ cleanup() {
     pid="$(cat "$pid_file")"
     kill "$pid" 2>/dev/null || true
   done
+  rm -f "$REPO_ROOT/$VENDOR_IGNORED_PROBE"
   if [ "${KEEP_TMP_ROOT:-0}" = "1" ]; then
     echo "Preserving test root: $TMP_ROOT" >&2
     return
@@ -236,6 +240,8 @@ printf -- '---\nname: review\ndescription: legacy\n---\n' > \
   "$TEST_HOME/.codex/skills/gstack/review/SKILL.md"
 ln -s "$TEST_HOME/.codex/skills/gstack/review" "$TEST_HOME/.codex/skills/review"
 chmod +x "$TEST_HOME/.codex/skills/gstack/setup" "$TEST_HOME/.codex/skills/gstack/bin/gstack-config"
+printf 'local state\n' > "$REPO_ROOT/$VENDOR_IGNORED_PROBE"
+git -C "$REPO_ROOT" check-ignore -q "$VENDOR_IGNORED_PROBE"
 
 HOME="$TEST_HOME" CODEX_HOME="$HOSTILE_CODEX_HOME" PATH="$BIN_DIR:$PATH" MY_CODEX_TEST_LOG="$LOG_FILE" MY_CODEX_TEST_UV_STATE="$UV_STATE" MY_CODEX_TEST_SERVICE_ROOT="$SERVICE_ROOT" \
   bash "$REPO_ROOT/install.sh" > "$TMP_ROOT/install.out"
@@ -269,6 +275,65 @@ test -L "$TEST_HOME/.agents/plugins/plugins/my-codex"
 test "$(readlink "$TEST_HOME/.agents/plugins/plugins/my-codex")" = "$TEST_HOME/.codex/vendor/my-codex"
 test -f "$TEST_HOME/.codex/vendor/my-codex/.codex-plugin/plugin.json"
 ! grep -q '"hooks"' "$TEST_HOME/.codex/vendor/my-codex/.codex-plugin/plugin.json"
+# vendor/my-codex is the whole working tree, submodule checkouts included (the
+# skill catalog materializes skills from them), minus what git ignores in the
+# source checkout.
+test -f "$TEST_HOME/.codex/vendor/my-codex/upstream/ecc/skills/api-design/SKILL.md"
+test -f "$TEST_HOME/.codex/vendor/my-codex/upstream/superpowers/skills/brainstorming/SKILL.md"
+test -f "$REPO_ROOT/$VENDOR_IGNORED_PROBE"
+test ! -e "$TEST_HOME/.codex/vendor/my-codex/$VENDOR_IGNORED_PROBE"
+
+# Without rsync (Git Bash has none) the snapshot is a tar copy, and a source
+# git cannot read (no git, or no .git of its own, as in an npm or tarball copy)
+# keeps everything. Run the installer's own functions on a small checkout: the
+# ignored directory and file go, an untracked file and a nested repository
+# standing in for a submodule checkout stay.
+snapshot_fixture="$TMP_ROOT/snapshot-fixture"
+mkdir -p "$snapshot_fixture/src/docs" "$snapshot_fixture/src/.omc" "$snapshot_fixture/src/upstream/sub/skills/x" \
+  "$snapshot_fixture/tools-no-rsync" "$snapshot_fixture/tools-no-git"
+git -C "$snapshot_fixture/src" init -q
+printf '.omc/\n*.log\n' > "$snapshot_fixture/src/.gitignore"
+printf 'tracked\n' > "$snapshot_fixture/src/docs/readme.md"
+git -C "$snapshot_fixture/src" add .gitignore docs/readme.md
+printf 'untracked\n' > "$snapshot_fixture/src/new-file.txt"
+printf '{}\n' > "$snapshot_fixture/src/.omc/state.json"
+printf 'trace\n' > "$snapshot_fixture/src/docs/trace.log"
+git -C "$snapshot_fixture/src/upstream/sub" init -q
+printf -- '---\nname: x\n---\n' > "$snapshot_fixture/src/upstream/sub/skills/x/SKILL.md"
+printf 'build\n' > "$snapshot_fixture/src/upstream/sub/build.log"
+for tool in tar rm mkdir; do
+  ln -s "$(command -v "$tool")" "$snapshot_fixture/tools-no-rsync/$tool"
+  ln -s "$(command -v "$tool")" "$snapshot_fixture/tools-no-git/$tool"
+done
+ln -s "$(command -v git)" "$snapshot_fixture/tools-no-rsync/git"
+snapshot_functions="$(sed -n '/^copy_repo_snapshot() {/,/^}/p; /^remove_git_ignored_paths() {/,/^}/p' "$REPO_ROOT/install.sh")"
+(
+  eval "$snapshot_functions"
+  PATH="$snapshot_fixture/tools-no-rsync"
+  copy_repo_snapshot "$snapshot_fixture/src" "$snapshot_fixture/tar-copy"
+  remove_git_ignored_paths "$snapshot_fixture/src" "$snapshot_fixture/tar-copy"
+  PATH="$snapshot_fixture/tools-no-git"
+  copy_repo_snapshot "$snapshot_fixture/src" "$snapshot_fixture/no-git-copy"
+  remove_git_ignored_paths "$snapshot_fixture/src" "$snapshot_fixture/no-git-copy"
+  PATH="$snapshot_fixture/tools-no-rsync"
+  copy_repo_snapshot "$snapshot_fixture/no-git-copy" "$snapshot_fixture/plain-copy"
+  remove_git_ignored_paths "$snapshot_fixture/no-git-copy" "$snapshot_fixture/plain-copy"
+)
+test -f "$snapshot_fixture/tar-copy/docs/readme.md"
+test -f "$snapshot_fixture/tar-copy/new-file.txt"
+test -f "$snapshot_fixture/tar-copy/upstream/sub/skills/x/SKILL.md"
+test -f "$snapshot_fixture/tar-copy/upstream/sub/build.log"
+test ! -e "$snapshot_fixture/tar-copy/.git"
+test ! -e "$snapshot_fixture/tar-copy/.omc"
+test ! -e "$snapshot_fixture/tar-copy/docs/trace.log"
+test -f "$snapshot_fixture/no-git-copy/.omc/state.json"
+test -f "$snapshot_fixture/no-git-copy/docs/trace.log"
+test -f "$snapshot_fixture/plain-copy/.omc/state.json"
+test -f "$snapshot_fixture/plain-copy/docs/trace.log"
+
+# The installer never turns gstack auto-upgrade on, so a fresh install leaves no
+# legacy ~/.gstack/config.json behind (gstack itself keeps config.yaml).
+test ! -e "$TEST_HOME/.gstack/config.json"
 test -f "$TEST_HOME/.codex/hooks/session-sync.js"
 test -f "$TEST_HOME/.codex/hooks/briefing-runtime.js"
 test -f "$TEST_HOME/.codex/hooks/session-start-state.js"
@@ -499,6 +564,17 @@ grep -q '^name: gstack$' "$TEST_HOME/.codex/skills/gstack/SKILL.md"
 grep -q '^name: codex$' "$TEST_HOME/.codex/skills/codex/SKILL.md"
 grep -q '^name: gstack-upgrade$' "$TEST_HOME/.codex/skills/gstack-upgrade/SKILL.md"
 grep -q '^name: hackernews-frontpage$' "$TEST_HOME/.codex/skills/hackernews-frontpage/SKILL.md"
+# install.sh, not gstack setup, exposes these two skills, and records them as
+# its own. Outside Windows they are links into the pinned runtime.
+grep -qx 'skills/hackernews-frontpage' "$TEST_HOME/.codex/.my-codex-manifest.txt"
+grep -qx 'skills/codex' "$TEST_HOME/.codex/.my-codex-manifest.txt"
+case "$(uname -s)" in
+  MINGW*|MSYS*|CYGWIN*) ;;
+  *)
+    test "$(readlink "$TEST_HOME/.codex/skills/hackernews-frontpage")" = "$TEST_HOME/.codex/vendor/gstack/browser-skills/hackernews-frontpage"
+    test "$(readlink "$TEST_HOME/.codex/skills/codex")" = "$TEST_HOME/.codex/vendor/gstack/codex"
+    ;;
+esac
 
 # gstack setup currently generates every upstream gstack-* skill. my-codex's
 # public Codex catalog is narrower: only names in GSTACK_SKILL_ALLOWLIST may be
@@ -624,24 +700,33 @@ test "$(find "$TEST_HOME/.codex/agents" -maxdepth 1 -type l -name '*.toml' | wc 
 # skill and the catalog step refuses to write over a symlink ("unsafe managed
 # file"). Upstream restored /plan-eng-review in GST-2726, so its alias is live
 # again; investigate's still dangles. A clean HOME never reaches this state, so
-# seed it. A dangling link that points outside gstack's generated tree is the
-# user's own and must survive.
+# seed it. The cso alias dangles at a catalog skill's name whatever upstream
+# retires, and the two retired-*-alias links do not depend on upstream either.
+# A dangling link that points outside gstack's generated tree is the user's own
+# and must survive.
 generated_skills="$TEST_HOME/.codex/vendor/gstack/.agents/skills"
 plan_eng_review_alias="$TEST_HOME/.codex/skills/plan-eng-review"
+renamed_cso_alias="$TEST_HOME/.codex/skills/cso"
 retired_investigate="$TEST_HOME/.codex/skills/investigate"
 retired_relative="$TEST_HOME/.codex/skills/retired-relative-alias"
+retired_absolute="$TEST_HOME/.codex/skills/retired-absolute-alias"
 user_gone="$TEST_HOME/.codex/skills/user-gone"
 test -f "$plan_eng_review_alias/SKILL.md"
 rm -rf "$plan_eng_review_alias"
 ln -s "$generated_skills/gstack-plan-eng-review/" "$plan_eng_review_alias"
+test -f "$renamed_cso_alias/SKILL.md"
+rm -rf "$renamed_cso_alias"
+ln -s "$generated_skills/gstack-cso-renamed/" "$renamed_cso_alias"
 ln -s "$generated_skills/gstack-investigate/" "$retired_investigate"
 ln -s "../vendor/gstack/.agents/skills/gstack-retired-relative-alias/" "$retired_relative"
+ln -s "$generated_skills/gstack-retired-absolute-alias/" "$retired_absolute"
 mkdir -p "$TEST_HOME/elsewhere"
 ln -s "$TEST_HOME/elsewhere/gone/" "$user_gone"
 grep -qx 'skills/plan-eng-review' "$TEST_HOME/.codex/.my-codex-manifest.txt"
-grep -vx 'skills/plan-eng-review' "$TEST_HOME/.codex/.my-codex-manifest.txt" > "$TMP_ROOT/manifest-legacy.txt"
+grep -qx 'skills/cso' "$TEST_HOME/.codex/.my-codex-manifest.txt"
+grep -vx -e 'skills/plan-eng-review' -e 'skills/cso' "$TEST_HOME/.codex/.my-codex-manifest.txt" > "$TMP_ROOT/manifest-legacy.txt"
 cp "$TMP_ROOT/manifest-legacy.txt" "$TEST_HOME/.codex/.my-codex-manifest.txt"
-test "$(grep -cx 'skills/plan-eng-review' "$TEST_HOME/.codex/.my-codex-manifest.txt")" = "0"
+test "$(grep -cx -e 'skills/plan-eng-review' -e 'skills/cso' "$TEST_HOME/.codex/.my-codex-manifest.txt")" = "0"
 
 HOME="$TEST_HOME" PATH="$BIN_DIR:$PATH" MY_CODEX_TEST_LOG="$LOG_FILE" MY_CODEX_TEST_UV_STATE="$UV_STATE" \
   bash "$REPO_ROOT/install.sh" --profile minimal > "$TMP_ROOT/install-minimal.out"
@@ -651,7 +736,9 @@ test "$(find "$TEST_HOME/.codex/agents" -maxdepth 1 -type l -name '*.toml' | wc 
 # left alone and setup's prefixed link to the same skill is removed: exactly one
 # plan-eng-review remains. Were upstream to retire it again, its alias would be
 # pruned too and the catalog would materialize the skill from the pinned
-# payload. The user's dangling link and a live gstack alias are untouched.
+# payload, which is what happens to cso: its alias is pruned, setup's prefixed
+# link is removed, and the catalog copies cso into the slot. The user's
+# dangling link and a live gstack alias are untouched.
 if [ -d "$generated_skills/gstack-plan-eng-review" ]; then
   test "$(readlink "$plan_eng_review_alias")" = "$generated_skills/gstack-plan-eng-review/"
 else
@@ -660,10 +747,17 @@ fi
 test -f "$plan_eng_review_alias/SKILL.md"
 test ! -e "$TEST_HOME/.codex/skills/gstack-plan-eng-review"
 test ! -L "$TEST_HOME/.codex/skills/gstack-plan-eng-review"
+test -f "$renamed_cso_alias/SKILL.md"
+test ! -L "$renamed_cso_alias"
+grep -qx 'skills/cso' "$TEST_HOME/.codex/.my-codex-manifest.txt"
+test ! -e "$TEST_HOME/.codex/skills/gstack-cso"
+test ! -L "$TEST_HOME/.codex/skills/gstack-cso"
 test ! -e "$retired_investigate"
 test ! -L "$retired_investigate"
 test ! -e "$retired_relative"
 test ! -L "$retired_relative"
+test ! -e "$retired_absolute"
+test ! -L "$retired_absolute"
 test -L "$user_gone"
 test "$(readlink "$user_gone")" = "$TEST_HOME/elsewhere/gone/"
 test -L "$TEST_HOME/.codex/skills/review"
@@ -698,8 +792,17 @@ cp "$TEST_HOME/.codex/hooks.json" "$TMP_ROOT/idempotency-before/hooks.json"
 cp "$TEST_HOME/.codex/config.toml" "$TMP_ROOT/idempotency-before/config.toml"
 cp "$TEST_HOME/.codex/AGENTS.md" "$TMP_ROOT/idempotency-before/AGENTS.md"
 
+# Earlier installs wrote auto_upgrade=true into gstack's legacy config.json.
+mkdir -p "$TEST_HOME/.gstack"
+printf '{"auto_upgrade": true, "user_key": "kept"}\n' > "$TEST_HOME/.gstack/config.json"
+
 HOME="$TEST_HOME" PATH="$BIN_DIR:$PATH" MY_CODEX_TEST_LOG="$LOG_FILE" MY_CODEX_TEST_UV_STATE="$UV_STATE" \
   bash "$REPO_ROOT/install.sh" > "$TMP_ROOT/reinstall.out"
+
+# The installer turns that flag off, says so once, and keeps the rest.
+node -e 'const c = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8")); if (c.auto_upgrade !== false || c.user_key !== "kept") process.exit(1)' \
+  "$TEST_HOME/.gstack/config.json"
+test "$(grep -c 'auto_upgrade turned off in' "$TMP_ROOT/reinstall.out")" = "1"
 
 diff -u "$TMP_ROOT/idempotency-before/hooks.json" "$TEST_HOME/.codex/hooks.json"
 diff -u "$TMP_ROOT/idempotency-before/config.toml" "$TEST_HOME/.codex/config.toml"
@@ -709,6 +812,19 @@ test "$(cksum "$TEST_HOME/.agents/skills/external-normalizer-trap/SKILL.md")" = 
 test "$(cksum "$TEST_HOME/.codex/skills/docx/SKILL.md")" = "$docx_checksum"
 test "$(cksum "$TEST_HOME/.codex/skills/pdf/SKILL.md")" = "$pdf_checksum"
 test ! -f "$TEST_HOME/.codex/hooks/hooks.json"
+
+# The catalog's copy of cso (above) is the installer's own: the manifest lists
+# it. gstack generates cso on this run, so the slot must be handed back to the
+# generated skill instead of keeping, through every later pin bump, the
+# payload it was copied from.
+grep -qx 'skills/cso' "$TEST_HOME/.codex/.my-codex-manifest.txt"
+test -f "$renamed_cso_alias/SKILL.md"
+test ! -e "$TEST_HOME/.codex/skills/gstack-cso"
+test ! -L "$TEST_HOME/.codex/skills/gstack-cso"
+case "$(uname -s)" in
+  MINGW*|MSYS*|CYGWIN*) diff -r "$generated_skills/gstack-cso" "$renamed_cso_alias" > /dev/null ;;
+  *) test "$(cd "$renamed_cso_alias" && pwd -P)" = "$(cd "$generated_skills/gstack-cso" && pwd -P)" ;;
+esac
 
 # The config.toml diff above already proves the MCP tables were not re-appended;
 # assert the count directly too, since a duplicate table is the failure mode that

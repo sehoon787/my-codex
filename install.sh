@@ -1106,6 +1106,28 @@ copy_repo_snapshot() {
   fi
 }
 
+# Take what git ignores in the source checkout back out of a fresh snapshot of
+# it: local state such as .briefing/, .omc/ and .serena/ is not part of
+# my-codex. Everything else stays, untracked files and submodule working trees
+# included (git lists nothing inside a submodule here, and
+# scripts/skill-catalog.js materializes skills from vendor/my-codex/upstream/*).
+# Deleting the listed paths after the copy works the same for the rsync and the
+# tar copy, with no exclude patterns to escape. A source without git metadata
+# of its own, or a machine without git, keeps the full copy.
+remove_git_ignored_paths() {
+  local src_dir="$1"
+  local dest_dir="$2"
+  local rel_path
+  [ -e "$src_dir/.git" ] || return 0
+  command -v git >/dev/null 2>&1 || return 0
+
+  while IFS= read -r -d '' rel_path; do
+    rel_path="${rel_path%/}"
+    [ -n "$rel_path" ] || continue
+    rm -rf "${dest_dir:?}/$rel_path" || true
+  done < <(git -C "$src_dir" ls-files -z --others --ignored --exclude-standard --directory 2>/dev/null)
+}
+
 # Refresh a long-lived upstream runtime without discarding its generated build
 # output on every my-codex reinstall. The fallback remains correct on systems
 # without rsync, but may require gstack to rebuild its local artifacts.
@@ -1709,6 +1731,15 @@ if [ "$SKIP_GSTACK" = "0" ]; then
       elif [ ! -e "$target" ] && [ ! -L "$target" ]; then
         mv "$generated_target" "$target"
         add_manifest_entry "skills/$skill_name"
+      elif [ -d "$target" ] && [ ! -L "$target" ] && \
+           grep -qxF "skills/$skill_name" "$MANIFEST_FILE" 2>/dev/null; then
+        # A copy the previous manifest lists is the installer's own snapshot:
+        # the catalog step copies a skill in from the pinned payload when no
+        # alias exists, and on Windows every alias is a copy. Unlike a link it
+        # never follows gstack, so replace it with what setup just generated.
+        rm -rf "${target:?}"
+        mv "$generated_target" "$target"
+        add_manifest_entry "skills/$skill_name"
       else
         rm -rf "$generated_target"
       fi
@@ -1779,18 +1810,22 @@ if [ "$SKIP_GSTACK" = "0" ]; then
       done
     fi
 
-    # gstack auto_upgrade config
-    mkdir -p "$HOME/.gstack"
+    # gstack auto-upgrade is never turned on: it would move gstack past the
+    # pinned commit. Earlier my-codex (and my-claude) installs wrote
+    # auto_upgrade=true into this legacy file; gstack itself reads config.yaml
+    # and GSTACK_AUTO_UPGRADE, never this key, so a true here is theirs and is
+    # turned off. Any other value is the user's and is left as it is.
     GSTACK_CONFIG="$HOME/.gstack/config.json"
     if [ -f "$GSTACK_CONFIG" ]; then
-      node -e "
-        const fs = require('fs');
-        const cfg = JSON.parse(fs.readFileSync('$GSTACK_CONFIG', 'utf8'));
-        cfg.auto_upgrade = true;
-        fs.writeFileSync('$GSTACK_CONFIG', JSON.stringify(cfg, null, 2));
-      " 2>/dev/null || true
-    else
-      echo '{"auto_upgrade":true}' > "$GSTACK_CONFIG"
+      node -e '
+        const fs = require("fs");
+        const file = process.argv[1];
+        const cfg = JSON.parse(fs.readFileSync(file, "utf8"));
+        if (cfg && cfg.auto_upgrade === true) {
+          fs.writeFileSync(file, JSON.stringify({ ...cfg, auto_upgrade: false }, null, 2));
+          console.log("  [gstack] auto_upgrade turned off in " + file + " (an earlier my-codex or my-claude install set it)");
+        }
+      ' "$GSTACK_CONFIG" 2>/dev/null || true
     fi
   fi
 fi
@@ -2108,6 +2143,7 @@ MARKETPLACE_FILE="$MARKETPLACE_DIR/marketplace.json"
 
 mkdir -p "$(dirname "$VENDOR_REPO_ROOT")"
 copy_repo_snapshot "$REPO_ROOT" "$VENDOR_REPO_ROOT"
+remove_git_ignored_paths "$REPO_ROOT" "$VENDOR_REPO_ROOT"
 add_manifest_entry "vendor/my-codex"
 
 # Symlink plugin into marketplace root so source.path stays relative.

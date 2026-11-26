@@ -19,7 +19,7 @@ gstack-sprint wraps the 3-Phase Sprint workflow (design→execute→review) as a
 - Pure design/planning/idea review without implementation → use /office-hours or /plan-ceo-review directly
 - Architecture intent type (design only, no build)
 - "just design it", "just plan it", "review my idea" — these route to /office-hours or /plan-ceo-review
-- Single-purpose requests: code review → /review, QA → /qa, deploy → /ship
+- Single-purpose requests: code review → /review, QA → /qa, deploy → /gstack-ship
 - Trivial fixes, research, documentation
 </Do_Not_Use_When>
 
@@ -113,7 +113,7 @@ gstack-sprint enforces the three-phase contract: user-confirmed design → autom
 
 6. **If "needs improvement" or "minor fixes"**: Re-enter Phase 2 with a targeted correction delta. Write the gap tasks to a follow-up plan file `.briefing/plans/YYYY-MM-DD-<topic>-followup.md` and run Phase 2 on it in the same worktree and branch. After correction, return to Phase 3 Step 1.
 
-7. **If "approved"**: Suggest next steps — `/ship` from the Phase 2 worktree, or the `finishing-a-development-branch` skill, so the branch and the worktree are not left unmerged. Do not proceed autonomously.
+7. **If "approved"**: Suggest next steps — `/gstack-ship` from the Phase 2 worktree, or the `finishing-a-development-branch` skill, so the branch and the worktree are not left unmerged. Do not proceed autonomously.
 
 8. **Optional follow-up chain** (present as options, do not auto-invoke):
    - /land-and-deploy → /canary → /document-release → /retro
@@ -187,5 +187,5 @@ Why bad: Did not read the design doc, did not produce a comparison table, did no
 - [ ] Phase 3: Comparison table presented to user, with the rulings and deferred minors from Phase 2 under it
 - [ ] Phase 3: User selected "approve", "needs improvement", or "minor fixes"
 - [ ] If "needs improvement": gap tasks written to a `-followup.md` plan file, Phase 2 run on it in the same worktree and branch, Phase 3 re-run after correction
-- [ ] If "approve": `/ship` from the Phase 2 worktree or `finishing-a-development-branch` suggested, no autonomous action taken
+- [ ] If "approve": `/gstack-ship` from the Phase 2 worktree or `finishing-a-development-branch` suggested, no autonomous action taken
 </Final_Checklist>

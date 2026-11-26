@@ -246,7 +246,7 @@ Boss는 작업이 있던 모든 턴 — 파일 편집, 커밋/PR, 설정 변경,
 | 출처 | 설치 | 주요 스킬 |
 |--------|------:|------------|
 | everything-claude-code | 61 | coding-standards, python-testing, api-design, deep-research |
-| gstack | 29 | /qa, /review, /ship, /cso, /office-hours |
+| gstack | 29 | /qa, /review, /gstack-ship, /cso, /office-hours |
 | superpowers | 14 | brainstorming, systematic-debugging, TDD, writing-plans |
 | [my-codex Core](https://github.com/sehoon787/my-codex) | 4 | boss-advanced, boss-briefing, briefing-vault, gstack-sprint |
 | archify | 1 | archify (아키텍처·워크플로·시퀀스·데이터 흐름·라이프사이클 다이어그램) |
@@ -437,9 +437,9 @@ git 서브모듈로 연결합니다. 고정 커밋은 `.gitmodules`가 기본으
 
 | 출처 | SHA | 날짜 | 비교 |
 |--------|-----|------|------|
-| [everything-claude-code](https://github.com/affaan-m/everything-claude-code) | `d2ef268` | 2026-11-13 | [compare](https://github.com/affaan-m/everything-claude-code/compare/d2ef268...HEAD) |
-| [gstack](https://github.com/garrytan/gstack) | `5dcd76b` | 2026-11-16 | [compare](https://github.com/garrytan/gstack/compare/5dcd76b...HEAD) |
-| [oh-my-codex](https://github.com/Yeachan-Heo/oh-my-codex) | `66ca2c5` | 2026-11-16 | [compare](https://github.com/Yeachan-Heo/oh-my-codex/compare/66ca2c5...HEAD) |
+| [everything-claude-code](https://github.com/affaan-m/everything-claude-code) | `4adeee6` | 2026-11-26 | [compare](https://github.com/affaan-m/everything-claude-code/compare/4adeee6...HEAD) |
+| [gstack](https://github.com/garrytan/gstack) | `a48df18` | 2026-11-26 | [compare](https://github.com/garrytan/gstack/compare/a48df18...HEAD) |
+| [oh-my-codex](https://github.com/Yeachan-Heo/oh-my-codex) | `a416ae8` | 2026-11-26 | [compare](https://github.com/Yeachan-Heo/oh-my-codex/compare/a416ae8...HEAD) |
 | [superpowers](https://github.com/obra/superpowers) | `22f0b46` | 2026-11-13 | [compare](https://github.com/obra/superpowers/compare/22f0b46...HEAD) |
 | [archify](https://github.com/tt-a1i/archify) | `2ab3cae` (`v3.0.1`) | 2026-09-28 | [compare](https://github.com/tt-a1i/archify/compare/2ab3cae...HEAD) |
 

@@ -38,7 +38,7 @@ Stay unanchored: read only the document, its build outputs and the style guide. 
 2. Find four kinds of problem: unnecessary or duplicated content (a fact stated twice, prose that repeats a caption or table, empty signposting); wordiness; unclear passages (unclear referent, missing step, ambiguous scope); inconsistent or undefined terms and abbreviations.
 3. For each finding record: id (R1, R2, …); location (page, section, file:line); type; class; the current sentence, quoted from one source line so that `grep -F` finds it; the problem; a short proposed fix.
 4. Keep list: sentences that look cuttable but must stay (disclosures, deviations, definitions used later), each with the reason.
-5. Write `review.md`: a header (scope, conventions with counts, page convention), an overall summary with counts by type, the findings table in document order, and the keep list.
+5. Write `review.md`: a header (scope, conventions with counts, page convention), an overall summary with counts by type, the findings table in document order, and the keep list. The finding id (R1, R2, …) is the first column of the findings table.
 </Review_Mode>
 
 <Edit_Mode>
@@ -87,12 +87,12 @@ Propose changes only inside the scope; list out-of-scope occurrences in the term
 `report.md`, the readable report:
 - Header: the document was not edited; Before shows the current sentence in typeset form (references resolved, commands removed, math as text); no number was changed; the conventions found, with counts; the path of apply.md.
 - (a) Summary: recurring problems with counts; item counts per class; where most changes fall; the [confirm] items; the disagreements with the reviewer.
-- (b) Before/after table in document order: # | location (page, section) | class | before | after | reason. Full sentences, typeset form.
+- (b) Before/after table in document order: # | location (page, section) | class | before | after | reason. Full sentences, typeset form. The first column holds the finding id (R1, R2, …), exactly as in the first column of the findings table in review.md; the checker matches report rows by it.
 - (c) Paragraph before/after for every paragraph with two or more changes. After applies the required and recommended items; optional ones appear as [optional, id: …].
 - (d) Term table: term | variants with counts | chosen form (reason) | where to change.
 - (e) Where you disagree with the reviewer pass: one numbered entry each, with the reason.
 
-`apply.md`, the apply-ready file: a header with the file-key legend and the rules below, then one item per heading, in document order. Use `###` only for items, and keep each item to one file.
+`apply.md`, the apply-ready file: a header with the file-key legend and the rules below, then one item per heading, in document order. Use `###` only for items, and keep each item to one file. Item headings, labels and fences start at column 0; the example below is indented only for display.
 
     ### R7 [required] §3.2, p. 14 (A 120–122)
     Current:

@@ -35,7 +35,7 @@ This skill separates finding from fixing, fixes the output format so that every 
 1. **File map**: give each scope file a key (A = paper/chapters/ch3.tex, B = …). List every source file of the document, in document order, for term counts. The build's recorder file gives it even when a class macro loads the chapters: `grep -E '^INPUT (\./)?[^/].*\.tex$' <build dir>/main.fls | sed 's|^INPUT \./|INPUT |' | awk '!seen[$0]++'`. Without a .fls file, follow the main file's \input, \include and class-specific loading commands.
 2. **Output directory**: a new directory outside the source tree that the agent's workspace-write sandbox can write to, normally `${TMPDIR:-/tmp}/en_polish/<YYYY-MM-DD>-<topic>/` (`<out>` below). If your sandbox configuration excludes temporary folders, use a git-ignored folder inside the workspace. Both passes write there.
 3. **Baseline checksums**: `shasum -a 256 <every source file> > <out>/sources.sha256`.
-4. **Build outputs**: if the PDF or the .aux file is missing or older than the sources, never build in the source tree. Copy the paper folder (`mkdir -p <out>/before && cp -R <paper dir>/. <out>/before/`) and build the copy with the project's own command (for example `latexmk -cd -pdf <out>/before/main.tex`). Pass that PDF and .aux to both passes.
+4. **Build outputs**: if the PDF or the .aux file is missing or older than the sources, never build in the source tree. Copy the paper folder (`mkdir -p <out>/before && cp -RL <paper dir>/. <out>/before/`; `-L` dereferences symlinks, so a build or `--apply-into` can never write into the sources through a symlinked folder) and build the copy with the project's own command (for example `latexmk -cd -pdf <out>/before/main.tex`). Pass that PDF and .aux to both passes.
 5. **User concerns**: keep any problem the user named for Step 2. The reviewer never sees it.
 
 ## Step 1: Reviewer pass (unanchored)
@@ -66,7 +66,7 @@ Send every FAIL, and every REVIEW line you reject, to the editor with the item i
 ## Step 5: Page shifts
 
 When the report or the user states a page or line effect ("saves half a page", "keeps chapter 4 within 20 pages"), measure it:
-1. Copy the paper folder again (`mkdir -p <out>/after && cp -R <paper dir>/. <out>/after/`), then apply the required and recommended items into that copy: `python3 -I <skill dir>/check_apply.py <out>/apply.md A=<path> … --apply-into <paper dir>=<out>/after`.
+1. Copy the paper folder again (`mkdir -p <out>/after && cp -RL <paper dir>/. <out>/after/`), then apply the required and recommended items into that copy: `python3 -I <skill dir>/check_apply.py <out>/apply.md A=<path> … --apply-into <paper dir>=<out>/after`.
 2. Build `<out>/before` (make it as in Step 0 if it does not exist yet) and `<out>/after` with the same command.
 3. Compare the page counts (`pdfinfo <copy>/main.pdf`) and the start page of each affected section (from each copy's .aux). Report measured numbers only.
 
@@ -77,7 +77,7 @@ When the report or the user states a page or line effect ("saves half a page", "
 
 ## After approval (a separate step, only on the user's request)
 
-Apply only the items the user picks: write applied copies with `--apply-into` (add `--classes` to include optional items), show `diff -u` against the sources, and copy the files over the sources only after the user agrees. Then run Verification_Checklist items 6 and 7 again.
+Apply only the items the user picks: write applied copies with `--apply-into`, naming the picked ids with `--items R3,E2` (the checker adds the items they depend on, whatever their class; without `--items`, `--classes` selects whole classes), show `diff -u` against the sources, and copy the files over the sources only after the user agrees. Then run Verification_Checklist items 6 and 7 again.
 
 </Steps>
 

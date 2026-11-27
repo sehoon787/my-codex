@@ -72,6 +72,19 @@ The cost is \$5 per run and \$10 for tuning.
 The ResNet-R101 backbone is used.
 First part \\ second part.
 \begin{equation} x = y + z \end{equation}
+Plain text % crucial: note in order to keep
+See \url{https://x.org/pretrained-models/v1} for details.
+Rate 5\% here.
+The model has 4 layers.
+The decoder has 6 heads.
+As shown by \cite[p.~5]{smith2024} here.
+Also \citep{lee,kim} there.
+Also \citep{wu,xu} there too.
+alpha \\$a$ and beta $b$ end.
+\begin{equation}
+L = a + b
+\end{equation}
+The corpus has 1{,}200 clips.
 TEX
 cat >"$PRISTINE/src/chapters/b.tex" <<'TEX'
 \section{Results}
@@ -157,7 +170,7 @@ Replacement:
 ~~~latex
 % src: results/latency.json
 ~~~
-Numbers: removed 92.1 (the value stays in Table 3.2) [confirm]
+Numbers: removed `92.1` (the value stays in Table 3.2) [confirm]
 Removed: the math $92.1\%$ goes with the deleted sentence
 
 ### E2 [recommended] §3.1, p. 14 (A 3)
@@ -476,8 +489,8 @@ check "copy holds the expected text (R1, E2 after R1, R2)" "$?"
 grep -qF 'crucial for the final accuracy' "$COPY/chapters/a.tex"; check "a default apply-into leaves the optional item E1 unapplied" "$?"
 sources_unchanged; check "sources unchanged after apply-into" "$?"
 [ -z "$(find "$COPY" -name '.aep-*')" ]; check "no temp file is left behind" "$?"
-out="$(run "$C/apply.md" "A=$A" "B=$B" --apply-into "$SRC=$C/copy2" --classes required,recommended,optional)"
-! grep -qF 'crucial for the final accuracy' "$C/copy2/chapters/a.tex"; check "--classes with optional applies E1" "$?"
+out="$(run "$C/apply.md" "A=$A" "B=$B" --apply-into "$SRC=$C/copy2" --classes required,recommended,optional)"; rc=$?
+[ "$rc" = "0" ] && [ -f "$C/copy2/chapters/a.tex" ] && ! grep -qF 'crucial for the final accuracy' "$C/copy2/chapters/a.tex"; check "--classes with optional applies E1" "$?"
 
 new_case items
 write_good_apply
@@ -509,6 +522,178 @@ raw = open(sys.argv[1], "rb").read()
 sys.exit(0 if b"The gate is applied" in raw and raw.count(b"\n") == raw.count(b"\r\n") else 1)' "$COPY/chapters/a.tex"
 check "CRLF source: the copy is written with CRLF throughout" "$?"
 sources_unchanged; check "CRLF source: sources unchanged" "$?"
+
+# ---- second round: one case per review item ----
+
+# 1. banned variants ignore trailing comments and url arguments, not an escaped percent
+new_case banned-comment-url
+{
+  item T1a required 'Plain text % crucial: note in order to keep' 'Plain prose % crucial: note in order to keep'
+  item T1b required 'See \url{https://x.org/pretrained-models/v1} for details.' 'See \url{https://x.org/pretrained-models/v1} for more.'
+  item T1c required 'Rate 5\% here.' 'Rate 5\% in order to here.'
+} >"$C/apply.md"
+out="$(run "$C/apply.md" "A=$A" --banned "$BANNED")"; rc=$?
+[ "$rc" = "1" ] && has "$out" "FAIL T1c: primary: banned variant"; check "banned: an escaped \\% does not hide a banned phrase" "$?"
+lacks "$out" "FAIL T1a:"; check "banned: a kept trailing comment is ignored" "$?"
+lacks "$out" "FAIL T1b:"; check "banned: a kept \\url argument is ignored" "$?"
+
+# 2. a Removed: or Numbers: line downgrades only what it names
+new_case removed-verbatim
+{
+  item R2a required 'of $92.1\%$.' 'of 92.1 percent.' 'Removed: \cite{lee}'
+  item R2b required '\[ E = mc^2 \]' 'E = mc^2' 'Removed: \[ E = mc^2 \]'
+  item R2c required '% crucial: keep this note
+The ResNet-R101 backbone is used.' 'The ResNet-R101 backbone is used.' 'Removed: \cite{lee}'
+} >"$C/apply.md"
+out="$(run "$C/apply.md" "A=$A")"; rc=$?
+[ "$rc" = "1" ] && has "$out" "FAIL R2a: primary: math removed"; check "Removed: \\cite{lee} does not cover a dropped math" "$?"
+has "$out" "FAIL R2c: primary: comment line removed"; check "Removed: \\cite{lee} does not cover a dropped comment line" "$?"
+has "$out" "REVIEW R2b: primary: math removed"; check "a math copied verbatim on the Removed: line is a REVIEW" "$?"
+lacks "$out" "FAIL R2b:"; check "a listed math removal is not a FAIL" "$?"
+
+new_case numbers-backticks
+{
+  item N2a required 'The model has 4 layers.' 'The model has layers.' 'Numbers: removed 1,200 (stays in Table 4)'
+  item N2b required 'The decoder has 6 heads.' 'The decoder has heads.' 'Numbers: removed `6` (stays in Table 4)'
+} >"$C/apply.md"
+out="$(run "$C/apply.md" "A=$A")"; rc=$?
+[ "$rc" = "1" ] && has "$out" "FAIL N2a: primary: numbers removed ['4']"; check "a value in prose on the Numbers: line is not listed" "$?"
+has "$out" "REVIEW N2b: primary: numbers removed ['6']"; check "a backticked value on the Numbers: line is a REVIEW" "$?"
+lacks "$out" "FAIL N2b:"; check "a backticked value is not a FAIL" "$?"
+
+# 3. a legend heading without the location tail is allowed
+new_case legend-heading
+{
+  printf '# Apply-ready file\n## Classes [required = an error; recommended = a clear improvement; optional = taste]\n\n'
+  item G1 required 'each request increase by 4.2~ms' 'each request increases by 4.2~ms'
+} >"$C/apply.md"
+out="$(run "$C/apply.md" "A=$A")"; rc=$?
+[ "$rc" = "0" ] && has "$out" "FAIL 0"; check "a legend line '## Classes [required = ...]' is not an item heading" "$?"
+
+# 4. bare brace keys on the Removed: line cover a removed key
+new_case removed-bare-keys
+{
+  item K4a required 'As shown by \cite[p.~5]{smith2024} here.' 'As shown by here.' 'Removed: smith2024 (moved to E4)'
+  item K4b required 'Also \citep{lee,kim} there.' 'Also there.' 'Removed: lee (moved)'
+  item K4c required 'Also \citep{wu,xu} there too.' 'Also there too.' 'Removed: wu and xu (moved)'
+} >"$C/apply.md"
+out="$(run "$C/apply.md" "A=$A")"; rc=$?
+has "$out" "REVIEW K4a: primary: ref/cite/label removed"; check "a bare key on the Removed: line covers \\cite[p.~5]{key}" "$?"
+lacks "$out" "FAIL K4a:"; check "a covered key is not a FAIL" "$?"
+[ "$rc" = "1" ] && has "$out" "FAIL K4b: primary: ref/cite/label removed"; check "multi-key braces: one listed key is not enough" "$?"
+has "$out" "REVIEW K4c: primary: ref/cite/label removed"; check "multi-key braces: every key listed is covered" "$?"
+lacks "$out" "FAIL K4c:"; check "multi-key braces: a fully listed removal is not a FAIL" "$?"
+
+# 5. --items blocks the write only on FAILs of the picked items (and file-level FAILs)
+new_case items-block
+{
+  item R5a required 'each request increase by 4.2~ms' 'each request increases by 4.2~ms'
+  item R5b required 'We evaluate on 1,200 utterances' 'We evaluate on 1,200 crucial utterances'
+} >"$C/apply.md"
+out="$(run "$C/apply.md" "A=$A" --banned "$BANNED" --apply-into "$SRC=$C/copy_one" --items R5a)"; rc=$?
+has "$out" "wrote $C/copy_one/chapters/a.tex" && grep -qF 'increases by 4.2~ms' "$C/copy_one/chapters/a.tex" \
+  && grep -qF 'We evaluate on 1,200 utterances' "$C/copy_one/chapters/a.tex"
+check "--items R5a writes although the unpicked R5b fails a banned check" "$?"
+[ "$rc" = "1" ] && has "$out" "FAIL R5b:"; check "--items: the unpicked FAIL is still reported and exits 1" "$?"
+out="$(run "$C/apply.md" "A=$A" --banned "$BANNED" --apply-into "$SRC=$C/o2" --items R5b)"
+lacks "$out" "wrote" && [ ! -e "$C/o2" ]; check "--items R5b (a failing picked item) writes nothing" "$?"
+out="$(run "$C/apply.md" "A=$A" --banned "$BANNED" --apply-into "$SRC=$C/copy_three")"
+lacks "$out" "wrote" && [ ! -e "$C/copy_three" ]; check "class mode still writes nothing while any item fails" "$?"
+out="$(run "$C/apply.md" "A=$A" --banned "$BANNED" --apply-into "$SRC=$C/o4" --items R5a,NOPE)"
+lacks "$out" "wrote" && [ ! -e "$C/o4" ]; check "--items: a file-level FAIL (unknown id) blocks the write" "$?"
+sources_unchanged; check "--items block: sources unchanged" "$?"
+
+# 6. an escaped backslash before $ does not escape it
+new_case dollar-parity
+{ item L6 required 'alpha \\$a$ and beta $b$ end.' 'alpha \\$a$ and gamma $b$ end.'; } >"$C/apply.md"
+out="$(run "$C/apply.md" "A=$A")"; rc=$?
+[ "$rc" = "0" ] && lacks "$out" "math removed"; check "alpha \\\\\$a\$ ...: no false math removal" "$?"
+
+# 7. targets must stay inside DEST_ROOT, and SRC_ROOT must not sit inside it
+new_case dest-symlink-elsewhere
+write_good_apply
+mkdir "$C/elsewhere"
+printf 'unrelated a\n' >"$C/elsewhere/a.tex"
+printf 'unrelated b\n' >"$C/elsewhere/b.tex"
+sha_ea="$(sha256_of "$C/elsewhere/a.tex")"
+sha_eb="$(sha256_of "$C/elsewhere/b.tex")"
+cp -R "$SRC" "$C/after"
+rm -rf "${C:?}/after/chapters"
+ln -s "$C/elsewhere" "$C/after/chapters"
+out="$(run "$C/apply.md" "A=$A" "B=$B" --apply-into "$SRC=$C/after")"; rc=$?
+[ "$rc" != "0" ] && has "$out" "resolves outside DEST_ROOT"; check "a symlinked DEST folder pointing elsewhere is refused" "$?"
+[ "$(sha256_of "$C/elsewhere/a.tex")" = "$sha_ea" ] && [ "$(sha256_of "$C/elsewhere/b.tex")" = "$sha_eb" ]; check "the unrelated files behind the symlink are unchanged" "$?"
+sources_unchanged; check "symlinked DEST folder: sources unchanged" "$?"
+
+new_case src-inside-dest
+write_good_apply
+out="$(run "$C/apply.md" "A=$A" "B=$B" --apply-into "$SRC/chapters=$SRC")"; rc=$?
+[ "$rc" != "0" ] && has "$out" "lies inside DEST_ROOT"; check "SRC_ROOT inside DEST_ROOT is refused" "$?"
+[ ! -e "$SRC/a.tex" ]; check "SRC inside DEST: nothing written" "$?"
+sources_unchanged; check "SRC inside DEST: sources unchanged" "$?"
+
+# 8. coverage rows: emphasis, a trailing note in the cell, no leading pipe
+new_case coverage-forms
+write_good_apply
+cat >"$C/review.md" <<'MD'
+| # | location | problem |
+|---|---|---|
+| **R1** | p.1 | a |
+| R2 | p.2 | b |
+R3 | p.3 | c
+| _R4_ | p.4 | d
+MD
+cat >"$C/report.md" <<'MD'
+| # | class |
+|---|---|
+| **R1** | required |
+| R2 (no change) | required |
+R3 | required
+| _R4_ | required
+MD
+out="$(run "$C/apply.md" "A=$A" "B=$B" --review "$C/review.md" --report "$C/report.md")"; rc=$?
+[ "$rc" = "0" ] && lacks "$out" "reviewer finding"; check "coverage: **R1**, 'R2 (no change)', a pipe-less R3 and _R4_ all count" "$?"
+printf '| R1 | a |\n| R5 | b |\n' >"$C/review.md"
+printf '| R1 | ok |\n' >"$C/report.md"
+out="$(run "$C/apply.md" "A=$A" "B=$B" --review "$C/review.md" --report "$C/report.md")"
+has "$out" "FAIL -: reviewer finding R5 has no row in the report"; check "coverage: a finding without a report row still fails" "$?"
+
+# 9. bad input is a one-line error with exit status 2
+new_case bad-input
+write_good_apply
+out="$(run "$C/apply.md" "A")"; rc=$?
+[ "$rc" = "2" ] && has "$out" "check_apply: file argument 'A' must be written as NAME=PATH" && lacks "$out" "Traceback"; check "a KEY argument without = is a one-line error, exit 2" "$?"
+out="$(run "$C/apply.md" "A=$A" --apply-into nopair)"; rc=$?
+[ "$rc" = "2" ] && has "$out" "check_apply: --apply-into argument 'nopair' must be written as NAME=PATH" && lacks "$out" "Traceback"; check "--apply-into without = is a one-line error, exit 2" "$?"
+printf 'caf\xe9 not utf-8\n' >"$C/latin1.tex"
+out="$(run "$C/apply.md" "A=$C/latin1.tex")"; rc=$?
+[ "$rc" = "2" ] && has "$out" "latin1.tex is not valid UTF-8" && lacks "$out" "Traceback" && [ "$(wc -l <<<"$out" | tr -d ' ')" = "1" ]; check "a non-UTF-8 source is a one-line error, exit 2" "$?"
+printf '# comment\npretrained\nre:(unclosed\n' >"$C/bad-banned.txt"
+out="$(run "$C/apply.md" "A=$A" --banned "$C/bad-banned.txt")"; rc=$?
+[ "$rc" = "2" ] && has "$out" "bad-banned.txt line 3: bad regular expression" && lacks "$out" "Traceback"; check "a bad re: line in the banned file is named, exit 2" "$?"
+
+# ---- third round ----
+
+# 1. in Markdown a % is a literal percent, not a comment
+new_case markdown-percent
+printf 'Accuracy improves by 5%% and the gain is solid\n' >"$C/c.md"
+{ item MD1 required 'by 5% and the gain is solid' 'by 5% and the gain is crucial'; } >"$C/apply.md"
+out="$(run "$C/apply.md" "A=$C/c.md" --banned "$BANNED")"; rc=$?
+[ "$rc" = "1" ] && has "$out" "FAIL MD1: primary: banned variant '"; check "a banned word after a literal % in a .md file fails" "$?"
+
+# 2. whitespace is collapsed before the verbatim Removed: comparison
+new_case removed-whitespace
+{ item W1 required '\begin{equation}
+L = a + b
+\end{equation}' '' 'Removed: \begin{equation} L = a + b \end{equation} (stays in §2)'; } >"$C/apply.md"
+out="$(run "$C/apply.md" "A=$A")"; rc=$?
+[ "$rc" = "0" ] && has "$out" "REVIEW W1: primary: math removed" && lacks "$out" "FAIL W1:"; check "a math listed on one line covers the same math over three lines" "$?"
+
+# 3. Numbers: values are read with numbers(), so 1{,}200 is 1,200
+new_case numbers-thousands
+{ item N3 required 'The corpus has 1{,}200 clips.' 'The corpus has clips.' 'Numbers: removed `1{,}200` (stays in Table 2)'; } >"$C/apply.md"
+out="$(run "$C/apply.md" "A=$A")"; rc=$?
+[ "$rc" = "0" ] && has "$out" "REVIEW N3: primary: numbers removed ['1,200']" && lacks "$out" "FAIL N3:"; check "a backticked 1{,}200 lists the number 1,200" "$?"
 
 # ---- refusals: each starts from pristine sources ----
 new_case symlink-folder
@@ -581,7 +766,7 @@ if [ -d "$TMP_ROOT/caseprobe" ]; then
   out="$(run "$C/apply.md" "A=$A" "B=$B" --apply-into "$SRC=$C/SRC/inner")"; rc=$?
   [ "$rc" != "0" ] && has "$out" "refusing to write" && [ ! -e "$SRC/inner" ]; check "case-alias DEST below the sources: refused, nothing created" "$?"
 else
-  echo "n/a   case-alias DEST (this filesystem is case-sensitive; the hard-link cases cover the same code)"
+  echo "n/a   case-alias DEST (case-sensitive filesystem): the directory-ancestor walk is exercised only by this case, which needs a case-insensitive filesystem such as macOS; the hard-link cases exercise same_file(target, source)"
 fi
 
 echo

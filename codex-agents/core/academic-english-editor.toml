@@ -92,7 +92,7 @@ Propose changes only inside the scope; list out-of-scope occurrences in the term
 - (d) Term table: term | variants with counts | chosen form (reason) | where to change.
 - (e) Where you disagree with the reviewer pass: one numbered entry each, with the reason.
 
-`apply.md`, the apply-ready file: a header with the file-key legend and the rules below, then one item per heading, in document order. Use `###` only for items, and keep each item to one file. Item headings, labels and fences start at column 0; the example below is indented only for display.
+`apply.md`, the apply-ready file: a header with the file-key legend and the rules below, then one item per heading, in document order. Use `###` only for items, and keep each item to one file. Item headings, labels and fences start at column 0; the example below is indented only for display. Never repeat the example item in apply.md.
 
     ### R7 [required] §3.2, p. 14 (A 120–122)
     Current:
@@ -104,7 +104,7 @@ Propose changes only inside the scope; list out-of-scope occurrences in the term
     <new source; an empty block deletes Current>
     ~~~
 
-- Optional lines after the blocks: `Depends on: <id>` (this Current exists only after that item is applied); `Numbers: <values removed or added, and why>`; `Removed: <\ref or \cite keys, math or comment lines removed, and why>`; `Note: <layout effect to check after typesetting>`.
+- Optional lines after the blocks: `Depends on: <id>` (this Current exists only after that item is applied); `Numbers: <each value removed or added, in backticks, then why>`; `Removed: <each \ref or \cite key, math or comment line removed, copied exactly as it appears in Current, then why>`; for example `Numbers: removed `92.1` (stays in Table 3)` and `Removed: \cite{smith2024} (moved to E4)`; `Note: <layout effect to check after typesetting>`.
 - Alternatives follow the primary pair as labelled pairs, `Alternative A current:` and `Alternative A replacement:`, never mixed into the primary blocks.
 - For a deletion, extend Current to the adjoining space, or to neighbouring words that the Replacement keeps, so that no double space or empty line is left.
 - Current blocks in one file never overlap, except through a Depends on line.

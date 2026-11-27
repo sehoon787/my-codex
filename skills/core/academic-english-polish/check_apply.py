@@ -15,17 +15,20 @@ import argparse
 import os
 import re
 import stat
+import sys
 import tempfile
 from collections import Counter
 
 HEAD = re.compile(r"^### (\S+) \[([a-z]+)[^\]]*\].*\((\w+) \d")
-LOOKS = re.compile(r"^\s*#+\s*\S+\s*\[[a-z]")
+LOOKS = re.compile(r"^\s*#+\s*\S+\s*\[[a-z][^\n]*\(\w+ \d")
+TRAILING_COMMENT = re.compile(r"(?<!\\)((?:\\\\)*)%.*$")
 LABEL = re.compile(r"^(Current|Replacement|Alternative \w+ (?:current|replacement)):$")
 CLASSES = ("required", "recommended", "optional")
 KEYS = re.compile(
     r"\\(?:[a-zA-Z]*cite[a-zA-Z]*|[a-zA-Z]*ref|label)\*?(?:\[[^\]]*\])*\{[^}]*\}"
     r"|\[[^\[\]]*@[A-Za-z0-9_][^\[\]]*\]"
     r"|(?<![\w@\\])@[A-Za-z0-9_](?:[\w:#$%&\-+?<>~/]|\.(?=\w))*")
+PANDOC_KEY = re.compile(r"@([A-Za-z0-9_](?:[\w:#$%&\-+?<>~/]|\.(?=\w))*)")
 MATH = re.compile(
     r"\$\$.+?\$\$"
     r"|(?<!\\)\$(?:\\.|[^$\\])+\$"
@@ -42,10 +45,38 @@ tally = Counter()
 failed_items = set()
 
 
+def die(msg):
+    print(f"check_apply: {msg}", file=sys.stderr)
+    raise SystemExit(2)
+
+
+def split_pair(spec, what):
+    if "=" not in spec or spec.startswith("=") or spec.endswith("="):
+        die(f"{what} argument {spec!r} must be written as NAME=PATH")
+    return spec.split("=", 1)
+
+
+def read_bytes(path):
+    try:
+        with open(path, "rb") as handle:
+            return handle.read()
+    except OSError as error:
+        die(f"cannot read {path}: {error.strerror}")
+
+
+def decode(raw, path):
+    try:
+        return raw.decode("utf-8")
+    except UnicodeDecodeError as error:
+        die(f"{path} is not valid UTF-8 (byte {error.start})")
+
+
 def say(kind, item, msg):
     tally[kind] += 1
     if kind == "FAIL" and item:
         failed_items.add(item["id"])
+    elif kind == "FAIL":
+        tally["FILE_FAIL"] += 1
     print(f"{kind} {item['id'] if item else '-'}: {msg}")
 
 
@@ -58,18 +89,32 @@ def keys(s):
     return Counter(KEYS.findall(s))
 
 
+def shield(s):
+    """Hide escaped backslashes and escaped dollars, so only an unescaped $ opens math."""
+    return s.replace("\\\\", "\x00").replace("\\$", "\x01")
+
+
+def unshield(s):
+    return s.replace("\x00", "\\\\").replace("\x01", "\\$")
+
+
 def maths(s):
-    return Counter(m.group(0) for m in MATH.finditer(s))
+    return Counter(unshield(m.group(0)) for m in MATH.finditer(shield(s)))
 
 
-def comments(s):
+def comments(s, markdown=False):
+    if markdown:
+        return Counter()
     return Counter(x.strip() for x in s.splitlines() if x.lstrip().startswith("%"))
 
 
-def visible(s):
-    """The prose of a block: no comment lines, reference keys, math or command names."""
-    s = "\n".join(x for x in s.splitlines() if not x.lstrip().startswith("%"))
-    return CMD.sub(" ", MATH.sub(" ", KEYS.sub(" ", s)))
+def visible(s, markdown=False):
+    """The prose of a block: no url arguments, comments (LaTeX only), reference keys, math or command names."""
+    s = re.sub(r"\\(?:url|href)\{[^}]*\}", " ", s)
+    if not markdown:
+        s = "\n".join(TRAILING_COMMENT.sub(r"\1", x) for x in s.splitlines())
+    s = MATH.sub(" ", shield(KEYS.sub(" ", s))).replace("\x00", " ").replace("\x01", " ")
+    return CMD.sub(" ", s)
 
 
 def blank_lines(s):
@@ -209,12 +254,17 @@ def note_text(item, prefix):
     return " ".join(note[len(prefix):] for note in item["notes"] if note.startswith(prefix))
 
 
-def listed(item, prefix):
-    return any(note.startswith(prefix) for note in item["notes"])
+def key_names(key):
+    """The bare keys of one KEYS match: \\cite[p.~5]{a,b} gives a and b; [@a; @b] gives a and b."""
+    if key.startswith("\\"):
+        found = re.search(r"\{([^}]*)\}$", key)
+        return [x.strip() for x in found[1].split(",") if x.strip()] if found else []
+    return PANDOC_KEY.findall(key)
 
 
 def check_pair(item, kind, cur, rep, banned):
-    listed_numbers = set(re.findall(NUM, note_text(item, "Numbers:")))
+    markdown = item["markdown"]
+    listed_numbers = set(numbers(" ".join(re.findall(r"`([^`]*)`", note_text(item, "Numbers:")))))
     lost, extra = numbers(cur) - numbers(rep), numbers(rep) - numbers(cur)
     bad_lost = [v for v in lost.elements() if v not in listed_numbers]
     bad_extra = [v for v in extra.elements() if v not in listed_numbers]
@@ -224,18 +274,25 @@ def check_pair(item, kind, cur, rep, banned):
     ok_extra = [v for v in extra.elements() if v in listed_numbers]
     if ok_lost or ok_extra:
         say("REVIEW", item, f"{kind}: numbers removed {sorted(ok_lost)}, added {sorted(ok_extra)} (listed)")
-    listed_keys = set(KEYS.findall(note_text(item, "Removed:")))
-    for name, count in (("ref/cite/label", keys), ("math", maths), ("comment line", comments)):
+    removed_note = note_text(item, "Removed:")
+    removed_flat = " ".join(removed_note.split())
+
+    def key_listed(key):
+        names = key_names(key)
+        return key in removed_note or (bool(names) and all(
+            re.search(r"(?<![\w:.\-])" + re.escape(name) + r"(?![\w:\-])", removed_note) for name in names))
+
+    for name, count, is_listed in (
+            ("ref/cite/label", keys, key_listed),
+            ("math", maths, lambda v: " ".join(v.split()) in removed_flat),
+            ("comment line", lambda t: comments(t, markdown), lambda v: " ".join(v.split()) in removed_flat)):
         lost, extra = count(cur) - count(rep), count(rep) - count(cur)
-        if name == "ref/cite/label":
-            bad = sorted(v for v in lost if v not in listed_keys)
-            ok = sorted(v for v in lost if v in listed_keys)
-            if bad:
-                say("FAIL", item, f"{kind}: {name} removed {bad}")
-            if ok:
-                say("REVIEW", item, f"{kind}: {name} removed {ok} (listed)")
-        elif lost:
-            say("REVIEW" if listed(item, "Removed:") else "FAIL", item, f"{kind}: {name} removed {sorted(lost)}")
+        bad = sorted(v for v in lost if not is_listed(v))
+        ok = sorted(v for v in lost if is_listed(v))
+        if bad:
+            say("FAIL", item, f"{kind}: {name} removed {bad}")
+        if ok:
+            say("REVIEW", item, f"{kind}: {name} removed {ok} (listed)")
         if extra:
             say("REVIEW", item, f"{kind}: {name} added {sorted(extra)}")
     breaks_before, breaks_after = cur.count("\\\\"), rep.count("\\\\")
@@ -251,7 +308,7 @@ def check_pair(item, kind, cur, rep, banned):
         say("FAIL", item, f"{kind}: formatting command removed {sorted(gone & FORMAT)}")
     if new - FORMAT:
         say("REVIEW", item, f"{kind}: new command {sorted(new - FORMAT)}")
-    prose = visible(rep)
+    prose = visible(rep, markdown)
     for term in banned:
         if term.startswith("re:"):
             hit = re.search(term[3:], prose)
@@ -309,15 +366,25 @@ def check_simulation(items, by_id, text):
                 say("FAIL", item, f"sequential application fails for classes {label}: {why}")
 
 
+def first_cells(md):
+    """R<n> ids at the start of the first cell of each table row; ** and _ emphasis, the leading pipe optional."""
+    ids = []
+    for line in md.splitlines():
+        if "|" not in line:
+            continue
+        cell = line.strip().lstrip("|").split("|")[0].replace("*", "").replace("_", "").strip()
+        found = re.match(r"R\d+[a-z]?\b", cell)
+        if found:
+            ids.append(found[0])
+    return ids
+
+
 def check_coverage(review_md, report_md):
-    with open(report_md, encoding="utf-8") as handle:
-        report = handle.read()
-    with open(review_md, encoding="utf-8") as handle:
-        review = handle.read()
-    row = re.compile(r"^\|\s*(R\d+[a-z]?)\s*\|", re.M)
-    ids = list(dict.fromkeys(row.findall(review)))
+    report = decode(read_bytes(report_md), report_md)
+    review = decode(read_bytes(review_md), review_md)
+    ids = list(dict.fromkeys(first_cells(review)))
     if ids:
-        rows = set(row.findall(report))
+        rows = set(first_cells(report))
         covered = lambda rid: rid in rows or any(re.fullmatch(rf"{rid}[a-z]", r) for r in rows)
     else:
         say("REVIEW", None, "review.md has no findings table with R<n> ids: scraped R<n> mentions instead")
@@ -362,13 +429,17 @@ def replace_file(target, data):
         raise
 
 
-def write_copies(spec, selected, items, by_id, paths, text, crlf):
-    src, dest = spec.split("=", 1)
+def write_copies(spec, selected, items, by_id, paths, text, crlf, only_selected):
+    src, dest = split_pair(spec, "--apply-into")
     src_real, dest_real = os.path.realpath(src), os.path.realpath(dest)
     if dest_real == src_real or os.path.commonpath([src_real, dest_real]) == src_real:
         refuse(f"DEST_ROOT {dest} is or lies inside SRC_ROOT {src}")
+    if os.path.commonpath([src_real, dest_real]) == dest_real:
+        refuse(f"SRC_ROOT {src} lies inside DEST_ROOT {dest}")
     if any(same_file(a, src) for a in ancestors_of(dest)):
         refuse(f"DEST_ROOT {dest} is, or lies inside, the same directory as SRC_ROOT {src}")
+    if any(same_file(a, dest) for a in ancestors_of(src)):
+        refuse(f"SRC_ROOT {src} is, or lies inside, the same directory as DEST_ROOT {dest}")
     targets = {}
     for key, path in paths.items():
         rel = os.path.relpath(path, src)
@@ -378,6 +449,8 @@ def write_copies(spec, selected, items, by_id, paths, text, crlf):
         target_real = os.path.realpath(target)
         if target_real == os.path.realpath(path) or os.path.commonpath([src_real, target_real]) == src_real:
             refuse(f"{target} resolves into the sources ({target_real})")
+        if os.path.commonpath([dest_real, target_real]) != dest_real:
+            refuse(f"{target} resolves outside DEST_ROOT ({target_real})")
         if any(same_file(a, src) for a in ancestors_of(os.path.dirname(target))):
             refuse(f"{target} lies inside the same directory as SRC_ROOT {src}")
         if any(same_file(target, source) for source in paths.values()):
@@ -390,8 +463,12 @@ def write_copies(spec, selected, items, by_id, paths, text, crlf):
             say("FAIL", item, why)
         elif state == "skip":
             say("REVIEW", item, f"not applied: {why}")
-    if tally["FAIL"]:
-        print("copies not written: fix the FAIL lines first")
+    if only_selected:
+        blocked = tally["FILE_FAIL"] or failed_items & selected
+    else:
+        blocked = tally["FAIL"]
+    if blocked:
+        print("copies not written: fix the FAIL lines first" + (" (selected items and file-level lines)" if only_selected else ""))
         return
     for key, target in targets.items():
         data = out[key].replace("\n", "\r\n") if crlf[key] else out[key]
@@ -422,21 +499,29 @@ def main():
     ap.add_argument("--classes", default="required,recommended", help="classes that --apply-into applies")
     ap.add_argument("--items", help="comma-separated item ids for --apply-into, plus their dependencies")
     args = ap.parse_args()
-    paths = dict(spec.split("=", 1) for spec in args.files)
+    paths = dict(split_pair(spec, "file") for spec in args.files)
+    if args.apply_into:
+        split_pair(args.apply_into, "--apply-into")
     text, crlf = {}, {}
     for key, path in paths.items():
-        with open(path, "rb") as handle:
-            raw = handle.read()
+        raw = read_bytes(path)
         crlf[key] = raw.count(b"\r\n") * 2 > raw.count(b"\n")
-        text[key] = raw.decode("utf-8").replace("\r\n", "\n")
+        text[key] = decode(raw, path).replace("\r\n", "\n")
     banned = []
     if args.banned:
-        with open(args.banned, encoding="utf-8") as handle:
-            banned = [x.rstrip("\n") for x in handle if x.strip() and not x.startswith("#")]
-    with open(args.apply_md, encoding="utf-8") as handle:
-        items = parse(handle.read())
+        for number, line in enumerate(decode(read_bytes(args.banned), args.banned).splitlines(), 1):
+            if not line.strip() or line.startswith("#"):
+                continue
+            if line.startswith("re:"):
+                try:
+                    re.compile(line[3:])
+                except re.error as error:
+                    die(f"{args.banned} line {number}: bad regular expression {line[3:]!r}: {error}")
+            banned.append(line)
+    items = parse(decode(read_bytes(args.apply_md), args.apply_md))
     by_id = {item["id"]: item for item in items}
     for item in items:
+        item["markdown"] = paths.get(item["key"], "").lower().endswith((".md", ".markdown"))
         item["pairs"] = pairs(item)
     check_items(items, by_id, text, banned)
     check_simulation(items, by_id, text)
@@ -452,7 +537,7 @@ def main():
         else:
             classes = set(args.classes.split(","))
             selected = {item["id"] for item in items if item["cls"] in classes}
-        write_copies(args.apply_into, selected, items, by_id, paths, text, crlf)
+        write_copies(args.apply_into, selected, items, by_id, paths, text, crlf, bool(args.items))
     blocks = sum(len(item["pairs"]) for item in items)
     print(f"items {len(items)}; current blocks {blocks}; FAIL {tally['FAIL']}; REVIEW {tally['REVIEW']}")
     return 1 if tally["FAIL"] else 0

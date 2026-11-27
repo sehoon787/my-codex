@@ -48,6 +48,7 @@ jobs:
             test -f "codex-agents/${dir}/${name}.toml" || (echo "Missing agent: ${name} in ${dir}/" && exit 1)
           }
           check_agent boss core
+          check_agent academic-english-editor core
           for agent in sisyphus atlas hephaestus prometheus oracle momus metis librarian multimodal-looker; do
             check_agent "$agent" omo
           done

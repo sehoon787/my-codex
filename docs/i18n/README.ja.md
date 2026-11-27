@@ -9,13 +9,13 @@
 # my-codex
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
-![Agents](https://img.shields.io/badge/agents-18_core_%2B_17_opt--in-blue)
-![Skills](https://img.shields.io/badge/skills-29_default_%2F_109_installed-purple)
+![Agents](https://img.shields.io/badge/agents-19_core_%2B_17_opt--in-blue)
+![Skills](https://img.shields.io/badge/skills-30_default_%2F_110_installed-purple)
 ![MCP](https://img.shields.io/badge/MCP-5-green)
 ![Auto Sync](https://img.shields.io/badge/upstream_sync-every_3_days-brightgreen)
 
 **Codex CLI 向けオールインワン・エージェントハーネス。**
-**一度インストールするだけで、コアエージェント 18 体がすぐに使えます。**
+**一度インストールするだけで、コアエージェント 19 体がすぐに使えます。**
 
 Boss はランタイムですべてのエージェント・スキル・MCP ツールを検出し、<br>
 `spawn_agent` を通じて適切なスペシャリストにタスクをルーティングします。設定もボイラープレートも不要です。
@@ -44,7 +44,7 @@ rm -rf /tmp/my-codex
 
 既定のインストールが公開するスキルを絞っているのは意図的です。Codex はスキル
 予算を超えるとスキルの説明を切り詰めるため、既定の `core` プロファイルは
-インストール済みの 109 スキル項目のうち 29 だけを Codex に見せ、残りはフラグ 1 つで
+インストール済みの 110 スキル項目のうち 30 だけを Codex に見せ、残りはフラグ 1 つで
 開けるようにしています:
 
 ```bash
@@ -129,7 +129,7 @@ Boss は最適なマッチが見つかるまで、すべてのリクエストを
 | 複雑度 | モデル | 対象 |
 |-----------|-------|----------|
 | 最上位のオーケストレーション | `gpt-6.1-sol` (xhigh) | Boss、およびデフォルトのメインセッション |
-| 深い分析、アーキテクチャ、レビュー | `gpt-6-astra` | Oracle、Prometheus、Sisyphus、Hephaestus、Atlas、Metis、Momus、Tracer、architect、planner、code-reviewer、security-reviewer |
+| 深い分析、アーキテクチャ、レビュー | `gpt-6-astra` | Oracle、Prometheus、Sisyphus、Hephaestus、Atlas、Metis、Momus、Tracer、academic-english-editor、architect、planner、code-reviewer、security-reviewer |
 | 標準的な実装 | `gpt-6.1-sol` | Librarian、Multimodal-Looker、executor、test-engineer、debugger、およびパックエージェント 17 体のうち 15 体 |
 | 簡単な検索、軽い分析 | `gpt-6-luna` | data-analyst、prompt-regression-tester |
 
@@ -139,11 +139,11 @@ Boss は最適なマッチが見つかるまで、すべてのリクエストを
 
 ### 推論強度ティア
 
-モデル選択が*どの*頭脳でタスクを走らせるかを決めるのに対し、同じ TOML の `model` の隣にある `model_reasoning_effort` は*どれだけ深く*考えるかを決めます。Boss と OMO エージェント 10 体は `codex-agents/` 配下のコミット済みファイルで宣言し、oh-my-codex のワーカー 7 体は変換時に `scripts/md-to-toml.sh` のロール表から値を受け取り、パックエージェントはそれぞれ自前の値を持ちます:
+モデル選択が*どの*頭脳でタスクを走らせるかを決めるのに対し、同じ TOML の `model` の隣にある `model_reasoning_effort` は*どれだけ深く*考えるかを決めます。Boss、academic-english-editor、OMO エージェント 10 体は `codex-agents/` 配下のコミット済みファイルで宣言し、oh-my-codex のワーカー 7 体は変換時に `scripts/md-to-toml.sh` のロール表から値を受け取り、パックエージェントはそれぞれ自前の値を持ちます:
 
 | 推論強度 | エージェント |
 |--------|--------|
-| `xhigh` | Boss、Oracle、Prometheus、architect |
+| `xhigh` | Boss、Oracle、Prometheus、academic-english-editor、architect |
 | `high` | Sisyphus、Hephaestus、Atlas、Metis、Momus、Tracer、planner、code-reviewer、security-reviewer、およびパックエージェント 17 体のうち 15 体 |
 | `medium` | Librarian、Multimodal-Looker、executor、test-engineer、debugger、data-analyst、prompt-regression-tester |
 
@@ -177,10 +177,10 @@ Boss は作業のあったすべてのターン — ファイル編集、コミ�
 
 | カテゴリ | 数量 | 出典 |
 |----------|------:|--------|
-| **コアエージェント**（常時ロード） | 18 | Boss 1 + OMO 10 + OMX 7 |
+| **コアエージェント**（常時ロード） | 19 | Core 2 + OMO 10 + OMX 7 |
 | **エージェントパック**（オプトイン、既定では無効） | 17 | ベンダリング済みの 2 カテゴリ: data-ai 13 + llmops 4 |
-| **公開スキル**（既定の `core` プロファイル） | 29 | 常時有効な集合。それ以外はレーンのフラグ 1 つで追加 |
-| **インストール済みスキル**（`~/.codex/skills/` の項目） | 109 | ECC 61 · gstack 29 · Superpowers 14 · Core 4 · archify 1 |
+| **公開スキル**（既定の `core` プロファイル） | 30 | 常時有効な集合。それ以外はレーンのフラグ 1 つで追加 |
+| **インストール済みスキル**（`~/.codex/skills/` の項目） | 110 | ECC 61 · gstack 29 · Superpowers 14 · Core 5 · archify 1 |
 | **MCP サーバー** | 5 | Context7、Exa、grep.app、Serena、Headroom |
 | **config.toml** | 1 | my-codex |
 | **AGENTS.md** | 1 | my-codex |
@@ -188,11 +188,12 @@ Boss は作業のあったすべてのターン — ファイル編集、コミ�
 上記のエージェントとスキルはすべて [`scripts/skill-allowlists.sh`](../../scripts/skill-allowlists.sh) の許可リストに載っており、このファイルが何を同梱するかの基準です。このバンドル自体は `pdf`、`docx`、`pptx`、`xlsx` を同梱せず、外部でインストールされた同種のスキルはそのまま保持します。
 
 <details>
-<summary><strong>コアエージェント — Boss メタオーケストレーター (1)</strong></summary>
+<summary><strong>コアエージェント — Boss メタオーケストレーターと academic-english-editor (2)</strong></summary>
 
 | エージェント | モデル | 役割 | 出典 |
 |-------|-------|------|--------|
 | Boss | gpt-6.1-sol xhigh | 動的なランタイム検出 → 能力マッチング → 最適ルーティング。コードは書きません。 | my-codex |
+| academic-english-editor | gpt-6-astra xhigh | 英語学術文章の二段階レビューと推敲。適用可能な修正案を出し、編集はしません | my-codex |
 
 </details>
 
@@ -242,17 +243,17 @@ Boss は作業のあったすべてのターン — ファイル編集、コミ�
 </details>
 
 <details>
-<summary><strong>スキル — 既定で 29 公開、5 つの出典から 109 をインストール</strong></summary>
+<summary><strong>スキル — 既定で 30 公開、5 つの出典から 110 をインストール</strong></summary>
 
 | 出典 | インストール | 主なスキル |
 |--------|------:|------------|
 | everything-claude-code | 61 | coding-standards, python-testing, api-design, deep-research |
 | gstack | 29 | /qa, /review, /gstack-ship, /cso, /office-hours |
 | superpowers | 14 | brainstorming, systematic-debugging, TDD, writing-plans |
-| [my-codex Core](https://github.com/sehoon787/my-codex) | 4 | boss-advanced, boss-briefing, briefing-vault, gstack-sprint |
+| [my-codex Core](https://github.com/sehoon787/my-codex) | 5 | boss-advanced, boss-briefing, briefing-vault, gstack-sprint, academic-english-polish |
 | archify | 1 | archify（アーキテクチャ・ワークフロー・シーケンス・データフロー・ライフサイクル図） |
 
-gstack の項目は `gstack` ルートルーターのディレクトリと、28 個のシンボリックリンクです。うち 26 個は `~/.codex/vendor/gstack/.agents/skills/` を指し、gstack 自身の `./setup` が作成します。`GSTACK_SKILL_ALLOWLIST` の 25 個すべてに、常に導入される `gstack-upgrade` が加わります。残る 2 個は `install.sh` 自身がリンクします。`codex` は `~/.codex/vendor/gstack/codex` を、`hackernews-frontpage` は `~/.codex/vendor/gstack/browser-skills/hackernews-frontpage` を指し、`./setup` はどちらも参照しません。28 個すべてが管理カタログにあるためリンク専用の項目はなく、いずれも `core` かレーンで公開できます。109 項目のうち 81 は実ディレクトリ、28 はこのシンボリックリンクで、`find ~/.codex/skills -name SKILL.md | wc -l` は `-L` なしではリンクをたどらないため 84 を返します。どのプロファイルでもスキルファイルはインストールされたままで、変わるのは公開範囲だけです。[スキルプロファイルとレーン](#スキルプロファイルとレーン)を参照してください。
+gstack の項目は `gstack` ルートルーターのディレクトリと、28 個のシンボリックリンクです。うち 26 個は `~/.codex/vendor/gstack/.agents/skills/` を指し、gstack 自身の `./setup` が作成します。`GSTACK_SKILL_ALLOWLIST` の 25 個すべてに、常に導入される `gstack-upgrade` が加わります。残る 2 個は `install.sh` 自身がリンクします。`codex` は `~/.codex/vendor/gstack/codex` を、`hackernews-frontpage` は `~/.codex/vendor/gstack/browser-skills/hackernews-frontpage` を指し、`./setup` はどちらも参照しません。28 個すべてが管理カタログにあるためリンク専用の項目はなく、いずれも `core` かレーンで公開できます。110 項目のうち 82 は実ディレクトリ、28 はこのシンボリックリンクで、`find ~/.codex/skills -name SKILL.md | wc -l` は `-L` なしではリンクをたどらないため 85 を返します。どのプロファイルでもスキルファイルはインストールされたままで、変わるのは公開範囲だけです。[スキルプロファイルとレーン](#スキルプロファイルとレーン)を参照してください。
 
 </details>
 
@@ -423,7 +424,7 @@ headroom install apply --profile agent-harness-shared --preset persistent-servic
 | **3 フェーズスプリント** | 設計（対話型） → 実行（executing-plans による自律） → レビュー（計画との対話型比較） |
 | **エージェント階層の優先度** | core > omo > omx > オプトインパックの順で重複排除。既存エージェントと名前が衝突するパックエージェントはスキップされます。最も特化したエージェントが勝ちます。 |
 | **コスト最適化** | 単一ファイル（`scripts/model-tiers.sh`）で管理する 3 つのモデルティアを、インストールされる 35 体すべてに適用 |
-| **スキル公開プロファイル** | 209 エントリのカタログに既定 29 の公開、任意レーン 13、スナップショットとロールバック — スキル予算をそのセッションに必要なものへ使います |
+| **スキル公開プロファイル** | 210 エントリのカタログに既定 30 の公開、任意レーン 13、スナップショットとロールバック — スキル予算をそのセッションに必要なものへ使います |
 | **ブリーフィングシグナル** | ラッパー/セッションのログが `.briefing/agents/agent-log.jsonl`、日次集計、ルーティング/プロファイルのヒントを生成 |
 | **Smart Packs** | プロジェクト種別の検出により、セッション開始時に関連するエージェントパックを推奨 |
 | **エージェントパックシステム** | `--profile` と `my-codex-packs` ヘルパーによるオンデマンドのドメイン専門家有効化 |
@@ -452,13 +453,13 @@ git サブモジュールでリンクしています。固定コミットは `.g
 
 ### スキルプロファイルとレーン
 
-my-claude は固定の許可リストを 1 つインストールしますが、my-codex はスキル項目 109 個をインストールしたうえで、そのうち何個を Codex に実際に見せるかを制御します。Codex はスキル予算を超えるとスキルの説明を切り詰めるため、焦点のないカタログはすべての説明の有用性を下げます。同梱スキルソースをすべて選択した新規インストールの既定値である `core` はスキル 29 個を公開し、各レーンはその上に追加されます:
+my-claude は固定の許可リストを 1 つインストールしますが、my-codex はスキル項目 110 個をインストールしたうえで、そのうち何個を Codex に実際に見せるかを制御します。Codex はスキル予算を超えるとスキルの説明を切り詰めるため、焦点のないカタログはすべての説明の有用性を下げます。同梱スキルソースをすべて選択した新規インストールの既定値である `core` はスキル 30 個を公開し、各レーンはその上に追加されます:
 
 | プロファイル / レーン | 追加されるもの | 数量 | 有効化方法 |
 |----------------|--------------|------:|---------------|
 | `core` | 常時有効な集合: my-codex コアスキル、superpowers の開発プロセスレーン、gstack の出荷/QA/レビュールーター、ECC の標準 | 29 | 既定。戻すときは `--skill-profile=core` |
 | `legacy` | 移行前の公開範囲。`--skip-ecc`、`--skip-gstack`、`--skip-superpowers`、`--skip-archify` で core ソースを省き、プロファイルを明示しなかった場合に自動選択 | 可変 | `--skill-profile=legacy` |
-| `full` | すべてのレーンを一度に — インストール済みの 109 項目すべて。カタログには 209 の名前があり、未導入のものは必要時に取得されます。コンテキスト予算を超える可能性があります | 109 | `--skill-profile=full` または `--full-skills` |
+| `full` | すべてのレーンを一度に — インストール済みの 110 項目すべて。カタログには 210 の名前があり、未導入のものは必要時に取得されます。コンテキスト予算を超える可能性があります | 110 | `--skill-profile=full` または `--full-skills` |
 | `workflow-advanced` | 高度な計画、リポジトリ操作、worktree ワークフロー | 13 | `--skills=workflow-advanced` |
 | `qa-operations` | QA、ブラウザ検証、リリース、デプロイ、運用上の安全策 | 20 | `--skills=qa-operations` |
 | `ai-engineering` | エージェントシステム、評価、プロンプト、検索、MCP | 18 | `--skills=ai-engineering` |

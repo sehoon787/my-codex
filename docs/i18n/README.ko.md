@@ -9,13 +9,13 @@
 # my-codex
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
-![Agents](https://img.shields.io/badge/agents-18_core_%2B_17_opt--in-blue)
-![Skills](https://img.shields.io/badge/skills-29_default_%2F_109_installed-purple)
+![Agents](https://img.shields.io/badge/agents-19_core_%2B_17_opt--in-blue)
+![Skills](https://img.shields.io/badge/skills-30_default_%2F_110_installed-purple)
 ![MCP](https://img.shields.io/badge/MCP-5-green)
 ![Auto Sync](https://img.shields.io/badge/upstream_sync-every_3_days-brightgreen)
 
 **Codex CLI를 위한 올인원 에이전트 하네스.**
-**한 번 설치하면 핵심 에이전트 18개가 준비됩니다.**
+**한 번 설치하면 핵심 에이전트 19개가 준비됩니다.**
 
 Boss가 런타임에 모든 에이전트·스킬·MCP 도구를 탐색하고,<br>
 `spawn_agent`로 작업을 적합한 전문가에게 라우팅합니다. 설정도, 보일러플레이트도 없습니다.
@@ -43,8 +43,8 @@ rm -rf /tmp/my-codex
 ```
 
 기본 설치가 노출하는 스킬 집합이 적은 것은 의도된 설계입니다. Codex는 스킬
-예산을 넘어서면 스킬 설명을 잘라내므로, 기본 `core` 프로필은 설치된 스킬 항목 109개
-가운데 29개만 Codex에 보여 주고 나머지는 플래그 하나로 열어 둡니다:
+예산을 넘어서면 스킬 설명을 잘라내므로, 기본 `core` 프로필은 설치된 스킬 항목 110개
+가운데 30개만 Codex에 보여 주고 나머지는 플래그 하나로 열어 둡니다:
 
 ```bash
 bash install.sh --skills=web          # 웹/UI 레인 18개 추가
@@ -128,7 +128,7 @@ Boss는 가장 적합한 매칭을 찾을 때까지 모든 요청을 우선순�
 | 복잡도 | 모델 | 사용 대상 |
 |-----------|-------|----------|
 | 최상위 오케스트레이션 | `gpt-6.1-sol` (xhigh) | Boss, 기본 메인 세션 |
-| 심층 분석, 아키텍처, 리뷰 | `gpt-6-astra` | Oracle, Prometheus, Sisyphus, Hephaestus, Atlas, Metis, Momus, Tracer, architect, planner, code-reviewer, security-reviewer |
+| 심층 분석, 아키텍처, 리뷰 | `gpt-6-astra` | Oracle, Prometheus, Sisyphus, Hephaestus, Atlas, Metis, Momus, Tracer, academic-english-editor, architect, planner, code-reviewer, security-reviewer |
 | 표준 구현 | `gpt-6.1-sol` | Librarian, Multimodal-Looker, executor, test-engineer, debugger 및 팩 에이전트 17개 중 15개 |
 | 빠른 조회, 가벼운 분석 | `gpt-6-luna` | data-analyst, prompt-regression-tester |
 
@@ -138,11 +138,11 @@ Boss는 가장 적합한 매칭을 찾을 때까지 모든 요청을 우선순�
 
 ### 추론 강도 티어
 
-모델 선택이 *어떤* 두뇌가 작업을 맡을지를 정한다면, 같은 TOML의 `model` 옆에 있는 `model_reasoning_effort`는 *얼마나 깊이* 생각할지를 정합니다. Boss와 OMO 에이전트 10개는 `codex-agents/` 아래 커밋된 파일에서 직접 선언하고, oh-my-codex 작업자 7개는 변환 시점에 `scripts/md-to-toml.sh`의 역할 표에서 값을 받으며, 팩 에이전트는 각자의 값을 가집니다:
+모델 선택이 *어떤* 두뇌가 작업을 맡을지를 정한다면, 같은 TOML의 `model` 옆에 있는 `model_reasoning_effort`는 *얼마나 깊이* 생각할지를 정합니다. Boss, academic-english-editor와 OMO 에이전트 10개는 `codex-agents/` 아래 커밋된 파일에서 직접 선언하고, oh-my-codex 작업자 7개는 변환 시점에 `scripts/md-to-toml.sh`의 역할 표에서 값을 받으며, 팩 에이전트는 각자의 값을 가집니다:
 
 | 추론 강도 | 에이전트 |
 |--------|--------|
-| `xhigh` | Boss, Oracle, Prometheus, architect |
+| `xhigh` | Boss, Oracle, Prometheus, academic-english-editor, architect |
 | `high` | Sisyphus, Hephaestus, Atlas, Metis, Momus, Tracer, planner, code-reviewer, security-reviewer 및 팩 에이전트 17개 중 15개 |
 | `medium` | Librarian, Multimodal-Looker, executor, test-engineer, debugger, data-analyst, prompt-regression-tester |
 
@@ -176,10 +176,10 @@ Boss는 작업이 있던 모든 턴 — 파일 편집, 커밋/PR, 설정 변경,
 
 | 카테고리 | 수량 | 출처 |
 |----------|------:|--------|
-| **핵심 에이전트** (항상 로드됨) | 18 | Boss 1 + OMO 10 + OMX 7 |
+| **핵심 에이전트** (항상 로드됨) | 19 | Core 2 + OMO 10 + OMX 7 |
 | **에이전트 팩** (옵트인, 기본 비활성) | 17 | 벤더링된 2개 카테고리: data-ai 13 + llmops 4 |
-| **노출 스킬** (기본 `core` 프로필) | 29 | 항상 켜져 있는 집합. 나머지는 레인 플래그 하나로 추가 |
-| **설치 스킬** (`~/.codex/skills/` 항목) | 109 | ECC 61 · gstack 29 · Superpowers 14 · Core 4 · archify 1 |
+| **노출 스킬** (기본 `core` 프로필) | 30 | 항상 켜져 있는 집합. 나머지는 레인 플래그 하나로 추가 |
+| **설치 스킬** (`~/.codex/skills/` 항목) | 110 | ECC 61 · gstack 29 · Superpowers 14 · Core 5 · archify 1 |
 | **MCP 서버** | 5 | Context7, Exa, grep.app, Serena, Headroom |
 | **config.toml** | 1 | my-codex |
 | **AGENTS.md** | 1 | my-codex |
@@ -187,11 +187,12 @@ Boss는 작업이 있던 모든 턴 — 파일 편집, 커밋/PR, 설정 변경,
 위의 모든 에이전트와 스킬은 [`scripts/skill-allowlists.sh`](../../scripts/skill-allowlists.sh)에 허용목록으로 등재되어 있으며, 이 파일이 무엇을 설치할지 결정하는 기준입니다. 이 번들 자체는 `pdf`, `docx`, `pptx`, `xlsx`를 제공하지 않으며, 외부에서 설치한 같은 종류의 스킬은 그대로 보존합니다.
 
 <details>
-<summary><strong>핵심 에이전트 — Boss 메타 오케스트레이터 (1)</strong></summary>
+<summary><strong>핵심 에이전트 — Boss 메타 오케스트레이터와 academic-english-editor (2)</strong></summary>
 
 | 에이전트 | 모델 | 역할 | 출처 |
 |-------|-------|------|--------|
 | Boss | gpt-6.1-sol xhigh | 동적 런타임 탐색 → 역량 매칭 → 최적 라우팅. 코드를 직접 작성하지 않습니다. | my-codex |
+| academic-english-editor | gpt-6-astra xhigh | 영어 학술 글쓰기의 2단계 검토 및 다듬기. 바로 적용 가능한 제안만 내놓고 직접 편집하지 않음 | my-codex |
 
 </details>
 
@@ -241,17 +242,17 @@ Boss는 작업이 있던 모든 턴 — 파일 편집, 커밋/PR, 설정 변경,
 </details>
 
 <details>
-<summary><strong>스킬 — 기본 노출 29개, 5개 출처에서 109개 설치</strong></summary>
+<summary><strong>스킬 — 기본 노출 30개, 5개 출처에서 110개 설치</strong></summary>
 
 | 출처 | 설치 | 주요 스킬 |
 |--------|------:|------------|
 | everything-claude-code | 61 | coding-standards, python-testing, api-design, deep-research |
 | gstack | 29 | /qa, /review, /gstack-ship, /cso, /office-hours |
 | superpowers | 14 | brainstorming, systematic-debugging, TDD, writing-plans |
-| [my-codex Core](https://github.com/sehoon787/my-codex) | 4 | boss-advanced, boss-briefing, briefing-vault, gstack-sprint |
+| [my-codex Core](https://github.com/sehoon787/my-codex) | 5 | boss-advanced, boss-briefing, briefing-vault, gstack-sprint, academic-english-polish |
 | archify | 1 | archify (아키텍처·워크플로·시퀀스·데이터 흐름·라이프사이클 다이어그램) |
 
-gstack 항목은 `gstack` 루트 라우터 디렉터리와 심볼릭 링크 28개입니다. 이 중 26개는 `~/.codex/vendor/gstack/.agents/skills/`를 가리키며 gstack 자체의 `./setup`이 만드는데, `GSTACK_SKILL_ALLOWLIST` 25개 전부에 항상 설치되는 `gstack-upgrade`가 더해집니다. 나머지 2개는 `install.sh`가 직접 링크하며, `codex`는 `~/.codex/vendor/gstack/codex`를, `hackernews-frontpage`는 `~/.codex/vendor/gstack/browser-skills/hackernews-frontpage`를 가리킵니다. `./setup`은 둘 다 참조하지 않습니다. 28개 모두 관리 카탈로그에 있으므로 링크 전용 항목은 없고, 각각 `core`나 레인으로 노출될 수 있습니다. 전체 109개 항목 중 81개는 실제 디렉터리, 28개는 이 심볼릭 링크이며, `find ~/.codex/skills -name SKILL.md | wc -l`은 `-L` 없이는 링크를 따라가지 않으므로 84를 반환합니다. 어떤 프로필을 쓰든 스킬 파일은 설치된 상태로 남고 바뀌는 것은 노출 범위뿐입니다. [스킬 프로필과 레인](#스킬-프로필과-레인)을 참조하세요.
+gstack 항목은 `gstack` 루트 라우터 디렉터리와 심볼릭 링크 28개입니다. 이 중 26개는 `~/.codex/vendor/gstack/.agents/skills/`를 가리키며 gstack 자체의 `./setup`이 만드는데, `GSTACK_SKILL_ALLOWLIST` 25개 전부에 항상 설치되는 `gstack-upgrade`가 더해집니다. 나머지 2개는 `install.sh`가 직접 링크하며, `codex`는 `~/.codex/vendor/gstack/codex`를, `hackernews-frontpage`는 `~/.codex/vendor/gstack/browser-skills/hackernews-frontpage`를 가리킵니다. `./setup`은 둘 다 참조하지 않습니다. 28개 모두 관리 카탈로그에 있으므로 링크 전용 항목은 없고, 각각 `core`나 레인으로 노출될 수 있습니다. 전체 110개 항목 중 82개는 실제 디렉터리, 28개는 이 심볼릭 링크이며, `find ~/.codex/skills -name SKILL.md | wc -l`은 `-L` 없이는 링크를 따라가지 않으므로 85를 반환합니다. 어떤 프로필을 쓰든 스킬 파일은 설치된 상태로 남고 바뀌는 것은 노출 범위뿐입니다. [스킬 프로필과 레인](#스킬-프로필과-레인)을 참조하세요.
 
 </details>
 
@@ -422,7 +423,7 @@ headroom install apply --profile agent-harness-shared --preset persistent-servic
 | **3단계 스프린트** | 설계 (대화형) → 실행 (executing-plans를 통한 자율) → 리뷰 (계획과 대화형 비교) |
 | **에이전트 티어 우선순위** | core > omo > omx > 옵트인 팩 순으로 중복 제거. 이미 설치된 에이전트와 이름이 겹치는 팩 에이전트는 건너뜁니다. 가장 특화된 에이전트가 선택됩니다. |
 | **비용 최적화** | 단일 파일(`scripts/model-tiers.sh`)에서 관리하는 모델 티어 3종을 설치되는 35개 에이전트 전체에 적용 |
-| **스킬 노출 프로필** | 카탈로그 209개 항목에 기본 29개 노출, 선택 레인 13개, 스냅샷과 롤백까지 — 스킬 예산을 그 세션에 필요한 것에만 씁니다 |
+| **스킬 노출 프로필** | 카탈로그 210개 항목에 기본 30개 노출, 선택 레인 13개, 스냅샷과 롤백까지 — 스킬 예산을 그 세션에 필요한 것에만 씁니다 |
 | **브리핑 신호** | 래퍼/세션 로깅이 `.briefing/agents/agent-log.jsonl`, 일별 요약, 라우팅/프로필 힌트를 채웁니다 |
 | **Smart Packs** | 프로젝트 유형 감지로 세션 시작 시 관련 에이전트 팩 추천 |
 | **에이전트 팩 시스템** | `--profile` 및 `my-codex-packs` 헬퍼를 통한 온디맨드 도메인 전문가 활성화 |
@@ -451,13 +452,13 @@ git 서브모듈로 연결합니다. 고정 커밋은 `.gitmodules`가 기본으
 
 ### 스킬 프로필과 레인
 
-my-claude는 고정된 허용목록 하나를 설치하지만, my-codex는 스킬 항목 109개를 설치한 뒤 그중 몇 개를 Codex가 실제로 보게 할지 제어합니다. Codex는 스킬 예산을 넘어서면 스킬 설명을 잘라내므로, 초점 없는 카탈로그는 모든 설명의 유용성을 떨어뜨립니다. 번들 스킬 소스를 모두 선택한 신규 설치의 기본값인 `core`는 스킬 29개를 노출하고, 각 레인은 그 위에 더해집니다:
+my-claude는 고정된 허용목록 하나를 설치하지만, my-codex는 스킬 항목 110개를 설치한 뒤 그중 몇 개를 Codex가 실제로 보게 할지 제어합니다. Codex는 스킬 예산을 넘어서면 스킬 설명을 잘라내므로, 초점 없는 카탈로그는 모든 설명의 유용성을 떨어뜨립니다. 번들 스킬 소스를 모두 선택한 신규 설치의 기본값인 `core`는 스킬 30개를 노출하고, 각 레인은 그 위에 더해집니다:
 
 | 프로필 / 레인 | 추가되는 것 | 수량 | 활성화 방법 |
 |----------------|--------------|------:|---------------|
 | `core` | 항상 켜져 있는 집합: my-codex 코어 스킬, superpowers 개발 프로세스 레인, gstack 배포/QA/리뷰 라우터, ECC 표준 | 29 | 기본값. 되돌릴 때는 `--skill-profile=core` |
 | `legacy` | 마이그레이션 이전 노출. `--skip-ecc`, `--skip-gstack`, `--skip-superpowers`, `--skip-archify`로 core 소스를 생략하고 프로필을 명시하지 않으면 자동 선택 | 가변 | `--skill-profile=legacy` |
-| `full` | 모든 레인을 한 번에 — 설치된 109개 항목 전부. 카탈로그에는 209개 이름이 있고 아직 설치되지 않은 것은 필요할 때 채워집니다. 컨텍스트 예산을 넘을 수 있습니다 | 109 | `--skill-profile=full` 또는 `--full-skills` |
+| `full` | 모든 레인을 한 번에 — 설치된 110개 항목 전부. 카탈로그에는 210개 이름이 있고 아직 설치되지 않은 것은 필요할 때 채워집니다. 컨텍스트 예산을 넘을 수 있습니다 | 110 | `--skill-profile=full` 또는 `--full-skills` |
 | `workflow-advanced` | 고급 계획 수립, 저장소 운영, worktree 워크플로 | 13 | `--skills=workflow-advanced` |
 | `qa-operations` | QA, 브라우저 점검, 릴리스, 배포, 운영 안전 | 20 | `--skills=qa-operations` |
 | `ai-engineering` | 에이전트 시스템, 평가, 프롬프트, 검색, MCP | 18 | `--skills=ai-engineering` |

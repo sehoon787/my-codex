@@ -1,7 +1,7 @@
 {
   "version": 1,
   "core": [
-    "boss-advanced", "boss-briefing", "briefing-vault", "gstack-sprint", "brainstorming", "writing-plans", "executing-plans", "systematic-debugging", "test-driven-development", "verification-before-completion", "requesting-code-review", "receiving-code-review", "using-git-worktrees", "using-superpowers", "gstack", "review", "cso", "qa", "gstack-ship", "careful", "plan-eng-review", "coding-standards", "codebase-onboarding", "documentation-lookup", "context-budget", "api-design", "architecture-decision-records", "archify", "security-scan"
+    "boss-advanced", "boss-briefing", "briefing-vault", "gstack-sprint", "brainstorming", "writing-plans", "executing-plans", "systematic-debugging", "test-driven-development", "verification-before-completion", "requesting-code-review", "receiving-code-review", "using-git-worktrees", "using-superpowers", "gstack", "review", "cso", "qa", "gstack-ship", "careful", "plan-eng-review", "coding-standards", "codebase-onboarding", "documentation-lookup", "context-budget", "api-design", "architecture-decision-records", "archify", "security-scan", "academic-english-polish"
   ],
   "preserve": ["docx", "pdf", "computer-use", "find-skills", "laravel-verification", "orca-cli", "orchestration", "skill-stocktake"],
   "laneDescriptions": {
